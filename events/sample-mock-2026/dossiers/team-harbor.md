@@ -44,7 +44,7 @@ keeping as the project grows.
 
 ## Tournament journey
 
-- **Semifinal** against Quill: you did not advance. The deciding difference was keyboard-first interface with visible loading, empty and failure states.
+- **Semifinal** against Quill: you did not advance. The comparison turned on **functional**. Your evidence there did not carry the comparison; your own criterion feedback above says what would have.
 
 ## Blocking issues
 

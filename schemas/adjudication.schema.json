@@ -3,45 +3,163 @@
   "$id": "https://ai-tournament-judge.local/schemas/adjudication.schema.json",
   "title": "Adjudication record",
   "type": "object",
-  "required": ["event_id", "adjudication_id", "scope", "trigger", "question",
-               "resolution", "decided_by", "rubric", "framework_commit",
-               "visibility", "approval_state", "validation_state"],
+  "required": [
+    "event_id",
+    "adjudication_id",
+    "scope",
+    "trigger",
+    "question",
+    "resolution",
+    "decided_by",
+    "rubric",
+    "framework_commit",
+    "visibility",
+    "approval_state",
+    "validation_state"
+  ],
   "properties": {
-    "event_id": {"$ref": "common.schema.json#/$defs/slug"},
-    "adjudication_id": {"$ref": "common.schema.json#/$defs/adjudication_id"},
-    "scope": {"enum": ["team", "criterion", "matchup", "event"]},
-    "team_id": {"oneOf": [{"$ref": "common.schema.json#/$defs/slug"}, {"type": "null"}]},
-    "match_id": {"oneOf": [{"$ref": "common.schema.json#/$defs/match_id"}, {"type": "null"}]},
-    "criterion": {"oneOf": [{"$ref": "common.schema.json#/$defs/slug"}, {"type": "null"}]},
+    "event_id": {
+      "$ref": "common.schema.json#/$defs/slug"
+    },
+    "adjudication_id": {
+      "$ref": "common.schema.json#/$defs/adjudication_id"
+    },
+    "scope": {
+      "enum": [
+        "team",
+        "criterion",
+        "matchup",
+        "event"
+      ]
+    },
+    "team_id": {
+      "oneOf": [
+        {
+          "$ref": "common.schema.json#/$defs/slug"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "match_id": {
+      "oneOf": [
+        {
+          "$ref": "common.schema.json#/$defs/match_id"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "criterion": {
+      "oneOf": [
+        {
+          "$ref": "common.schema.json#/$defs/slug"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "trigger": {
-      "enum": ["unresolved-ne", "severe-disagreement", "possible-outlier",
-               "contradictory-facts", "order-disagreement", "close-call",
-               "rules-exception", "security-escalation"]
+      "enum": [
+        "unresolved-ne",
+        "severe-disagreement",
+        "possible-outlier",
+        "contradictory-facts",
+        "order-disagreement",
+        "close-call",
+        "rules-exception",
+        "security-escalation"
+      ]
     },
-    "question": {"type": "string", "minLength": 1},
-    "evidence_reviewed": {"type": "array", "items": {"type": "string"}},
-    "resolution": {"enum": ["resolved", "unresolved", "referred-to-human"]},
-    "resolution_detail": {"type": "string"},
-    "impact": {"type": "string"},
-    "confidence": {"enum": ["low", "medium", "high"]},
-    "decided_by": {
-      "type": "string", "minLength": 1,
-      "$comment": "A human official's role. Disqualification, unresolved ties and rules exceptions are human-only."
+    "question": {
+      "type": "string",
+      "minLength": 1
     },
-    "rubric": {"$ref": "common.schema.json#/$defs/reference"},
-    "framework_commit": {"$ref": "common.schema.json#/$defs/framework_commit"},
-    "score_override": {
-      "type": ["object", "null"],
-      "$comment": "Never edits a judge's score. Records an additive panel-level resolution.",
-      "properties": {
-        "criterion": {"$ref": "common.schema.json#/$defs/slug"},
-        "resolved_score": {"oneOf": [{"type": "number"}, {"const": "NE"}]},
-        "rationale": {"type": "string"}
+    "evidence_reviewed": {
+      "type": "array",
+      "items": {
+        "type": "string"
       }
     },
-    "visibility": {"const": "private"},
-    "approval_state": {"$ref": "common.schema.json#/$defs/approval_state"},
-    "validation_state": {"$ref": "common.schema.json#/$defs/validation_state"}
+    "resolution": {
+      "enum": [
+        "resolved",
+        "unresolved",
+        "referred-to-human"
+      ]
+    },
+    "resolution_detail": {
+      "type": "string"
+    },
+    "impact": {
+      "type": "string"
+    },
+    "confidence": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "decided_by": {
+      "type": "string",
+      "minLength": 1,
+      "$comment": "A human official's role. Disqualification, unresolved ties and rules exceptions are human-only."
+    },
+    "rubric": {
+      "$ref": "common.schema.json#/$defs/reference"
+    },
+    "framework_commit": {
+      "$ref": "common.schema.json#/$defs/framework_commit"
+    },
+    "score_override": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "$comment": "Never edits a judge's score. Records an additive panel-level resolution.",
+      "properties": {
+        "criterion": {
+          "$ref": "common.schema.json#/$defs/slug"
+        },
+        "resolved_score": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "const": "NE"
+            }
+          ]
+        },
+        "rationale": {
+          "type": "string"
+        }
+      }
+    },
+    "visibility": {
+      "const": "private"
+    },
+    "approval_state": {
+      "$ref": "common.schema.json#/$defs/approval_state"
+    },
+    "validation_state": {
+      "$ref": "common.schema.json#/$defs/validation_state"
+    },
+    "advances_team": {
+      "oneOf": [
+        {
+          "$ref": "common.schema.json#/$defs/slug"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "$comment": "For a matchup adjudication: the team the official decided advances. Read from here, never from prose."
+    }
   },
   "additionalProperties": true
 }

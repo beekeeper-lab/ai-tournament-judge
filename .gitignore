@@ -17,3 +17,7 @@ dist/
 # Build-time copy of the framework data (see tools/stage_package_data.py).
 # Never edit these; the sources are framework/, schemas/, events/_template/.
 atj/data/
+
+# Build output. F2: a committed build/lib made the wheel ship stale code.
+build/
+*.egg-info/

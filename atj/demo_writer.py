@@ -801,7 +801,9 @@ def _write_close_call_adjudication(
         "event_id": EVENT_ID, "adjudication_id": adjudication_id, "scope": "matchup",
         "team_id": None, "match_id": match_identifier(name), "criterion": broken["step"]
         if broken["resolved"] else None,
-        "trigger": "close-call", "question":
+        "trigger": "close-call",
+        "advances_team": CLOSE_CALL_RESOLUTION["winner"],
+        "question":
             f"Does the evidence establish a winner between {team_a.display_name} and "
             f"{team_b.display_name} despite a margin inside the close-call band?",
         "resolution": "resolved",
@@ -1009,10 +1011,27 @@ def write_dossiers(directory: Path, root: Path, results: dict[str, dict[str, Any
         for team_id in (result["team_a"], result["team_b"]):
             other = result["team_b"] if team_id == result["team_a"] else result["team_a"]
             outcome = "advanced" if team_id == winner else "did not advance"
+            # A dossier describes this team's own result. Explaining the outcome
+            # through the opponent's strengths would put one team's findings in
+            # another team's hands.
+            decisive = max(
+                result["criteria"].items(),
+                key=lambda item: abs(item[1]["combined_margin"]),
+            )[0]
+            if team_id == winner:
+                detail = (
+                    f"The comparison turned on **{decisive}**, where your evidence was "
+                    f"the stronger of the two."
+                )
+            else:
+                detail = (
+                    f"The comparison turned on **{decisive}**. Your evidence there did "
+                    f"not carry the comparison; your own criterion feedback above says "
+                    f"what would have."
+                )
             journeys[team_id].append(
-                f"- **{ROUND_OF[name].title()}** against {TEAMS_BY_ID[other].display_name}: "
-                f"you {outcome}. The deciding difference was "
-                f"{TEAMS_BY_ID[winner].strength.rstrip('.').lower()}."
+                f"- **{ROUND_OF[name].title()}** against "
+                f"{TEAMS_BY_ID[other].display_name}: you {outcome}. {detail}"
             )
 
     for team in TEAMS:

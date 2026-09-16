@@ -18,12 +18,23 @@ unavailable, record executable evidence as unavailable and score affected
 criteria NE." ;;
 esac
 
+# Match an actual invocation, not the phrase appearing anywhere in the command.
+# Matching loosely made this hook block unrelated commands that merely mentioned
+# advancing, and pick an event directory out of surrounding text.
 case "$command" in
-  *"atj event advance"*|*"event advance"*)
-    event_dir="$(printf '%s' "$command" | grep -oE 'events/[A-Za-z0-9._-]+' | head -n1)"
+  *"atj event advance events/"*|*"atj event advance ./events/"*)
+    event_dir="$(printf '%s' "$command" \
+      | grep -oE 'atj event advance \.?/?events/[A-Za-z0-9._-]+' \
+      | head -n1 | grep -oE 'events/[A-Za-z0-9._-]+')"
     [ -z "$event_dir" ] && exit 0
-    [ -d "$REPO_ROOT/$event_dir" ] || exit 0
-    if ! status="$(atj event status "$REPO_ROOT/$event_dir")"; then
+    # Resolve against the command's own working directory when it is inside the
+    # repository; otherwise this hook has nothing reliable to say.
+    if [ -d "$REPO_ROOT/$event_dir" ]; then
+      event_dir="$REPO_ROOT/$event_dir"
+    else
+      exit 0
+    fi
+    if ! status="$(atj event status "$event_dir")"; then
       warn "could not read $event_dir status; allowing and leaving the check to atj itself"
       exit 0
     fi

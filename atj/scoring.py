@@ -342,6 +342,11 @@ def consolidate(
                         f"{criterion.id}: severe disagreement (range {entry['range']:g}) "
                         f"with no recorded adjudication"
                     )
+                elif not resolution.get("rationale"):
+                    blocked.append(
+                        f"{criterion.id}: the adjudication records no reasoning for the "
+                        f"severe disagreement"
+                    )
             if entry["possible_outliers"]:
                 adjudication_required.append(
                     {"criterion": criterion.id, "trigger": "possible-outlier"}
@@ -391,31 +396,62 @@ def load_judgment_file(path: Path, *, root: Path | None = None) -> Judgment:
 
 def load_resolutions(directory: Path, *, team_id: str | None = None,
                      root: Path | None = None) -> dict[str, Any]:
-    """Read adjudicated per-criterion resolutions from an adjudications directory.
+    """Read adjudicated per-criterion resolutions for one team.
 
-    Only an approved adjudication naming a human decider counts. An unapproved
-    or unresolved record is ignored, so a draft cannot unblock a total.
+    Every condition here closes a way an adjudication could move a total it had
+    no authority over. A record must be approved, resolved, name a human decider,
+    be scoped to a criterion of *this* team, carry no match id, and validate
+    against the adjudication schema and the canonical versions. Two approved
+    resolutions for the same criterion are a conflict, not a last-file-wins race.
     """
+    from . import schema as schema_module
+    from . import versions as versions_module
     from .frontmatter import read
 
     resolutions: dict[str, Any] = {}
     if not directory.is_dir():
         return resolutions
+    if not team_id:
+        raise ValidationError(
+            "a team id is required to load adjudications; resolutions are scoped to a "
+            "team and applying an unscoped one would let a single record move any total"
+        )
+
     for path in sorted(directory.glob("*.md")):
         metadata, _ = read(path)
+        criterion = metadata.get("criterion")
+        if not criterion:
+            continue
+        if metadata.get("scope") != "criterion":
+            continue
         if metadata.get("resolution") != "resolved":
             continue
         if metadata.get("approval_state") != "approved":
             continue
         if not metadata.get("decided_by"):
             continue
-        if team_id and metadata.get("team_id") not in (None, team_id):
+        # A criterion resolution belongs to exactly one team and to no matchup.
+        if metadata.get("team_id") != team_id:
             continue
+        if metadata.get("match_id"):
+            raise ValidationError(
+                f"adjudication {metadata.get('adjudication_id')!r} is scoped to a criterion "
+                f"but also names a match; a record cannot be both",
+                artifact=str(path),
+            )
+        schema_module.require("adjudication", metadata, root=root, artifact=str(path))
+        versions_module.require_versions(metadata, root=root, artifact=str(path))
+
+        key = str(criterion)
+        if key in resolutions:
+            raise ValidationError(
+                f"two approved adjudications resolve {key!r} for {team_id}: "
+                f"{resolutions[key]['source']} and {path}. A human official must "
+                f"withdraw one before a total can be finalized.",
+                artifact=str(path),
+            )
         override = metadata.get("score_override")
-        criterion = metadata.get("criterion")
-        if not criterion:
-            continue
-        resolutions[str(criterion)] = {
+        resolutions[key] = {
             "adjudication_id": metadata.get("adjudication_id"),
             "resolved_score": (override or {}).get("resolved_score"),
             "rationale": (override or {}).get("rationale") or metadata.get("resolution_detail"),

@@ -44,8 +44,8 @@ keeping as the project grows.
 
 ## Tournament journey
 
-- **Semifinal** against Harbor: you advanced. The deciding difference was keyboard-first interface with visible loading, empty and failure states.
-- **Final** against Lumen: you did not advance. The deciding difference was explicit state machine for handover status with exhaustive transition tests.
+- **Semifinal** against Harbor: you advanced. The comparison turned on **functional**, where your evidence was the stronger of the two.
+- **Final** against Lumen: you did not advance. The comparison turned on **reliability**. Your evidence there did not carry the comparison; your own criterion feedback above says what would have.
 
 ## Blocking issues
 

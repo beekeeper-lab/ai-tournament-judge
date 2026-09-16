@@ -117,7 +117,19 @@ def cmd_personas(args) -> int:
 
 def cmd_event_init(args) -> int:
     root = _root(args)
-    target = event_module.initialize(args.event_id, root=root, event_name=args.name)
+    # Events belong to the operator's working directory, not to wherever the
+    # package happens to be installed. `--root` still overrides for tests.
+    destination = Path(args.dir).resolve() if args.dir else (
+        root if getattr(args, "root", None) else Path.cwd()
+    )
+    if "site-packages" in destination.parts or (destination / "atj" / "data").is_dir():
+        raise AtjError(
+            f"refusing to create an event inside an installed package at {destination}. "
+            f"Run from the directory that should hold events/, or pass --dir."
+        )
+    target = event_module.initialize(
+        args.event_id, root=root, event_name=args.name, destination=destination
+    )
     loaded = event_module.load(target, root=root)
     problems = event_module.validate_configuration(loaded)
     print(f"Created {target}")
@@ -193,7 +205,9 @@ def cmd_event_advance(args) -> int:
     root = _root(args)
     loaded = event_module.load(Path(args.event_dir), root=root)
     try:
-        target = event_module.advance(loaded, force_reason=args.force_reason)
+        target = event_module.advance(
+            loaded, force_reason=args.force_reason, force_approver=args.force_approver
+        )
     except AtjError as exc:
         print(exc.render())
         return FAILURE
@@ -288,7 +302,9 @@ def cmd_event_gate(args) -> int:
         if not audit_path.is_absolute():
             candidate = loaded.directory / args.audit
             audit_path = candidate if candidate.exists() else audit_path
-        problems = event_module.audit_supports_gate(audit_path, stage=stage or "", root=root)
+        problems = event_module.audit_supports_gate(
+            audit_path, stage=stage or "", root=root, event_id=loaded.event_id
+        )
         problems += [
             f"stage work missing: {item}"
             for item in event_module.stage_work_present(loaded, stage or "")
@@ -521,6 +537,28 @@ def cmd_bracket_advance(args) -> int:
             )
         print(f"advancing on a recorded human adjudication, not an automatic result")
 
+    located = bracket.match_by_id(result, match_id)
+    if located is None:
+        raise AtjError(f"no match {match_id!r} in this bracket")
+    _, match = located
+    entrants = {entrant for entrant in (match.get("entrants") or []) if entrant}
+    reported = {str(metadata.get("team_a")), str(metadata.get("team_b"))}
+    if reported != entrants:
+        raise AtjError(
+            f"{args.matchup} compares {sorted(reported)} but the bracket records "
+            f"{sorted(entrants)} for {match_id}. One of the two is wrong and an "
+            f"operator cannot tell which from either alone."
+        )
+    undecided = [
+        source for source in (match.get("source_matches") or [])
+        if (bracket.match_by_id(result, source) or (0, {}))[1].get("winner") is None
+    ]
+    if undecided:
+        raise AtjError(
+            f"{match_id} draws from {undecided}, which have no recorded winner. "
+            f"Deciding a later round first would advance a team that has not earned "
+            f"its place."
+        )
     bracket.advance(result, match_id, str(winner))
     path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     _emit({"match_id": match_id, "winner": winner}, args)
@@ -532,7 +570,12 @@ def cmd_bracket_advance(args) -> int:
 
 
 def _adjudicated_winner(event_dir: Path, match_id: str, root: Path) -> str | None:
-    """The team an approved adjudication named for this match, if any."""
+    """The team an approved adjudication named for this match.
+
+    Read from a structured `advances_team` field, never from prose. Scanning the
+    free-text impact line for the first `team-` token advanced the loser whenever
+    an official wrote "team-harbor does not advance; team-quill advances".
+    """
     directory = event_dir / "adjudications"
     if not directory.is_dir():
         return None
@@ -540,14 +583,19 @@ def _adjudicated_winner(event_dir: Path, match_id: str, root: Path) -> str | Non
         metadata, _ = frontmatter.read(path)
         if metadata.get("match_id") != match_id:
             continue
+        if metadata.get("scope") != "matchup":
+            continue
         if metadata.get("resolution") != "resolved":
             continue
         if metadata.get("approval_state") != "approved" or not metadata.get("decided_by"):
             continue
-        impact = str(metadata.get("impact") or "")
-        for token in impact.replace(",", " ").split():
-            if token.startswith("team-"):
-                return token
+        advances = metadata.get("advances_team")
+        if not advances:
+            raise AtjError(
+                f"{path.name} resolves {match_id} but records no `advances_team`. The "
+                f"advancing team is read from that field, never from prose."
+            )
+        return str(advances)
     return None
 
 
@@ -580,8 +628,15 @@ def cmd_bracket_verify(args) -> int:
     _emit({"problems": problems}, args)
     for problem in problems:
         print(f"  ERROR {problem}")
-    print(f"Bracket verification: {'FAIL' if problems else 'PASS'}"
-          + (" (reproduced from seed)" if rebuilt and not problems else ""))
+    if problems:
+        label = "FAIL"
+    elif rebuilt:
+        label = "PASS (reproduced from seed)"
+    elif args.event_dir:
+        label = "PASS (constraints re-derived from the roster)"
+    else:
+        label = "PASS (structure only; constraints not re-derived)"
+    print(f"Bracket verification: {label}")
     return FAILURE if problems else OK
 
 
@@ -681,8 +736,16 @@ def cmd_ceremony(args) -> int:
     output = Path(args.output) if args.output else event_dir / "public" / "ceremony"
     output.mkdir(parents=True, exist_ok=True)
 
+    try:
+        public_scores = bool(
+            event_module.load(event_dir, root=root).config.get("public_scores")
+        )
+    except AtjError:
+        public_scores = False
     page = output / "index.html"
-    page.write_text(ceremony.render_ceremony(event_dir), encoding="utf-8")
+    page.write_text(
+        ceremony.render_ceremony(event_dir, public_scores=public_scores), encoding="utf-8"
+    )
     written = [page]
 
     if not args.no_dossiers:
@@ -1086,6 +1149,7 @@ def build_parser() -> argparse.ArgumentParser:
     init = event_sub.add_parser("init", help="create an event from the template")
     init.add_argument("event_id")
     init.add_argument("--name", help="human-readable event name")
+    init.add_argument("--dir", help="directory to create events/ in (default: cwd)")
     init.set_defaults(func=cmd_event_init)
 
     validate = event_sub.add_parser("validate", help="validate configuration, roster and status")
@@ -1100,6 +1164,9 @@ def build_parser() -> argparse.ArgumentParser:
     advance = event_sub.add_parser("advance", help="advance to the next stage")
     advance.add_argument("event_dir")
     advance.add_argument("--force-reason", help="human override; recorded in the ledger")
+    advance.add_argument(
+        "--force-approver", help="the official authorizing the override; required with it"
+    )
     advance.set_defaults(func=cmd_event_advance)
 
     gate = event_sub.add_parser("gate", help="record a stage gate result")

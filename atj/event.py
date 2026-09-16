@@ -89,10 +89,14 @@ def stage_work_present(event: "Event", stage: str) -> list[str]:
     return missing
 
 
-def audit_supports_gate(path: Path, *, stage: str, root: Path) -> list[str]:
-    """Whether an audit artifact actually authorizes passing a stage gate."""
-    from . import schema as schema_module
+def audit_supports_gate(
+    path: Path, *, stage: str, root: Path, event_id: str | None = None
+) -> list[str]:
+    """Whether an audit artifact actually authorizes passing *this* stage gate.
 
+    An audit from another event, or about another stage, is not authorization.
+    Both were previously accepted because only the file's existence was checked.
+    """
     problems: list[str] = []
     if not path.is_file():
         return [f"audit artifact not found: {path}"]
@@ -100,6 +104,15 @@ def audit_supports_gate(path: Path, *, stage: str, root: Path) -> list[str]:
         metadata, body = frontmatter.read(path)
     except Exception as exc:  # noqa: BLE001 - reported, not raised
         return [f"{path.name}: {exc}"]
+    if event_id and metadata.get("event_id") != event_id:
+        problems.append(
+            f"{path.name}: audits event {metadata.get('event_id')!r}, not {event_id!r}"
+        )
+    scope = str(metadata.get("audit_scope") or "")
+    if stage and stage not in scope.lower().replace("_", "-"):
+        problems.append(
+            f"{path.name}: audit_scope {scope!r} does not name the {stage!r} stage"
+        )
     result = str(metadata.get("result", ""))
     if result not in PASS_RESULTS:
         problems.append(f"{path.name}: result is {result!r}; a gate needs {' or '.join(PASS_RESULTS)}")
@@ -231,13 +244,23 @@ def parse_roster_table(body: str) -> list[dict[str, Any]]:
 # Initialization
 # --------------------------------------------------------------------------- #
 
-def initialize(event_id: str, *, root: Path | None = None, event_name: str | None = None) -> Path:
+def initialize(
+    event_id: str, *, root: Path | None = None, event_name: str | None = None,
+    destination: Path | None = None,
+) -> Path:
+    """Create an event directory.
+
+    ``root`` locates the framework (the template and the canonical rubrics);
+    ``destination`` is where the event is written. They are the same in a
+    checkout and deliberately different for an installed package, which must not
+    write event data into site-packages.
+    """
     base = root or canon.repository_root()
     ids.require_slug(event_id, kind="event_id")
     source = base / TEMPLATE_DIR
     if not source.is_dir():
         raise ValidationError(f"event template not found: {source}")
-    target = base / "events" / event_id
+    target = (destination or base) / "events" / event_id
     if target.exists():
         raise ValidationError(f"event already exists: {target}")
 
@@ -401,27 +424,59 @@ def can_advance(event: Event) -> tuple[bool, list[str]]:
     ]
     if failed:
         reasons.append(f"failed audits in {stage}: {sorted(failed)}")
+
+    # Advancing over stale work builds the next stage on inputs that changed.
+    drifted = [entry["unit_id"] for entry in stale_units(event)]
+    if drifted:
+        reasons.append(
+            f"inputs changed after these units completed: {sorted(drifted)}; "
+            f"re-run them before advancing"
+        )
     return (not reasons), reasons
 
 
-def advance(event: Event, *, force_reason: str | None = None) -> str:
-    """Move to the next stage. Raises unless the gate is satisfied."""
+def advance(
+    event: Event, *, force_reason: str | None = None, force_approver: str | None = None
+) -> str:
+    """Move to the next stage. Raises unless the gate is satisfied.
+
+    An override is a human act that must leave a trace. An empty or whitespace
+    reason is not a reason: it previously slipped past the gate check *and* the
+    recording, so an event could reach `complete` with nothing written down.
+    """
+    reason = (force_reason or "").strip()
+    approver = (force_approver or "").strip()
+    forcing = bool(reason)
+    if force_reason is not None and not reason:
+        raise StateError(
+            "--force-reason must give an actual reason. An override is a human decision "
+            "and is recorded as one.",
+            artifact=str(event.directory),
+        )
+    if forcing and not approver:
+        raise StateError(
+            "an override must name the official who authorized it: pass --force-approver.",
+            artifact=str(event.directory),
+        )
+
     allowed, reasons = can_advance(event)
-    if not allowed and force_reason is None:
+    if not allowed and not forcing:
         raise StateError(
             f"cannot advance from {event.stage!r}: " + "; ".join(reasons),
             artifact=str(event.directory),
         )
-    targets = legal_transitions(event.stage)
+    source = event.stage
+    targets = legal_transitions(source)
     if not targets:
-        raise StateError(f"{event.stage!r} is terminal")
+        raise StateError(f"{source!r} is terminal")
     event.status["current_stage"] = targets[0]
     event.status["last_updated"] = versions.now()
-    if force_reason:
-        event.status.setdefault("overrides", []).append(
-            {"from": event.stage, "to": targets[0], "reason": force_reason,
-             "recorded_at": event.status["last_updated"]}
-        )
+    if forcing:
+        event.status.setdefault("overrides", []).append({
+            "from": source, "to": targets[0], "reason": reason,
+            "authorized_by": approver, "bypassed": reasons,
+            "recorded_at": event.status["last_updated"],
+        })
     return targets[0]
 
 

@@ -19,6 +19,11 @@ FILES = ("VERSION",)
 
 
 def main() -> int:
+    # setuptools reuses build/lib when mtimes match, which shipped a wheel built
+    # from a stale committed copy rather than from source. Start clean.
+    for stale in (ROOT / "build", ROOT / "ai_tournament_judge.egg-info"):
+        if stale.exists():
+            shutil.rmtree(stale)
     if TARGET.exists():
         shutil.rmtree(TARGET)
     TARGET.mkdir(parents=True)

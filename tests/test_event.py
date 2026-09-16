@@ -198,12 +198,30 @@ class TransitionTests(unittest.TestCase):
         self.assertFalse(event_module.can_advance(self.event)[0])
 
     def test_human_override_is_recorded_not_silent(self):
-        target = event_module.advance(self.event, force_reason="official waived the gate")
-        self.assertEqual(target, "intake")
-        self.assertEqual(len(self.event.status["overrides"]), 1)
-        self.assertEqual(
-            self.event.status["overrides"][0]["reason"], "official waived the gate"
+        target = event_module.advance(
+            self.event, force_reason="official waived the gate",
+            force_approver="head judging official",
         )
+        self.assertEqual(target, "intake")
+        record = self.event.status["overrides"][0]
+        self.assertEqual(len(self.event.status["overrides"]), 1)
+        self.assertEqual(record["reason"], "official waived the gate")
+        self.assertEqual(record["authorized_by"], "head judging official")
+        self.assertEqual(record["from"], "configuration")
+        self.assertEqual(record["to"], "intake")
+        self.assertTrue(record["bypassed"], "the override did not record what it bypassed")
+
+    def test_an_empty_force_reason_is_not_an_override(self):
+        """An empty reason slipped past both the gate and the recording."""
+        for reason in ("", "   ", "\n"):
+            with self.assertRaises(StateError):
+                event_module.advance(self.event, force_reason=reason, force_approver="x")
+        self.assertEqual(self.event.stage, "configuration")
+        self.assertEqual(self.event.status.get("overrides", []), [])
+
+    def test_an_override_must_name_its_approver(self):
+        with self.assertRaises(StateError):
+            event_module.advance(self.event, force_reason="waived")
 
     def test_going_backwards_marks_dependent_units_stale(self):
         event_module.set_stage(self.event, "bracket")

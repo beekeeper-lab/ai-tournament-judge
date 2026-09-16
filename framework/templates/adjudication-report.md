@@ -6,6 +6,7 @@ team_id: TEAM-ID
 match_id: null
 criterion: null
 trigger: severe-disagreement
+advances_team: null
 commit: IMMUTABLE-COMMIT
 evidence_package_id: EVIDENCE-ID
 rubric: submission-evaluation@1.0.0
@@ -70,6 +71,10 @@ an `NE` cleared by located evidence, or no change.
 `low` / `medium` / `high`, with the reason.
 
 ## Human decision
+
+For a matchup adjudication, record the advancing team in the `advances_team`
+front-matter field. `atj bracket advance` reads it from there and refuses to act
+without it; prose is not a decision a tool can safely parse.
 
 Required for disqualification, rules exceptions, unresolved final ties, security
 escalation, and publication. Record the deciding role, the decision, and the date.

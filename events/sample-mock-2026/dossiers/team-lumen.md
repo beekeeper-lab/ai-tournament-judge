@@ -44,8 +44,8 @@ keeping as the project grows.
 
 ## Tournament journey
 
-- **Semifinal** against Verdant: you advanced. The deciding difference was explicit state machine for handover status with exhaustive transition tests.
-- **Final** against Quill: you advanced. The deciding difference was explicit state machine for handover status with exhaustive transition tests.
+- **Semifinal** against Verdant: you advanced. The comparison turned on **engineering**, where your evidence was the stronger of the two.
+- **Final** against Quill: you advanced. The comparison turned on **reliability**, where your evidence was the stronger of the two.
 
 ## Blocking issues
 

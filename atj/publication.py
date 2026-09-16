@@ -85,7 +85,16 @@ _PRIVATE_ID_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("full commit hash", re.compile(r"\b[0-9a-f]{40}\b")),
 )
 
-_SCORE_PATTERN = re.compile(r"\b\d{1,3}(?:\.\d)?\s*/\s*100\b")
+# Scores get published in prose, not only as "73.3/100". Every form below was
+# found publishing an official total past a gate that reported CLEAR.
+_SCORE_PATTERN = re.compile(
+    r"\b\d{1,3}(?:\.\d+)?\s*(?:/|out of|of)\s*100\b"
+    r"|\b\d{1,3}\.\d+\s*(?:points|pts)\b"
+    r"|\bscored?\s+\d{1,3}\.\d+\b"
+    r"|\bfinished\s+(?:on|with)\s+\d{1,3}\.\d+\b"
+    r"|\btotal\s+(?:of\s+)?\d{1,3}\.\d+\b",
+    re.IGNORECASE,
+)
 
 # Personal data has no place in any artifact this framework produces. Teams are
 # identified by team id; people are not identified at all.
@@ -176,7 +185,8 @@ def scan_private_identifiers(
 
 
 def scan_foreign_teams(
-    text: str, *, own_team: str, all_teams: Iterable[str], artifact: str = ""
+    text: str, *, own_team: str, all_teams: Iterable[str], artifact: str = "",
+    display_names: dict[str, str] | None = None,
 ) -> list[Finding]:
     """A team-facing dossier may name an opponent; it may not carry their record.
 
@@ -186,8 +196,17 @@ def scan_foreign_teams(
     reaching this team, and blocks.
     """
     findings = []
+    display_names = display_names or {}
     for team in sorted(set(all_teams) - {own_team}):
-        pattern = re.compile(rf"\b{re.escape(team)}\b")
+        # Teams are named in prose by their display name far more often than by
+        # their id, and matching only the id let another team's record through.
+        aliases = [team]
+        display = display_names.get(team)
+        if display and display.lower() != own_team.lower():
+            aliases.append(display)
+        pattern = re.compile(
+            "|".join(rf"\b{re.escape(alias)}\b" for alias in aliases), re.IGNORECASE
+        )
         if not pattern.search(text):
             continue
         severity, detail = "advisory", (
@@ -230,20 +249,41 @@ def _banned_fields(metadata: dict[str, Any], banned: Iterable[str]) -> list[tupl
     return [(key, where) for key, where in _walk_keys(metadata) if key in forbidden]
 
 
-def scan_unapproved_scores(text: str, *, artifact: str = "") -> list[Finding]:
-    """Numeric totals in content an event has not authorized scores for."""
-    match = _SCORE_PATTERN.search(text)
-    if not match:
-        return []
-    return [Finding(
-        "blocking", "unapproved-score",
-        f"numeric score {match.group(0)!r} present while the event has public_scores "
-        f"disabled", artifact,
-    )]
+def scan_unapproved_scores(
+    text: str, *, artifact: str = "", known_totals: Iterable[float] = (),
+    pattern_scan: bool = True,
+) -> list[Finding]:
+    """Numeric totals in content an event has not authorized scores for.
+
+    Pattern matching catches the shapes a score is usually written in.
+    ``known_totals`` closes the gap the patterns cannot: a specific official total
+    appearing where it is not authorized blocks regardless of phrasing.
+
+    ``pattern_scan=False`` is for the team tier, where a team seeing *its own*
+    score is the point of the artifact; only another team's total is a leak.
+    """
+    findings: list[Finding] = []
+    match = _SCORE_PATTERN.search(text) if pattern_scan else None
+    if match:
+        findings.append(Finding(
+            "blocking", "unapproved-score",
+            f"numeric score {match.group(0)!r} present while the event has public_scores "
+            f"disabled", artifact,
+        ))
+    for total in known_totals:
+        if re.search(rf"(?<![\d.]){re.escape(f'{total:g}')}(?![\d])", text):
+            findings.append(Finding(
+                "blocking", "unapproved-score",
+                f"the official total {total:g} appears in content the event has not "
+                f"authorized scores for", artifact,
+            ))
+            break
+    return findings
 
 
 def check_public(
-    metadata: dict[str, Any], body: str, *, artifact: str = "", public_scores: bool = False
+    metadata: dict[str, Any], body: str, *, artifact: str = "", public_scores: bool = False,
+    known_totals: Iterable[float] = (),
 ) -> list[Finding]:
     """Everything that must hold before an artifact may be published."""
     findings: list[Finding] = []
@@ -294,7 +334,9 @@ def check_public(
                 "artifact declares scores_published: true while the event has public_scores "
                 "disabled; an artifact cannot authorize its own disclosure", artifact,
             ))
-        findings.extend(scan_unapproved_scores(body, artifact=artifact))
+        findings.extend(
+            scan_unapproved_scores(body, artifact=artifact, known_totals=known_totals)
+        )
     findings.extend(scan_pii(body, artifact=artifact))
     return findings
 
@@ -302,6 +344,8 @@ def check_public(
 def check_team_facing(
     metadata: dict[str, Any], body: str, *, artifact: str = "",
     own_team: str | None = None, all_teams: Iterable[str] = (),
+    display_names: dict[str, str] | None = None,
+    other_totals: Iterable[float] = (),
 ) -> list[Finding]:
     findings: list[Finding] = []
     if metadata.get("visibility") != TEAM:
@@ -323,10 +367,16 @@ def check_team_facing(
         own_commit=str(metadata.get("commit") or "") or None,
     ))
     findings.extend(scan_pii(surface, artifact=artifact))
+    # A team may see its own total. Another team's total in its dossier is that
+    # team's private record reaching the wrong audience.
+    findings.extend(scan_unapproved_scores(
+        surface, artifact=artifact, known_totals=other_totals, pattern_scan=False
+    ))
     if own_team:
-        findings.extend(
-            scan_foreign_teams(surface, own_team=own_team, all_teams=all_teams, artifact=artifact)
-        )
+        findings.extend(scan_foreign_teams(
+            surface, own_team=own_team, all_teams=all_teams, artifact=artifact,
+            display_names=display_names,
+        ))
     return findings
 
 
@@ -351,6 +401,28 @@ def expected_visibility(path: Path, event_dir: Path) -> str | None:
     return DIRECTORY_VISIBILITY.get(relative.parts[0] if relative.parts else "")
 
 
+def official_totals(event_dir: Path) -> dict[str, float]:
+    """Every finalized official total in this event, by team.
+
+    Used to block a specific number appearing where it is not authorized, which
+    pattern matching alone cannot do reliably.
+    """
+    from . import frontmatter as fm
+
+    totals: dict[str, float] = {}
+    directory = event_dir / "summaries"
+    if not directory.is_dir():
+        return totals
+    for path in sorted(directory.glob("*.md")):
+        try:
+            metadata, _ = fm.read(path)
+        except Exception:  # noqa: BLE001 - reported by report validation
+            continue
+        if metadata.get("finalized") and metadata.get("display_total") is not None:
+            totals[str(metadata.get("team_id") or path.stem)] = float(metadata["display_total"])
+    return totals
+
+
 def check_artifact(
     path: Path,
     event_dir: Path,
@@ -359,6 +431,8 @@ def check_artifact(
     *,
     public_scores: bool = False,
     all_teams: Iterable[str] = (),
+    display_names: dict[str, str] | None = None,
+    totals: dict[str, float] | None = None,
 ) -> list[Finding]:
     """Route an artifact to the checks its location requires."""
     artifact = str(path)
@@ -373,12 +447,18 @@ def check_artifact(
             f"{event_dir}; pass the correct --event-dir so the gate knows which rules apply",
             artifact,
         )]
+    totals = totals if totals is not None else official_totals(event_dir)
     if visibility == PUBLIC:
-        return check_public(metadata, body, artifact=artifact, public_scores=public_scores)
+        return check_public(
+            metadata, body, artifact=artifact, public_scores=public_scores,
+            known_totals=totals.values(),
+        )
     if visibility == TEAM:
+        own = str(metadata.get("team_id") or path.stem)
         return check_team_facing(
-            metadata, body, artifact=artifact,
-            own_team=str(metadata.get("team_id") or ""), all_teams=all_teams,
+            metadata, body, artifact=artifact, own_team=own, all_teams=all_teams,
+            display_names=display_names,
+            other_totals=[value for team, value in totals.items() if team != own],
         )
     return check_private(metadata, body, artifact=artifact)
 

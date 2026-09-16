@@ -95,6 +95,8 @@ def validate_artifact(
     public_scores: bool = False,
     all_teams: Iterable[str] = (),
     require_sections: bool = True,
+    display_names: dict[str, str] | None = None,
+    totals: dict[str, float] | None = None,
 ) -> ArtifactReport:
     findings: list[Finding] = []
     kind = artifact_kind(path, event_dir)
@@ -152,6 +154,7 @@ def validate_artifact(
         publication.check_artifact(
             path, event_dir, metadata, body,
             public_scores=public_scores, all_teams=all_teams,
+            display_names=display_names, totals=totals,
         )
     )
     return ArtifactReport(path, kind, findings)
@@ -311,6 +314,11 @@ def validate_event_reports(
     expected_judges: Iterable[str] | None = None,
 ) -> list[ArtifactReport]:
     reports: list[ArtifactReport] = []
+    totals = publication.official_totals(event_dir)
+    display_names = {
+        str(team.get("id")): str(team.get("display_name") or team.get("id"))
+        for team in _roster_display_names(event_dir)
+    }
     for kind in sorted(ARTIFACT_KINDS):
         directory = event_dir / kind
         if not directory.is_dir():
@@ -320,6 +328,7 @@ def validate_event_reports(
                 validate_artifact(
                     path, event_dir, root=root,
                     public_scores=public_scores, all_teams=all_teams,
+                    display_names=display_names, totals=totals,
                 )
             )
 
@@ -328,14 +337,16 @@ def validate_event_reports(
     public_dir = event_dir / "public"
     if public_dir.is_dir():
         for path in sorted(public_dir.rglob("*.html")):
-            reports.append(
-                _validate_rendered(path, event_dir, public_scores=public_scores)
-            )
+            reports.append(_validate_rendered(
+                path, event_dir, public_scores=public_scores, totals=totals.values()
+            ))
 
     dossier_dir = event_dir / "dossiers"
     if dossier_dir.is_dir():
         for path in sorted(dossier_dir.rglob("*.html")):
-            reports.append(_validate_rendered_team(path, all_teams=all_teams))
+            reports.append(_validate_rendered_team(
+                path, all_teams=all_teams, display_names=display_names, totals=totals
+            ))
 
     consolidation = check_consolidation(
         event_dir, root=root, expected_judges=expected_judges
@@ -349,7 +360,23 @@ def validate_event_reports(
     return reports
 
 
-def _validate_rendered_team(path: Path, *, all_teams: Iterable[str]) -> ArtifactReport:
+def _roster_display_names(event_dir: Path) -> list[dict]:
+    from . import event as event_module
+
+    path = event_dir / "teams.md"
+    if not path.is_file():
+        return []
+    try:
+        metadata, body = frontmatter.read(path)
+    except AtjError:
+        return []
+    return metadata.get("teams") or event_module.parse_roster_table(body)
+
+
+def _validate_rendered_team(
+    path: Path, *, all_teams: Iterable[str], display_names: dict[str, str] | None = None,
+    totals: dict[str, float] | None = None,
+) -> ArtifactReport:
     """Gate rendered team-facing HTML. A team may see its own score, not another's."""
     try:
         text = frontmatter.read_text(path)
@@ -362,13 +389,19 @@ def _validate_rendered_team(path: Path, *, all_teams: Iterable[str]) -> Artifact
     )
     findings += publication.scan_pii(text, artifact=str(path))
     findings += publication.scan_foreign_teams(
-        text, own_team=path.stem, all_teams=all_teams, artifact=str(path)
+        text, own_team=path.stem, all_teams=all_teams, artifact=str(path),
+        display_names=display_names,
+    )
+    findings += publication.scan_unapproved_scores(
+        text, artifact=str(path), pattern_scan=False,
+        known_totals=[v for team, v in (totals or {}).items() if team != path.stem],
     )
     return ArtifactReport(path, "dossiers", findings)
 
 
 def _validate_rendered(
-    path: Path, event_dir: Path, *, public_scores: bool
+    path: Path, event_dir: Path, *, public_scores: bool,
+    totals: Iterable[float] = (),
 ) -> ArtifactReport:
     """Gate rendered HTML sitting in a public location."""
     try:
@@ -378,8 +411,11 @@ def _validate_rendered(
     findings = publication.scan_secrets(text, artifact=str(path))
     findings += publication.scan_deliberation(text, artifact=str(path))
     findings += publication.scan_private_identifiers(text, artifact=str(path))
+    findings += publication.scan_pii(text, artifact=str(path))
     if not public_scores:
-        findings += publication.scan_unapproved_scores(text, artifact=str(path))
+        findings += publication.scan_unapproved_scores(
+            text, artifact=str(path), known_totals=totals or ()
+        )
     return ArtifactReport(path, "public", findings)
 
 

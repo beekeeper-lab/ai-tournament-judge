@@ -6,6 +6,7 @@ team_id: null
 match_id: mu:sample-mock-2026:semifinal:01
 criterion: functional
 trigger: close-call
+advances_team: team-quill
 question: Does the evidence establish a winner between Quill and Harbor despite a
   margin inside the close-call band?
 resolution: resolved

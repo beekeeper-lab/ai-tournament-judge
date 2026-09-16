@@ -114,7 +114,7 @@ def _blocks(text: str) -> str:
     return "\n".join(out)
 
 
-def load_public_artifacts(event_dir: Path) -> dict[str, Any]:
+def load_public_artifacts(event_dir: Path, *, public_scores: bool = False) -> dict[str, Any]:
     """Read and re-verify every approved public artifact. Raises on any problem."""
     directory = event_dir / PUBLIC_DIR
     if not directory.is_dir():
@@ -124,9 +124,13 @@ def load_public_artifacts(event_dir: Path) -> dict[str, Any]:
     matches: list[dict[str, Any]] = []
     for path in sorted(directory.glob("*.md")):
         metadata, body = frontmatter.read(path)
+        # The event official's setting decides this, not the artifact's own
+        # `scores_published` claim. The renderer used to honour the claim while
+        # `validate reports` refused it, so the two disagreed about what could
+        # be published.
         findings = publication.check_public(
-            metadata, body, artifact=str(path),
-            public_scores=bool(metadata.get("scores_published")),
+            metadata, body, artifact=str(path), public_scores=public_scores,
+            known_totals=publication.official_totals(event_dir).values(),
         )
         blocking = [finding for finding in findings if finding.severity == "blocking"]
         if blocking:
@@ -247,8 +251,8 @@ def _results_block(sections: dict[str, str]) -> str:
     return f"<h3>Results</h3>{rendered}" if rendered else ""
 
 
-def render_ceremony(event_dir: Path) -> str:
-    artifacts = load_public_artifacts(event_dir)
+def render_ceremony(event_dir: Path, *, public_scores: bool = False) -> str:
+    artifacts = load_public_artifacts(event_dir, public_scores=public_scores)
     summary = artifacts["summary"]
     sections = summary["sections"]
     event_id = html.escape(str(summary["metadata"].get("event_id", "event")))
