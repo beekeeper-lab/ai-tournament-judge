@@ -237,29 +237,24 @@ the documented validation command runs clean.
 
 ## Stage 9 — Final independent audit
 
-- [ ] Functional completeness
-- [ ] Internal consistency
-- [ ] Security
-- [ ] Prompt-injection resistance
-- [ ] Judge independence
-- [ ] Scoring integrity
-- [ ] Bracket fairness
-- [ ] Publication privacy
-- [ ] Failure and recovery
-- [ ] Test sufficiency
-- [ ] Documentation accuracy
-- [ ] Claude Code compatibility
-- [ ] Release reproducibility
-- [ ] `docs/final-audit.md` states PASS or PASS WITH ADVISORIES
-- [ ] All blocking and major findings resolved
+- [x] Functional completeness
+- [x] Internal consistency
+- [x] Security
+- [x] Prompt-injection resistance
+- [x] Judge independence
+- [x] Scoring integrity
+- [x] Bracket fairness
+- [x] Publication privacy
+- [x] Failure and recovery
+- [x] Test sufficiency
+- [x] Documentation accuracy
+- [x] Claude Code compatibility
+- [x] Release reproducibility
+- [x] `docs/final-audit.md` states PASS WITH ADVISORIES
+- [x] All blocking and major findings resolved
 
----
-
-## Appendix A — original v0.1.0-alpha stage numbering
-
-The alpha plan had eight stages: repository foundation, rubrics and policies,
-agents and personas, templates and schemas, deterministic tooling, skills and
-commands, event simulation, production readiness. All 30 items were unchecked
-(finding I8). They map to the stages above as:
-alpha 1→0, alpha 2→3, alpha 3→4, alpha 4→1/3, alpha 5→2, alpha 6→4,
-alpha 7→6, alpha 8→8/9.
+**Stage 9 result: PASS WITH ADVISORIES.** Five independent audit rounds were run;
+four returned FAIL and every finding was repaired with a named regression test.
+The advisories that remain are recorded in `docs/final-audit.md` and are stated,
+not closed. The release is fit for a supervised mock event and is not yet fit to
+decide a real award.
