@@ -188,10 +188,27 @@ class PersonaVersionTests(unittest.TestCase):
     def test_registry_matches_the_agent_files(self):
         self.assertEqual(versions.check_personas(ROOT), [])
 
-    def test_every_agent_file_is_registered(self):
+    def test_every_agent_and_skill_is_registered(self):
+        """A component that produces an official artifact must carry a version."""
         registry = set(versions.load_personas(ROOT))
         on_disk = {p.stem for p in (ROOT / versions.AGENT_DIR).glob("*.md")}
+        on_disk |= {p.parent.name for p in (ROOT / versions.SKILL_DIR).glob("*/SKILL.md")}
         self.assertEqual(registry, on_disk)
+
+    def test_an_edited_component_fails_until_its_version_is_bumped(self):
+        import shutil
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as directory:
+            copy = Path(directory)
+            for item in ("framework", "schemas", ".claude"):
+                shutil.copytree(ROOT / item, copy / item)
+            agent = copy / versions.AGENT_DIR / "judge-backend.md"
+            agent.write_text(agent.read_text(encoding="utf-8") + "\nAn edit.\n", encoding="utf-8")
+            problems = versions.check_personas(copy)
+            self.assertTrue(any("without a version bump" in p for p in problems), problems)
+            with self.assertRaises(VersionError):
+                versions.require_personas(copy)
 
     def test_persona_mismatch_is_fatal(self):
         with self.assertRaises(VersionError):

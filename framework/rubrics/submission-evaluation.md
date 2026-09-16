@@ -37,7 +37,7 @@ All four judges use these criteria and weights.
 
 `criterion_points = score / 5 * criterion_weight`
 
-The overall score is the sum of criterion points and ranges from 0 to 100. Use `scripts/calculate_scores.py`; reports may display at most one decimal place.
+The overall score is the sum of criterion points and ranges from 0 to 100. Use `atj score`; reports may display at most one decimal place. Never compute an official total by hand.
 
 ## Required criterion response
 

@@ -1,0 +1,491 @@
+{
+  "bracket_size": 32,
+  "bye_count": 12,
+  "bye_policy": "performance-qualified",
+  "bye_teams": [
+    "team-01",
+    "team-02",
+    "team-03",
+    "team-04",
+    "team-05",
+    "team-06",
+    "team-07",
+    "team-08",
+    "team-09",
+    "team-10",
+    "team-11",
+    "team-12"
+  ],
+  "constraint_audit": [
+    {
+      "constraint": "Every eligible team appears exactly once",
+      "detail": "20 of 20 teams placed",
+      "exceptions": [],
+      "kind": "hard",
+      "status": "satisfied"
+    },
+    {
+      "constraint": "Bye count and match count match the bracket size",
+      "detail": "12 byes, 4 first-round matches, 16 first-round slots",
+      "exceptions": [],
+      "kind": "hard",
+      "status": "satisfied"
+    },
+    {
+      "constraint": "Bye policy 'performance-qualified' applied consistently",
+      "detail": "highest consolidated scores received byes: team-01=92.5, team-02=90.4, team-03=88.3, team-04=86.2, team-05=84.1, team-06=82, team-07=79.9, team-08=77.8, team-09=75.7, team-10=73.6, team-11=71.5, team-12=69.4",
+      "exceptions": [],
+      "kind": "hard",
+      "status": "satisfied"
+    },
+    {
+      "constraint": "Previous champion and runner-up in opposite halves",
+      "detail": "team-01 in slot 15, team-02 in slot 7; earliest meeting is round 5 of 5",
+      "exceptions": [],
+      "kind": "hard",
+      "status": "satisfied"
+    },
+    {
+      "constraint": "No avoidable same-affiliation or previous-finalist first-round match",
+      "detail": "a conflict-free play-in pairing was available and used",
+      "exceptions": [],
+      "kind": "hard",
+      "status": "satisfied"
+    },
+    {
+      "constraint": "Affiliation separation maximized",
+      "detail": "central-lab (4 teams): earliest meeting round 4; east-college (4 teams): earliest meeting round 4; north-academy (4 teams): earliest meeting round 4; south-institute (4 teams): earliest meeting round 4; west-polytechnic (4 teams): earliest meeting round 4",
+      "exceptions": [],
+      "kind": "soft",
+      "status": "maximized"
+    }
+  ],
+  "event_id": "bracket-fixture-2026",
+  "feasible": true,
+  "format": "single-elimination",
+  "framework_commit": "uncommitted",
+  "input_digest": "464de0ad34aa35b9",
+  "policy": "bracket-assignment@1.0.0",
+  "roster_version": 1,
+  "rounds": [
+    {
+      "matches": [
+        {
+          "bye": true,
+          "entrants": [
+            "team-03",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:01",
+          "slot": 1,
+          "source_matches": [],
+          "winner": "team-03"
+        },
+        {
+          "bye": true,
+          "entrants": [
+            "team-06",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:02",
+          "slot": 2,
+          "source_matches": [],
+          "winner": "team-06"
+        },
+        {
+          "bye": true,
+          "entrants": [
+            "team-04",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:03",
+          "slot": 3,
+          "source_matches": [],
+          "winner": "team-04"
+        },
+        {
+          "bye": false,
+          "entrants": [
+            "team-15",
+            "team-17"
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:04",
+          "slot": 4,
+          "source_matches": [],
+          "winner": null
+        },
+        {
+          "bye": true,
+          "entrants": [
+            "team-05",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:05",
+          "slot": 5,
+          "source_matches": [],
+          "winner": "team-05"
+        },
+        {
+          "bye": false,
+          "entrants": [
+            "team-13",
+            "team-19"
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:06",
+          "slot": 6,
+          "source_matches": [],
+          "winner": null
+        },
+        {
+          "bye": true,
+          "entrants": [
+            "team-11",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:07",
+          "slot": 7,
+          "source_matches": [],
+          "winner": "team-11"
+        },
+        {
+          "bye": true,
+          "entrants": [
+            "team-02",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:08",
+          "slot": 8,
+          "source_matches": [],
+          "winner": "team-02"
+        },
+        {
+          "bye": true,
+          "entrants": [
+            "team-07",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:09",
+          "slot": 9,
+          "source_matches": [],
+          "winner": "team-07"
+        },
+        {
+          "bye": true,
+          "entrants": [
+            "team-10",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:10",
+          "slot": 10,
+          "source_matches": [],
+          "winner": "team-10"
+        },
+        {
+          "bye": true,
+          "entrants": [
+            "team-08",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:11",
+          "slot": 11,
+          "source_matches": [],
+          "winner": "team-08"
+        },
+        {
+          "bye": false,
+          "entrants": [
+            "team-14",
+            "team-16"
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:12",
+          "slot": 12,
+          "source_matches": [],
+          "winner": null
+        },
+        {
+          "bye": false,
+          "entrants": [
+            "team-20",
+            "team-18"
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:13",
+          "slot": 13,
+          "source_matches": [],
+          "winner": null
+        },
+        {
+          "bye": true,
+          "entrants": [
+            "team-09",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:14",
+          "slot": 14,
+          "source_matches": [],
+          "winner": "team-09"
+        },
+        {
+          "bye": true,
+          "entrants": [
+            "team-12",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:15",
+          "slot": 15,
+          "source_matches": [],
+          "winner": "team-12"
+        },
+        {
+          "bye": true,
+          "entrants": [
+            "team-01",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:preliminary:16",
+          "slot": 16,
+          "source_matches": [],
+          "winner": "team-01"
+        }
+      ],
+      "round_id": "preliminary",
+      "round_index": 1
+    },
+    {
+      "matches": [
+        {
+          "bye": false,
+          "entrants": [
+            "team-03",
+            "team-06"
+          ],
+          "match_id": "mu:bracket-fixture-2026:round-of-16:01",
+          "slot": 1,
+          "source_matches": [
+            "mu:bracket-fixture-2026:preliminary:01",
+            "mu:bracket-fixture-2026:preliminary:02"
+          ],
+          "winner": null
+        },
+        {
+          "bye": false,
+          "entrants": [
+            "team-04",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:round-of-16:02",
+          "slot": 2,
+          "source_matches": [
+            "mu:bracket-fixture-2026:preliminary:03",
+            "mu:bracket-fixture-2026:preliminary:04"
+          ],
+          "winner": null
+        },
+        {
+          "bye": false,
+          "entrants": [
+            "team-05",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:round-of-16:03",
+          "slot": 3,
+          "source_matches": [
+            "mu:bracket-fixture-2026:preliminary:05",
+            "mu:bracket-fixture-2026:preliminary:06"
+          ],
+          "winner": null
+        },
+        {
+          "bye": false,
+          "entrants": [
+            "team-11",
+            "team-02"
+          ],
+          "match_id": "mu:bracket-fixture-2026:round-of-16:04",
+          "slot": 4,
+          "source_matches": [
+            "mu:bracket-fixture-2026:preliminary:07",
+            "mu:bracket-fixture-2026:preliminary:08"
+          ],
+          "winner": null
+        },
+        {
+          "bye": false,
+          "entrants": [
+            "team-07",
+            "team-10"
+          ],
+          "match_id": "mu:bracket-fixture-2026:round-of-16:05",
+          "slot": 5,
+          "source_matches": [
+            "mu:bracket-fixture-2026:preliminary:09",
+            "mu:bracket-fixture-2026:preliminary:10"
+          ],
+          "winner": null
+        },
+        {
+          "bye": false,
+          "entrants": [
+            "team-08",
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:round-of-16:06",
+          "slot": 6,
+          "source_matches": [
+            "mu:bracket-fixture-2026:preliminary:11",
+            "mu:bracket-fixture-2026:preliminary:12"
+          ],
+          "winner": null
+        },
+        {
+          "bye": false,
+          "entrants": [
+            null,
+            "team-09"
+          ],
+          "match_id": "mu:bracket-fixture-2026:round-of-16:07",
+          "slot": 7,
+          "source_matches": [
+            "mu:bracket-fixture-2026:preliminary:13",
+            "mu:bracket-fixture-2026:preliminary:14"
+          ],
+          "winner": null
+        },
+        {
+          "bye": false,
+          "entrants": [
+            "team-12",
+            "team-01"
+          ],
+          "match_id": "mu:bracket-fixture-2026:round-of-16:08",
+          "slot": 8,
+          "source_matches": [
+            "mu:bracket-fixture-2026:preliminary:15",
+            "mu:bracket-fixture-2026:preliminary:16"
+          ],
+          "winner": null
+        }
+      ],
+      "round_id": "round-of-16",
+      "round_index": 2
+    },
+    {
+      "matches": [
+        {
+          "bye": false,
+          "entrants": [
+            null,
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:quarterfinal:01",
+          "slot": 1,
+          "source_matches": [
+            "mu:bracket-fixture-2026:round-of-16:01",
+            "mu:bracket-fixture-2026:round-of-16:02"
+          ],
+          "winner": null
+        },
+        {
+          "bye": false,
+          "entrants": [
+            null,
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:quarterfinal:02",
+          "slot": 2,
+          "source_matches": [
+            "mu:bracket-fixture-2026:round-of-16:03",
+            "mu:bracket-fixture-2026:round-of-16:04"
+          ],
+          "winner": null
+        },
+        {
+          "bye": false,
+          "entrants": [
+            null,
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:quarterfinal:03",
+          "slot": 3,
+          "source_matches": [
+            "mu:bracket-fixture-2026:round-of-16:05",
+            "mu:bracket-fixture-2026:round-of-16:06"
+          ],
+          "winner": null
+        },
+        {
+          "bye": false,
+          "entrants": [
+            null,
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:quarterfinal:04",
+          "slot": 4,
+          "source_matches": [
+            "mu:bracket-fixture-2026:round-of-16:07",
+            "mu:bracket-fixture-2026:round-of-16:08"
+          ],
+          "winner": null
+        }
+      ],
+      "round_id": "quarterfinal",
+      "round_index": 3
+    },
+    {
+      "matches": [
+        {
+          "bye": false,
+          "entrants": [
+            null,
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:semifinal:01",
+          "slot": 1,
+          "source_matches": [
+            "mu:bracket-fixture-2026:quarterfinal:01",
+            "mu:bracket-fixture-2026:quarterfinal:02"
+          ],
+          "winner": null
+        },
+        {
+          "bye": false,
+          "entrants": [
+            null,
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:semifinal:02",
+          "slot": 2,
+          "source_matches": [
+            "mu:bracket-fixture-2026:quarterfinal:03",
+            "mu:bracket-fixture-2026:quarterfinal:04"
+          ],
+          "winner": null
+        }
+      ],
+      "round_id": "semifinal",
+      "round_index": 4
+    },
+    {
+      "matches": [
+        {
+          "bye": false,
+          "entrants": [
+            null,
+            null
+          ],
+          "match_id": "mu:bracket-fixture-2026:final:01",
+          "slot": 1,
+          "source_matches": [
+            "mu:bracket-fixture-2026:semifinal:01",
+            "mu:bracket-fixture-2026:semifinal:02"
+          ],
+          "winner": null
+        }
+      ],
+      "round_id": "final",
+      "round_index": 5
+    }
+  ],
+  "seed": "twenty-team-fixture-2026",
+  "team_count": 20,
+  "unsatisfied_hard_constraints": []
+}

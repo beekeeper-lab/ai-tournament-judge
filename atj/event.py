@@ -97,7 +97,31 @@ def load(event_dir: Path, *, root: Path | None = None) -> Event:
     roster, roster_body = frontmatter.read(event_dir / "teams.md")
     if "teams" not in roster:
         roster = dict(roster, teams=parse_roster_table(roster_body))
+    roster = dict(roster, teams=_with_consolidated_scores(event_dir, roster.get("teams") or []))
     return Event(directory=event_dir, root=base, config=config, status=status, roster=roster)
+
+
+def _with_consolidated_scores(
+    event_dir: Path, teams: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Attach each team's finalized consolidated total, read from its summary.
+
+    The score is not copied onto the roster. `summaries/<team>.md` is where
+    consolidation wrote it, and that is where the bracket reads it from, so there
+    is only ever one editable copy of a team's official total.
+    """
+    enriched: list[dict[str, Any]] = []
+    for team in teams:
+        summary = event_dir / "summaries" / f"{team['id']}.md"
+        if summary.is_file():
+            try:
+                metadata, _ = frontmatter.read(summary)
+            except Exception:  # noqa: BLE001 - a malformed summary is reported elsewhere
+                metadata = {}
+            if metadata.get("finalized") and metadata.get("display_total") is not None:
+                team = dict(team, score=float(metadata["display_total"]))
+        enriched.append(team)
+    return enriched
 
 
 def parse_roster_table(body: str) -> list[dict[str, Any]]:

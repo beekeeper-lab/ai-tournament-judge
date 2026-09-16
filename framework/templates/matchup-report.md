@@ -17,6 +17,14 @@ model_used: MODEL-USED
 started_at: YYYY-MM-DDTHH:MM:SSZ
 completed_at: YYYY-MM-DDTHH:MM:SSZ
 close_call_band: 5
+passes:
+  a_first:
+    presented_first: TEAM-A
+    comparisons: {}
+  b_first:
+    presented_first: TEAM-B
+    comparisons: {}
+combined_margin: null
 order_disagreement: false
 outcome: adjudication-required
 winner: null

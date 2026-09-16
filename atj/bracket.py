@@ -701,26 +701,67 @@ def roster_digest(entrants: Sequence[Entrant], *, seed: str, bye_policy: str) ->
 
 
 def verify(result: dict[str, Any]) -> list[str]:
-    """Independent re-check of a built bracket. Used by the auditor and CI."""
+    """Independent re-check of a built bracket. Used by the auditor and CI.
+
+    The input may be a hand-edited or truncated file, so every access is
+    defensive: a validator that raises on malformed input has failed at its job.
+    """
     problems: list[str] = []
-    first = result["rounds"][0]["matches"]
-    placed = [entrant for match in first for entrant in match["entrants"] if entrant]
+    if not isinstance(result, dict):
+        return ["bracket record is not an object"]
+    for field in ("rounds", "constraint_audit", "team_count", "bracket_size",
+                  "bye_count", "feasible"):
+        if field not in result:
+            problems.append(f"bracket record is missing {field!r}")
+    rounds = result.get("rounds")
+    if not isinstance(rounds, list) or not rounds:
+        problems.append("bracket record has no rounds")
+        return problems
+    first = (rounds[0] or {}).get("matches")
+    if not isinstance(first, list):
+        problems.append("the first round has no matches array")
+        return problems
+    if problems:
+        return problems
+    placed = [
+        entrant for match in first
+        for entrant in (match.get("entrants") or []) if entrant
+    ]
     if len(placed) != result["team_count"]:
         problems.append(f"{len(placed)} teams placed, expected {result['team_count']}")
     if len(set(placed)) != len(placed):
         problems.append("a team appears in more than one slot")
-    if len(first) != result["bracket_size"] // 2:
+    if len(first) != int(result["bracket_size"]) // 2:
         problems.append(
-            f"{len(first)} first-round slots, expected {result['bracket_size'] // 2}"
+            f"{len(first)} first-round slots, expected {int(result['bracket_size']) // 2}"
         )
-    byes = [match for match in first if match["bye"]]
+    byes = [match for match in first if match.get("bye")]
     if len(byes) != result["bye_count"]:
         problems.append(f"{len(byes)} byes recorded, expected {result['bye_count']}")
-    if len(result["rounds"]) != total_rounds(result["bracket_size"]):
+    try:
+        expected_rounds = total_rounds(int(result["bracket_size"]))
+    except (ValueError, TypeError):
+        expected_rounds = None
+    if expected_rounds is not None and len(rounds) != expected_rounds:
         problems.append("round count does not match the bracket size")
-    for entry in result["constraint_audit"]:
-        if entry["kind"] == "hard" and entry["status"] == VIOLATED:
-            problems.append(f"hard constraint violated: {entry['constraint']}")
-    if result["feasible"] and result["unsatisfied_hard_constraints"]:
+    audit = result.get("constraint_audit") or []
+    if not audit:
+        problems.append("bracket record carries no constraint audit")
+    for entry in audit:
+        if not isinstance(entry, dict):
+            problems.append("constraint audit contains a non-object entry")
+            continue
+        if entry.get("kind") == "hard" and entry.get("status") == VIOLATED:
+            problems.append(f"hard constraint violated: {entry.get('constraint')}")
+    if result.get("feasible") and result.get("unsatisfied_hard_constraints"):
         problems.append("bracket claims feasible while reporting unsatisfied hard constraints")
+    if result.get("feasible") and any(
+        isinstance(entry, dict) and entry.get("kind") == "hard"
+        and entry.get("status") in (VIOLATED, INFEASIBLE)
+        for entry in audit
+    ):
+        problems.append(
+            "bracket claims feasible while its own audit reports a hard constraint as "
+            "violated or infeasible"
+        )
     return problems

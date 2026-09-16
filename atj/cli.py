@@ -19,7 +19,7 @@ from typing import Any
 
 from . import (
     VERSION, bracket, canon, event as event_module, frontmatter, ids, matchup,
-    publication, render, reports, schema, scoring, versions,
+    publication, render, reports, sandbox, schema, scoring, versions,
 )
 from .errors import AtjError
 
@@ -559,6 +559,112 @@ def check_no_duplicate_weights(root: Path) -> list[str]:
 
 
 # --------------------------------------------------------------------------- #
+# sandbox
+# --------------------------------------------------------------------------- #
+
+def cmd_sandbox_preflight(args) -> int:
+    capability = sandbox.preflight(args.runtime)
+    payload = {
+        "available": capability.available, "runtime": capability.runtime,
+        "version": capability.version, "rootless": capability.rootless,
+        "reasons": capability.reasons, "execution_status": capability.execution_status,
+        "evidence_limitation": sandbox.evidence_limitation(capability),
+    }
+    _emit(payload, args)
+    if args.json:
+        return OK if capability.available else FAILURE
+    print(f"Sandbox preflight: {'AVAILABLE' if capability.available else 'UNAVAILABLE'}")
+    print(f"  {capability.summary()}")
+    if not capability.available:
+        limitation = sandbox.evidence_limitation(capability)
+        print(f"  record execution_status: {limitation['execution_status']}")
+        print(f"  criteria needing NE unless other direct evidence exists: "
+              f"{', '.join(limitation['evidence_limited_criteria'])}")
+        print("  There is no host fallback. Static inspection may continue.")
+    return OK if capability.available else FAILURE
+
+
+def cmd_sandbox_run(args) -> int:
+    capability = sandbox.preflight(args.runtime)
+    record = sandbox.run_in_sandbox(
+        source=Path(args.source), command=args.command, image=args.image,
+        limits={"timeout_seconds": args.timeout} if args.timeout else None,
+        capability=capability,
+    )
+    _emit(record.to_dict(), args)
+    if not args.json:
+        print(f"exit status: {record.exit_status}"
+              + ("  (timed out)" if record.timed_out else ""))
+        print(f"duration: {record.duration_seconds:.2f}s  runtime: {record.runtime} "
+              f"{record.runtime_version}")
+        if record.stdout:
+            print("--- stdout ---")
+            print(record.stdout)
+        if record.stderr:
+            print("--- stderr ---")
+            print(record.stderr)
+    if args.output:
+        Path(args.output).write_text(
+            json.dumps(record.to_dict(), indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+    return OK if record.exit_status == 0 else FAILURE
+
+
+# --------------------------------------------------------------------------- #
+# demo
+# --------------------------------------------------------------------------- #
+
+def cmd_demo(args) -> int:
+    from . import demo, demo_writer
+
+    root = _root(args)
+    if args.action == "build":
+        directory = demo_writer.build(root)
+        print(f"Rebuilt {directory.relative_to(root)} and the 20-team bracket fixture.")
+    directory = root / "events" / demo.EVENT_ID
+    if not directory.is_dir():
+        print(f"sample event not found at {directory}; run `atj demo build`", file=sys.stderr)
+        return FAILURE
+
+    problems: list[str] = []
+    problems += [f"condition: {p}" for p in demo.check_conditions(root)]
+
+    loaded = event_module.load(directory, root=root)
+    problems += [f"config: {p}" for p in event_module.validate_configuration(loaded)]
+    problems += [f"roster: {p}" for p in event_module.validate_roster(loaded)]
+    problems += [f"status: {p}" for p in event_module.validate_status(loaded)]
+
+    found = reports.validate_event_reports(
+        directory, root=root, public_scores=bool(loaded.config.get("public_scores")),
+        all_teams=[team["id"] for team in loaded.teams],
+    )
+    summary = reports.summarize(found)
+    problems += [
+        f"report: {finding.render()}" for finding in summary["findings"]
+        if finding.severity in ("blocking", "major")
+    ]
+
+    drawn = json.loads((directory / "bracket.json").read_text(encoding="utf-8"))
+    problems += [f"bracket: {p}" for p in bracket.verify(drawn)]
+    if drawn["rounds"] != demo.sample_bracket(root)["rounds"]:
+        problems.append("bracket: committed draw does not reproduce from its recorded seed")
+
+    fixture_dir = root / "tests" / "fixtures" / "bracket-20-team"
+    fixture = json.loads((fixture_dir / "bracket.json").read_text(encoding="utf-8"))
+    problems += [f"fixture: {p}" for p in bracket.verify(fixture)]
+    if fixture["rounds"] != demo.twenty_team_bracket(root)["rounds"]:
+        problems.append("fixture: 20-team bracket does not reproduce from its recorded seed")
+
+    _emit({"problems": problems}, args)
+    if not args.json:
+        print(f"Sample event: {len(found)} artifacts validated")
+        for problem in problems:
+            print(f"  ERROR {problem}")
+        print(f"Demo check: {'FAIL' if problems else 'PASS'}")
+    return FAILURE if problems else OK
+
+
+# --------------------------------------------------------------------------- #
 # argument parsing
 # --------------------------------------------------------------------------- #
 
@@ -648,6 +754,31 @@ def build_parser() -> argparse.ArgumentParser:
     publish.add_argument("artifact")
     publish.add_argument("--event-dir")
     publish.set_defaults(func=cmd_check_publication)
+
+    sandbox_parser = sub.add_parser("sandbox", help="isolated execution of untrusted code")
+    sandbox_sub = sandbox_parser.add_subparsers(dest="sandbox_command", required=True)
+
+    preflight = sandbox_sub.add_parser(
+        "preflight", help="report whether verified isolation is available"
+    )
+    preflight.add_argument("--runtime", choices=(sandbox.PODMAN, sandbox.DOCKER))
+    preflight.set_defaults(func=cmd_sandbox_preflight)
+
+    run = sandbox_sub.add_parser("run", help="run one command against a submission, isolated")
+    run.add_argument("source", help="submission checkout; mounted read-only")
+    run.add_argument("command", nargs="+")
+    run.add_argument("--image", default="docker.io/library/python:3.12-alpine")
+    run.add_argument("--runtime", choices=(sandbox.PODMAN, sandbox.DOCKER))
+    run.add_argument("--timeout", type=int, help="seconds")
+    run.add_argument("--output", help="write the execution record here")
+    run.set_defaults(func=cmd_sandbox_run)
+
+    demo_parser = sub.add_parser("demo", help="the committed synthetic sample event")
+    demo_parser.add_argument(
+        "action", nargs="?", default="check", choices=("build", "check"),
+        help="'build' regenerates it; 'check' verifies the committed one",
+    )
+    demo_parser.set_defaults(func=cmd_demo)
 
     sub.add_parser(
         "release-check", help="framework-level checks required before a release"

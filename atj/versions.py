@@ -19,6 +19,7 @@ from .frontmatter import read
 
 PERSONA_REGISTRY = "framework/personas.md"
 AGENT_DIR = ".claude/agents"
+SKILL_DIR = ".claude/skills"
 DIGEST_LENGTH = 16
 PENDING = "PENDING"
 
@@ -52,11 +53,22 @@ def load_personas(root: Path | None = None) -> dict[str, Persona]:
     return personas
 
 
-def agent_digest(agent_id: str, root: Path | None = None) -> str:
+def component_path(component_id: str, root: Path | None = None) -> Path | None:
+    """Locate a registered component: an agent file or a skill definition."""
     base = root or canon.repository_root()
-    path = base / AGENT_DIR / f"{agent_id}.md"
-    if not path.is_file():
-        raise ValidationError(f"agent definition not found: {path}")
+    agent = base / AGENT_DIR / f"{component_id}.md"
+    if agent.is_file():
+        return agent
+    skill = base / SKILL_DIR / component_id / "SKILL.md"
+    if skill.is_file():
+        return skill
+    return None
+
+
+def agent_digest(component_id: str, root: Path | None = None) -> str:
+    path = component_path(component_id, root)
+    if path is None:
+        raise ValidationError(f"component definition not found for {component_id!r}")
     return ids.file_digest(path, length=DIGEST_LENGTH)
 
 
@@ -73,10 +85,13 @@ def check_personas(root: Path | None = None) -> list[str]:
     base = root or canon.repository_root()
     problems: list[str] = []
     personas = load_personas(base)
-    agent_files = {p.stem for p in sorted((base / AGENT_DIR).glob("*.md"))}
+    on_disk = {p.stem for p in sorted((base / AGENT_DIR).glob("*.md"))}
+    on_disk |= {p.parent.name for p in sorted((base / SKILL_DIR).glob("*/SKILL.md"))}
     for agent_id, persona in sorted(personas.items()):
-        if agent_id not in agent_files:
-            problems.append(f"{agent_id}: declared in the registry but {AGENT_DIR}/{agent_id}.md is missing")
+        if agent_id not in on_disk:
+            problems.append(
+                f"{agent_id}: declared in the registry but no agent or skill definition exists"
+            )
             continue
         actual = agent_digest(agent_id, base)
         if persona.content_digest == PENDING:
@@ -87,8 +102,8 @@ def check_personas(root: Path | None = None) -> list[str]:
                 f"(registry {persona.content_digest}, file {actual}); "
                 f"increment the version and refresh the digest"
             )
-    for agent_id in sorted(agent_files - set(personas)):
-        problems.append(f"{agent_id}: agent file exists but is not in the persona registry")
+    for agent_id in sorted(on_disk - set(personas)):
+        problems.append(f"{agent_id}: definition exists but is not in the component registry")
     return problems
 
 

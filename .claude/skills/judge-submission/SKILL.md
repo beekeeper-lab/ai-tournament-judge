@@ -13,7 +13,7 @@ Use only a validated evidence manifest pinned to the event rubric version and so
 2. Create four independent tasks using `judge-backend`, `judge-frontend-ux`, `judge-security-ops`, and `judge-product-agentic`.
 3. Give each task the same evidence manifest, submission rubric, evidence policy, and individual report template. Do not give it other judge reports.
 4. Save returned reports under `judgments/<team-id>/`.
-5. Validate required sections, evidence references, rubric version, commit, and score range.
+5. Run `python3 -m atj validate reports <event>` to check required sections, evidence references, rubric and persona versions, commit, evidence package, score range, and visibility.
 6. Repair malformed output through the originating judge; do not have the orchestrator invent missing judgment.
 7. Invoke `consolidate-judgments` only after all four reports are valid.
 8. Invoke `audit-judging-run` for the team result. Update event status only after PASS or PASS WITH ADVISORIES.
