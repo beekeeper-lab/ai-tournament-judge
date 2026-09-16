@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "team.schema.json",
+  "title": "Tournament Team",
+  "type": "object",
+  "required": ["id", "display_name", "repository", "commit"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "display_name": {"type": "string", "minLength": 1},
+    "affiliation_group": {"type": ["string", "null"]},
+    "previous_result": {"enum": ["champion", "runner-up", "none", null]},
+    "repository": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "minLength": 7},
+    "score": {"type": "number", "minimum": 0, "maximum": 100}
+  },
+  "additionalProperties": true
+}

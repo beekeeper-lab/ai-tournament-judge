@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "matchup.schema.json",
+  "title": "Head-to-Head Matchup",
+  "type": "object",
+  "required": ["event_id", "match_id", "team_a", "team_b", "rubric", "comparisons"],
+  "properties": {
+    "event_id": {"type": "string"},
+    "match_id": {"type": "string"},
+    "team_a": {"type": "string"},
+    "team_b": {"type": "string"},
+    "rubric": {"const": "head-to-head@1.0.0"},
+    "comparisons": {
+      "type": "object",
+      "additionalProperties": {"type": "integer", "minimum": -2, "maximum": 2}
+    },
+    "winner": {"type": ["string", "null"]},
+    "requires_adjudication": {"type": "boolean"}
+  },
+  "additionalProperties": true
+}

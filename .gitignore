@@ -1,0 +1,15 @@
+workspaces/*
+!workspaces/.gitkeep
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+.DS_Store
+*.log
+*.tmp
+.env
+.env.*
+!.env.example
+events/*/runtime/
+events/*/sandboxes/
+dist/

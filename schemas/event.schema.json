@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "event.schema.json",
+  "title": "Judging Event",
+  "type": "object",
+  "required": ["event_id", "rubric", "bye_policy", "expected_judges"],
+  "properties": {
+    "event_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "rubric": {"type": "string"},
+    "bye_policy": {"enum": ["performance-qualified", "random-lottery", "banded-lottery"]},
+    "expected_judges": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+    "public_scores": {"type": "boolean"}
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bracket.schema.json",
+  "title": "Tournament Bracket",
+  "type": "object",
+  "required": ["format", "team_count", "bracket_size", "bye_count", "bye_policy", "seed", "first_round"],
+  "properties": {
+    "format": {"const": "single-elimination"},
+    "team_count": {"type": "integer", "minimum": 2},
+    "bracket_size": {"type": "integer", "minimum": 2},
+    "bye_count": {"type": "integer", "minimum": 0},
+    "bye_policy": {"enum": ["performance-qualified", "random-lottery", "banded-lottery"]},
+    "seed": {"type": "string", "minLength": 1},
+    "first_round": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["first_round_match", "entrants"],
+        "properties": {
+          "first_round_match": {"type": "integer", "minimum": 1},
+          "entrants": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": ["string", "null"]}}
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}
