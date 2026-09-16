@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -264,12 +265,25 @@ def cmd_score(args) -> int:
 def cmd_matchup(args) -> int:
     root = _root(args)
     payload = json.loads(Path(args.input).read_text(encoding="utf-8"))
+    if "close_call_band" in payload:
+        raise AtjError(
+            "the close-call band may not be set from a matchup input file. It comes from "
+            f"{canon.HEAD_TO_HEAD_RUBRIC}, and an event may only widen it through validated "
+            "event configuration (--event-dir)."
+        )
+    band = None
+    if args.event_dir:
+        loaded = event_module.load(Path(args.event_dir), root=root)
+        versions.require_versions(
+            dict(loaded.config), root=root, artifact=str(Path(args.event_dir) / "event.md")
+        )
+        band = loaded.config.get("close_call_band")
     result = matchup.calculate(
         team_a=payload["team_a"],
         team_b=payload["team_b"],
         a_first=payload["a_first"],
         b_first=payload["b_first"],
-        close_call_band=payload.get("close_call_band"),
+        close_call_band=band,
         root=root,
     )
     if args.json:
@@ -333,10 +347,14 @@ def cmd_bracket_build(args) -> int:
 def cmd_bracket_verify(args) -> int:
     root = _root(args)
     result = json.loads(Path(args.bracket).read_text(encoding="utf-8"))
-    problems = bracket.verify(result) + schema.validate("bracket", result, root=root)
-    rebuilt = None
+    teams = None
     if args.reproduce:
         teams = json.loads(Path(args.reproduce).read_text(encoding="utf-8"))["teams"]
+    elif args.event_dir:
+        teams = event_module.load(Path(args.event_dir), root=root).eligible_teams
+    problems = bracket.verify(result, teams) + schema.validate("bracket", result, root=root)
+    rebuilt = None
+    if args.reproduce:
         rebuilt = bracket.build(
             event_id=result["event_id"], teams=teams, seed=result["seed"],
             bye_policy=result["bye_policy"], roster_version=result["roster_version"],
@@ -445,6 +463,14 @@ def cmd_release_check(args) -> int:
     failures += [f"duplicate-number: {p}" for p in problems]
     print(f"single-source     {'PASS' if not problems else 'FAIL'}")
 
+    problems = check_declared_versions(root)
+    failures += [f"version-skew: {p}" for p in problems]
+    print(f"version-skew      {'PASS' if not problems else 'FAIL'}")
+
+    problems = check_sample_event(root)
+    failures += [f"sample-event: {p}" for p in problems]
+    print(f"sample event      {'PASS' if not problems else 'FAIL'}")
+
     _emit({"failures": failures}, args)
     if failures:
         print("\nRelease check: FAIL")
@@ -477,6 +503,58 @@ def check_templates(root: Path) -> list[str]:
                 if field in metadata:
                     problems.append(f"{path.name}: public template carries private field {field!r}")
     return problems
+
+
+VERSIONED_FIELDS = ("rubric", "source_rubric", "consolidation_policy",
+                    "matchup_rubric", "bracket_policy")
+
+
+def check_declared_versions(root: Path) -> list[str]:
+    """Every version literal in the framework must resolve against the canon.
+
+    Templates, the event template and the rubrics themselves all spell out
+    references like ``submission-evaluation@1.0.0``. Bumping a rubric used to
+    leave those silently pointing at a version that no longer exists.
+    """
+    problems: list[str] = []
+    targets = sorted((root / "framework" / "templates").glob("*.md"))
+    targets += sorted((root / "framework" / "rubrics").glob("*.md"))
+    targets += sorted((root / "events" / "_template").glob("*.md"))
+    placeholder = re.compile(r"[A-Z]{3,}")
+    for path in targets:
+        try:
+            metadata, _ = frontmatter.read(path)
+        except AtjError:
+            # A document with no front matter declares no version. Prose files
+            # such as framework/rubrics/README.md are not version carriers.
+            continue
+        checkable = {
+            field: str(metadata[field])
+            for field in VERSIONED_FIELDS
+            if metadata.get(field) and not placeholder.search(str(metadata[field]))
+        }
+        if not checkable:
+            continue
+        # Persona is checked separately by `atj personas`; a template legitimately
+        # carries `PERSONA@VERSION` until it is instantiated.
+        payload = dict(checkable)
+        payload.setdefault("rubric", canon.load(root).reference)
+        if metadata.get("close_call_band") is not None:
+            payload["close_call_band"] = metadata["close_call_band"]
+        try:
+            versions.require_versions(payload, root=root, artifact=str(path))
+        except AtjError as exc:
+            problems.append(f"{path.relative_to(root)}: {exc.message}")
+    return problems
+
+
+def check_sample_event(root: Path) -> list[str]:
+    """The committed sample event must still demonstrate every required case."""
+    from . import demo
+
+    if not (root / "events" / demo.EVENT_ID).is_dir():
+        return [f"the sample event is missing from events/{demo.EVENT_ID}"]
+    return demo.check_conditions(root)
 
 
 def check_claude_components(root: Path) -> list[str]:
@@ -528,10 +606,13 @@ def check_no_duplicate_weights(root: Path) -> list[str]:
         r"""["']?(""" + "|".join(rubric.criterion_ids) + r""")["']?\s*[:=]\s*(\d+)"""
     )
     skip_parts = {".git", "__pycache__", "node_modules", "dist", ".pytest_cache"}
+    # Narrow exemptions only. `tests/` asserts against the real weights on
+    # purpose, and the baseline audit quotes the alpha's duplicate as evidence.
+    # Everything else, including the rest of `docs/`, is scanned.
     allowed = {
         rubric_path,
         (root / "tests").resolve(),
-        (root / "docs").resolve(),
+        (root / "docs" / "release-readiness-audit.md").resolve(),
     }
     problems: list[str] = []
     for path in sorted(root.rglob("*")):
@@ -540,8 +621,8 @@ def check_no_duplicate_weights(root: Path) -> list[str]:
         if skip_parts & set(path.parts):
             continue
         resolved = path.resolve()
-        if resolved == rubric_path or any(
-            str(resolved).startswith(str(base)) for base in allowed if base != rubric_path
+        if resolved in allowed or any(
+            base.is_dir() and str(resolved).startswith(str(base) + "/") for base in allowed
         ):
             continue
         try:
@@ -645,13 +726,14 @@ def cmd_demo(args) -> int:
     ]
 
     drawn = json.loads((directory / "bracket.json").read_text(encoding="utf-8"))
-    problems += [f"bracket: {p}" for p in bracket.verify(drawn)]
+    problems += [f"bracket: {p}" for p in bracket.verify(drawn, loaded.eligible_teams)]
     if drawn["rounds"] != demo.sample_bracket(root)["rounds"]:
         problems.append("bracket: committed draw does not reproduce from its recorded seed")
 
     fixture_dir = root / "tests" / "fixtures" / "bracket-20-team"
     fixture = json.loads((fixture_dir / "bracket.json").read_text(encoding="utf-8"))
-    problems += [f"fixture: {p}" for p in bracket.verify(fixture)]
+    fixture_roster = json.loads((fixture_dir / "roster.json").read_text(encoding="utf-8"))["teams"]
+    problems += [f"fixture: {p}" for p in bracket.verify(fixture, fixture_roster)]
     if fixture["rounds"] != demo.twenty_team_bracket(root)["rounds"]:
         problems.append("fixture: 20-team bracket does not reproduce from its recorded seed")
 
@@ -668,17 +750,25 @@ def cmd_demo(args) -> int:
 # argument parsing
 # --------------------------------------------------------------------------- #
 
+def _shared() -> argparse.ArgumentParser:
+    """Options accepted both before and after the subcommand."""
+    shared = argparse.ArgumentParser(add_help=False)
+    shared.add_argument("--root", help="framework root (default: auto-detected)")
+    shared.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    return shared
+
+
 def build_parser() -> argparse.ArgumentParser:
+    shared = _shared()
     parser = argparse.ArgumentParser(
+        parents=[shared],
         prog="atj",
         description="Deterministic tooling for the AI Tournament Judge framework. "
                     "Calculation, validation, rendering, state transitions and seeded "
                     "bracket assignment are deterministic; LLM judgment is not.",
     )
     parser.add_argument("--version", action="version", version=f"atj {VERSION}")
-    parser.add_argument("--root", help="framework root (default: auto-detected)")
-    parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
-    sub = parser.add_subparsers(dest="command", required=True)
+    sub = parser.add_subparsers(dest="command", required=True, parser_class=lambda **kw: argparse.ArgumentParser(parents=[shared], **kw))
 
     sub.add_parser("rubric", help="print the canonical rubric").set_defaults(func=cmd_rubric)
     sub.add_parser("schemas", help="self-check the shipped schemas").set_defaults(func=cmd_schemas)
@@ -723,6 +813,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     match = sub.add_parser("matchup", help="resolve an order-balanced head-to-head")
     match.add_argument("input", help="JSON with team_a, team_b, a_first, b_first")
+    match.add_argument("--event-dir", help="read the event's close-call band from its config")
     match.add_argument("--output")
     match.set_defaults(func=cmd_matchup)
 
@@ -741,6 +832,11 @@ def build_parser() -> argparse.ArgumentParser:
     verify = bracket_sub.add_parser("verify", help="re-check a built bracket")
     verify.add_argument("bracket")
     verify.add_argument("--reproduce", help="team JSON to redraw and compare against")
+    verify.add_argument(
+        "--event-dir",
+        help="re-derive the constraints from this event's roster instead of trusting "
+             "the audit block inside the bracket file",
+    )
     verify.set_defaults(func=cmd_bracket_verify)
 
     validate_parser = sub.add_parser("validate", help="artifact validation")

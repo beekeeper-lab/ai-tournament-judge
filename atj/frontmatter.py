@@ -1,8 +1,10 @@
 """Safe Markdown front-matter parsing.
 
 Front matter is the machine-readable half of every human-reviewable artifact.
-It is parsed with ``yaml.safe_load`` only: no object construction, no tags, no
-code execution. Submission and report content is untrusted data.
+It is parsed with a bounded SafeLoader: no object construction, no tags, no code
+execution, and a hard cap on node count so an alias-expansion bomb in an
+untrusted report cannot hang the validator. Submission and report content is
+untrusted data.
 """
 
 from __future__ import annotations
@@ -18,8 +20,55 @@ from .errors import ValidationError
 
 _FRONTMATTER = re.compile(r"\A---\r?\n(.*?)\r?\n---\r?\n?", re.DOTALL)
 
-# Guard against a pathological front-matter block in an untrusted file.
+# Guards against a pathological front-matter block in an untrusted file.
 MAX_FRONTMATTER_BYTES = 64 * 1024
+# Nested YAML aliases expand multiplicatively: seven levels of a nine-element
+# alias is a few hundred bytes of input and tens of millions of constructed
+# objects, so a byte limit is no defence. Anchors and aliases have no legitimate
+# use in this framework's front matter, so they are refused outright. That is a
+# complete defence rather than a budget an attacker can tune against.
+MAX_YAML_NODES = 50_000
+
+
+class _BoundedLoader(yaml.SafeLoader):
+    """SafeLoader that refuses anchors, aliases, and oversized documents.
+
+    Front matter is read from submissions and reports, which CLAUDE.md classes as
+    untrusted. A validator that can be hung by the file it is validating is not a
+    validator.
+    """
+
+    def __init__(self, stream):
+        super().__init__(stream)
+        self._node_budget = MAX_YAML_NODES
+
+    def compose_node(self, parent, index):
+        self._node_budget -= 1
+        if self._node_budget < 0:
+            raise yaml.YAMLError(
+                f"front matter composes more than {MAX_YAML_NODES} nodes; refusing to parse"
+            )
+        return super().compose_node(parent, index)
+
+    def compose_scalar_node(self, anchor):
+        self._reject_anchor(anchor)
+        return super().compose_scalar_node(anchor)
+
+    def compose_sequence_node(self, anchor):
+        self._reject_anchor(anchor)
+        return super().compose_sequence_node(anchor)
+
+    def compose_mapping_node(self, anchor):
+        self._reject_anchor(anchor)
+        return super().compose_mapping_node(anchor)
+
+    @staticmethod
+    def _reject_anchor(anchor):
+        if anchor is not None:
+            raise yaml.YAMLError(
+                "front matter uses a YAML anchor. Anchors and aliases are refused: "
+                "nested aliases expand multiplicatively and this content is untrusted."
+            )
 
 
 def split(text: str, *, artifact: str | None = None) -> tuple[dict[str, Any], str]:
@@ -35,7 +84,7 @@ def split(text: str, *, artifact: str | None = None) -> tuple[dict[str, Any], st
     if len(raw.encode("utf-8")) > MAX_FRONTMATTER_BYTES:
         raise ValidationError("front matter exceeds size limit", artifact=artifact)
     try:
-        metadata = yaml.safe_load(raw)
+        metadata = yaml.load(raw, Loader=_BoundedLoader)
     except yaml.YAMLError as exc:
         raise ValidationError(f"unparseable front matter: {exc}", artifact=artifact) from exc
     if metadata is None:

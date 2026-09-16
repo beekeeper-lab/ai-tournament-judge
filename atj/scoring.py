@@ -301,10 +301,20 @@ def consolidate(
                 adjudication_required.append(
                     {"criterion": criterion.id, "trigger": "severe-disagreement"}
                 )
+                if resolution is None:
+                    blocked.append(
+                        f"{criterion.id}: severe disagreement (range {entry['range']:g}) "
+                        f"with no recorded adjudication"
+                    )
             if entry["possible_outliers"]:
                 adjudication_required.append(
                     {"criterion": criterion.id, "trigger": "possible-outlier"}
                 )
+                if resolution is None:
+                    blocked.append(
+                        f"{criterion.id}: possible outlier "
+                        f"({', '.join(entry['possible_outliers'])}) with no recorded adjudication"
+                    )
         if resolution is not None:
             entry["resolution_note"] = (
                 "adjudicated resolution recorded alongside the source scores; "

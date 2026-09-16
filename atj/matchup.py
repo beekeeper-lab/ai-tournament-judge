@@ -130,9 +130,18 @@ def calculate(
     """
     rubric = rubric or canon.load(root)
     head_to_head = head_to_head or canon.load_head_to_head(root)
-    band = float(close_call_band if close_call_band is not None else head_to_head.close_call_band)
-    if band < 0:
-        raise ValidationError(f"close_call_band must be non-negative, got {band}")
+    canonical = float(head_to_head.close_call_band)
+    band = canonical if close_call_band is None else float(close_call_band)
+    if band < canonical:
+        # Narrowing the band turns matchups that require human review into
+        # automatic advancements. Only an event official widening it is allowed,
+        # and only through validated event configuration.
+        raise ValidationError(
+            f"close_call_band {band} is below the rubric floor of {canonical}. "
+            f"An event may widen the band but never narrow it."
+        )
+    if band > 100:
+        raise ValidationError(f"close_call_band {band} exceeds the maximum margin of 100")
     if team_a == team_b:
         raise ValidationError(f"a matchup needs two distinct teams, got {team_a!r} twice")
     minimum_value = head_to_head.minimum_value
@@ -233,7 +242,14 @@ def calculate(
     }
 
 
-TIE_BREAK_ORDER = ("functional", "reliability", "product")
+def tie_break_order(root: Path | None = None) -> tuple[str, ...]:
+    """The mechanical tie-break steps, read from head-to-head.md front matter."""
+    declared = canon.load_head_to_head(root).metadata_order
+    if not declared:
+        raise ValidationError(
+            f"{canon.HEAD_TO_HEAD_RUBRIC} does not declare a tie_break_order"
+        )
+    return declared
 
 
 def tie_break(result: dict[str, Any], *, rubric: canon.Rubric | None = None,
@@ -245,7 +261,7 @@ def tie_break(result: dict[str, Any], *, rubric: canon.Rubric | None = None,
     decision. Both are returned as a referral, never guessed.
     """
     rubric = rubric or canon.load(root)
-    for criterion in TIE_BREAK_ORDER:
+    for criterion in tie_break_order(root):
         if criterion not in result["criteria"]:
             continue
         margin = result["criteria"][criterion]["combined_margin"]

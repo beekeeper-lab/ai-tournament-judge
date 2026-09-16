@@ -2,29 +2,93 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-tournament-judge.local/schemas/public-report.schema.json",
   "title": "Public ceremony artifact",
-  "$comment": "Private-only fields are forbidden outright, not merely discouraged. atj.publication enforces the content rules this schema cannot express.",
+  "$comment": "Private-only fields are forbidden outright. The 'not' below catches them at the top level; atj.publication walks the metadata recursively, because a nested mapping is just as public once the artifact is published.",
   "type": "object",
-  "required": ["event_id", "visibility", "approval_state", "validation_state",
-               "approved_by", "source_artifacts"],
+  "required": [
+    "event_id",
+    "visibility",
+    "approval_state",
+    "validation_state",
+    "approved_by",
+    "source_artifacts"
+  ],
   "properties": {
-    "event_id": {"$ref": "common.schema.json#/$defs/slug"},
-    "match_id": {"oneOf": [{"$ref": "common.schema.json#/$defs/match_id"}, {"type": "null"}]},
-    "visibility": {"const": "public"},
-    "approval_state": {"$ref": "common.schema.json#/$defs/approval_state"},
-    "validation_state": {"$ref": "common.schema.json#/$defs/validation_state"},
-    "approved_by": {"type": ["string", "null"]},
-    "source_artifacts": {"type": "array", "minItems": 1, "items": {"type": "string"}},
-    "scores_published": {"type": "boolean"}
+    "event_id": {
+      "$ref": "common.schema.json#/$defs/slug"
+    },
+    "match_id": {
+      "oneOf": [
+        {
+          "$ref": "common.schema.json#/$defs/match_id"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "visibility": {
+      "const": "public"
+    },
+    "approval_state": {
+      "$ref": "common.schema.json#/$defs/approval_state"
+    },
+    "validation_state": {
+      "$ref": "common.schema.json#/$defs/validation_state"
+    },
+    "approved_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "scores_published": {
+      "type": "boolean"
+    }
   },
   "not": {
     "anyOf": [
-      {"required": ["judge_run_ids"]},
-      {"required": ["scores"]},
-      {"required": ["comparisons"]},
-      {"required": ["passes"]},
-      {"required": ["blocked_reasons"]},
-      {"required": ["evidence_package_id"]},
-      {"required": ["adjudication_ids"]}
+      {
+        "required": [
+          "judge_run_ids"
+        ]
+      },
+      {
+        "required": [
+          "scores"
+        ]
+      },
+      {
+        "required": [
+          "comparisons"
+        ]
+      },
+      {
+        "required": [
+          "passes"
+        ]
+      },
+      {
+        "required": [
+          "blocked_reasons"
+        ]
+      },
+      {
+        "required": [
+          "evidence_package_id"
+        ]
+      },
+      {
+        "required": [
+          "adjudication_ids"
+        ]
+      }
     ]
   },
   "additionalProperties": true

@@ -16,7 +16,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from . import frontmatter
+from . import canon, frontmatter
 from .canon import NOT_ENOUGH_EVIDENCE
 from .errors import ValidationError
 
@@ -55,7 +55,11 @@ def _number(value: Any, places: int = 1) -> str:
     return f"{float(value):.{places}f}"
 
 
-def individual_scores_table(result: dict[str, Any]) -> str:
+def _total_weight(root: Path | None = None) -> int:
+    return canon.load(root).total_weight
+
+
+def individual_scores_table(result: dict[str, Any], root: Path | None = None) -> str:
     rows = ["| Criterion | Raw score or NE | Weight | Weighted points | Confidence |",
             "|---|---:|---:|---:|---|"]
     for criterion, entry in result["criteria"].items():
@@ -63,8 +67,9 @@ def individual_scores_table(result: dict[str, Any]) -> str:
             f"| {criterion} | {_number(entry['raw'], 1)} | {entry['weight']} | "
             f"{_number(entry['weighted_points'], 2)} | {entry.get('confidence') or '—'} |"
         )
-    total = "not finalizable (unresolved NE)" if result["total"] is None else _number(result["display_total"])
-    rows.append(f"| **Total** |  | **100** | **{total}** |  |")
+    total = ("not finalizable (unresolved NE)" if result["total"] is None
+             else _number(result["display_total"]))
+    rows.append(f"| **Total** |  | **{_total_weight(root)}** | **{total}** |  |")
     if result["unresolved_ne"]:
         rows.append("")
         rows.append(
@@ -74,7 +79,7 @@ def individual_scores_table(result: dict[str, Any]) -> str:
     return "\n".join(rows)
 
 
-def consolidated_table(result: dict[str, Any]) -> str:
+def consolidated_table(result: dict[str, Any], root: Path | None = None) -> str:
     rows = ["| Criterion | Judge scores | Mean | Weight | Points | Agreement |",
             "|---|---|---:|---:|---:|---|"]
     for criterion, entry in result["criteria"].items():
@@ -87,12 +92,13 @@ def consolidated_table(result: dict[str, Any]) -> str:
             f"| {criterion} | {scores} | {_number(entry['mean'], 2)} | {entry['weight']} | "
             f"{_number(entry['weighted_points'], 2)} | {entry['agreement']}{flag} |"
         )
+    weight = _total_weight(root)
     if result["finalized"]:
-        rows.append(f"| **Overall** |  |  | **100** | **{_number(result['display_total'])}** |  |")
-    else:
         rows.append(
-            f"| **Overall** |  |  | **100** | **not finalized** |  |"
+            f"| **Overall** |  |  | **{weight}** | **{_number(result['display_total'])}** |  |"
         )
+    else:
+        rows.append(f"| **Overall** |  |  | **{weight}** | **not finalized** |  |")
     rows.append("")
     if result["blocked_reasons"]:
         rows.append("**Finalization blocked:**")
@@ -100,13 +106,14 @@ def consolidated_table(result: dict[str, Any]) -> str:
             rows.append(f"- {reason}")
         rows.append("")
         rows.append(
-            f"Provisional sum of scored criteria: {_number(result['provisional_total'], 2)} / 100. "
-            "This is not an official total and must not be published or used for bye seeding."
+            f"Provisional sum of scored criteria: "
+            f"{_number(result['provisional_total'], 2)} / {weight}. This is not an official "
+            "total and must not be published or used for bye seeding."
         )
     return "\n".join(rows)
 
 
-def matchup_table(result: dict[str, Any]) -> str:
+def matchup_table(result: dict[str, Any], root: Path | None = None) -> str:
     rows = ["| Criterion | Weight | A-first value | B-first normalized | Combined margin | Order |",
             "|---|---:|---:|---:|---:|---|"]
     for criterion, entry in result["criteria"].items():
@@ -121,7 +128,8 @@ def matchup_table(result: dict[str, Any]) -> str:
         f"(picked {result['passes']['a_first']['picks'] or 'no winner'})",
         f"- B-first pass margin, normalized: **{result['passes']['b_first']['margin']:+.2f}** "
         f"(picked {result['passes']['b_first']['picks'] or 'no winner'})",
-        f"- Combined margin: **{result['combined_margin']:+.2f}** on a −100…+100 scale "
+        f"- Combined margin: **{result['combined_margin']:+.2f}** on a "
+        f"−{_total_weight(root)}…+{_total_weight(root)} scale "
         f"(positive favours {result['team_a']})",
         f"- Close-call band: ±{result['close_call_band']:g}",
         f"- Outcome: **{result['outcome']}**"
@@ -153,8 +161,9 @@ def bracket_tables(result: dict[str, Any]) -> str:
             rows.append(f"|  |  | exception | {str(exception).replace('|', chr(92) + '|')} |")
     rows.append("")
     rows.append(
-        f"Reproduce with: `atj bracket build <event-dir> --seed {result['seed']}` "
-        f"(roster version {result['roster_version']}, input digest `{result['input_digest']}`)."
+        f"Reproduce with: `python3 -m atj bracket build --event-dir <event-dir> "
+        f"--seed {result['seed']}` (roster version {result['roster_version']}, "
+        f"input digest `{result['input_digest']}`)."
     )
     return "\n".join(rows)
 

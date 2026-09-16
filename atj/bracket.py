@@ -32,8 +32,38 @@ from typing import Any, Iterable, Sequence
 from . import canon, ids
 from .errors import ConstraintError, ValidationError
 
-BYE_POLICIES = ("performance-qualified", "random-lottery", "banded-lottery")
-DEFAULT_BYE_POLICY = "performance-qualified"
+def _policy_metadata() -> dict:
+    try:
+        return canon.load_bracket_policy().metadata
+    except Exception:  # noqa: BLE001 - fall back below so imports never fail hard
+        return {}
+
+
+def bye_policies(root: Path | None = None) -> tuple[str, ...]:
+    """The declared bye policies, read from bracket-assignment.md front matter."""
+    metadata = canon.load_bracket_policy(root).metadata
+    declared = metadata.get("bye_policies")
+    if not isinstance(declared, list) or not declared:
+        raise ConstraintError(
+            f"{canon.BRACKET_POLICY} does not declare a bye_policies list"
+        )
+    return tuple(str(policy) for policy in declared)
+
+
+def default_bye_policy(root: Path | None = None) -> str:
+    metadata = canon.load_bracket_policy(root).metadata
+    declared = metadata.get("default_bye_policy")
+    if not declared:
+        raise ConstraintError(
+            f"{canon.BRACKET_POLICY} does not declare a default_bye_policy"
+        )
+    return str(declared)
+
+
+# Module-level convenience for argument parsing and tests. Read from the
+# canonical policy at import; there is no second editable copy.
+BYE_POLICIES = tuple(_policy_metadata().get("bye_policies") or ())
+DEFAULT_BYE_POLICY = str(_policy_metadata().get("default_bye_policy") or "")
 MIN_TEAMS = 2
 MAX_TEAMS = 32
 FINALISTS = ("champion", "runner-up")
@@ -118,11 +148,13 @@ def round_name(participants: int, *, first_round_has_byes: bool, index: int) -> 
 
 
 def choose_byes(
-    entrants: Sequence[Entrant], count: int, policy: str, rng: random.Random
+    entrants: Sequence[Entrant], count: int, policy: str, rng: random.Random,
+    root: Path | None = None,
 ) -> tuple[list[Entrant], list[Entrant]]:
-    if policy not in BYE_POLICIES:
+    allowed = bye_policies(root)
+    if policy not in allowed:
         raise ValidationError(
-            f"unknown bye policy {policy!r}; expected one of {', '.join(BYE_POLICIES)}"
+            f"unknown bye policy {policy!r}; expected one of {', '.join(allowed)}"
         )
     shuffled = list(entrants)
     rng.shuffle(shuffled)
@@ -164,17 +196,28 @@ def _affiliation(team: Entrant) -> str | None:
     return team.affiliation_group
 
 
-def conflicts(first: Entrant, second: Entrant) -> str | None:
-    """Why these two teams should not meet in the first round, if they should not.
+FINALIST_REASON = "previous finalists"
 
-    Two reasons, both from bracket-assignment.md: a shared affiliation group, and
-    a previous champion facing a previous runner-up before the final.
+
+def conflict_reasons(first: Entrant, second: Entrant) -> list[str]:
+    """Every reason these two teams should not meet in the first round.
+
+    Returning only the first reason hid the finalist constraint whenever the two
+    previous finalists also shared an affiliation group: the pair was penalised
+    as a soft affiliation cost instead of a hard separation requirement.
     """
+    reasons: list[str] = []
     if first.affiliation_group and first.affiliation_group == second.affiliation_group:
-        return f"affiliation {first.affiliation_group}"
+        reasons.append(f"affiliation {first.affiliation_group}")
     if {first.previous_result, second.previous_result} == set(FINALISTS):
-        return "previous finalists"
-    return None
+        reasons.append(FINALIST_REASON)
+    return reasons
+
+
+def conflicts(first: Entrant, second: Entrant) -> str | None:
+    """Human-readable summary of why two teams should not meet, or None."""
+    reasons = conflict_reasons(first, second)
+    return ", ".join(reasons) if reasons else None
 
 
 def pairing_feasible(teams: Sequence[Entrant]) -> tuple[bool, str]:
@@ -306,13 +349,11 @@ def _conflict_matrix(
             finalist_pair = False
             for team_a in units[left]:
                 for team_b in units[right]:
-                    reason = conflicts(team_a, team_b)
-                    if reason is None:
-                        continue
-                    if reason == "previous finalists":
-                        finalist_pair = True
-                    else:
-                        shared += 1
+                    for reason in conflict_reasons(team_a, team_b):
+                        if reason == FINALIST_REASON:
+                            finalist_pair = True
+                        else:
+                            shared += 1
             affiliation[left][right] = affiliation[right][left] = shared
             finalist[left][right] = finalist[right][left] = finalist_pair
     return affiliation, finalist
@@ -448,12 +489,15 @@ def _audit(
         "exceptions": [],
     })
 
+    policy_status, policy_detail, policy_exceptions = _check_bye_policy(
+        entrants, bye_teams, policy
+    )
     audit.append({
         "constraint": f"Bye policy {policy!r} applied consistently",
         "kind": "hard",
-        "status": SATISFIED,
-        "detail": _bye_detail(policy, bye_teams),
-        "exceptions": [],
+        "status": policy_status,
+        "detail": policy_detail,
+        "exceptions": policy_exceptions,
     })
 
     finalists = {team.previous_result: team for team in entrants if team.previous_result in FINALISTS}
@@ -535,6 +579,55 @@ def _audit(
     return audit
 
 
+def _check_bye_policy(
+    entrants: Sequence[Entrant], bye_teams: Sequence[Entrant], policy: str
+) -> tuple[str, str, list[str]]:
+    """Re-derive whether the byes actually match the declared policy.
+
+    Asserting satisfaction made the audit worthless: a tampered bracket handing
+    byes to the lowest scorers still reported `satisfied`.
+    """
+    detail = _bye_detail(policy, bye_teams)
+    if not bye_teams:
+        return SATISFIED, detail, []
+    chosen = {team.id for team in bye_teams}
+
+    if policy == "performance-qualified":
+        scored = [team for team in entrants if team.score is not None]
+        if len(scored) != len(entrants):
+            return VIOLATED, "not every team carries a score", [
+                team.id for team in entrants if team.score is None
+            ]
+        ranked = sorted(entrants, key=lambda team: -team.score)
+        cutoff = ranked[len(bye_teams) - 1].score
+        # Anyone strictly above the cutoff must hold a bye; ties at the cutoff are
+        # resolved by the recorded seed and may go either way.
+        wrongly_excluded = [t.id for t in entrants if t.score > cutoff and t.id not in chosen]
+        wrongly_included = [t.id for t in bye_teams if t.score < cutoff]
+        exceptions = sorted(set(wrongly_excluded) | set(wrongly_included))
+        if exceptions:
+            return VIOLATED, (
+                f"byes do not follow consolidated score order (cutoff {cutoff:g})"
+            ), exceptions
+        return SATISFIED, detail, []
+
+    if policy == "banded-lottery":
+        banded = [team for team in entrants if team.band is None]
+        if banded:
+            return VIOLATED, "not every team carries a band", [team.id for team in banded]
+        bands = sorted({team.band for team in entrants})
+        chosen_bands = sorted({team.band for team in bye_teams})
+        gaps = [
+            band for band in bands
+            if band < max(chosen_bands) and band not in chosen_bands
+        ]
+        if gaps:
+            return VIOLATED, "a band was skipped while a later band received byes", gaps
+        return SATISFIED, detail, []
+
+    return SATISFIED, detail, []
+
+
 def _bye_detail(policy: str, bye_teams: Sequence[Entrant]) -> str:
     if not bye_teams:
         return "no byes: the team count is an exact power of two"
@@ -552,18 +645,20 @@ def build(
     event_id: str,
     teams: Iterable[dict[str, Any]],
     seed: str,
-    bye_policy: str = DEFAULT_BYE_POLICY,
+    bye_policy: str | None = None,
     roster_version: int = 1,
     framework_commit: str = ids.UNCOMMITTED,
     root: Path | None = None,
 ) -> dict[str, Any]:
     """Build a complete, audited bracket. Deterministic for a given seed."""
     ids.require_slug(event_id, kind="event_id")
-    if bye_policy not in BYE_POLICIES:
+    allowed = bye_policies(root)
+    bye_policy = bye_policy or default_bye_policy(root)
+    if bye_policy not in allowed:
         # Validated before anything else: alpha defect X5 accepted a bogus policy
         # whenever the bye count happened to be zero.
         raise ValidationError(
-            f"unknown bye policy {bye_policy!r}; expected one of {', '.join(BYE_POLICIES)}"
+            f"unknown bye policy {bye_policy!r}; expected one of {', '.join(allowed)}"
         )
     if not isinstance(seed, str) or not seed:
         raise ValidationError("a non-empty seed string must be supplied and recorded")
@@ -584,7 +679,7 @@ def build(
     rounds = total_rounds(size)
     rng = random.Random(seed)
 
-    bye_teams, play_in_teams = choose_byes(entrants, bye_count, bye_policy, rng)
+    bye_teams, play_in_teams = choose_byes(entrants, bye_count, bye_policy, rng, root)
     if len(play_in_teams) % 2:
         raise ConstraintError(
             f"play-in team count {len(play_in_teams)} is odd; bracket arithmetic is inconsistent"
@@ -700,7 +795,7 @@ def roster_digest(entrants: Sequence[Entrant], *, seed: str, bye_policy: str) ->
     return ids.digest(*parts, length=16)
 
 
-def verify(result: dict[str, Any]) -> list[str]:
+def verify(result: dict[str, Any], teams: Iterable[dict[str, Any]] | None = None) -> list[str]:
     """Independent re-check of a built bracket. Used by the auditor and CI.
 
     The input may be a hand-edited or truncated file, so every access is
@@ -764,4 +859,67 @@ def verify(result: dict[str, Any]) -> list[str]:
             "bracket claims feasible while its own audit reports a hard constraint as "
             "violated or infeasible"
         )
+    problems.extend(_reverify_constraints(result, first, teams))
+    return problems
+
+
+def _reverify_constraints(
+    result: dict[str, Any], first: list[dict[str, Any]], teams: Iterable[dict[str, Any]] | None
+) -> list[str]:
+    """Re-derive the hard constraints from the placement, not from the audit block.
+
+    A bracket file carries its own constraint audit. Trusting it means a
+    hand-edited or tampered file verifies clean, which is precisely what the
+    audit exists to prevent.
+    """
+    if teams is None:
+        return []
+    problems: list[str] = []
+    try:
+        entrants = {team.id: team for team in (Entrant.from_dict(t) for t in teams)}
+    except ValidationError as exc:
+        return [f"roster supplied for re-verification is invalid: {exc.message}"]
+
+    unit_count = len(first)
+    positions: dict[str, int] = {}
+    recorded_byes: set[str] = set()
+    for index, match in enumerate(first):
+        for entrant in (match.get("entrants") or []):
+            if entrant:
+                positions[entrant] = index
+        if match.get("bye"):
+            bye_team = next((e for e in (match.get("entrants") or []) if e), None)
+            if bye_team:
+                recorded_byes.add(bye_team)
+
+    for match in first:
+        pair = [e for e in (match.get("entrants") or []) if e]
+        if len(pair) == 2 and pair[0] in entrants and pair[1] in entrants:
+            reasons = conflict_reasons(entrants[pair[0]], entrants[pair[1]])
+            if reasons and result.get("feasible"):
+                problems.append(
+                    f"slot {match.get('slot')} pairs {pair[0]} with {pair[1]} "
+                    f"({', '.join(reasons)}) in a bracket claiming feasibility"
+                )
+
+    finalists = {t.previous_result: t.id for t in entrants.values()
+                 if t.previous_result in FINALISTS}
+    if len(finalists) == 2 and unit_count >= 2:
+        champion, runner_up = finalists["champion"], finalists["runner-up"]
+        if champion in positions and runner_up in positions:
+            meets = meeting_round(positions[champion], positions[runner_up], unit_count)
+            rounds = total_rounds(int(result.get("bracket_size", unit_count * 2)))
+            if meets < rounds and result.get("feasible"):
+                problems.append(
+                    f"previous finalists {champion} and {runner_up} can meet in round "
+                    f"{meets} of {rounds} in a bracket claiming feasibility"
+                )
+
+    status, detail, exceptions = _check_bye_policy(
+        list(entrants.values()),
+        [entrants[team_id] for team_id in sorted(recorded_byes) if team_id in entrants],
+        str(result.get("bye_policy", "")),
+    )
+    if status == VIOLATED:
+        problems.append(f"recorded byes do not match the declared policy: {detail} {exceptions}")
     return problems

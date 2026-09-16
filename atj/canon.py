@@ -179,6 +179,11 @@ class HeadToHeadRubric:
     order_balancing: str
     values: dict[str, int]
     source: str
+    tie_break_order: tuple[str, ...] = ()
+
+    @property
+    def metadata_order(self) -> tuple[str, ...]:
+        return self.tie_break_order
 
     @property
     def reference(self) -> str:
@@ -222,6 +227,7 @@ def parse_head_to_head(path: Path) -> HeadToHeadRubric:
         order_balancing=str(metadata.get("order_balancing", "required")),
         values=values,
         source=source,
+        tie_break_order=tuple(str(step) for step in metadata.get("tie_break_order") or ()),
     )
 
 

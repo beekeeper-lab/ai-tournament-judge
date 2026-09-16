@@ -51,7 +51,7 @@ quality. Four teams, four slots, no byes.
 | No avoidable same-affiliation or previous-finalist first-round match | hard | satisfied | a conflict-free play-in pairing was available and used |
 | Affiliation separation maximized | soft | maximized | north-academy (2 teams): earliest meeting round 2 |
 
-Reproduce with: `atj bracket build <event-dir> --seed sample-mock-2026-draw` (roster version 1, input digest `a4e6804ddfc43d34`).
+Reproduce with: `python3 -m atj bracket build --event-dir <event-dir> --seed sample-mock-2026-draw` (roster version 1, input digest `a4e6804ddfc43d34`).
 <!-- atj:bracket:end -->
 
 ## Why this draw was forced

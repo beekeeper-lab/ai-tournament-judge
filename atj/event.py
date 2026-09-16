@@ -95,8 +95,18 @@ def load(event_dir: Path, *, root: Path | None = None) -> Event:
     config, _ = frontmatter.read(event_dir / "event.md")
     status, _ = frontmatter.read(event_dir / "status.md")
     roster, roster_body = frontmatter.read(event_dir / "teams.md")
+    table = parse_roster_table(roster_body)
+    if "teams" in roster and table:
+        # Two rosters in one file is exactly the duplicate-source problem the
+        # canonical model exists to remove, and the front-matter copy used to win
+        # silently.
+        raise ValidationError(
+            "teams.md declares a `teams:` list in its front matter and a roster table in "
+            "its body. Keep one. The reviewed Markdown table is the intended source.",
+            artifact=str(event_dir / "teams.md"),
+        )
     if "teams" not in roster:
-        roster = dict(roster, teams=parse_roster_table(roster_body))
+        roster = dict(roster, teams=table)
     roster = dict(roster, teams=_with_consolidated_scores(event_dir, roster.get("teams") or []))
     return Event(directory=event_dir, root=base, config=config, status=status, roster=roster)
 

@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 
-from . import canon, frontmatter, publication, schema, versions
+from . import canon, frontmatter, ids, publication, schema, versions
 from .errors import AtjError
 from .publication import Finding
 
@@ -31,7 +31,7 @@ ARTIFACT_KINDS = {
     "adjudications": ("adjudication", "adjudication-report.md"),
     "dossiers": ("dossier", "team-dossier.md"),
     "audits": (None, "audit-report.md"),
-    "submissions": (None, "submission-intake.md"),
+    "submissions": ("submission-intake", "submission-intake.md"),
     "runs": ("model-run", "model-run-record.md"),
     "public": ("public-report", None),
 }
@@ -133,6 +133,14 @@ def validate_artifact(
                 findings.append(
                     _finding("major", "section", f"missing required section: {required!r}", path)
                 )
+
+    for field, value in sorted(metadata.items()):
+        if field not in ids.PATTERNS or value in (None, ""):
+            continue
+        try:
+            ids.validate_identifier(field, str(value), artifact=str(path))
+        except AtjError as exc:
+            findings.append(_finding("blocking", "identifier", exc.message, path))
 
     if schema_name == "judgment":
         findings.extend(_check_judgment_scores(metadata, path, root))

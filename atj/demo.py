@@ -274,6 +274,24 @@ def judgments_for(team: Team, rubric: canon.Rubric) -> list[scoring.Judgment]:
     ]
 
 
+RESOLUTIONS = {
+    "team-lumen": {
+        "security": {
+            "adjudication": "team-lumen-security",
+            "resolved_score": LUMEN_ADJUDICATION["resolved_score"],
+            "rationale": LUMEN_ADJUDICATION["rationale"],
+        }
+    },
+    "team-harbor": {
+        "innovation": {
+            "adjudication": "team-harbor-innovation",
+            "resolved_score": None,
+            "rationale": HARBOR_ADJUDICATION["rationale"],
+        }
+    },
+}
+
+
 def consolidation_for(team: Team, *, resolved: bool, root: Path | None = None) -> dict[str, Any]:
     """Consolidate a team, optionally after its adjudication has been applied.
 
@@ -282,6 +300,7 @@ def consolidation_for(team: Team, *, resolved: bool, root: Path | None = None) -
     """
     rubric = canon.load(root)
     judgments = judgments_for(team, rubric)
+    resolutions = RESOLUTIONS.get(team.id, {}) if resolved else {}
     if resolved and team.id == "team-lumen":
         adjusted = []
         for judgment in judgments:
@@ -298,7 +317,9 @@ def consolidation_for(team: Team, *, resolved: bool, root: Path | None = None) -
                 )
             )
         judgments = adjusted
-    return scoring.consolidate(judgments, expected_judges=JUDGES, root=root)
+    return scoring.consolidate(
+        judgments, expected_judges=JUDGES, resolutions=resolutions, root=root
+    )
 
 
 def matchup_for(name: str, *, root: Path | None = None) -> dict[str, Any]:
@@ -372,6 +393,12 @@ def expected_conditions(root: Path | None = None) -> dict[str, Any]:
         "blocked": not lumen_before["finalized"],
         "reasons": lumen_before["blocked_reasons"],
     }
+    harbor_before = consolidation_for(TEAMS_BY_ID["team-harbor"], resolved=False, root=root)
+    findings["severe_disagreement_blocks"] = {
+        "team": "team-harbor",
+        "blocked": not harbor_before["finalized"],
+        "reasons": harbor_before["blocked_reasons"],
+    }
     lumen_after = consolidation_for(TEAMS_BY_ID["team-lumen"], resolved=True, root=root)
     findings["adjudication_clears_ne"] = {
         "team": "team-lumen", "finalized": lumen_after["finalized"],
@@ -428,6 +455,9 @@ REQUIRED_CONDITIONS = {
         f["severe_disagreement"]["agreement"] == scoring.SEVERE
         and bool(f["severe_disagreement"]["outliers"])
     ),
+    "severe_disagreement_blocks_until_adjudicated": lambda f: (
+        f["severe_disagreement_blocks"]["blocked"]
+    ),
     "decisive_matchup": lambda f: (
         f["matchup_semifinal_1"]["outcome"] == matchup.CONFIRMED
         and f["matchup_semifinal_1"]["winner"] is not None
@@ -456,6 +486,7 @@ CONDITION_EVIDENCE = {
     "adjudication_clears_ne": "adjudication_clears_ne",
     "material_disagreement": "material_disagreement",
     "severe_disagreement": "severe_disagreement",
+    "severe_disagreement_blocks_until_adjudicated": "severe_disagreement_blocks",
     "decisive_matchup": "matchup_semifinal_1",
     "close_call_matchup": "matchup_semifinal_2",
     "order_balanced_consistent_matchup": "matchup_final",

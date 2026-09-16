@@ -112,10 +112,37 @@ class OutcomeTests(unittest.TestCase):
         self.assertEqual(result["combined_margin"], 10.0)
         self.assertEqual(result["outcome"], matchup.CONFIRMED)
 
-    def test_band_is_configurable_per_event(self):
+    def test_an_event_may_widen_the_band_but_never_narrow_it(self):
+        """Narrowing turns results needing human review into automatic advancement."""
         values = (comparisons(reliability=1, security=1), comparisons(reliability=-1, security=-1))
+        # Widening sends more matchups to a human: allowed.
         self.assertEqual(resolve(*values, band=20)["outcome"], matchup.ADJUDICATION_REQUIRED)
-        self.assertEqual(resolve(*values, band=1)["outcome"], matchup.CONFIRMED)
+        # Narrowing is refused, including to exactly zero.
+        for narrow in (0, 1, 4.9, -3):
+            with self.assertRaises(ValidationError):
+                resolve(*values, band=narrow)
+
+    def test_an_input_file_cannot_narrow_the_band_through_the_cli(self):
+        import json
+        import tempfile
+        from atj.cli import main
+
+        payload = {
+            "team_a": A, "team_b": B, "close_call_band": 0,
+            "a_first": {"presented_first": A, "comparisons": comparisons(security=1)},
+            "b_first": {"presented_first": B, "comparisons": comparisons(security=-1)},
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = f"{directory}/matchup.json"
+            with open(path, "w", encoding="utf-8") as handle:
+                json.dump(payload, handle)
+            self.assertEqual(main(["--root", str(ROOT), "matchup", path]), 1)
+
+    def test_a_band_on_the_boundary_still_requires_adjudication(self):
+        result = resolve(comparisons(security=1), comparisons(security=-1))
+        self.assertEqual(result["combined_margin"], 5.0)
+        self.assertEqual(result["outcome"], matchup.ADJUDICATION_REQUIRED)
+        self.assertIsNone(result["winner"])
 
     def test_dead_tie_requires_adjudication(self):
         result = resolve(comparisons(), comparisons())

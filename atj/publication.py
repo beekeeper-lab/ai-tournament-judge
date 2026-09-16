@@ -16,6 +16,7 @@ directory/visibility agreement, approval gating, and human publication approval.
 from __future__ import annotations
 
 import re
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -150,6 +151,26 @@ def scan_foreign_teams(
     return findings
 
 
+def _walk_keys(value: Any, path: str = "") -> list[tuple[str, str]]:
+    """Every key in a nested structure, with the path that reaches it."""
+    found: list[tuple[str, str]] = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            where = f"{path}.{key}" if path else str(key)
+            found.append((str(key), where))
+            found.extend(_walk_keys(item, where))
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            found.extend(_walk_keys(item, f"{path}[{index}]"))
+    return found
+
+
+def _banned_fields(metadata: dict[str, Any], banned: Iterable[str]) -> list[tuple[str, str]]:
+    """Banned keys anywhere in the metadata, not only at the top level."""
+    forbidden = set(banned)
+    return [(key, where) for key, where in _walk_keys(metadata) if key in forbidden]
+
+
 def check_public(
     metadata: dict[str, Any], body: str, *, artifact: str = "", public_scores: bool = False
 ) -> list[Finding]:
@@ -164,12 +185,11 @@ def check_public(
             artifact,
         ))
 
-    for field in PRIVATE_ONLY_FIELDS:
-        if field in metadata:
-            findings.append(Finding(
-                "blocking", "private-field",
-                f"private-only field {field!r} present on a public artifact", artifact,
-            ))
+    for field, where in _banned_fields(metadata, PRIVATE_ONLY_FIELDS):
+        findings.append(Finding(
+            "blocking", "private-field",
+            f"private-only field {field!r} present on a public artifact at {where!r}", artifact,
+        ))
 
     if metadata.get("approval_state") != "approved":
         findings.append(Finding(
@@ -189,9 +209,10 @@ def check_public(
             "private records it was generated from", artifact,
         ))
 
-    findings.extend(scan_secrets(body, artifact=artifact))
-    findings.extend(scan_deliberation(body, artifact=artifact))
-    findings.extend(scan_private_identifiers(body, artifact=artifact))
+    surface = body + "\n" + json.dumps(metadata, default=str, sort_keys=True)
+    findings.extend(scan_secrets(surface, artifact=artifact))
+    findings.extend(scan_deliberation(surface, artifact=artifact))
+    findings.extend(scan_private_identifiers(surface, artifact=artifact))
 
     if not public_scores and not metadata.get("scores_published"):
         match = _SCORE_PATTERN.search(body)
@@ -214,12 +235,12 @@ def check_team_facing(
             "blocking", "visibility",
             f"team-facing artifact declares visibility {metadata.get('visibility')!r}", artifact,
         ))
-    for field in TEAM_FORBIDDEN_FIELDS:
-        if field in metadata:
-            findings.append(Finding(
-                "blocking", "private-field",
-                f"panel-internal field {field!r} present on a team-facing artifact", artifact,
-            ))
+    for field, where in _banned_fields(metadata, TEAM_FORBIDDEN_FIELDS):
+        findings.append(Finding(
+            "blocking", "private-field",
+            f"panel-internal field {field!r} present on a team-facing artifact at {where!r}",
+            artifact,
+        ))
     findings.extend(scan_secrets(body, artifact=artifact))
     findings.extend(scan_deliberation(body, artifact=artifact))
     if own_team:
@@ -263,7 +284,15 @@ def check_artifact(
     artifact = str(path)
     visibility = expected_visibility(path, event_dir)
     if visibility is None:
-        return []
+        # A publication gate that cannot tell where an artifact lives must not
+        # report it clear. Failing open here would have passed a file full of
+        # credentials whenever --event-dir was wrong or the path was nested.
+        return [Finding(
+            "blocking", "location-unknown",
+            f"cannot determine the required visibility for this artifact relative to "
+            f"{event_dir}; pass the correct --event-dir so the gate knows which rules apply",
+            artifact,
+        )]
     if visibility == PUBLIC:
         return check_public(metadata, body, artifact=artifact, public_scores=public_scores)
     if visibility == TEAM:

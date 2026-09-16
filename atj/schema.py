@@ -28,6 +28,7 @@ ARTIFACT_SCHEMAS = {
     "event": "event.schema.json",
     "roster": "roster.schema.json",
     "team": "team.schema.json",
+    "submission-intake": "submission-intake.schema.json",
     "evidence-manifest": "evidence-manifest.schema.json",
     "judgment": "judgment.schema.json",
     "consolidated-report": "consolidated-report.schema.json",

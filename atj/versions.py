@@ -210,14 +210,24 @@ def require_versions(
             canon.load_bracket_policy(base).require_reference(value, artifact=artifact)
 
     band = metadata.get("close_call_band")
-    if band is not None and float(band) > float(head_to_head.close_call_band):
-        # The rubric sets the ceiling. An event may tighten the band; widening it
-        # would quietly convert close calls into automatic wins.
-        raise VersionError(
-            f"close_call_band {band} exceeds the rubric ceiling of "
-            f"{head_to_head.close_call_band}; an event may tighten the band, never widen it",
-            artifact=artifact,
-        )
+    if band is not None:
+        # The rubric's band is the FLOOR. A wider band sends more matchups to a
+        # human, which is the safe direction. A narrower one converts close calls
+        # into automatic advancement, so it is refused.
+        value = float(band)
+        if value < float(head_to_head.close_call_band):
+            raise VersionError(
+                f"close_call_band {band} is below the rubric floor of "
+                f"{head_to_head.close_call_band}. An event may widen the band, sending more "
+                f"matchups to a human official, but never narrow it: that would turn "
+                f"results requiring review into automatic advancements",
+                artifact=artifact,
+            )
+        if value > 100:
+            raise VersionError(
+                f"close_call_band {band} exceeds the maximum possible margin of 100",
+                artifact=artifact,
+            )
 
     persona = metadata.get("persona") or expect_persona
     if persona is not None:

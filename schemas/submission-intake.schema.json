@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-tournament-judge.local/schemas/submission-intake.schema.json",
+  "title": "Submission intake record",
+  "type": "object",
+  "required": [
+    "event_id",
+    "team_id",
+    "repository",
+    "commit",
+    "rubric",
+    "framework_commit",
+    "eligible",
+    "visibility",
+    "approval_state",
+    "validation_state"
+  ],
+  "properties": {
+    "event_id": {
+      "$ref": "common.schema.json#/$defs/slug"
+    },
+    "team_id": {
+      "$ref": "common.schema.json#/$defs/slug"
+    },
+    "repository": {
+      "type": "string",
+      "minLength": 1
+    },
+    "commit": {
+      "$ref": "common.schema.json#/$defs/commit"
+    },
+    "rubric": {
+      "$ref": "common.schema.json#/$defs/reference"
+    },
+    "framework_commit": {
+      "$ref": "common.schema.json#/$defs/framework_commit"
+    },
+    "submitted_at": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    },
+    "eligible": {
+      "type": "boolean"
+    },
+    "visibility": {
+      "const": "private"
+    },
+    "approval_state": {
+      "$ref": "common.schema.json#/$defs/approval_state"
+    },
+    "validation_state": {
+      "$ref": "common.schema.json#/$defs/validation_state"
+    }
+  },
+  "additionalProperties": true
+}
