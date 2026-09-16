@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
 roster_version: 1
-frozen: false
+frozen: true
 ---
 # Teams
 

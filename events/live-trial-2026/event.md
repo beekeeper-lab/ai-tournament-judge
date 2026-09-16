@@ -93,22 +93,35 @@ timeout are enforced by `atj/sandbox.py` and are not restated here; the module i
 the source of truth for them, and `atj sandbox run` refuses to start if isolation
 cannot be verified at the moment of execution.
 
-Approved images. `atj/sandbox.py` defaults to `docker.io/library/python:3.12-alpine`,
-which suits `team-ledger` (a Python project with `pyproject.toml`) but cannot run
-`team-podcast`, which ships a server and a web client. Two images are authorized
-for this event, and no other may be used without a recorded override:
+Approved images. The module default `docker.io/library/python:3.12-alpine`
+cannot produce execution evidence for either submission: it has no test runner,
+and with `--network none` nothing can be installed at run time. Two images were
+built for this event instead, each from its submission's own declared
+dependencies and nothing else. They are built with network access so that the
+container can run without it.
 
-| Team | Approved image | Why |
-|---|---|---|
-| team-ledger | `docker.io/library/python:3.12-alpine` | the module default; the submission is a Python package with its own test suite |
-| team-podcast | `docker.io/library/python:3.12-alpine` | the submission's server is Python; its web client is static and needs no runtime |
+| Team | Approved image | Contents | Source of the dependency list |
+|---|---|---|---|
+| team-ledger | `localhost/atj-live-trial/ledger:1` | python:3.12-slim + pyyaml, duckdb, pytest | `pyproject.toml` dependencies and dev extras |
+| team-podcast | `localhost/atj-live-trial/podcast:1` | python:3.12-slim + chromium, fastapi, pydantic, uvicorn, httpx, playwright, pytest | runtime imports under `server/`, plus `tests/requirements.txt` |
 
-Both are upstream mutable tags rather than pinned digests, which is a known
-weakness: the same tag can resolve to different bytes later, so an execution is
-reproducible only within this event's window. Every run record written by
-`atj sandbox run` names the image actually used, so a deviation from this table
-is visible at the judgments audit rather than silent. Pinning by digest is
-deferred to a later framework version, not decided per event by a judge.
+Debian slim rather than alpine: duckdb publishes manylinux wheels but no musl
+wheel, so alpine attempts a source build and fails. Chromium is baked into the
+team-podcast image because `tests/e2e.py` expects a browser at
+`/usr/bin/chromium` and cannot fetch one offline.
+
+Both are local tags, not pinned digests. The Containerfiles that produced them
+are recorded with the evidence for each team, so a rebuild is auditable even
+though the tag is mutable. Every run record names the image actually used, so a
+deviation from this table is visible at the judgments audit rather than silent.
+
+This table was amended after the configuration gate passed, which is permitted
+only because no judging has begun. The amendment is in scope for the intake
+stage audit; it does not inherit the passed configuration gate.
+
+Building an image installs the third-party packages these projects declare. That
+is code executing at build time, inside podman, and it is not the submission's
+own code. No submission code has been executed on the host.
 
 Evidence capture: every execution is recorded through `atj sandbox run --output`,
 which writes a run record naming the runtime, version, command, exit status,

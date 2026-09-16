@@ -1,0 +1,6 @@
+# Evidence image for team-ledger (hive-ledger).
+# Debian slim, not alpine: duckdb ships manylinux wheels but no musl wheel, so
+# alpine tries to compile it from source and fails.
+# Built with network so the container can RUN with --network none.
+FROM docker.io/library/python:3.12-slim
+RUN pip install --no-cache-dir "pyyaml>=6.0" "duckdb>=1.0" "pytest>=8.0"

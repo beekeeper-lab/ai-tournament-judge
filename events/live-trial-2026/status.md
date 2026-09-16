@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
 current_stage: intake
-last_updated: "2026-09-16T23:41:29Z"
+last_updated: "2026-09-16T23:49:05Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -58,3 +58,7 @@ the roster.
 | 2026-09-16T23:36:00Z | Configuration audit, first pass | event.md, teams.md, submissions/*.md | audits/configuration.md | FAIL |
 | 2026-09-16T23:37:00Z | Configuration repaired: body sections written, validation_state corrected, status brought current | audits/configuration.md F1-F3 | event.md, status.md | pending re-audit |
 | 2026-09-16T23:41:20Z | Configuration re-audited after repair; approved images recorded (F4), ledger timestamps corrected (F5) | audits/configuration.md | event.md, status.md | PASS WITH ADVISORIES |
+| 2026-09-16T23:49:05Z | Roster frozen at version 1 | teams.md | teams.md | not-audited |
+| 2026-09-16T23:49:05Z | Sandbox verified live: podman 6.1.0, rootless, exit 0 against both checkouts | workspaces/live-trial-2026/* | — | not-audited |
+| 2026-09-16T23:49:05Z | Approved images amended: default image cannot run either test suite offline | event.md | event.md, evidence images | pending intake audit |
+| 2026-09-16T23:49:05Z | team-ledger test suite executed in sandbox: 35 passed, exit 0, no network | 9d21b770 @ localhost/atj-live-trial/ledger:1 | run record | not-audited |
