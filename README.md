@@ -184,6 +184,7 @@ preliminary matches, eight participants, twelve byes, reproducible from its seed
 | `docs/implementation-detail.md` | What was built, why, and where the seams are |
 | `docs/release-readiness-audit.md` | Baseline audit of v0.1.0-alpha |
 | `docs/final-audit.md` | Independent audit of this release |
+| `docs/agent-verification.md` | Live-model verification of the judge agents |
 | `docs/implementation-plan.md` | Build and audit record |
 | `docs/release-checklist.md` | What to verify before tagging a release |
 | `docs/troubleshooting.md` | Common failures and what they mean |

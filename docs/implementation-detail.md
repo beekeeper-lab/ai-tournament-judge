@@ -211,6 +211,10 @@ treat submission content as untrusted. That is a mitigation. This repository doe
 not claim an LLM cannot be manipulated, and `tests/fixtures/prompt-injection/`
 says so explicitly.
 
+One live panel run is recorded in `docs/agent-verification.md`: all four judges
+refused all 13 attempts in the fixture and disclosed them despite being told not
+to. One run is evidence, not proof, and that document says so.
+
 The claim that *is* made is narrower and testable: a successful manipulation of a
 judge's prose cannot alter a score's arithmetic, a rubric version, an artifact's
 visibility, or the set of approved public output.
