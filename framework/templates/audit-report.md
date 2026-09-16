@@ -1,10 +1,22 @@
 ---
 event_id: EVENT-ID
 audit_scope: SCOPE
-auditor: judging-auditor
-status: draft
-result: FAIL
+audit_id: AUDIT-ID
+team_id: null
+match_id: null
+commit: IMMUTABLE-COMMIT
+evidence_package_id: EVIDENCE-ID
+rubric: submission-evaluation@1.0.0
+persona: judging-auditor@VERSION
+framework_commit: FRAMEWORK-COMMIT
+model_requested: MODEL-REQUESTED
+model_used: MODEL-USED
+started_at: YYYY-MM-DDTHH:MM:SSZ
+completed_at: YYYY-MM-DDTHH:MM:SSZ
 visibility: private
+approval_state: draft
+validation_state: unvalidated
+result: FAIL
 ---
 
 # Judging Audit

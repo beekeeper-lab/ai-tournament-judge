@@ -1,21 +1,58 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "matchup.schema.json",
-  "title": "Head-to-Head Matchup",
+  "$id": "https://ai-tournament-judge.local/schemas/matchup.schema.json",
+  "title": "Head-to-head matchup result",
   "type": "object",
-  "required": ["event_id", "match_id", "team_a", "team_b", "rubric", "comparisons"],
+  "required": ["event_id", "match_id", "round_id", "team_a", "team_b", "rubric",
+               "framework_commit", "passes", "close_call_band", "outcome",
+               "visibility", "approval_state", "validation_state"],
   "properties": {
-    "event_id": {"type": "string"},
-    "match_id": {"type": "string"},
-    "team_a": {"type": "string"},
-    "team_b": {"type": "string"},
-    "rubric": {"const": "head-to-head@1.0.0"},
-    "comparisons": {
+    "event_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "match_id": {"$ref": "common.schema.json#/$defs/match_id"},
+    "round_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "team_a": {"$ref": "common.schema.json#/$defs/slug"},
+    "team_b": {"$ref": "common.schema.json#/$defs/slug"},
+    "rubric": {"$ref": "common.schema.json#/$defs/reference"},
+    "framework_commit": {"$ref": "common.schema.json#/$defs/framework_commit"},
+    "close_call_band": {"type": "number", "minimum": 0},
+    "passes": {
       "type": "object",
-      "additionalProperties": {"type": "integer", "minimum": -2, "maximum": 2}
+      "required": ["a_first", "b_first"],
+      "properties": {
+        "a_first": {"$ref": "#/$defs/pass"},
+        "b_first": {"$ref": "#/$defs/pass"}
+      }
     },
-    "winner": {"type": ["string", "null"]},
-    "requires_adjudication": {"type": "boolean"}
+    "combined_margin": {"type": ["number", "null"]},
+    "order_disagreement": {"type": "boolean"},
+    "outcome": {"enum": ["confirmed", "adjudication-required"]},
+    "winner": {"oneOf": [{"$ref": "common.schema.json#/$defs/slug"}, {"type": "null"}]},
+    "adjudication_reasons": {"type": "array", "items": {"type": "string"}},
+    "adjudication_id": {"oneOf": [{"$ref": "common.schema.json#/$defs/adjudication_id"}, {"type": "null"}]},
+    "model": {"$ref": "common.schema.json#/$defs/model_record"},
+    "visibility": {"const": "private"},
+    "approval_state": {"$ref": "common.schema.json#/$defs/approval_state"},
+    "validation_state": {"$ref": "common.schema.json#/$defs/validation_state"}
+  },
+  "$defs": {
+    "pass": {
+      "type": "object",
+      "required": ["presented_first", "comparisons"],
+      "properties": {
+        "presented_first": {"$ref": "common.schema.json#/$defs/slug"},
+        "comparisons": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {"$ref": "common.schema.json#/$defs/slug"},
+          "additionalProperties": {"type": "integer", "minimum": -2, "maximum": 2}
+        },
+        "evidence": {
+          "type": "object",
+          "propertyNames": {"$ref": "common.schema.json#/$defs/slug"},
+          "additionalProperties": {"type": "string"}
+        }
+      }
+    }
   },
   "additionalProperties": true
 }

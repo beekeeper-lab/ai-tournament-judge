@@ -3,8 +3,18 @@ event_id: EVENT-ID
 team_id: TEAM-ID
 repository: REPOSITORY-URL-OR-PATH
 commit: IMMUTABLE-COMMIT
+rubric: submission-evaluation@1.0.0
+persona: prepare-submission@VERSION
+framework_commit: FRAMEWORK-COMMIT
 submitted_at: YYYY-MM-DDTHH:MM:SSZ
-status: pending
+started_at: YYYY-MM-DDTHH:MM:SSZ
+completed_at: YYYY-MM-DDTHH:MM:SSZ
+model_requested: not-applicable
+model_used: not-applicable
+eligible: true
+visibility: private
+approval_state: draft
+validation_state: unvalidated
 ---
 
 # Submission Intake

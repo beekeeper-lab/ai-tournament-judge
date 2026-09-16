@@ -1,11 +1,24 @@
 ---
 event_id: EVENT-ID
 policy: bracket-assignment@1.0.0
+rubric: submission-evaluation@1.0.0
+persona: build-bracket@VERSION
+framework_commit: FRAMEWORK-COMMIT
+roster_version: 1
 team_count: 0
 bracket_size: 0
+bye_count: 0
 bye_policy: performance-qualified
 random_seed: SEED
-status: draft
+input_digest: INPUT-DIGEST
+feasible: true
+model_requested: not-applicable
+model_used: not-applicable
+started_at: YYYY-MM-DDTHH:MM:SSZ
+completed_at: YYYY-MM-DDTHH:MM:SSZ
+visibility: private
+approval_state: draft
+validation_state: unvalidated
 ---
 
 # Bracket Report

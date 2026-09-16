@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-tournament-judge.local/schemas/status.schema.json",
+  "title": "Event status ledger",
+  "type": "object",
+  "required": ["event_id", "current_stage", "last_updated", "blocked", "stage_gates", "units"],
+  "properties": {
+    "event_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "current_stage": {
+      "enum": ["configuration", "intake", "evidence", "initial-judging", "consolidation",
+               "bracket", "tournament", "dossiers", "final-audit", "complete"]
+    },
+    "last_updated": {"$ref": "common.schema.json#/$defs/timestamp"},
+    "blocked": {"type": "boolean"},
+    "blocked_reason": {"type": ["string", "null"]},
+    "stage_gates": {
+      "type": "object",
+      "propertyNames": {"$ref": "common.schema.json#/$defs/slug"},
+      "additionalProperties": {"enum": ["pending", "passed", "failed"]}
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["unit_id", "stage", "state", "input_digest"],
+        "properties": {
+          "unit_id": {"type": "string", "minLength": 1},
+          "stage": {"type": "string"},
+          "state": {"enum": ["pending", "in-progress", "complete", "stale", "failed"]},
+          "input_digest": {"type": "string"},
+          "outputs": {"type": "array", "items": {"type": "string"}},
+          "audit_result": {"enum": ["PASS", "PASS WITH ADVISORIES", "FAIL", "not-audited"]},
+          "completed_at": {"oneOf": [{"$ref": "common.schema.json#/$defs/timestamp"}, {"type": "null"}]}
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}
