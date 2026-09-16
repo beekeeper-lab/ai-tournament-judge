@@ -96,32 +96,47 @@ cannot be verified at the moment of execution.
 Approved images. The module default `docker.io/library/python:3.12-alpine`
 cannot produce execution evidence for either submission: it has no test runner,
 and with `--network none` nothing can be installed at run time. Two images were
-built for this event instead, each from its submission's own declared
-dependencies and nothing else. They are built with network access so that the
+built for this event instead. They are built with network access so that the
 container can run without it.
 
-| Team | Approved image | Contents | Source of the dependency list |
+| Team | Approved image | Image ID | Contents |
 |---|---|---|---|
-| team-ledger | `localhost/atj-live-trial/ledger:1` | python:3.12-slim + pyyaml, duckdb, pytest | `pyproject.toml` dependencies and dev extras |
-| team-podcast | `localhost/atj-live-trial/podcast:1` | python:3.12-slim + chromium, fastapi, pydantic, uvicorn, httpx, playwright, pytest | runtime imports under `server/`, plus `tests/requirements.txt` |
+| team-ledger | `localhost/atj-live-trial/ledger:2` | `7780b2b9e6e1` | python:3.12-slim, poppler-utils, pyyaml, duckdb, pytest |
+| team-podcast | `localhost/atj-live-trial/podcast:2` | `5ff34ae63320` | python:3.12-slim, chromium, fonts-liberation, fastapi, pydantic, uvicorn[standard], playwright |
+
+Where each package comes from, stated exactly rather than loosely:
+
+- team-ledger: `pyyaml` and `duckdb` are `pyproject.toml` dependencies; `pytest`
+  is its declared dev extra. `poppler-utils` is **not** declared by the
+  submission. It supplies the `pdftotext` binary that the ingest path shells out
+  to, and without it PDF ingest fails for a reason that has nothing to do with
+  the submission's quality. It is added deliberately and named here.
+- team-podcast: `fastapi` and `pydantic` are imported by `server/`; `playwright`
+  is `tests/requirements.txt`; `chromium` is the browser `tests/e2e.py` expects
+  at `/usr/bin/chromium`. `uvicorn[standard]` matches what `run.sh` installs —
+  plain `uvicorn` is a different server runtime and was corrected. An earlier
+  build of this image also carried `httpx` and `pytest`, neither of which appears
+  anywhere in the checkout; both were removed.
 
 Debian slim rather than alpine: duckdb publishes manylinux wheels but no musl
-wheel, so alpine attempts a source build and fails. Chromium is baked into the
-team-podcast image because `tests/e2e.py` expects a browser at
-`/usr/bin/chromium` and cannot fetch one offline.
+wheel, so alpine attempts a source build and fails.
 
-Both are local tags, not pinned digests. The Containerfiles that produced them
-are recorded with the evidence for each team, so a rebuild is auditable even
-though the tag is mutable. Every run record names the image actually used, so a
-deviation from this table is visible at the judgments audit rather than silent.
+Image IDs are recorded above because the tags are mutable and `atj/sandbox.py`
+records only the image string, not a resolved digest. Both Containerfiles start
+from a mutable base and use open-ended version ranges, so the tag alone would let
+a silent rebuild pass unnoticed; the ID is what makes a rebuild detectable. The
+Containerfiles are committed under `events/live-trial-2026/evidence/`.
+
+An untrusted submission now influences what is installed into the image that
+judges it, and package installation runs third-party setup code with network at
+build time. That happens inside podman, never on the host, and never runs the
+submission's own code. The dependency lists are short, mainstream, and recorded.
 
 This table was amended after the configuration gate passed, which is permitted
-only because no judging has begun. The amendment is in scope for the intake
-stage audit; it does not inherit the passed configuration gate.
-
-Building an image installs the third-party packages these projects declare. That
-is code executing at build time, inside podman, and it is not the submission's
-own code. No submission code has been executed on the host.
+only because no judging has begun. The amendment is in scope for the intake stage
+audit; it does not inherit the passed configuration gate. The intake audit ruled
+that it needs a ledger entry rather than a manual override record, because
+nothing was overridden and no rule was excepted.
 
 Evidence capture: every execution is recorded through `atj sandbox run --output`,
 which writes a run record naming the runtime, version, command, exit status,

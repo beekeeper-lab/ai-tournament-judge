@@ -13,8 +13,8 @@ model_requested: not-applicable
 model_used: not-applicable
 eligible: true
 visibility: private
-approval_state: draft
-validation_state: unvalidated
+approval_state: approved
+validation_state: valid
 ---
 # Submission Intake — Podcast Listener
 

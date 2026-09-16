@@ -1,12 +1,12 @@
 ---
 event_id: live-trial-2026
-current_stage: intake
-last_updated: "2026-09-16T23:49:05Z"
+current_stage: evidence
+last_updated: "2026-09-16T23:57:11Z"
 blocked: false
 blocked_reason: null
 stage_gates:
   configuration-audited: passed
-  roster-frozen: pending
+  roster-frozen: passed
   evidence-validated: pending
   judgments-audited: pending
   consolidation-audited: pending
@@ -17,6 +17,7 @@ stage_gates:
 units: []
 gate_evidence:
   configuration-audited: audits/configuration.md
+  roster-frozen: audits/intake.md
 ---
 # Event Status
 
@@ -62,3 +63,9 @@ the roster.
 | 2026-09-16T23:49:05Z | Sandbox verified live: podman 6.1.0, rootless, exit 0 against both checkouts | workspaces/live-trial-2026/* | — | not-audited |
 | 2026-09-16T23:49:05Z | Approved images amended: default image cannot run either test suite offline | event.md | event.md, evidence images | pending intake audit |
 | 2026-09-16T23:49:05Z | team-ledger test suite executed in sandbox: 35 passed, exit 0, no network | 9d21b770 @ localhost/atj-live-trial/ledger:1 | run record | not-audited |
+| 2026-09-16T23:56:58Z | Intake records completed by two independent agents | checkouts @ f3fdd342, 9d21b770 | submissions/team-podcast.md, submissions/team-ledger.md | PASS WITH ADVISORIES |
+| 2026-09-16T23:56:58Z | Intake stage audited | teams.md, submissions/*.md, event.md amendment | audits/intake.md | PASS WITH ADVISORIES |
+| 2026-09-16T23:56:58Z | Images rebuilt to close intake F1: uvicorn[standard], httpx and pytest removed from podcast; poppler-utils added to ledger (A9) | Containerfile.ledger, Containerfile.podcast | ledger:2 7780b2b9e6e1, podcast:2 5ff34ae63320 | not-audited |
+| 2026-09-16T23:56:58Z | Image IDs recorded in event.md to close intake F4 | podman images | event.md | not-audited |
+| 2026-09-16T23:56:58Z | team-ledger suite re-run WITH a run record, closing intake F2 | 9d21b770 @ localhost/atj-live-trial/ledger:2 | runs/team-ledger-pytest-01.json — 35 passed, exit 0, no network | not-audited |
+| 2026-09-16T23:56:58Z | Intake records moved to approved/valid (A2); team-ledger execution footer corrected | audits/intake.md | submissions/*.md | not-audited |
