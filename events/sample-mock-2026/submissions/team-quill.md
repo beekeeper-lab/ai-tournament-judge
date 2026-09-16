@@ -15,7 +15,7 @@ eligible: true
 visibility: private
 approval_state: approved
 validation_state: valid
-persona: prepare-submission@1.0.0
+persona: prepare-submission@1.1.0
 ---
 # Submission Intake — Quill
 

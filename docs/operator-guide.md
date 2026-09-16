@@ -9,8 +9,15 @@
 
 ## Per team
 
-1. Complete submission intake and pin the immutable commit.
-2. Run `/team-ingest` to produce a safe evidence package.
+1. Run `atj intake <event> <team-id> <source>` to materialize the submission,
+   pin its commit, and enroll it. The source may be a git URL, a local
+   repository, a directory or a `.zip`. Checkouts land under
+   `workspaces/<event>/<team-id>/` and are never committed. An archive has no
+   commit, so intake pins a reproducible snapshot of what was delivered and says
+   so in the record; a git source is pinned to its own history, and `--ref`
+   selects the commit when HEAD is not the submission.
+2. Complete the narrative sections of `submissions/<team-id>.md` from the team's
+   own account, then run `/team-ingest` to produce a safe evidence package.
 3. Review evidence gaps before judging.
 4. Run `/team-judge` for the independent panel, consolidation, and audit.
 5. Resolve required adjudication and freeze the team result.

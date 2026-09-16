@@ -3,6 +3,31 @@
 Versions follow `MAJOR.MINOR.PATCH` with a release-stage suffix. Rubrics and
 policies carry their own independent versions; see `framework/rubrics/`.
 
+## Unreleased
+
+### Added
+
+- `atj intake`, the front door. It materializes a submission from a git URL, a
+  local repository, a directory or a `.zip` into `workspaces/<event>/<team-id>/`,
+  pins it to an immutable commit, writes the intake record, and adds or updates
+  the roster row. Every step downstream of intake assumed a checkout and a commit
+  that nothing produced; they were placed by hand.
+- A reproducible snapshot commit for deliveries that carry no history. Fixed
+  identity and fixed timestamps make the hash a pure function of the delivered
+  tree, so an archive pins to the same commit on any machine, and the intake
+  record states that the commit is the tool's and not the team's.
+- Archive intake refuses path traversal, absolute paths, symbolic links,
+  non-regular entries, and over-sized or over-compressed archives, before
+  extracting anything. Checkouts are built beside their destination and swapped
+  into place, so a refused or failed ingest leaves no partial tree and does not
+  destroy the checkout already there.
+
+### Changed
+
+- `prepare-submission` 1.0.0 -> 1.1.0: it now runs `atj intake` rather than
+  assuming a checkout exists, and completes the narrative sections of the record
+  the tool leaves open.
+
 ## 0.2.0-beta — 2026-09-16
 
 First release capable of running a complete supervised mock event. The

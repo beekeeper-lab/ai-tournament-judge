@@ -24,7 +24,7 @@ event.
 | judge-product-agentic | 1.0.0 | initial judge | 401cb9c840e00a99 |
 | panel-consolidator | 1.0.0 | consolidator | b7062819bfbde0d0 |
 | matchup-judge | 1.0.0 | comparative judge | 06f6ff913e17f638 |
-| prepare-submission | 1.0.0 | skill | 4b6f99855da6d7eb |
+| prepare-submission | 1.1.0 | skill | c7c0aa083a37e284 |
 | judge-submission | 1.1.0 | skill | 7f3ec4b12a898ed5 |
 | consolidate-judgments | 1.0.0 | skill | 5f6a8d87f008b947 |
 | build-bracket | 1.0.0 | skill | 9fdf42e23550bbcf |

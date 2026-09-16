@@ -9,7 +9,7 @@ model_requested: not-applicable (scripted fixture)
 model_used: not-applicable (scripted fixture)
 started_at: "2026-05-18T09:00:00Z"
 completed_at: "2026-05-18T17:30:00Z"
-persona: prepare-submission@1.0.0
+persona: prepare-submission@1.1.0
 prepared_at: "2026-05-18T09:00:00Z"
 execution_status: unavailable
 execution_record: null

@@ -136,6 +136,16 @@ def _write(path: Path, metadata: dict[str, Any], body: str) -> None:
 
 # --------------------------------------------------------------------------- #
 
+def _persona(agent_id: str, root: Path) -> str:
+    """The registry is where persona versions live; the sample event reads them.
+
+    Spelling a version literal here made the committed sample event go stale
+    every time a component was revised, which looked like a generator bug and was
+    really a second copy of a fact that already had a home.
+    """
+    return versions.load_personas(root)[agent_id].reference
+
+
 def write_event_files(directory: Path, root: Path) -> None:
     rubric = canon.load(root)
     _write(directory / "event.md", {
@@ -236,7 +246,7 @@ def write_intake_and_evidence(directory: Path, root: Path) -> None:
             "repository": f"fixtures/{team.id}", "submitted_at": STAMP,
             "eligible": True, "visibility": "private",
             "approval_state": "approved", "validation_state": "valid",
-            "persona": "prepare-submission@1.0.0",
+            "persona": _persona('prepare-submission', root),
         }), f"""
 # Submission Intake — {team.display_name}
 
@@ -263,7 +273,7 @@ Declared by the team; not independently verified in this fixture.
 """)
 
         _write(directory / "evidence" / team.id / "manifest.md", _identity(team, {
-            "persona": "prepare-submission@1.0.0",
+            "persona": _persona('prepare-submission', root),
             "prepared_at": STAMP,
             "execution_status": "unavailable",
             "execution_record": None,
@@ -447,7 +457,7 @@ def write_summaries_and_adjudications(directory: Path, root: Path) -> None:
 
         _write(directory / "summaries" / f"{team.id}.md", _identity(team, {
             "consolidation_policy": canon.load_consolidation_policy(root).reference,
-            "persona": "panel-consolidator@1.0.0",
+            "persona": _persona('panel-consolidator', root),
             "judge_run_ids": resolved["judge_run_ids"],
             "total": resolved["total"], "display_total": resolved["display_total"],
             "finalized": resolved["finalized"],
@@ -537,7 +547,7 @@ def _write_adjudication(
         "impact": "recorded alongside the source scores; no source score was modified",
         "confidence": "medium", "decided_by": spec["decided_by"],
         "score_override": override,
-        "persona": "judging-auditor@1.0.0",
+        "persona": _persona('judging-auditor', root),
         "visibility": "private", "approval_state": "approved", "validation_state": "valid",
     }), f"""
 # Adjudication Report — {team.display_name} — {spec['criterion']}
@@ -638,7 +648,7 @@ def write_bracket(directory: Path, root: Path) -> dict[str, Any]:
         "event_id": EVENT_ID,
         "policy": drawn["policy"],
         "rubric": canon.load(root).reference,
-        "persona": "judging-auditor@1.0.0",
+        "persona": _persona('judging-auditor', root),
         "framework_commit": FIXTURE_COMMIT,
         "roster_version": drawn["roster_version"],
         "team_count": drawn["team_count"],
@@ -718,7 +728,7 @@ def write_matchups(
             "evidence_package_a": demo.evidence_package_id(team_a),
             "evidence_package_b": demo.evidence_package_id(team_b),
             "rubric": result["rubric"], "source_rubric": result["source_rubric"],
-            "persona": "matchup-judge@1.0.0", "framework_commit": FIXTURE_COMMIT,
+            "persona": _persona('matchup-judge', root), "framework_commit": FIXTURE_COMMIT,
             "model_requested": FIXTURE_MODEL, "model_used": FIXTURE_MODEL,
             "started_at": STAMP, "completed_at": FINISH,
             "close_call_band": result["close_call_band"],
@@ -815,7 +825,7 @@ def _write_close_call_adjudication(
         "commit": team_a.commit,
         "evidence_package_id": demo.evidence_package_id(team_a),
         "rubric": canon.load(root).reference,
-        "persona": "judging-auditor@1.0.0", "framework_commit": FIXTURE_COMMIT,
+        "persona": _persona('judging-auditor', root), "framework_commit": FIXTURE_COMMIT,
         "model_requested": "not-applicable", "model_used": "not-applicable",
         "started_at": STAMP, "completed_at": FINISH,
         "visibility": "private", "approval_state": "approved", "validation_state": "valid",
@@ -1041,7 +1051,7 @@ def write_dossiers(directory: Path, root: Path, results: dict[str, dict[str, Any
             for entry in resolved["criteria"].values()
         )
         _write(directory / "dossiers" / f"{team.id}.md", _identity(team, {
-            "persona": "build-team-dossier@1.0.0",
+            "persona": _persona('build-team-dossier', root),
             "source_reports": [f"summaries/{team.id}.md", f"evidence/{team.id}/manifest.md"],
             "visibility": "team", "approval_state": "approved", "validation_state": "valid",
         }), f"""
@@ -1119,7 +1129,7 @@ def _audit(
         "commit": reference.commit,
         "evidence_package_id": demo.evidence_package_id(reference),
         "rubric": canon.load(root).reference,
-        "persona": "judging-auditor@1.0.0", "framework_commit": FIXTURE_COMMIT,
+        "persona": _persona('judging-auditor', root), "framework_commit": FIXTURE_COMMIT,
         "model_requested": FIXTURE_MODEL, "model_used": FIXTURE_MODEL,
         "started_at": STAMP, "completed_at": FINISH,
         "visibility": "private", "approval_state": "approved",

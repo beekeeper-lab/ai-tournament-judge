@@ -19,8 +19,8 @@ from pathlib import Path
 from typing import Any
 
 from . import (
-    VERSION, bracket, canon, event as event_module, frontmatter, ids, matchup,
-    publication, render, reports, sandbox, schema, scoring, versions,
+    VERSION, bracket, canon, event as event_module, frontmatter, ids, intake,
+    matchup, publication, render, reports, sandbox, schema, scoring, versions,
 )
 from .errors import AtjError
 
@@ -1054,6 +1054,41 @@ def cmd_sandbox_run(args) -> int:
 
 
 # --------------------------------------------------------------------------- #
+# intake
+# --------------------------------------------------------------------------- #
+
+def cmd_intake(args) -> int:
+    root = _root(args)
+    loaded = event_module.load(Path(args.event_dir), root=root)
+    result = intake.run(
+        loaded, args.team_id, args.source,
+        workspace=Path(args.workspace).resolve() if args.workspace else None,
+        ref=args.ref,
+        display_name=args.display_name,
+        affiliation_group=args.affiliation_group,
+        force=args.force,
+    )
+    payload = {
+        "event_id": result.event_id, "team_id": result.team_id,
+        "source": result.source, "source_kind": result.source_kind,
+        "checkout": str(result.checkout), "commit": result.commit,
+        "pin": result.pin, "record": str(result.record), "notes": result.notes,
+    }
+    _emit(payload, args)
+    if not args.json:
+        print(f"Ingested {result.team_id} into {result.event_id}")
+        print(f"  source:   {result.source} ({result.source_kind})")
+        print(f"  checkout: {result.checkout}")
+        print(f"  commit:   {result.commit} ({result.pin})")
+        print(f"  record:   {result.record}")
+        for note in result.notes:
+            print(f"  note:     {note}")
+        print("  Nothing was executed. Complete the intake record's narrative "
+              "sections, then run `atj event validate`.")
+    return OK
+
+
+# --------------------------------------------------------------------------- #
 # demo
 # --------------------------------------------------------------------------- #
 
@@ -1292,6 +1327,28 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-dossiers", action="store_true", help="skip the printable team dossiers"
     )
     ceremony_parser.set_defaults(func=cmd_ceremony)
+
+    intake_parser = sub.add_parser(
+        "intake", help="materialize, pin and enroll one submission"
+    )
+    intake_parser.add_argument("event_dir")
+    intake_parser.add_argument("team_id")
+    intake_parser.add_argument(
+        "source", help="git URL, local git repository, directory, or .zip archive"
+    )
+    intake_parser.add_argument(
+        "--ref", help="commit, tag or branch to pin; git sources only (default: HEAD)"
+    )
+    intake_parser.add_argument("--display-name", help="roster display name for a new team")
+    intake_parser.add_argument("--affiliation-group", help="school or group, for bracket separation")
+    intake_parser.add_argument(
+        "--workspace", help="where checkouts live (default: <root>/workspaces)"
+    )
+    intake_parser.add_argument(
+        "--force", action="store_true",
+        help="replace an existing checkout, or ingest past a frozen roster",
+    )
+    intake_parser.set_defaults(func=cmd_intake)
 
     demo_parser = sub.add_parser("demo", help="the committed synthetic sample event")
     demo_parser.add_argument(

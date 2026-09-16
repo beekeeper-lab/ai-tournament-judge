@@ -28,7 +28,7 @@ units:
 - unit_id: evidence:team-lumen
   stage: evidence
   state: complete
-  input_digest: 118233cef145898b
+  input_digest: e1d847dc2f11fa24
   outputs:
   - evidence/team-lumen/manifest.md
   audit_result: PASS
@@ -63,7 +63,7 @@ units:
 - unit_id: evidence:team-quill
   stage: evidence
   state: complete
-  input_digest: a98b652db78140cf
+  input_digest: fe77c9633a2b0323
   outputs:
   - evidence/team-quill/manifest.md
   audit_result: PASS
@@ -98,7 +98,7 @@ units:
 - unit_id: evidence:team-harbor
   stage: evidence
   state: complete
-  input_digest: ea4454750ba60b24
+  input_digest: 692b5717908c26e6
   outputs:
   - evidence/team-harbor/manifest.md
   audit_result: PASS
@@ -133,7 +133,7 @@ units:
 - unit_id: evidence:team-verdant
   stage: evidence
   state: complete
-  input_digest: 3a5feb71e8247c13
+  input_digest: d4386a703832a00b
   outputs:
   - evidence/team-verdant/manifest.md
   audit_result: PASS
