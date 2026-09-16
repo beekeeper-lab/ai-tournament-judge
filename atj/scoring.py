@@ -7,16 +7,17 @@ Criteria, weights, scale, and rubric version come from
 ``framework/rubrics/submission-evaluation.md`` via :mod:`atj.canon`. This module
 holds no copy of them.
 
-Rounding uses ``Decimal`` with ROUND_HALF_UP. Binary floats would make 0.5 cases
-depend on representation, and an official total should round the way a person
-reading the rubric expects.
+Rounding uses ``Decimal`` with the rule and precision declared in the rubric's
+front matter. Binary floats would make .5 cases depend on representation, and
+Python's default banker's rounding would turn 73.25 into 73.2 — an official total
+must not change by 0.1 depending on which library rounded it.
 """
 
 from __future__ import annotations
 
 import statistics
 from dataclasses import dataclass, field
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import ROUND_HALF_EVEN, ROUND_HALF_UP, Decimal
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -44,9 +45,23 @@ def _thresholds(root: Path | None = None) -> dict[str, int]:
     }
 
 
-def _round(value: float | Decimal, places: int) -> float:
+_ROUNDING = {"half-up": ROUND_HALF_UP, "half-even": ROUND_HALF_EVEN}
+
+
+def _rounding_mode(root: Path | None = None) -> str:
+    """The rounding rule, declared in the rubric's front matter."""
+    declared = str(canon.load(root).rounding)
+    if declared not in _ROUNDING:
+        raise ValidationError(
+            f"rubric declares an unknown rounding rule {declared!r}; "
+            f"expected one of {', '.join(sorted(_ROUNDING))}"
+        )
+    return declared
+
+
+def _round(value: float | Decimal, places: int, root: Path | None = None) -> float:
     quant = Decimal(1).scaleb(-places)
-    return float(Decimal(str(value)).quantize(quant, rounding=ROUND_HALF_UP))
+    return float(Decimal(str(value)).quantize(quant, rounding=_ROUNDING[_rounding_mode(root)]))
 
 
 @dataclass(frozen=True)
@@ -139,7 +154,7 @@ def individual_score(
         "criteria": criteria,
         "unresolved_ne": unresolved,
         "total": None if unresolved else _round(partial, 4),
-        "display_total": None if unresolved else _round(partial, 1),
+        "display_total": None if unresolved else _round(partial, canon.load(root).display_decimals, root),
         "partial_total": _round(partial, 4),
     }
 
@@ -331,7 +346,9 @@ def consolidate(
         "individuals": individuals,
         "criteria": criteria,
         "total": _round(total, 4) if finalized else None,
-        "display_total": _round(total, 1) if finalized else None,
+        "display_total": (
+            _round(total, rubric.display_decimals, root) if finalized else None
+        ),
         "provisional_total": _round(total, 4),
         "finalized": finalized,
         "blocked_reasons": blocked + integrity,

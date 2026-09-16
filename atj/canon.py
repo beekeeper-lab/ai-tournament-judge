@@ -52,6 +52,8 @@ class Rubric:
     criteria: tuple[Criterion, ...]
     anchors: dict[int, str]
     source: str
+    display_decimals: int = 1
+    rounding: str = "half-up"
 
     @property
     def reference(self) -> str:
@@ -149,6 +151,8 @@ def parse_rubric(path: Path) -> Rubric:
         criteria=tuple(criteria),
         anchors=anchors,
         source=source,
+        display_decimals=int(metadata.get("display_decimals", 1)),
+        rounding=str(metadata.get("rounding", "half-up")),
     )
 
     # The front matter states the intended total; the table defines it. Disagreement

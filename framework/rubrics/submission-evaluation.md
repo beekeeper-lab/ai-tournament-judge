@@ -4,6 +4,8 @@ version: 1.0.0
 scale_min: 0
 scale_max: 5
 total_weight: 100
+display_decimals: 1
+rounding: half-up
 ---
 
 # Submission Evaluation Rubric
@@ -37,7 +39,16 @@ All four judges use these criteria and weights.
 
 `criterion_points = score / 5 * criterion_weight`
 
-The overall score is the sum of criterion points and ranges from 0 to 100. Use `atj score`; reports may display at most one decimal place. Never compute an official total by hand.
+The overall score is the sum of criterion points and ranges from 0 to 100. Use
+`atj score`; never compute an official total by hand.
+
+Displayed totals are rounded to `display_decimals` places using `rounding:
+half-up` — a value ending in exactly 5 rounds away from zero, the way a person
+reading this table expects. Banker's rounding, which is Python's default, would
+round 73.25 down to 73.2. The rule is declared in this file's front matter and
+read from there, because a total that changes by 0.1 depending on which library
+rounded it is not an official number. Exact unrounded values are preserved in the
+structured result alongside the displayed one.
 
 ## Required criterion response
 
