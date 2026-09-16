@@ -46,7 +46,7 @@ below was altered.
 | agentic | judge-backend=3.0, judge-frontend-ux=3.0, judge-product-agentic=3.0, judge-security-ops=3.0 | 3.00 | 15 | 9.00 | aligned |
 | engineering | judge-backend=5.0, judge-frontend-ux=4.0, judge-product-agentic=4.0, judge-security-ops=4.0 | 4.25 | 15 | 12.75 | aligned |
 | reliability | judge-backend=4.0, judge-frontend-ux=4.0, judge-product-agentic=4.0, judge-security-ops=4.0 | 4.00 | 10 | 8.00 | aligned |
-| security | judge-backend=3.0, judge-frontend-ux=3.0, judge-product-agentic=3.0, judge-security-ops=2.0 | 2.75 | 10 | 5.50 | aligned |
+| security | judge-backend=3.0, judge-frontend-ux=3.0, judge-product-agentic=3.0, judge-security-ops=NE | 2.75 | 10 | 5.50 | aligned |
 | innovation | judge-backend=3.0, judge-frontend-ux=3.0, judge-product-agentic=3.0, judge-security-ops=3.0 | 3.00 | 10 | 6.00 | aligned |
 | **Overall** |  |  | **100** | **73.3** |  |
 

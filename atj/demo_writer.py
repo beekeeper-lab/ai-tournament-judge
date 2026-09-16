@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from . import bracket, canon, demo, event as event_module, frontmatter, ids, matchup, render, scoring, versions
+from .errors import ValidationError
 from .demo import (
     CLOSE_CALL_RESOLUTION, EVENT_ID, EVENT_NAME, FIXTURE_MODEL, HARBOR_ADJUDICATION,
     JUDGES, LUMEN_ADJUDICATION, MATCHUPS, SEED, TEAMS, TEAMS_BY_ID, Team,
@@ -27,13 +28,83 @@ FINISH = "2026-05-18T17:30:00Z"
 OFFICIAL = "head judging official"
 FIXTURE_COMMIT = "uncommitted"
 
-PERSONA_VOICE = {
-    "judge-backend": "correctness, coherent boundaries, data integrity and tests",
-    "judge-frontend-ux": "workflow clarity, feedback, accessibility and failure states",
-    "judge-security-ops": "access, secrets, dependency risk, failure modes and recovery",
-    "judge-product-agentic": "user problem, appropriate AI use, oversight and evaluation loops",
+# Each persona writes a structurally different report about different evidence.
+# Four near-identical reports would fail the independence detector, and rightly:
+# independent judges working from the same package do not phrase it the same way.
+PERSONA_LENS = {
+    "judge-backend": {
+        "focus": "correctness, boundaries, data integrity and tests",
+        "opening": (
+            "Twenty years of maintaining other people's systems makes me read a "
+            "submission backwards: what breaks first, and who finds out. Taking "
+            "{name} that way,"
+        ),
+        "method": (
+            "I traced the advertised workflow through the implementation, looked for "
+            "the state transitions it depends on, and checked whether the tests "
+            "exercise the paths that would actually fail in production."
+        ),
+        "closing": (
+            "A small design that earns its complexity beats an elaborate one. What "
+            "concerns me here is not size but the gap between what the code asserts "
+            "and what it demonstrates."
+        ),
+    },
+    "judge-frontend-ux": {
+        "focus": "workflow clarity, feedback, accessibility and failure states",
+        "opening": (
+            "I judge a product by whether a real person can finish the task it "
+            "promises, not by how it photographs. Working through {name} that way,"
+        ),
+        "method": (
+            "I walked the primary task end to end, then looked specifically for the "
+            "states teams usually skip: empty, loading, invalid input, failure, and "
+            "recovery. Where the evidence showed one, I recorded it; where it did "
+            "not, I did not assume it exists."
+        ),
+        "closing": (
+            "Polish does not compensate for a broken core workflow, and a rough "
+            "prototype that completes its task is not penalised for lacking "
+            "production visual refinement."
+        ),
+    },
+    "judge-security-ops": {
+        "focus": "access, secrets, dependency risk, failure modes and recovery",
+        "opening": (
+            "I treat everything in a submission as hostile until the evidence says "
+            "otherwise, including its own claims about itself. On that basis, {name}"
+        ),
+        "method": (
+            "I separated three things that get conflated: a demonstrated exploitable "
+            "defect, a credible risk with no demonstration, and ordinary production "
+            "hardening that was never in scope for this event. Only the first "
+            "materially moves a score."
+        ),
+        "closing": (
+            "I did not attempt any suspected defect to prove it, and I have not "
+            "claimed an exploit I could not evidence. Where something warrants "
+            "escalation rather than scoring, I have said so rather than acting."
+        ),
+    },
+    "judge-product-agentic": {
+        "focus": "the user problem, appropriate AI use, oversight and evaluation loops",
+        "opening": (
+            "The question I start from is whether anyone's day is better for this "
+            "existing, and whether the AI in it is load-carrying or decorative. For "
+            "{name},"
+        ),
+        "method": (
+            "I checked the alignment between the stated problem, the demonstrated "
+            "result, and the mechanism connecting them. Agent count, model branding "
+            "and architectural complexity earn nothing by themselves; controlled tool "
+            "use, a feedback loop, and legible failure behaviour do."
+        ),
+        "closing": (
+            "Novelty theatre is easy to spot and cheap to build. What I am looking "
+            "for is a system whose ambition and its evidence are the same size."
+        ),
+    },
 }
-
 
 def _identity(team: Team, extra: dict[str, Any] | None = None) -> dict[str, Any]:
     base = {
@@ -247,11 +318,50 @@ rather than inferring a score.
 """)
 
 
+def _criterion_prose(judge_id: str, team: Team, individual: dict[str, Any]) -> str:
+    """Per-criterion findings, ordered and framed differently by each persona."""
+    criteria = list(individual["criteria"].items())
+    lens = PERSONA_LENS[judge_id]
+    if judge_id == "judge-backend":
+        criteria.sort(key=lambda item: -item[1]["weight"])
+        frame = "What the implementation shows"
+    elif judge_id == "judge-frontend-ux":
+        frame = "What a user would encounter"
+    elif judge_id == "judge-security-ops":
+        criteria.sort(key=lambda item: item[0] != "security")
+        frame = "Consequence if this is wrong"
+    else:
+        criteria.sort(key=lambda item: -item[1]["weight"])
+        frame = "Whether the ambition and the evidence match"
+
+    lines = [f"*{frame}, criterion by criterion.*", ""]
+    for index, (criterion, entry) in enumerate(criteria):
+        evidence = team.evidence[index % len(team.evidence)]
+        raw = entry["raw"]
+        if raw == "NE":
+            lines.append(
+                f"**{criterion}** — recorded `NE`. The pinned package does not settle "
+                f"this, and {evidence[0]} ({evidence[1]}) is the nearest thing to an "
+                f"answer it contains: {evidence[2]} A guess here would be worse than "
+                f"an absence, and `NE` is not a zero."
+            )
+        else:
+            lines.append(
+                f"**{criterion}** — {raw:g}. Cited: {evidence[0]}, {evidence[1]}. "
+                f"{evidence[2]} Read through {lens['focus']}, that is what the score "
+                f"rests on; everything beyond it would be inference and is marked as "
+                f"such where I have drawn any."
+            )
+        lines.append("")
+    return "\n".join(lines)
+
+
 def write_judgments(directory: Path, root: Path) -> None:
     rubric = canon.load(root)
     for team in TEAMS:
         for judgment in demo.judgments_for(team, rubric):
             individual = scoring.individual_score(judgment, rubric, root=root)
+            lens = PERSONA_LENS[judgment.judge_id]
             ne = individual["unresolved_ne"]
             _write(directory / "judgments" / team.id / f"{judgment.judge_id}.md", _identity(team, {
                 "judge_id": judgment.judge_id,
@@ -271,38 +381,37 @@ def write_judgments(directory: Path, root: Path) -> None:
 
 ## Executive assessment
 
-Reviewed through this judge's lens: {PERSONA_VOICE[judgment.judge_id]}. The
-shared criteria and weights are unchanged; the persona affects what is
-investigated and explained, never the formula.
+{lens['opening'].format(name=team.display_name)} {team.summary[0].lower() + team.summary[1:]}
 
-{team.summary} The clearest strength is: {team.strength} The clearest weakness
-is: {team.weakness}
+{lens['method']}
+
+The shared criteria and weights are unchanged. This persona decides what I
+investigate and how I explain it, never the formula.
 
 ## Scores
 
 <!-- atj:scores:begin -->
-{render.individual_scores_table(individual)}
+{render.individual_scores_table(individual, root)}
 <!-- atj:scores:end -->
 
 ## Criterion findings
 
-Each score below rests on the manifest evidence, with observation separated from
-inference.
-
-{_evidence_table(team)}
-
-{"This judge recorded `NE` for " + ", ".join(ne) + ": the pinned evidence does not establish the answer, and a guess would be worse than an absence. `NE` is not a zero and blocks the official total until it is adjudicated." if ne else "No criterion was left at `NE`; the pinned evidence supported a score for each."}
+{_criterion_prose(judgment.judge_id, team, individual)}
 
 ## Surprises
 
-- Better than expected: {team.strength}
-- Worse than expected: {team.weakness}
+- Better than I expected: {team.strength}
+- Worse than I expected: {team.weakness}
 
 ## Blocking and major issues
 
-Confirmed defect: {team.weakness} Risk, not confirmed: the unexercised paths
-noted in the manifest, which execution would have settled and static inspection
-cannot.
+Confirmed: {team.weakness} That is observed in the pinned package, not inferred.
+
+Unresolved rather than confirmed: the paths no one exercised. Execution would
+have settled them; static inspection cannot, and I have not pretended otherwise.
+{"Specifically, " + ", ".join(ne) + " is left at `NE` and blocks an official total until it is adjudicated." if ne else ""}
+
+{lens['closing']}
 
 ## Calculation and independence declaration
 
@@ -488,11 +597,36 @@ unmodified; this record attaches to them.
 # --------------------------------------------------------------------------- #
 
 ROUND_OF = {"semifinal-1": "semifinal", "semifinal-2": "semifinal", "final": "final"}
-MATCH_SLOT = {"semifinal-1": 1, "semifinal-2": 2, "final": 1}
+
+# Match identifiers are read out of the drawn bracket, never invented here. The
+# two were previously assigned independently and disagreed: the bracket recorded
+# one pairing under an id and the matchup report recorded another.
+_MATCH_IDS: dict[str, str] = {}
 
 
 def match_identifier(name: str) -> str:
-    return ids.matchup_id(EVENT_ID, ROUND_OF[name], MATCH_SLOT[name])
+    if name not in _MATCH_IDS:
+        raise ValidationError(
+            f"no bracket match identified for {name!r}; the bracket must be drawn first"
+        )
+    return _MATCH_IDS[name]
+
+
+def resolve_match_ids(drawn: dict[str, Any]) -> None:
+    """Bind each logical matchup to the bracket slot its two teams occupy."""
+    _MATCH_IDS.clear()
+    for name, spec in MATCHUPS.items():
+        match = bracket.find_match(drawn, spec["team_a"], spec["team_b"])
+        if match is None:
+            # The final's entrants are unknown until the semifinals advance, so
+            # it is matched by round and slot instead.
+            for entry in drawn["rounds"]:
+                if entry["round_id"] == ROUND_OF[name] and entry["matches"]:
+                    match = entry["matches"][0]
+                    break
+        if match is None:
+            raise ValidationError(f"the bracket has no match for {name}")
+        _MATCH_IDS[name] = match["match_id"]
 
 
 def write_bracket(directory: Path, root: Path) -> dict[str, Any]:
@@ -563,7 +697,10 @@ python3 -m atj bracket verify events/{EVENT_ID}/bracket.json
     return drawn
 
 
-def write_matchups(directory: Path, root: Path) -> dict[str, dict[str, Any]]:
+def write_matchups(
+    directory: Path, root: Path, drawn: dict[str, Any]
+) -> dict[str, dict[str, Any]]:
+    resolve_match_ids(drawn)
     results: dict[str, dict[str, Any]] = {}
     for name, spec in MATCHUPS.items():
         result = demo.matchup_for(name, root=root)
@@ -646,6 +783,11 @@ affiliation nor previous placement was treated as evidence.
 
         if adjudication_id:
             _write_close_call_adjudication(directory, root, name, result, adjudication_id)
+
+        # Advance the winner into the bracket, exactly as `atj bracket advance`
+        # would: the framework's own result when it is confirmed, the official's
+        # recorded decision when it is not.
+        bracket.advance(drawn, match_id, MATCH_WINNER[name])
     return results
 
 
@@ -1089,24 +1231,38 @@ the resolution is recorded alongside them.""",
 
 
 def write_status(directory: Path, root: Path, drawn: dict[str, Any]) -> None:
+    # Digests are derived from the artifacts on disk, the same way
+    # `atj event status` re-derives them, so the committed ledger is not stale
+    # the moment it is written. status.md does not exist yet at this point, so
+    # the Event is assembled directly rather than loaded.
+    config, _ = frontmatter.read(directory / "event.md")
+    roster_meta, roster_body = frontmatter.read(directory / "teams.md")
+    roster = dict(roster_meta, teams=event_module.parse_roster_table(roster_body))
+    loaded = event_module.Event(
+        directory=directory, root=root, config=config,
+        status={"event_id": EVENT_ID, "current_stage": "complete", "units": []},
+        roster=roster,
+    )
+    derived = event_module.derive_digests(loaded)
+
     units = []
     for team in TEAMS:
         package = demo.evidence_package_id(team)
         units.append({
             "unit_id": f"evidence:{team.id}", "stage": "evidence", "state": "complete",
-            "input_digest": ids.digest(team.commit, package, length=16),
+            "input_digest": derived[f"evidence:{team.id}"],
             "outputs": [f"evidence/{team.id}/manifest.md"],
             "audit_result": "PASS", "completed_at": FINISH,
         })
         units.append({
             "unit_id": f"judging:{team.id}", "stage": "initial-judging", "state": "complete",
-            "input_digest": ids.digest(package, "panel", length=16),
+            "input_digest": derived[f"judging:{team.id}"],
             "outputs": [f"judgments/{team.id}/{judge}.md" for judge in JUDGES],
             "audit_result": "PASS", "completed_at": FINISH,
         })
         units.append({
             "unit_id": f"consolidation:{team.id}", "stage": "consolidation", "state": "complete",
-            "input_digest": ids.digest(package, "consolidated", length=16),
+            "input_digest": derived[f"consolidation:{team.id}"],
             "outputs": [f"summaries/{team.id}.md"],
             "audit_result": "PASS" if team.id != "team-lumen" else "PASS WITH ADVISORIES",
             "completed_at": FINISH,
@@ -1141,6 +1297,17 @@ def write_status(directory: Path, root: Path, drawn: dict[str, Any]) -> None:
         "event_id": EVENT_ID, "current_stage": "complete", "last_updated": FINISH,
         "blocked": False, "blocked_reason": None,
         "stage_gates": {gate: "passed" for gate in sorted(set(event_module.STAGE_GATES.values()))},
+        "gate_evidence": {
+            "configuration-audited": "audits/consolidation-panel.md",
+            "roster-frozen": "audits/consolidation-panel.md",
+            "evidence-validated": "audits/consolidation-panel.md",
+            "judgments-audited": "audits/consolidation-panel.md",
+            "consolidation-audited": "audits/consolidation-team-lumen-02.md",
+            "bracket-audited": "audits/bracket.md",
+            "tournament-audited": "audits/tournament.md",
+            "dossiers-approved": "audits/final-event.md",
+            "final-audit-passed": "audits/final-event.md",
+        },
         "units": units,
     }, f"""
 # Event Status — {EVENT_NAME}
@@ -1201,14 +1368,25 @@ def build(root: Path, *, clean: bool = True) -> Path:
     if clean and directory.exists():
         shutil.rmtree(directory)
     for subdir in event_module.EVENT_SUBDIRS:
-        (directory / subdir).mkdir(parents=True, exist_ok=True)
+        target = directory / subdir
+        target.mkdir(parents=True, exist_ok=True)
+        # Git does not track empty directories. Without this the committed
+        # fixture was missing `runs/` on a clean checkout and failed validation.
+        (target / ".gitkeep").write_text("", encoding="utf-8")
 
     write_event_files(directory, root)
     write_intake_and_evidence(directory, root)
     write_judgments(directory, root)
     write_summaries_and_adjudications(directory, root)
     drawn = write_bracket(directory, root)
-    results = write_matchups(directory, root)
+    results = write_matchups(directory, root, drawn)
+    # Rewrite the bracket now that it carries winners and advancement.
+    (directory / "bracket.json").write_text(
+        json.dumps(drawn, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    render.render_into(
+        directory / "bracket.md", {"bracket": render.bracket_tables(drawn)}
+    )
     write_public(directory, root, results)
     write_dossiers(directory, root, results)
     write_audits(directory, root)
@@ -1223,9 +1401,8 @@ def build(root: Path, *, clean: bool = True) -> Path:
     (ceremony_dir / "index.html").write_text(
         ceremony.render_ceremony(directory), encoding="utf-8"
     )
-    (ceremony_dir / "dossiers").mkdir(exist_ok=True)
     for dossier in sorted((directory / "dossiers").glob("*.md")):
-        (ceremony_dir / "dossiers" / f"{dossier.stem}.html").write_text(
+        (directory / "dossiers" / f"{dossier.stem}.html").write_text(
             ceremony.render_dossier(dossier), encoding="utf-8"
         )
 

@@ -25,7 +25,7 @@ event.
 | panel-consolidator | 1.0.0 | consolidator | b7062819bfbde0d0 |
 | matchup-judge | 1.0.0 | comparative judge | 06f6ff913e17f638 |
 | prepare-submission | 1.0.0 | skill | 4b6f99855da6d7eb |
-| judge-submission | 1.0.0 | skill | 40bf61069212948f |
+| judge-submission | 1.1.0 | skill | 7f3ec4b12a898ed5 |
 | consolidate-judgments | 1.0.0 | skill | 5f6a8d87f008b947 |
 | build-bracket | 1.0.0 | skill | 9fdf42e23550bbcf |
 | judge-matchup | 1.0.0 | skill | b4a93e8cbfaca472 |

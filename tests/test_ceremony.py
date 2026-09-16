@@ -107,8 +107,13 @@ class CeremonyOutputTests(unittest.TestCase):
 class DossierOutputTests(unittest.TestCase):
     def test_every_team_has_a_printable_dossier(self):
         for team in demo.TEAMS:
-            path = EVENT_DIR / "public" / "ceremony" / "dossiers" / f"{team.id}.html"
+            path = EVENT_DIR / "dossiers" / f"{team.id}.html"
             self.assertTrue(path.is_file(), team.id)
+
+    def test_dossiers_are_not_written_into_the_public_tree(self):
+        """A team's own score is team-facing, not public."""
+        leaked = list((EVENT_DIR / "public").rglob("*dossier*"))
+        self.assertEqual(leaked, [], f"team-facing output found under public/: {leaked}")
 
     def test_a_dossier_carries_its_own_score_but_no_panel_internals(self):
         """A team may see its own total. It may not see how the panel argued."""

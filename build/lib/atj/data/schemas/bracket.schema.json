@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-tournament-judge.local/schemas/bracket.schema.json",
+  "title": "Tournament bracket",
+  "type": "object",
+  "required": ["event_id", "format", "policy", "team_count", "bracket_size", "bye_count",
+               "bye_policy", "seed", "roster_version", "framework_commit", "rounds",
+               "constraint_audit", "feasible"],
+  "properties": {
+    "event_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "format": {"const": "single-elimination"},
+    "policy": {"$ref": "common.schema.json#/$defs/reference"},
+    "team_count": {"type": "integer", "minimum": 2, "maximum": 32},
+    "bracket_size": {"type": "integer", "minimum": 2, "maximum": 32},
+    "bye_count": {"type": "integer", "minimum": 0},
+    "bye_policy": {"$ref": "common.schema.json#/$defs/bye_policy"},
+    "seed": {"type": "string", "minLength": 1},
+    "roster_version": {"type": "integer", "minimum": 1},
+    "input_digest": {"type": "string", "pattern": "^[0-9a-f]{8,64}$"},
+    "framework_commit": {"$ref": "common.schema.json#/$defs/framework_commit"},
+    "feasible": {"type": "boolean"},
+    "bye_teams": {"type": "array", "items": {"$ref": "common.schema.json#/$defs/slug"}},
+    "rounds": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["round_id", "round_index", "matches"],
+        "properties": {
+          "round_id": {"$ref": "common.schema.json#/$defs/slug"},
+          "round_index": {"type": "integer", "minimum": 1},
+          "matches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["match_id", "slot", "entrants"],
+              "properties": {
+                "match_id": {"$ref": "common.schema.json#/$defs/match_id"},
+                "slot": {"type": "integer", "minimum": 1},
+                "entrants": {
+                  "type": "array", "minItems": 2, "maxItems": 2,
+                  "items": {"type": ["string", "null"]}
+                },
+                "bye": {"type": "boolean"},
+                "winner": {"type": ["string", "null"]},
+                "source_matches": {"type": "array", "items": {"type": "string"}}
+              }
+            }
+          }
+        }
+      }
+    },
+    "constraint_audit": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["constraint", "kind", "status", "detail"],
+        "properties": {
+          "constraint": {"type": "string", "minLength": 1},
+          "kind": {"enum": ["hard", "soft"]},
+          "status": {"enum": ["satisfied", "maximized", "violated", "not-applicable", "infeasible"]},
+          "detail": {"type": "string"},
+          "exceptions": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

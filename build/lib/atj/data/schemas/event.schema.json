@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-tournament-judge.local/schemas/event.schema.json",
+  "title": "Event configuration",
+  "type": "object",
+  "required": ["event_id", "event_name", "status", "rubric", "consolidation_policy",
+               "matchup_rubric", "bracket_policy", "bye_policy", "expected_judges",
+               "public_scores", "framework_commit", "execution_mode"],
+  "properties": {
+    "event_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "event_name": {"type": "string", "minLength": 1},
+    "status": {"enum": ["draft", "active", "closed"]},
+    "rubric": {"$ref": "common.schema.json#/$defs/reference"},
+    "consolidation_policy": {"$ref": "common.schema.json#/$defs/reference"},
+    "matchup_rubric": {"$ref": "common.schema.json#/$defs/reference"},
+    "bracket_policy": {"$ref": "common.schema.json#/$defs/reference"},
+    "bye_policy": {"$ref": "common.schema.json#/$defs/bye_policy"},
+    "expected_judges": {
+      "type": "array", "minItems": 2, "uniqueItems": true,
+      "items": {"$ref": "common.schema.json#/$defs/slug"}
+    },
+    "public_scores": {"type": "boolean"},
+    "framework_commit": {"$ref": "common.schema.json#/$defs/framework_commit"},
+    "execution_mode": {
+      "enum": ["disabled", "sandboxed"],
+      "$comment": "'sandboxed' requires a verified container runtime at run time; there is no host fallback."
+    },
+    "network_allowlist": {"type": "array", "items": {"type": "string"}},
+    "close_call_band": {"type": "number", "minimum": 0},
+    "officials": {
+      "type": "object",
+      "properties": {
+        "disqualification": {"type": "string"},
+        "adjudication": {"type": "string"},
+        "publication_approval": {"type": "string"},
+        "security_escalation": {"type": "string"}
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -90,6 +90,13 @@ def cmd_personas(args) -> int:
             print(f"  updated {line}")
         print(f"Persona digests refreshed ({len(changed)} changed)")
         return OK
+    if not versions.components_available(root):
+        print(
+            "Component registry: SKIPPED — no .claude/ components here. This looks like "
+            "an installed package rather than a working copy; run from a checkout to "
+            "check agent and skill versions."
+        )
+        return OK
     problems = versions.check_personas(root)
     _emit({"problems": problems}, args)
     if problems:
@@ -196,7 +203,67 @@ def cmd_event_advance(args) -> int:
     return OK
 
 
+def cmd_event_unit(args) -> int:
+    """Write the ledger `atj event status` reads to decide what to resume."""
+    root = _root(args)
+    loaded = event_module.load(Path(args.event_dir), root=root)
+    derived = event_module.derive_digests(loaded)
+
+    if args.action == "list":
+        drifted = {entry["unit_id"] for entry in event_module.stale_units(loaded)}
+        rows = []
+        for unit in loaded.status.get("units", []):
+            rows.append({
+                "unit_id": unit["unit_id"], "stage": unit.get("stage"),
+                "state": "stale" if unit["unit_id"] in drifted else unit.get("state"),
+                "audit_result": unit.get("audit_result"),
+                "input_digest": unit.get("input_digest"),
+                "current_digest": derived.get(unit["unit_id"]),
+            })
+        _emit({"units": rows}, args)
+        if not args.json:
+            for row in rows:
+                flag = " STALE" if row["state"] == "stale" else ""
+                print(f"  {row['unit_id']:32s} {row['stage']:16s} {row['state']:12s} "
+                      f"{row['audit_result']}{flag}")
+            print(f"{len(rows)} unit(s), {len(drifted)} stale")
+        return FAILURE if drifted else OK
+
+    if not args.id:
+        print("usage: --id is required for record and stale", file=sys.stderr)
+        return USAGE
+
+    if args.action == "stale":
+        event_module.mark_stale(loaded, args.id, args.reason or "invalidated by an operator")
+        event_module.save_status(loaded)
+        print(f"{args.id} marked stale")
+        return OK
+
+    digest = derived.get(args.id)
+    if digest is None:
+        print(
+            f"usage: cannot derive an input digest for {args.id!r}. Known units: "
+            f"{', '.join(sorted(derived)) or 'none — the artifacts do not exist yet'}",
+            file=sys.stderr,
+        )
+        return USAGE
+    stage = args.stage or args.id.split(":", 1)[0]
+    event_module.record_unit(
+        loaded, unit_id=args.id, stage=stage, input_digest=digest,
+        outputs=args.output, audit_result=args.audit_result,
+    )
+    event_module.save_status(loaded)
+    print(f"{args.id} recorded complete (digest {digest}, audit {args.audit_result})")
+    return OK
+
+
 def cmd_event_gate(args) -> int:
+    """Record a stage audit result.
+
+    Passing a gate requires the audit artifact that justifies it. Without that,
+    a gate was a boolean an operator could set with no audit behind it, and an
+    event could reach `complete` in eighteen commands with zero artifacts.
+    """
     root = _root(args)
     loaded = event_module.load(Path(args.event_dir), root=root)
     gates = loaded.status.setdefault("stage_gates", {})
@@ -204,10 +271,46 @@ def cmd_event_gate(args) -> int:
         print(f"usage: unknown gate {args.gate!r}; expected one of "
               f"{', '.join(sorted(set(event_module.STAGE_GATES.values())))}")
         return USAGE
-    gates[args.gate] = args.state
+
+    stage = next(
+        (name for name, gate in event_module.STAGE_GATES.items() if gate == args.gate), None
+    )
+    if args.state == "passed":
+        if not args.audit:
+            print(
+                f"usage: passing a gate requires the audit that justifies it:\n"
+                f"  atj event gate {args.event_dir} {args.gate} passed --audit "
+                f"<audits/...md>",
+                file=sys.stderr,
+            )
+            return USAGE
+        audit_path = Path(args.audit)
+        if not audit_path.is_absolute():
+            candidate = loaded.directory / args.audit
+            audit_path = candidate if candidate.exists() else audit_path
+        problems = event_module.audit_supports_gate(audit_path, stage=stage or "", root=root)
+        problems += [
+            f"stage work missing: {item}"
+            for item in event_module.stage_work_present(loaded, stage or "")
+        ]
+        if problems:
+            print(f"Gate {args.gate} NOT passed:")
+            for problem in problems:
+                print(f"  {problem}")
+            return FAILURE
+        gates[args.gate] = "passed"
+        loaded.status.setdefault("gate_evidence", {})[args.gate] = str(
+            audit_path.relative_to(loaded.directory)
+            if str(audit_path).startswith(str(loaded.directory)) else audit_path
+        )
+    else:
+        gates[args.gate] = args.state
+        loaded.status.get("gate_evidence", {}).pop(args.gate, None)
+
     loaded.status["last_updated"] = versions.now()
     event_module.save_status(loaded)
-    print(f"Gate {args.gate} = {args.state}")
+    print(f"Gate {args.gate} = {args.state}"
+          + (f" (audit: {args.audit})" if args.state == "passed" else ""))
     return OK
 
 
@@ -245,11 +348,54 @@ def _judgments_from(args, root: Path) -> list[scoring.Judgment]:
     ]
 
 
+def _event_context(source: Path, root: Path) -> tuple[Path | None, list[str] | None]:
+    """Locate the event a judgments directory belongs to.
+
+    Finding it automatically is what stops `atj score` quietly finalizing a
+    two-judge panel when the event configured four.
+    """
+    for candidate in [source, *source.parents]:
+        if (candidate / "event.md").is_file() and (candidate / "status.md").is_file():
+            try:
+                loaded = event_module.load(candidate, root=root)
+            except AtjError:
+                return candidate, None
+            return candidate, [str(j) for j in loaded.config.get("expected_judges") or []]
+    return None, None
+
+
 def cmd_score(args) -> int:
     root = _root(args)
     judgments = _judgments_from(args, root)
+    source = Path(args.source)
+
     expected = args.expect.split(",") if args.expect else None
-    result = scoring.consolidate(judgments, expected_judges=expected, root=root)
+    adjudications = Path(args.adjudications) if args.adjudications else None
+    event_dir, configured = _event_context(source if source.is_dir() else source.parent, root)
+    if expected is None:
+        expected = configured
+    if adjudications is None and event_dir is not None:
+        adjudications = event_dir / "adjudications"
+
+    if expected is None:
+        raise AtjError(
+            "no configured judge list. Run this against a judgments directory inside an "
+            "event, or pass --expect with the event's configured judges. Consolidating "
+            "without knowing who was configured cannot detect a missing judge."
+        )
+
+    team_id = judgments[0].team_id if judgments else None
+    resolutions = (
+        scoring.load_resolutions(adjudications, team_id=team_id, root=root)
+        if adjudications else {}
+    )
+    result = scoring.consolidate(
+        judgments, expected_judges=expected, resolutions=resolutions, root=root
+    )
+    if resolutions and not args.json:
+        for criterion, resolution in sorted(resolutions.items()):
+            print(f"applied adjudication {resolution['adjudication_id']} to {criterion} "
+                  f"(decided by {resolution['decided_by']})")
     if args.json:
         _emit(result, args)
         return OK if result["finalized"] else FAILURE
@@ -344,6 +490,67 @@ def cmd_bracket_build(args) -> int:
     return OK
 
 
+def cmd_bracket_advance(args) -> int:
+    """Advance a winner, and only a winner the framework or a human actually named.
+
+    A matchup whose outcome is `adjudication-required` returns no winner. This
+    refuses to advance anyone unless an approved adjudication for that match names
+    the advancing team.
+    """
+    root = _root(args)
+    path = Path(args.bracket)
+    result = json.loads(path.read_text(encoding="utf-8"))
+    metadata, _ = frontmatter.read(Path(args.matchup))
+
+    match_id = args.match
+    if metadata.get("match_id") != match_id:
+        raise AtjError(
+            f"{args.matchup} records match_id {metadata.get('match_id')!r}, not {match_id!r}"
+        )
+
+    winner = metadata.get("winner")
+    outcome = metadata.get("outcome")
+    if outcome != matchup.CONFIRMED or not winner:
+        event_dir = Path(args.event_dir) if args.event_dir else Path(args.matchup).parent.parent
+        winner = _adjudicated_winner(event_dir, match_id, root)
+        if not winner:
+            raise AtjError(
+                f"{match_id} has outcome {outcome!r} and no approved adjudication naming a "
+                f"winner. The framework does not advance a team here; a human official must "
+                f"decide and record it in adjudications/."
+            )
+        print(f"advancing on a recorded human adjudication, not an automatic result")
+
+    bracket.advance(result, match_id, str(winner))
+    path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _emit({"match_id": match_id, "winner": winner}, args)
+    if not args.json:
+        print(f"{match_id}: {winner} advances")
+        remaining = bracket.pending_matches(result)
+        print(f"ready to judge next: {', '.join(remaining) if remaining else 'none'}")
+    return OK
+
+
+def _adjudicated_winner(event_dir: Path, match_id: str, root: Path) -> str | None:
+    """The team an approved adjudication named for this match, if any."""
+    directory = event_dir / "adjudications"
+    if not directory.is_dir():
+        return None
+    for path in sorted(directory.glob("*.md")):
+        metadata, _ = frontmatter.read(path)
+        if metadata.get("match_id") != match_id:
+            continue
+        if metadata.get("resolution") != "resolved":
+            continue
+        if metadata.get("approval_state") != "approved" or not metadata.get("decided_by"):
+            continue
+        impact = str(metadata.get("impact") or "")
+        for token in impact.replace(",", " ").split():
+            if token.startswith("team-"):
+                return token
+    return None
+
+
 def cmd_bracket_verify(args) -> int:
     root = _root(args)
     result = json.loads(Path(args.bracket).read_text(encoding="utf-8"))
@@ -353,6 +560,14 @@ def cmd_bracket_verify(args) -> int:
     elif args.event_dir:
         teams = event_module.load(Path(args.event_dir), root=root).eligible_teams
     problems = bracket.verify(result, teams) + schema.validate("bracket", result, root=root)
+    if args.event_dir:
+        problems += bracket.check_matchup_records(
+            result, _matchup_records(Path(args.event_dir))
+        )
+    elif not args.reproduce:
+        print("  NOTE structure only: pass --event-dir or --reproduce to re-derive "
+              "the constraints from the roster rather than trusting the audit block "
+              "inside this file.")
     rebuilt = None
     if args.reproduce:
         rebuilt = bracket.build(
@@ -374,6 +589,17 @@ def cmd_bracket_verify(args) -> int:
 # report validation
 # --------------------------------------------------------------------------- #
 
+def _matchup_records(event_dir: Path):
+    for path in sorted((event_dir / "matchups").glob("*.md")):
+        metadata, _ = frontmatter.read(path)
+        if not metadata.get("match_id"):
+            continue
+        yield (
+            str(metadata["match_id"]), str(metadata.get("team_a")),
+            str(metadata.get("team_b")), metadata.get("winner"),
+        )
+
+
 def cmd_validate_reports(args) -> int:
     root = _root(args)
     event_dir = Path(args.event_dir)
@@ -383,8 +609,17 @@ def cmd_validate_reports(args) -> int:
         team_ids = [team["id"] for team in loaded.teams]
     except AtjError:
         public_scores, team_ids = False, []
+    expected_judges = None
+    try:
+        expected_judges = [
+            str(judge) for judge in
+            event_module.load(event_dir, root=root).config.get("expected_judges") or []
+        ] or None
+    except AtjError:
+        pass
     found = reports.validate_event_reports(
-        event_dir, root=root, public_scores=public_scores, all_teams=team_ids
+        event_dir, root=root, public_scores=public_scores, all_teams=team_ids,
+        expected_judges=expected_judges,
     )
     summary = reports.summarize(found)
     if args.json:
@@ -451,9 +686,11 @@ def cmd_ceremony(args) -> int:
     written = [page]
 
     if not args.no_dossiers:
+        # Dossiers are team-facing, so they render into the team-facing directory.
+        # Writing them under public/ put a team's own score into the public tree,
+        # where the publication gate then had to allow it.
         for dossier in sorted((event_dir / "dossiers").glob("*.md")):
-            target = output / "dossiers" / f"{dossier.stem}.html"
-            target.parent.mkdir(parents=True, exist_ok=True)
+            target = event_dir / "dossiers" / f"{dossier.stem}.html"
             target.write_text(ceremony.render_dossier(dossier), encoding="utf-8")
             written.append(target)
 
@@ -484,17 +721,24 @@ def cmd_release_check(args) -> int:
     print(f"schemas           {'PASS' if not problems else 'FAIL'} "
           f"({len(schema.ARTIFACT_SCHEMAS)} artifact schemas)")
 
-    problems = versions.check_personas(root)
-    failures += [f"persona: {p}" for p in problems]
-    print(f"personas          {'PASS' if not problems else 'FAIL'}")
+    if versions.components_available(root):
+        problems = versions.check_personas(root)
+        failures += [f"persona: {p}" for p in problems]
+        print(f"personas          {'PASS' if not problems else 'FAIL'}")
+    else:
+        problems = []
+        print("personas          SKIPPED (no .claude/ components; not a working copy)")
 
     problems = check_templates(root)
     failures += [f"template: {p}" for p in problems]
     print(f"templates         {'PASS' if not problems else 'FAIL'}")
 
-    problems = check_claude_components(root)
-    failures += [f"claude: {p}" for p in problems]
-    print(f"claude components {'PASS' if not problems else 'FAIL'}")
+    if versions.components_available(root):
+        problems = check_claude_components(root)
+        failures += [f"claude: {p}" for p in problems]
+        print(f"claude components {'PASS' if not problems else 'FAIL'}")
+    else:
+        print("claude components SKIPPED (no .claude/ components; not a working copy)")
 
     problems = check_no_duplicate_weights(root)
     failures += [f"duplicate-number: {p}" for p in problems]
@@ -504,9 +748,12 @@ def cmd_release_check(args) -> int:
     failures += [f"version-skew: {p}" for p in problems]
     print(f"version-skew      {'PASS' if not problems else 'FAIL'}")
 
-    problems = check_sample_event(root)
-    failures += [f"sample-event: {p}" for p in problems]
-    print(f"sample event      {'PASS' if not problems else 'FAIL'}")
+    if (root / "events" / "sample-mock-2026").is_dir():
+        problems = check_sample_event(root)
+        failures += [f"sample-event: {p}" for p in problems]
+        print(f"sample event      {'PASS' if not problems else 'FAIL'}")
+    else:
+        print("sample event      SKIPPED (not a working copy)")
 
     _emit({"failures": failures}, args)
     if failures:
@@ -557,6 +804,7 @@ def check_declared_versions(root: Path) -> list[str]:
     targets = sorted((root / "framework" / "templates").glob("*.md"))
     targets += sorted((root / "framework" / "rubrics").glob("*.md"))
     targets += sorted((root / "events" / "_template").glob("*.md"))
+    targets = [path for path in targets if "data" not in path.parts]
     placeholder = re.compile(r"[A-Z]{3,}")
     for path in targets:
         try:
@@ -642,7 +890,9 @@ def check_no_duplicate_weights(root: Path) -> list[str]:
     pattern = _re.compile(
         r"""["']?(""" + "|".join(rubric.criterion_ids) + r""")["']?\s*[:=]\s*(\d+)"""
     )
-    skip_parts = {".git", "__pycache__", "node_modules", "dist", ".pytest_cache"}
+    # `atj/data/` is a build-time copy staged by tools/stage_package_data.py. It is
+    # generated, git-ignored, and not an editable source.
+    skip_parts = {".git", "__pycache__", "node_modules", "dist", ".pytest_cache", "data"}
     # Narrow exemptions only. `tests/` asserts against the real weights on
     # purpose, and the baseline audit quotes the alpha's duplicate as evidence.
     # Everything else, including the rest of `docs/`, is scanned.
@@ -703,10 +953,22 @@ def cmd_sandbox_preflight(args) -> int:
 
 
 def cmd_sandbox_run(args) -> int:
+    root = _root(args)
     capability = sandbox.preflight(args.runtime)
+    allowlist: list[str] = []
+    if args.event_dir:
+        config = event_module.load(Path(args.event_dir), root=root).config
+        allowlist = [str(entry) for entry in config.get("network_allowlist") or []]
+        if config.get("execution_mode") != "sandboxed":
+            raise AtjError(
+                f"{args.event_dir} declares execution_mode "
+                f"{config.get('execution_mode')!r}. An event official must set it to "
+                f"'sandboxed' before any submission is executed."
+            )
     record = sandbox.run_in_sandbox(
         source=Path(args.source), command=args.command, image=args.image,
         limits={"timeout_seconds": args.timeout} if args.timeout else None,
+        network_allowlist=allowlist, egress_proxy=args.egress_proxy,
         capability=capability,
     )
     _emit(record.to_dict(), args)
@@ -764,14 +1026,18 @@ def cmd_demo(args) -> int:
 
     drawn = json.loads((directory / "bracket.json").read_text(encoding="utf-8"))
     problems += [f"bracket: {p}" for p in bracket.verify(drawn, loaded.eligible_teams)]
-    if drawn["rounds"] != demo.sample_bracket(root)["rounds"]:
+    if bracket.draw_only(drawn) != bracket.draw_only(demo.sample_bracket(root)):
         problems.append("bracket: committed draw does not reproduce from its recorded seed")
+    problems += [
+        f"bracket: {p}" for p in
+        bracket.check_matchup_records(drawn, _matchup_records(directory))
+    ]
 
     fixture_dir = root / "tests" / "fixtures" / "bracket-20-team"
     fixture = json.loads((fixture_dir / "bracket.json").read_text(encoding="utf-8"))
     fixture_roster = json.loads((fixture_dir / "roster.json").read_text(encoding="utf-8"))["teams"]
     problems += [f"fixture: {p}" for p in bracket.verify(fixture, fixture_roster)]
-    if fixture["rounds"] != demo.twenty_team_bracket(root)["rounds"]:
+    if bracket.draw_only(fixture) != bracket.draw_only(demo.twenty_team_bracket(root)):
         problems.append("fixture: 20-team bracket does not reproduce from its recorded seed")
 
     _emit({"problems": problems}, args)
@@ -840,11 +1106,35 @@ def build_parser() -> argparse.ArgumentParser:
     gate.add_argument("event_dir")
     gate.add_argument("gate")
     gate.add_argument("state", choices=("pending", "passed", "failed"))
+    gate.add_argument(
+        "--audit", help="the audit artifact justifying a pass; required to pass a gate"
+    )
     gate.set_defaults(func=cmd_event_gate)
+
+    unit = event_sub.add_parser("unit", help="record or invalidate a unit of work")
+    unit.add_argument("event_dir")
+    unit.add_argument("action", choices=("record", "stale", "list"))
+    unit.add_argument("--id", help="unit id, e.g. judging:team-lumen")
+    unit.add_argument("--stage", help="the stage this unit belongs to")
+    unit.add_argument("--output", action="append", default=[], help="artifact path")
+    unit.add_argument(
+        "--audit-result", default="not-audited",
+        choices=("PASS", "PASS WITH ADVISORIES", "FAIL", "not-audited"),
+    )
+    unit.add_argument("--reason", help="why the unit is being invalidated")
+    unit.set_defaults(func=cmd_event_unit)
 
     score = sub.add_parser("score", help="consolidate a judge panel")
     score.add_argument("source", help="judgments directory, or a JSON file of judge scores")
-    score.add_argument("--expect", help="comma-separated configured judge ids")
+    score.add_argument(
+        "--expect",
+        help="comma-separated configured judge ids; read from event.md automatically "
+             "when the judgments directory sits inside an event",
+    )
+    score.add_argument(
+        "--adjudications",
+        help="directory of adjudication records to apply; defaults to the event's",
+    )
     score.add_argument("--output", help="write the structured result to this path")
     score.set_defaults(func=cmd_score)
 
@@ -865,6 +1155,17 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument("--bye-policy", choices=bracket.BYE_POLICIES)
     build.add_argument("--output")
     build.set_defaults(func=cmd_bracket_build)
+
+    advance = bracket_sub.add_parser(
+        "advance", help="record a match winner and carry it into the next round"
+    )
+    advance.add_argument("bracket")
+    advance.add_argument("--match", required=True, help="match id")
+    advance.add_argument(
+        "--from", dest="matchup", required=True, help="the private matchup report"
+    )
+    advance.add_argument("--event-dir", help="event directory, for adjudication records")
+    advance.set_defaults(func=cmd_bracket_advance)
 
     verify = bracket_sub.add_parser("verify", help="re-check a built bracket")
     verify.add_argument("bracket")
@@ -903,6 +1204,15 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--image", default="docker.io/library/python:3.12-alpine")
     run.add_argument("--runtime", choices=(sandbox.PODMAN, sandbox.DOCKER))
     run.add_argument("--timeout", type=int, help="seconds")
+    run.add_argument(
+        "--event-dir",
+        help="read execution_mode and network_allowlist from this event's configuration",
+    )
+    run.add_argument(
+        "--egress-proxy",
+        help="authorized proxy enforcing the allowlist; without it, a configured "
+             "allowlist is refused rather than silently granting full network access",
+    )
     run.add_argument("--output", help="write the execution record here")
     run.set_defaults(func=cmd_sandbox_run)
 

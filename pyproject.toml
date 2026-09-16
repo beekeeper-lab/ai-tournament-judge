@@ -26,7 +26,14 @@ packages = ["atj"]
 include-package-data = true
 
 [tool.setuptools.package-data]
-atj = []
+# The tooling reads its canonical facts from these files at run time. A wheel
+# without them installs a command that cannot start.
+atj = [
+    "data/framework/**/*",
+    "data/schemas/*.json",
+    "data/events/_template/**/*",
+    "data/VERSION",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

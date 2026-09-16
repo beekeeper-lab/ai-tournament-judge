@@ -13,3 +13,7 @@ __pycache__/
 events/*/runtime/
 events/*/sandboxes/
 dist/
+
+# Build-time copy of the framework data (see tools/stage_package_data.py).
+# Never edit these; the sources are framework/, schemas/, events/_template/.
+atj/data/

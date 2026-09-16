@@ -43,12 +43,12 @@ model:
 
 ## Executive assessment
 
-Reviewed through this judge's lens: correctness, coherent boundaries, data integrity and tests. The
-shared criteria and weights are unchanged; the persona affects what is
-investigated and explained, never the formula.
+Twenty years of maintaining other people's systems makes me read a submission backwards: what breaks first, and who finds out. Taking Quill that way, a reading-list assistant that summarizes and tags saved articles.
 
-A reading-list assistant that summarizes and tags saved articles. The clearest strength is: Keyboard-first interface with visible loading, empty and failure states. The clearest weakness
-is: The summarizer has no evaluation loop and no fallback when the model errors.
+I traced the advertised workflow through the implementation, looked for the state transitions it depends on, and checked whether the tests exercise the paths that would actually fail in production.
+
+The shared criteria and weights are unchanged. This persona decides what I
+investigate and how I explain it, never the formula.
 
 ## Scores
 
@@ -67,28 +67,37 @@ is: The summarizer has no evaluation loop and no fallback when the model errors.
 
 ## Criterion findings
 
-Each score below rests on the manifest evidence, with observation separated from
-inference.
+*What the implementation shows, criterion by criterion.*
 
-| Evidence ID | Class | Observation |
-|---|---|---|
-| ev-quill-01 | direct-observation | Empty, loading and error states captured for the save flow. |
-| ev-quill-02 | artifact | src/summarize.ts calls the model once with no retry or fallback. |
-| ev-quill-03 | direct-observation | Keyboard traversal reaches every interactive control. |
-| ev-quill-04 | inference | No evaluation harness is present in the repository. |
+**functional** — 4. Cited: ev-quill-01, direct-observation. Empty, loading and error states captured for the save flow. Read through correctness, boundaries, data integrity and tests, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
 
-No criterion was left at `NE`; the pinned evidence supported a score for each.
+**product** — 4. Cited: ev-quill-02, artifact. src/summarize.ts calls the model once with no retry or fallback. Read through correctness, boundaries, data integrity and tests, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**agentic** — 2. Cited: ev-quill-03, direct-observation. Keyboard traversal reaches every interactive control. Read through correctness, boundaries, data integrity and tests, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**engineering** — 3. Cited: ev-quill-04, inference. No evaluation harness is present in the repository. Read through correctness, boundaries, data integrity and tests, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**reliability** — 3. Cited: ev-quill-01, direct-observation. Empty, loading and error states captured for the save flow. Read through correctness, boundaries, data integrity and tests, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**security** — 3. Cited: ev-quill-02, artifact. src/summarize.ts calls the model once with no retry or fallback. Read through correctness, boundaries, data integrity and tests, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**innovation** — 4. Cited: ev-quill-03, direct-observation. Keyboard traversal reaches every interactive control. Read through correctness, boundaries, data integrity and tests, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
 
 ## Surprises
 
-- Better than expected: Keyboard-first interface with visible loading, empty and failure states.
-- Worse than expected: The summarizer has no evaluation loop and no fallback when the model errors.
+- Better than I expected: Keyboard-first interface with visible loading, empty and failure states.
+- Worse than I expected: The summarizer has no evaluation loop and no fallback when the model errors.
 
 ## Blocking and major issues
 
-Confirmed defect: The summarizer has no evaluation loop and no fallback when the model errors. Risk, not confirmed: the unexercised paths
-noted in the manifest, which execution would have settled and static inspection
-cannot.
+Confirmed: The summarizer has no evaluation loop and no fallback when the model errors. That is observed in the pinned package, not inferred.
+
+Unresolved rather than confirmed: the paths no one exercised. Execution would
+have settled them; static inspection cannot, and I have not pretended otherwise.
+
+
+A small design that earns its complexity beats an elaborate one. What concerns me here is not size but the gap between what the code asserts and what it demonstrates.
 
 ## Calculation and independence declaration
 

@@ -43,12 +43,12 @@ model:
 
 ## Executive assessment
 
-Reviewed through this judge's lens: correctness, coherent boundaries, data integrity and tests. The
-shared criteria and weights are unchanged; the persona affects what is
-investigated and explained, never the formula.
+Twenty years of maintaining other people's systems makes me read a submission backwards: what breaks first, and who finds out. Taking Lumen that way, a shift-handover tool for small clinics. Server-rendered, no framework.
 
-A shift-handover tool for small clinics. Server-rendered, no framework. The clearest strength is: Explicit state machine for handover status with exhaustive transition tests. The clearest weakness
-is: Session handling stores a bare user id in a cookie with no signature.
+I traced the advertised workflow through the implementation, looked for the state transitions it depends on, and checked whether the tests exercise the paths that would actually fail in production.
+
+The shared criteria and weights are unchanged. This persona decides what I
+investigate and how I explain it, never the formula.
 
 ## Scores
 
@@ -67,28 +67,37 @@ is: Session handling stores a bare user id in a cookie with no signature.
 
 ## Criterion findings
 
-Each score below rests on the manifest evidence, with observation separated from
-inference.
+*What the implementation shows, criterion by criterion.*
 
-| Evidence ID | Class | Observation |
-|---|---|---|
-| ev-lumen-01 | direct-observation | Handover transition tests pass: 41 of 41. |
-| ev-lumen-02 | artifact | src/handover/state.py defines the transition table. |
-| ev-lumen-03 | artifact | src/web/session.py:22 sets an unsigned `uid` cookie. |
-| ev-lumen-04 | team-claim | README claims audit logging; no log sink is configured. |
+**functional** — 4. Cited: ev-lumen-01, direct-observation. Handover transition tests pass: 41 of 41. Read through correctness, boundaries, data integrity and tests, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
 
-No criterion was left at `NE`; the pinned evidence supported a score for each.
+**product** — 4. Cited: ev-lumen-02, artifact. src/handover/state.py defines the transition table. Read through correctness, boundaries, data integrity and tests, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**agentic** — 3. Cited: ev-lumen-03, artifact. src/web/session.py:22 sets an unsigned `uid` cookie. Read through correctness, boundaries, data integrity and tests, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**engineering** — 5. Cited: ev-lumen-04, team-claim. README claims audit logging; no log sink is configured. Read through correctness, boundaries, data integrity and tests, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**reliability** — 4. Cited: ev-lumen-01, direct-observation. Handover transition tests pass: 41 of 41. Read through correctness, boundaries, data integrity and tests, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**security** — 3. Cited: ev-lumen-02, artifact. src/handover/state.py defines the transition table. Read through correctness, boundaries, data integrity and tests, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**innovation** — 3. Cited: ev-lumen-03, artifact. src/web/session.py:22 sets an unsigned `uid` cookie. Read through correctness, boundaries, data integrity and tests, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
 
 ## Surprises
 
-- Better than expected: Explicit state machine for handover status with exhaustive transition tests.
-- Worse than expected: Session handling stores a bare user id in a cookie with no signature.
+- Better than I expected: Explicit state machine for handover status with exhaustive transition tests.
+- Worse than I expected: Session handling stores a bare user id in a cookie with no signature.
 
 ## Blocking and major issues
 
-Confirmed defect: Session handling stores a bare user id in a cookie with no signature. Risk, not confirmed: the unexercised paths
-noted in the manifest, which execution would have settled and static inspection
-cannot.
+Confirmed: Session handling stores a bare user id in a cookie with no signature. That is observed in the pinned package, not inferred.
+
+Unresolved rather than confirmed: the paths no one exercised. Execution would
+have settled them; static inspection cannot, and I have not pretended otherwise.
+
+
+A small design that earns its complexity beats an elaborate one. What concerns me here is not size but the gap between what the code asserts and what it demonstrates.
 
 ## Calculation and independence declaration
 

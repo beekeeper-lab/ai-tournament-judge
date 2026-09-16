@@ -42,6 +42,9 @@ footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
          color: var(--muted); font-size: .85rem; }
 code { background: var(--pending); padding: .1rem .3rem; border-radius: .2rem;
        font-size: .9em; }
+table { border-collapse: collapse; width: 100%; margin: .75rem 0; font-size: .92rem; }
+th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid var(--line); }
+th { font-weight: 600; color: var(--muted); }
 @media print {
   body { background: #fff; color: #000; }
   .rounds { grid-template-columns: repeat(2, 1fr); }
@@ -64,9 +67,13 @@ report, score, evidence package or deliberation is an input to this page.</p>
 <div class="champion"><ul><li>Champion: <strong>Lumen</strong></li><li>Runner-up: <strong>Quill</strong></li><li>Semifinalists: Harbor, Verdant</li></ul></div>
 
 <h2>Tournament bracket</h2>
-<p class="sub">4 teams, 4 slots,
-0 byes. Current round: <strong>not started</strong>.</p>
-<div class="rounds"><div class="round"><h3>semifinal</h3><div class="match"><span class="slot">1</span> <span class="entrant">team-harbor</span> vs <span class="entrant">team-quill</span></div><div class="match"><span class="slot">2</span> <span class="entrant">team-verdant</span> vs <span class="entrant">team-lumen</span></div></div><div class="round"><h3>final</h3><div class="match"><span class="slot">1</span> <span class="entrant bye">to be decided</span> vs <span class="entrant bye">to be decided</span></div></div></div>
+<p class="sub">4 teams,
+4 slots,
+0 byes.
+Current round: <strong>final</strong>.</p>
+<div class="rounds"><div class="round"><h3>semifinal</h3><div class="match won"><span class="slot">1</span> <span class="entrant">team-harbor</span> vs <span class="entrant winner">team-quill</span></div><div class="match won"><span class="slot">2</span> <span class="entrant">team-verdant</span> vs <span class="entrant winner">team-lumen</span></div></div><div class="round"><h3>final</h3><div class="match won"><span class="slot">1</span> <span class="entrant">team-quill</span> vs <span class="entrant winner">team-lumen</span></div></div></div>
+
+<h3>Results</h3><table><thead><tr><th>Round</th><th>Matchup</th><th>Winner</th></tr></thead><tbody><tr><td>semifinal</td><td>Lumen vs Verdant</td><td>Lumen</td></tr><tr><td>semifinal</td><td>Quill vs Harbor</td><td>Quill</td></tr><tr><td>final</td><td>Lumen vs Quill</td><td>Lumen</td></tr></tbody></table>
 
 <h2>Completed matchups</h2>
 <div class="card"><h3>Final</h3><p><strong>Lumen</strong> advances.</p><p>Both independent comparisons, run in opposite presentation orders, favoured Lumen on the same evidence. The clearest difference was Explicit state machine for handover status with exhaustive transition tests.</p><h4>Both teams did well</h4><ul><li>Lumen: Explicit state machine for handover status with exhaustive transition tests.</li><li>Quill: Keyboard-first interface with visible loading, empty and failure states.</li></ul></div><div class="card"><h3>Semifinal 1</h3><p><strong>Lumen</strong> advances.</p><p>Both independent comparisons, run in opposite presentation orders, favoured Lumen on the same evidence. The clearest difference was Explicit state machine for handover status with exhaustive transition tests.</p><h4>Both teams did well</h4><ul><li>Lumen: Explicit state machine for handover status with exhaustive transition tests.</li><li>Verdant: Honest uncertainty handling: alerts show confidence and can be dismissed.</li></ul></div><div class="card"><h3>Semifinal 2</h3><p><strong>Quill</strong> advances.</p><p>The two comparisons agreed but the difference was narrow enough to fall inside the event&#x27;s close-call band, so the result was referred to a human official, who applied the published tie-break order. Quill advanced on functional correctness and completeness.</p><h4>Both teams did well</h4><ul><li>Quill: Keyboard-first interface with visible loading, empty and failure states.</li><li>Harbor: Novel log-correlation approach that groups events by causal proximity.</li></ul></div>

@@ -80,11 +80,26 @@ jobs:
 
       - name: Ceremony output regenerates from approved artifacts only
         run: |
-          python -m atj ceremony events/sample-mock-2026 --output /tmp/ceremony
+          python -m atj ceremony events/sample-mock-2026 --output /tmp/ceremony --no-dossiers
           test -f /tmp/ceremony/index.html
 
-      - name: Package
+      - name: Bracket advancement agrees with the matchup reports
+        run: |
+          python -m atj bracket verify events/sample-mock-2026/bracket.json \
+            --event-dir events/sample-mock-2026
+
+      - name: Unit ledger has no stale entries
+        run: python -m atj event unit events/sample-mock-2026 list
+
+      - name: Package and exercise the wheel
         run: |
           pip install build
+          python tools/stage_package_data.py
           python -m build
           ls -l dist/
+          # A wheel that installs but cannot start is not a release artifact.
+          python -m venv /tmp/wheelenv
+          /tmp/wheelenv/bin/pip install dist/*.whl
+          cd /tmp && /tmp/wheelenv/bin/atj --version
+          cd /tmp && /tmp/wheelenv/bin/atj rubric
+          cd /tmp && /tmp/wheelenv/bin/atj release-check

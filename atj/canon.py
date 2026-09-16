@@ -277,14 +277,28 @@ def parse_policy(path: Path, *, id_key: str = "policy_id") -> PolicyVersion:
 def repository_root(start: Path | None = None) -> Path:
     """Locate the framework root by its canonical rubric, not by `.git`.
 
-    Keeping this independent of Git means the tooling works from a packaged
-    checkout, a CI export, or a worktree.
+    Keeping this independent of Git means the tooling works from a source
+    checkout, a CI export, a worktree, or an installed wheel. The wheel ships the
+    framework data under ``atj/data/``; without that fallback the installed
+    command could not find its own rubric.
     """
-    current = (start or Path(__file__).resolve()).resolve()
+    current = (start or Path.cwd()).resolve()
     for candidate in [current, *current.parents]:
         if (candidate / SUBMISSION_RUBRIC).is_file():
             return candidate
-    raise CanonError(f"framework root not found above {current} (no {SUBMISSION_RUBRIC})")
+
+    module = Path(__file__).resolve()
+    # Skip the build-time staged copy when a real checkout is above it.
+    for candidate in module.parents:
+        if (candidate / SUBMISSION_RUBRIC).is_file():
+            return candidate
+    packaged = module.parent / "data"
+    if (packaged / SUBMISSION_RUBRIC).is_file():
+        return packaged
+    raise CanonError(
+        f"framework root not found from {current} or alongside {module.parent} "
+        f"(no {SUBMISSION_RUBRIC}). Run from a checkout, or pass --root."
+    )
 
 
 def _stamp(path: Path) -> tuple[int, int]:

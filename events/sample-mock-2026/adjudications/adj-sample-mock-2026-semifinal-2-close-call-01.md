@@ -3,7 +3,7 @@ event_id: sample-mock-2026
 adjudication_id: adj:sample-mock-2026:semifinal-2-close-call:01
 scope: matchup
 team_id: null
-match_id: mu:sample-mock-2026:semifinal:02
+match_id: mu:sample-mock-2026:semifinal:01
 criterion: functional
 trigger: close-call
 question: Does the evidence establish a winner between Quill and Harbor despite a

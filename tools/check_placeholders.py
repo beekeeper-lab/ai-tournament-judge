@@ -30,8 +30,9 @@ EXEMPT_PREFIXES = (
     "atj/event.py",
     "CHANGELOG.md",
 )
-SCANNED_SUFFIXES = (".md", ".json", ".yml", ".yaml")
-SKIP_PARTS = {".git", "__pycache__", "node_modules", "dist", ".pytest_cache", "workspaces"}
+SCANNED_SUFFIXES = (".md", ".json", ".yml", ".yaml", ".html")
+SKIP_PARTS = {".git", "__pycache__", "node_modules", "dist", ".pytest_cache",
+              "workspaces", "data"}
 
 
 def main() -> int:

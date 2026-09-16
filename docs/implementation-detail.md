@@ -242,6 +242,44 @@ hand-edit of `events/*/public/` end to end. Separately, Claude Code **ignores
 `permissions.allow` from project settings until the workspace is trusted**, so
 nothing in this framework depends on it.
 
+### D12 — Official numbers are verified, not trusted
+
+An agent writes a consolidated report. The numbers in it come from `atj score`,
+but *writing* them is a transcription step, and until the final audit nothing
+compared them back. `atj score` being deterministic is true and was irrelevant to
+what actually shipped.
+
+`reports.check_consolidation` reloads each team's judgments, reapplies their
+approved adjudications, re-runs consolidation, and fails on any mismatch of
+`total`, `display_total`, `finalized` or the judge run IDs. The generated number
+and the written number must agree or nothing passes.
+
+### D13 — A gate needs the audit behind it
+
+`atj event gate <g> passed` used to set a boolean. An event could reach
+`complete` in eighteen commands with no evidence, no judgments, no matchups and
+no dossiers, and `validate reports` would say "PASS — 0 artifacts".
+
+Passing a gate now requires `--audit <artifact>`, and that artifact must exist,
+schema-validate, be approved, be private, carry a scope, have content, and record
+a result in `PASS_RESULTS`. Separately, each stage declares the work it requires,
+and `can_advance` refuses while that work is absent. The framework still cannot
+check that the audit was performed *carefully* — that is the human's part, and it
+is stated as such.
+
+### D14 — Winners are advanced, and only ever by something that named one
+
+A bracket with no advancement is a draw sheet, not a tournament record.
+`atj bracket advance` writes a winner and carries it into the next round. It
+reads the winner from the private matchup report, and when that report says
+`adjudication-required` — which means the framework deliberately returned no
+winner — it refuses unless an approved adjudication for that match names the
+advancing team.
+
+Match identifiers now come out of the drawn bracket rather than being assigned
+independently. They were assigned in two places and disagreed: the bracket
+recorded one pairing under an identifier and the matchup report recorded another.
+
 ---
 
 ## 4. Deviations from the original plan
@@ -281,6 +319,23 @@ them.
    stale rubric within a running process. Contrived, but real.
 10. **Calibration is a documented procedure, not an automated one.** The template
     exists; running it is an operator activity.
+11. **Judge independence is procedural and detected, not prevented.** The judges'
+    tools are read-only but not path-restricted. The `judge-submission` skill
+    stages reports outside `events/` until the panel completes, and
+    `reports.check_judge_independence` flags near-duplicate wording between two
+    judgments on the same team. A judge that was contaminated but paraphrased
+    well would not be caught.
+12. **Several controls end in a human, and cannot be verified further.** The
+    framework refuses to pass a gate without an audit artifact, to advance a
+    winner without a confirmed result or a recorded adjudication, and to publish
+    without a named approver. It cannot check that the audit was thorough, that
+    the approver read what they approved, or that an `--force-reason` override
+    was justified. `status.overrides` records every override; no command
+    currently surfaces them in a summary view.
+13. **The independence detector is a similarity heuristic.** It compares
+    six-word shingles and flags 80% overlap or more. It will not catch
+    contamination that was reworded, and a tightly templated evidence package
+    could in principle produce a false positive.
 
 ---
 

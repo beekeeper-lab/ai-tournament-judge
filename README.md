@@ -93,13 +93,15 @@ In Claude Code, the slash commands `/event-init`, `/team-ingest`, `/team-judge`,
 | `atj score <judgments-dir>` | Consolidate a judge panel |
 | `atj matchup <input.json>` | Resolve an order-balanced head-to-head |
 | `atj bracket build --event-dir <dir> --seed <seed>` | Draw a reproducible bracket |
-| `atj bracket verify <bracket.json>` | Re-derive and check every constraint |
+| `atj bracket advance <bracket.json> --match <id> --from <report>` | Record a match winner and carry it forward |
+| `atj bracket verify <bracket.json>` | Check a bracket; pass `--event-dir` or `--reproduce` to re-derive constraints from the roster rather than trusting the file's own audit block |
+| `atj event unit <dir> list` | Show the unit ledger and any unit whose inputs have changed |
 | `atj validate reports <dir>` | Validate every artifact in an event |
 | `atj validate publication <artifact>` | Gate one artifact before disclosure |
 | `atj sandbox preflight` | Report whether verified isolation is available |
 | `atj sandbox run <src> <cmd...>` | Run one command against a submission, isolated |
 | `atj ceremony <dir>` | Render the static ceremony view and dossiers |
-| `atj demo check` | Verify the committed sample event |
+| `atj demo check` | Re-derive every condition the sample event must demonstrate, recompute its totals, and re-verify both brackets |
 | `atj release-check` | Every framework-level check required before a release |
 | `atj personas` | Check the component registry against the agent and skill files |
 | `atj schemas` | Self-check the shipped schemas |
@@ -170,6 +172,19 @@ preliminary matches, eight participants, twelve byes, reproducible from its seed
   rubric, the weights, an artifact's visibility, the publication gate or the
   judges' tool surface; those are mechanical and tested. It may still influence a
   judge's prose. See `tests/fixtures/prompt-injection/README.md`.
+- **Judge independence is enforced by procedure and detected after the fact, not
+  prevented by the tool surface.** The four judges hold read-only tools, but those
+  tools are not path-restricted: a judge could read a sibling's report if one were
+  already written into the event directory. The `judge-submission` skill therefore
+  stages reports outside `events/` until all four complete, and
+  `atj validate reports` flags near-duplicate wording between two judgments on the
+  same team. That is a control and a detector, not a guarantee.
+- **Several controls depend on a human doing their part.** The framework refuses
+  to pass a stage gate without an audit artifact, refuses to advance a winner
+  without a confirmed result or a recorded adjudication, and refuses to publish
+  without a named approver. It cannot check that the audit was performed carefully,
+  that the approver read what they approved, or that `--force-reason` was
+  justified. `docs/implementation-detail.md` lists these explicitly.
 - **Model cost is not trivial.** A four-judge panel plus two matchup passes per
   tournament match is roughly `4 x teams + 2 x matches` model invocations. Budget
   and measure before scaling to a real field.

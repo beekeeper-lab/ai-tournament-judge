@@ -121,8 +121,30 @@ class SampleEventTests(unittest.TestCase):
 
     def test_the_bracket_reproduces_from_its_recorded_seed(self):
         committed = json.loads((EVENT_DIR / "bracket.json").read_text(encoding="utf-8"))
-        self.assertEqual(committed["rounds"], demo.sample_bracket(ROOT)["rounds"])
+        self.assertEqual(
+            bracket.draw_only(committed), bracket.draw_only(demo.sample_bracket(ROOT))
+        )
         self.assertEqual(bracket.verify(committed), [])
+
+    def test_every_match_records_a_winner_and_advancement(self):
+        committed = json.loads((EVENT_DIR / "bracket.json").read_text(encoding="utf-8"))
+        for entry in committed["rounds"]:
+            for match in entry["matches"]:
+                self.assertIsNotNone(match["winner"], match["match_id"])
+        final = committed["rounds"][-1]["matches"][0]
+        self.assertEqual(len([e for e in final["entrants"] if e]), 2)
+        self.assertEqual(bracket.pending_matches(committed), [])
+
+    def test_matchup_reports_agree_with_the_bracket(self):
+        committed = json.loads((EVENT_DIR / "bracket.json").read_text(encoding="utf-8"))
+        records = []
+        for path in sorted((EVENT_DIR / "matchups").glob("*.md")):
+            metadata, _ = frontmatter.read(path)
+            records.append((
+                metadata["match_id"], metadata["team_a"],
+                metadata["team_b"], metadata.get("winner"),
+            ))
+        self.assertEqual(bracket.check_matchup_records(committed, records), [])
 
     def test_no_real_person_or_school_appears(self):
         """A fixture that drifted toward real data would be a privacy incident."""
@@ -163,7 +185,10 @@ class TwentyTeamFixtureTests(unittest.TestCase):
         self.assertEqual(entry["status"], "satisfied", entry["detail"])
 
     def test_it_reproduces_from_the_recorded_seed(self):
-        self.assertEqual(self.fixture["rounds"], demo.twenty_team_bracket(ROOT)["rounds"])
+        self.assertEqual(
+            bracket.draw_only(self.fixture),
+            bracket.draw_only(demo.twenty_team_bracket(ROOT)),
+        )
 
     def test_the_roster_is_committed_alongside_it(self):
         roster = json.loads((FIXTURE_DIR / "roster.json").read_text(encoding="utf-8"))

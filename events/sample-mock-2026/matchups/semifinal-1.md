@@ -1,6 +1,6 @@
 ---
 event_id: sample-mock-2026
-match_id: mu:sample-mock-2026:semifinal:01
+match_id: mu:sample-mock-2026:semifinal:02
 round_id: semifinal
 team_a: team-lumen
 team_b: team-verdant

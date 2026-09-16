@@ -1,0 +1,2 @@
+[console_scripts]
+atj = atj.cli:main

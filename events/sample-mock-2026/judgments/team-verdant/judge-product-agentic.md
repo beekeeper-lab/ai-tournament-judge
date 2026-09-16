@@ -43,12 +43,12 @@ model:
 
 ## Executive assessment
 
-Reviewed through this judge's lens: user problem, appropriate AI use, oversight and evaluation loops. The
-shared criteria and weights are unchanged; the persona affects what is
-investigated and explained, never the formula.
+The question I start from is whether anyone's day is better for this existing, and whether the AI in it is load-carrying or decorative. For Verdant, a campus energy dashboard with anomaly alerts over meter data.
 
-A campus energy dashboard with anomaly alerts over meter data. The clearest strength is: Honest uncertainty handling: alerts show confidence and can be dismissed. The clearest weakness
-is: Single hard-coded data source; ingestion fails closed with no operator signal.
+I checked the alignment between the stated problem, the demonstrated result, and the mechanism connecting them. Agent count, model branding and architectural complexity earn nothing by themselves; controlled tool use, a feedback loop, and legible failure behaviour do.
+
+The shared criteria and weights are unchanged. This persona decides what I
+investigate and how I explain it, never the formula.
 
 ## Scores
 
@@ -67,28 +67,37 @@ is: Single hard-coded data source; ingestion fails closed with no operator signa
 
 ## Criterion findings
 
-Each score below rests on the manifest evidence, with observation separated from
-inference.
+*Whether the ambition and the evidence match, criterion by criterion.*
 
-| Evidence ID | Class | Observation |
-|---|---|---|
-| ev-verdant-01 | direct-observation | Alert confidence is shown and dismissals persist. |
-| ev-verdant-02 | artifact | src/ingest.py:14 hard-codes the meter endpoint. |
-| ev-verdant-03 | direct-observation | A failed ingest leaves the dashboard silently stale. |
-| ev-verdant-04 | artifact | Nine integration tests cover the alerting path. |
+**functional** — 3. Cited: ev-verdant-01, direct-observation. Alert confidence is shown and dismissals persist. Read through the user problem, appropriate AI use, oversight and evaluation loops, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
 
-No criterion was left at `NE`; the pinned evidence supported a score for each.
+**product** — 3. Cited: ev-verdant-02, artifact. src/ingest.py:14 hard-codes the meter endpoint. Read through the user problem, appropriate AI use, oversight and evaluation loops, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**agentic** — 4. Cited: ev-verdant-03, direct-observation. A failed ingest leaves the dashboard silently stale. Read through the user problem, appropriate AI use, oversight and evaluation loops, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**engineering** — 3. Cited: ev-verdant-04, artifact. Nine integration tests cover the alerting path. Read through the user problem, appropriate AI use, oversight and evaluation loops, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**reliability** — 3. Cited: ev-verdant-01, direct-observation. Alert confidence is shown and dismissals persist. Read through the user problem, appropriate AI use, oversight and evaluation loops, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**security** — 3. Cited: ev-verdant-02, artifact. src/ingest.py:14 hard-codes the meter endpoint. Read through the user problem, appropriate AI use, oversight and evaluation loops, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**innovation** — 3. Cited: ev-verdant-03, direct-observation. A failed ingest leaves the dashboard silently stale. Read through the user problem, appropriate AI use, oversight and evaluation loops, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
 
 ## Surprises
 
-- Better than expected: Honest uncertainty handling: alerts show confidence and can be dismissed.
-- Worse than expected: Single hard-coded data source; ingestion fails closed with no operator signal.
+- Better than I expected: Honest uncertainty handling: alerts show confidence and can be dismissed.
+- Worse than I expected: Single hard-coded data source; ingestion fails closed with no operator signal.
 
 ## Blocking and major issues
 
-Confirmed defect: Single hard-coded data source; ingestion fails closed with no operator signal. Risk, not confirmed: the unexercised paths
-noted in the manifest, which execution would have settled and static inspection
-cannot.
+Confirmed: Single hard-coded data source; ingestion fails closed with no operator signal. That is observed in the pinned package, not inferred.
+
+Unresolved rather than confirmed: the paths no one exercised. Execution would
+have settled them; static inspection cannot, and I have not pretended otherwise.
+
+
+Novelty theatre is easy to spot and cheap to build. What I am looking for is a system whose ambition and its evidence are the same size.
 
 ## Calculation and independence declaration
 

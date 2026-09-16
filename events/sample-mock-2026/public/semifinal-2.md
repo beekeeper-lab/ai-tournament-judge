@@ -1,6 +1,6 @@
 ---
 event_id: sample-mock-2026
-match_id: mu:sample-mock-2026:semifinal:02
+match_id: mu:sample-mock-2026:semifinal:01
 round_id: semifinal
 rubric: head-to-head@1.0.0
 framework_commit: uncommitted

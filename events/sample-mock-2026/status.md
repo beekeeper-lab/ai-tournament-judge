@@ -14,11 +14,21 @@ stage_gates:
   judgments-audited: passed
   roster-frozen: passed
   tournament-audited: passed
+gate_evidence:
+  configuration-audited: audits/consolidation-panel.md
+  roster-frozen: audits/consolidation-panel.md
+  evidence-validated: audits/consolidation-panel.md
+  judgments-audited: audits/consolidation-panel.md
+  consolidation-audited: audits/consolidation-team-lumen-02.md
+  bracket-audited: audits/bracket.md
+  tournament-audited: audits/tournament.md
+  dossiers-approved: audits/final-event.md
+  final-audit-passed: audits/final-event.md
 units:
 - unit_id: evidence:team-lumen
   stage: evidence
   state: complete
-  input_digest: 75c227b330f166ba
+  input_digest: 118233cef145898b
   outputs:
   - evidence/team-lumen/manifest.md
   audit_result: PASS
@@ -26,7 +36,7 @@ units:
 - unit_id: judging:team-lumen
   stage: initial-judging
   state: complete
-  input_digest: 614d2da5b27e95ba
+  input_digest: 4f29c5ab8cc30817
   outputs:
   - judgments/team-lumen/judge-backend.md
   - judgments/team-lumen/judge-frontend-ux.md
@@ -37,7 +47,7 @@ units:
 - unit_id: consolidation:team-lumen
   stage: consolidation
   state: complete
-  input_digest: d3efbaf53299dc61
+  input_digest: ac8c016e51829dab
   outputs:
   - summaries/team-lumen.md
   audit_result: PASS WITH ADVISORIES
@@ -53,7 +63,7 @@ units:
 - unit_id: evidence:team-quill
   stage: evidence
   state: complete
-  input_digest: b8428017c0092bf0
+  input_digest: a98b652db78140cf
   outputs:
   - evidence/team-quill/manifest.md
   audit_result: PASS
@@ -61,7 +71,7 @@ units:
 - unit_id: judging:team-quill
   stage: initial-judging
   state: complete
-  input_digest: 5f4f9c6c7082ebd0
+  input_digest: bbf8ba990f5e0cf4
   outputs:
   - judgments/team-quill/judge-backend.md
   - judgments/team-quill/judge-frontend-ux.md
@@ -72,7 +82,7 @@ units:
 - unit_id: consolidation:team-quill
   stage: consolidation
   state: complete
-  input_digest: a352a7c66cee3349
+  input_digest: 7284f792da52a8b2
   outputs:
   - summaries/team-quill.md
   audit_result: PASS
@@ -88,7 +98,7 @@ units:
 - unit_id: evidence:team-harbor
   stage: evidence
   state: complete
-  input_digest: ae37c84bae4ad891
+  input_digest: ea4454750ba60b24
   outputs:
   - evidence/team-harbor/manifest.md
   audit_result: PASS
@@ -96,7 +106,7 @@ units:
 - unit_id: judging:team-harbor
   stage: initial-judging
   state: complete
-  input_digest: 8938b784fdcf5917
+  input_digest: c44c97fa2e1620b1
   outputs:
   - judgments/team-harbor/judge-backend.md
   - judgments/team-harbor/judge-frontend-ux.md
@@ -107,7 +117,7 @@ units:
 - unit_id: consolidation:team-harbor
   stage: consolidation
   state: complete
-  input_digest: 777777c4b66a1e9f
+  input_digest: 6a92cc26abf06870
   outputs:
   - summaries/team-harbor.md
   audit_result: PASS
@@ -123,7 +133,7 @@ units:
 - unit_id: evidence:team-verdant
   stage: evidence
   state: complete
-  input_digest: 1e61448a37b43d9b
+  input_digest: 3a5feb71e8247c13
   outputs:
   - evidence/team-verdant/manifest.md
   audit_result: PASS
@@ -131,7 +141,7 @@ units:
 - unit_id: judging:team-verdant
   stage: initial-judging
   state: complete
-  input_digest: 20a1b7a91db6cd92
+  input_digest: 64b5f6d29d0fda33
   outputs:
   - judgments/team-verdant/judge-backend.md
   - judgments/team-verdant/judge-frontend-ux.md
@@ -142,7 +152,7 @@ units:
 - unit_id: consolidation:team-verdant
   stage: consolidation
   state: complete
-  input_digest: e7733d0b6fb32fb6
+  input_digest: d81ca5d4bd311514
   outputs:
   - summaries/team-verdant.md
   audit_result: PASS

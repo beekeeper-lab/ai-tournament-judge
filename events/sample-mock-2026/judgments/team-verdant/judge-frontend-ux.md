@@ -43,12 +43,12 @@ model:
 
 ## Executive assessment
 
-Reviewed through this judge's lens: workflow clarity, feedback, accessibility and failure states. The
-shared criteria and weights are unchanged; the persona affects what is
-investigated and explained, never the formula.
+I judge a product by whether a real person can finish the task it promises, not by how it photographs. Working through Verdant that way, a campus energy dashboard with anomaly alerts over meter data.
 
-A campus energy dashboard with anomaly alerts over meter data. The clearest strength is: Honest uncertainty handling: alerts show confidence and can be dismissed. The clearest weakness
-is: Single hard-coded data source; ingestion fails closed with no operator signal.
+I walked the primary task end to end, then looked specifically for the states teams usually skip: empty, loading, invalid input, failure, and recovery. Where the evidence showed one, I recorded it; where it did not, I did not assume it exists.
+
+The shared criteria and weights are unchanged. This persona decides what I
+investigate and how I explain it, never the formula.
 
 ## Scores
 
@@ -67,28 +67,37 @@ is: Single hard-coded data source; ingestion fails closed with no operator signa
 
 ## Criterion findings
 
-Each score below rests on the manifest evidence, with observation separated from
-inference.
+*What a user would encounter, criterion by criterion.*
 
-| Evidence ID | Class | Observation |
-|---|---|---|
-| ev-verdant-01 | direct-observation | Alert confidence is shown and dismissals persist. |
-| ev-verdant-02 | artifact | src/ingest.py:14 hard-codes the meter endpoint. |
-| ev-verdant-03 | direct-observation | A failed ingest leaves the dashboard silently stale. |
-| ev-verdant-04 | artifact | Nine integration tests cover the alerting path. |
+**functional** — 3. Cited: ev-verdant-01, direct-observation. Alert confidence is shown and dismissals persist. Read through workflow clarity, feedback, accessibility and failure states, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
 
-No criterion was left at `NE`; the pinned evidence supported a score for each.
+**product** — 3. Cited: ev-verdant-02, artifact. src/ingest.py:14 hard-codes the meter endpoint. Read through workflow clarity, feedback, accessibility and failure states, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**agentic** — 3. Cited: ev-verdant-03, direct-observation. A failed ingest leaves the dashboard silently stale. Read through workflow clarity, feedback, accessibility and failure states, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**engineering** — 3. Cited: ev-verdant-04, artifact. Nine integration tests cover the alerting path. Read through workflow clarity, feedback, accessibility and failure states, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**reliability** — 3. Cited: ev-verdant-01, direct-observation. Alert confidence is shown and dismissals persist. Read through workflow clarity, feedback, accessibility and failure states, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**security** — 3. Cited: ev-verdant-02, artifact. src/ingest.py:14 hard-codes the meter endpoint. Read through workflow clarity, feedback, accessibility and failure states, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
+**innovation** — 3. Cited: ev-verdant-03, direct-observation. A failed ingest leaves the dashboard silently stale. Read through workflow clarity, feedback, accessibility and failure states, that is what the score rests on; everything beyond it would be inference and is marked as such where I have drawn any.
+
 
 ## Surprises
 
-- Better than expected: Honest uncertainty handling: alerts show confidence and can be dismissed.
-- Worse than expected: Single hard-coded data source; ingestion fails closed with no operator signal.
+- Better than I expected: Honest uncertainty handling: alerts show confidence and can be dismissed.
+- Worse than I expected: Single hard-coded data source; ingestion fails closed with no operator signal.
 
 ## Blocking and major issues
 
-Confirmed defect: Single hard-coded data source; ingestion fails closed with no operator signal. Risk, not confirmed: the unexercised paths
-noted in the manifest, which execution would have settled and static inspection
-cannot.
+Confirmed: Single hard-coded data source; ingestion fails closed with no operator signal. That is observed in the pinned package, not inferred.
+
+Unresolved rather than confirmed: the paths no one exercised. Execution would
+have settled them; static inspection cannot, and I have not pretended otherwise.
+
+
+Polish does not compensate for a broken core workflow, and a rough prototype that completes its task is not penalised for lacking production visual refinement.
 
 ## Calculation and independence declaration
 
