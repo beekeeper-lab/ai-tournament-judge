@@ -429,6 +429,43 @@ def cmd_check_publication(args) -> int:
 
 
 # --------------------------------------------------------------------------- #
+# ceremony
+# --------------------------------------------------------------------------- #
+
+def cmd_ceremony(args) -> int:
+    """Render the static ceremony view and printable dossiers.
+
+    Reads approved public artifacts and the bracket's structural facts. It never
+    opens the private record, and it refuses rather than skipping an artifact
+    that does not pass the publication gate.
+    """
+    from . import ceremony
+
+    root = _root(args)
+    event_dir = Path(args.event_dir)
+    output = Path(args.output) if args.output else event_dir / "public" / "ceremony"
+    output.mkdir(parents=True, exist_ok=True)
+
+    page = output / "index.html"
+    page.write_text(ceremony.render_ceremony(event_dir), encoding="utf-8")
+    written = [page]
+
+    if not args.no_dossiers:
+        for dossier in sorted((event_dir / "dossiers").glob("*.md")):
+            target = output / "dossiers" / f"{dossier.stem}.html"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(ceremony.render_dossier(dossier), encoding="utf-8")
+            written.append(target)
+
+    _emit({"written": [str(path) for path in written]}, args)
+    if not args.json:
+        for path in written:
+            print(f"  wrote {path}")
+        print(f"Ceremony output: {len(written)} file(s)")
+    return OK
+
+
+# --------------------------------------------------------------------------- #
 # release check
 # --------------------------------------------------------------------------- #
 
@@ -868,6 +905,16 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--timeout", type=int, help="seconds")
     run.add_argument("--output", help="write the execution record here")
     run.set_defaults(func=cmd_sandbox_run)
+
+    ceremony_parser = sub.add_parser(
+        "ceremony", help="render the static ceremony view from approved public artifacts"
+    )
+    ceremony_parser.add_argument("event_dir")
+    ceremony_parser.add_argument("--output", help="output directory")
+    ceremony_parser.add_argument(
+        "--no-dossiers", action="store_true", help="skip the printable team dossiers"
+    )
+    ceremony_parser.set_defaults(func=cmd_ceremony)
 
     demo_parser = sub.add_parser("demo", help="the committed synthetic sample event")
     demo_parser.add_argument(

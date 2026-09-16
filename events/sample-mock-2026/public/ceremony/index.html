@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sample-mock-2026 — ceremony</title>
+<style>
+:root {
+  --ink: #16191d; --muted: #5b6671; --line: #d8dee5; --bg: #ffffff;
+  --accent: #1f4e79; --won: #eef5ec; --pending: #f6f7f9;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --ink: #e8ebee; --muted: #9aa5b1; --line: #333a42; --bg: #14171a;
+          --accent: #7fb2e5; --won: #1e2a20; --pending: #1b1f23; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+       font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 62rem; margin: 0 auto; padding: 2rem 1rem 4rem; }
+h1 { font-size: 1.9rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.2rem; margin: 2.5rem 0 .75rem; padding-bottom: .3rem;
+     border-bottom: 2px solid var(--line); }
+h3 { font-size: 1rem; margin: 1.5rem 0 .4rem; }
+.sub { color: var(--muted); margin: 0 0 1.5rem; }
+.champion { border: 2px solid var(--accent); border-radius: .5rem;
+            padding: 1rem 1.25rem; margin: 1rem 0; }
+.champion strong { font-size: 1.35rem; color: var(--accent); }
+.rounds { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.round { border: 1px solid var(--line); border-radius: .4rem; padding: .75rem; }
+.round h3 { margin-top: 0; text-transform: capitalize; }
+.match { background: var(--pending); border-radius: .3rem; padding: .4rem .6rem;
+         margin-bottom: .4rem; font-size: .9rem; }
+.match.won { background: var(--won); }
+.match .slot { color: var(--muted); font-size: .8rem; }
+.entrant.winner { font-weight: 600; }
+.bye { color: var(--muted); font-style: italic; }
+.card { border: 1px solid var(--line); border-radius: .4rem; padding: 1rem 1.25rem;
+        margin-bottom: 1rem; }
+.card h3 { margin-top: 0; }
+.disclosure { background: var(--pending); border-radius: .4rem; padding: 1rem 1.25rem; }
+footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
+         color: var(--muted); font-size: .85rem; }
+code { background: var(--pending); padding: .1rem .3rem; border-radius: .2rem;
+       font-size: .9em; }
+@media print {
+  body { background: #fff; color: #000; }
+  .rounds { grid-template-columns: repeat(2, 1fr); }
+  h2 { page-break-after: avoid; }
+  .card, .round { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<main>
+<h1>sample-mock-2026</h1>
+<p class="sub">Generated from approved public artifacts only. No private judge
+report, score, evidence package or deliberation is an input to this page.</p>
+
+<h2>Event overview</h2>
+<p>A synthetic four-team single-elimination event used to demonstrate the judging</p>
+<p>framework end to end. No real team, project or institution appears in it.</p>
+
+<h2>Champion and finalists</h2>
+<div class="champion"><ul><li>Champion: <strong>Lumen</strong></li><li>Runner-up: <strong>Quill</strong></li><li>Semifinalists: Harbor, Verdant</li></ul></div>
+
+<h2>Tournament bracket</h2>
+<p class="sub">4 teams, 4 slots,
+0 byes. Current round: <strong>not started</strong>.</p>
+<div class="rounds"><div class="round"><h3>semifinal</h3><div class="match"><span class="slot">1</span> <span class="entrant">team-harbor</span> vs <span class="entrant">team-quill</span></div><div class="match"><span class="slot">2</span> <span class="entrant">team-verdant</span> vs <span class="entrant">team-lumen</span></div></div><div class="round"><h3>final</h3><div class="match"><span class="slot">1</span> <span class="entrant bye">to be decided</span> vs <span class="entrant bye">to be decided</span></div></div></div>
+
+<h2>Completed matchups</h2>
+<div class="card"><h3>Final</h3><p><strong>Lumen</strong> advances.</p><p>Both independent comparisons, run in opposite presentation orders, favoured Lumen on the same evidence. The clearest difference was Explicit state machine for handover status with exhaustive transition tests.</p><h4>Both teams did well</h4><ul><li>Lumen: Explicit state machine for handover status with exhaustive transition tests.</li><li>Quill: Keyboard-first interface with visible loading, empty and failure states.</li></ul></div><div class="card"><h3>Semifinal 1</h3><p><strong>Lumen</strong> advances.</p><p>Both independent comparisons, run in opposite presentation orders, favoured Lumen on the same evidence. The clearest difference was Explicit state machine for handover status with exhaustive transition tests.</p><h4>Both teams did well</h4><ul><li>Lumen: Explicit state machine for handover status with exhaustive transition tests.</li><li>Verdant: Honest uncertainty handling: alerts show confidence and can be dismissed.</li></ul></div><div class="card"><h3>Semifinal 2</h3><p><strong>Quill</strong> advances.</p><p>The two comparisons agreed but the difference was narrow enough to fall inside the event&#x27;s close-call band, so the result was referred to a human official, who applied the published tie-break order. Quill advanced on functional correctness and completeness.</p><h4>Both teams did well</h4><ul><li>Quill: Keyboard-first interface with visible loading, empty and failure states.</li><li>Harbor: Novel log-correlation approach that groups events by causal proximity.</li></ul></div>
+
+<h2>Common strengths across the field</h2>
+<p>Every entry handled at least one failure path deliberately rather than by</p>
+<p>accident, and each documented what it had not finished.</p>
+
+<h2>Common learning opportunities</h2>
+<p>The field&#x27;s recurring gap was demonstrating claimed behaviour. Several claims</p>
+<p>were plausible and undemonstrated, which limits how high a criterion can be</p>
+<p>scored regardless of how good the idea is.</p>
+
+<h2>How entries were judged</h2>
+<div class="disclosure"><p>Four independent AI judges evaluated each entry in separate contexts against one</p>
+<p>shared weighted rubric. No judge saw another judge&#x27;s report. Scores were</p>
+<p>combined arithmetically by a deterministic script; a consolidator summarised the</p>
+<p>evidence without changing any score. Disagreements above a declared threshold,</p>
+<p>unresolved evidence gaps and close matchups were referred to a human official,</p>
+<p>who decided them. Tournament matchups were judged twice in opposite presentation</p>
+<p>orders, and a result was only automatic when both passes agreed by more than the</p>
+<p>close-call band.</p>
+<p>Limitations, stated plainly: no submission was executed in this event, so</p>
+<p>conclusions about running behaviour rest on inspected implementation and</p>
+<p>team-supplied artifacts. AI judgment is not deterministic; the arithmetic,</p>
+<p>validation and bracket assignment around it are.</p></div>
+
+<footer>
+Every statement above comes from an artifact a human official approved for
+publication. Markdown in <code>public/</code> remains the authoritative
+record; this page is a rendering of it.
+</footer>
+</main>
+</body>
+</html>

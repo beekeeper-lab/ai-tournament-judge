@@ -1214,6 +1214,21 @@ def build(root: Path, *, clean: bool = True) -> Path:
     write_audits(directory, root)
     write_status(directory, root, drawn)
 
+    # The ceremony view is part of the sample's committed output, so CI's
+    # "sample event is current" check covers the renderer too.
+    from . import ceremony
+
+    ceremony_dir = directory / "public" / "ceremony"
+    ceremony_dir.mkdir(parents=True, exist_ok=True)
+    (ceremony_dir / "index.html").write_text(
+        ceremony.render_ceremony(directory), encoding="utf-8"
+    )
+    (ceremony_dir / "dossiers").mkdir(exist_ok=True)
+    for dossier in sorted((directory / "dossiers").glob("*.md")):
+        (ceremony_dir / "dossiers" / f"{dossier.stem}.html").write_text(
+            ceremony.render_dossier(dossier), encoding="utf-8"
+        )
+
     fixture = demo.twenty_team_bracket(root)
     fixture_dir = root / "tests" / "fixtures" / "bracket-20-team"
     fixture_dir.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>team-lumen — dossier</title>
+<style>
+:root {
+  --ink: #16191d; --muted: #5b6671; --line: #d8dee5; --bg: #ffffff;
+  --accent: #1f4e79; --won: #eef5ec; --pending: #f6f7f9;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --ink: #e8ebee; --muted: #9aa5b1; --line: #333a42; --bg: #14171a;
+          --accent: #7fb2e5; --won: #1e2a20; --pending: #1b1f23; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+       font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 62rem; margin: 0 auto; padding: 2rem 1rem 4rem; }
+h1 { font-size: 1.9rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.2rem; margin: 2.5rem 0 .75rem; padding-bottom: .3rem;
+     border-bottom: 2px solid var(--line); }
+h3 { font-size: 1rem; margin: 1.5rem 0 .4rem; }
+.sub { color: var(--muted); margin: 0 0 1.5rem; }
+.champion { border: 2px solid var(--accent); border-radius: .5rem;
+            padding: 1rem 1.25rem; margin: 1rem 0; }
+.champion strong { font-size: 1.35rem; color: var(--accent); }
+.rounds { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.round { border: 1px solid var(--line); border-radius: .4rem; padding: .75rem; }
+.round h3 { margin-top: 0; text-transform: capitalize; }
+.match { background: var(--pending); border-radius: .3rem; padding: .4rem .6rem;
+         margin-bottom: .4rem; font-size: .9rem; }
+.match.won { background: var(--won); }
+.match .slot { color: var(--muted); font-size: .8rem; }
+.entrant.winner { font-weight: 600; }
+.bye { color: var(--muted); font-style: italic; }
+.card { border: 1px solid var(--line); border-radius: .4rem; padding: 1rem 1.25rem;
+        margin-bottom: 1rem; }
+.card h3 { margin-top: 0; }
+.disclosure { background: var(--pending); border-radius: .4rem; padding: 1rem 1.25rem; }
+footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
+         color: var(--muted); font-size: .85rem; }
+code { background: var(--pending); padding: .1rem .3rem; border-radius: .2rem;
+       font-size: .9em; }
+@media print {
+  body { background: #fff; color: #000; }
+  .rounds { grid-template-columns: repeat(2, 1fr); }
+  h2 { page-break-after: avoid; }
+  .card, .round { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<main>
+<h1>team-lumen</h1>
+<p class="sub">sample-mock-2026 — feedback for your team. Print or save this page.</p>
+<div class="card"><h3>Your project at a glance</h3><p>A shift-handover tool for small clinics. Server-rendered, no framework.</p>
+<p>Overall panel result: <strong>73.3 / 100</strong>.</p></div><div class="card"><h3>What you did especially well</h3><p>Explicit state machine for handover status with exhaustive transition tests. This was the clearest thing the panel agreed on, and it is worth</p>
+<p>keeping as the project grows.</p></div><div class="card"><h3>Criterion feedback</h3></div><div class="card"><h3>Tournament journey</h3><ul><li><strong>Semifinal</strong> against Verdant: you advanced. The deciding difference was explicit state machine for handover status with exhaustive transition tests.</li><li><strong>Final</strong> against Quill: you advanced. The deciding difference was explicit state machine for handover status with exhaustive transition tests.</li></ul></div><div class="card"><h3>Blocking issues</h3><ul><li>Session handling stores a bare user id in a cookie with no signature.</li></ul></div><div class="card"><h3>Recommended improvement plan</h3><p>1. <strong>Immediate repair.</strong> Session handling stores a bare user id in a cookie with no signature. Fix this first; it is the one confirmed</p>
+<p>defect that affects how the rest of the work is read.</p>
+<p>2. <strong>Highest-value next iteration.</strong> Demonstrate the behaviour you described but</p>
+<p>did not show. A claim with a test or a captured run behind it scores</p>
+<p>differently from the same claim on its own.</p>
+<p>3. <strong>Longer-term opportunity.</strong> Explicit state machine for handover status with exhaustive transition tests is a real strength —</p>
+<p>extend it to the parts of the system that do not yet have it.</p></div><div class="card"><h3>Evidence appendix</h3><p>These are the observations the panel worked from. Everything here is traceable</p>
+<p>to your submitted commit.</p></div>
+<footer>
+This dossier is for your team only. It is generated from the approved
+team-facing Markdown record and contains no other team's private information.
+</footer>
+</main>
+</body>
+</html>
