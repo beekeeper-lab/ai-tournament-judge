@@ -1,6 +1,6 @@
 ---
 event_id: live-trial-2026
-audit_scope: initial-judging stage, both teams, second pass over the repair round
+audit_scope: initial-judging stage, both teams, third pass over the second repair round
 audit_id: judgments
 team_id: null
 match_id: null
@@ -8,365 +8,576 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.0.0
 persona: judging-auditor@1.0.0
-framework_commit: bdf369d41596a4330338336c6ed50cefa2061875
+framework_commit: 9ad8a12c89c9509125b427cf557c8106dc6946dc
 model_requested: claude-opus-5
 model_used: claude-opus-5
-started_at: "2026-09-17T21:24:00Z"
-completed_at: "2026-09-17T21:33:00Z"
+started_at: "2026-09-17T21:58:00Z"
+completed_at: "2026-09-17T22:19:00Z"
 visibility: private
 approval_state: approved
 validation_state: valid
-result: FAIL
+result: PASS WITH ADVISORIES
 ---
-# Judging Audit — initial-judging stage, second pass
+# Judging Audit — initial-judging stage, third pass
 
-This replaces the first-pass audit of the same scope. Finding IDs are preserved:
-F1-F7 and A1-A5 mean exactly what they meant in the first pass. New findings from
-this pass start at F8 and A6.
+This replaces the second-pass audit of the same scope. Finding IDs are preserved
+across all three passes: F1-F7 and A1-A5 mean what they meant in the first pass,
+F8-F14 and A6-A10 mean what they meant in the second. New findings from this pass
+start at F15 and A11.
 
-`team_id`, `commit` and `evidence_package_id` are `null` because this audit
-covers two teams, two pinned commits and two evidence packages. Each finding
-names its own.
+`team_id`, `commit` and `evidence_package_id` are `null` because this audit covers
+two teams, two pinned commits and two evidence packages. Each finding names its own.
 
 ## Result
 
-**FAIL.** No blocking finding. One major (F8). Six minor (F9-F14). Five new
-advisories (A6-A10).
+**PASS WITH ADVISORIES.** No blocking finding. Three major (F16, F17, F18), two
+minor (F15, F19), one minor carried half-open (F12), one minor mechanically
+self-closing (F10). F1 and F5 remain open and correctly parked as carry-forwards
+to consolidation.
 
-The repair round did its substantive work. **F2 is closed, F3 is closed, F4, F6,
-F7 and A3 are recorded, and F1 is correctly parked as a carry-forward with no
-score moved and no judgment edited.** The adjudication the round produced is a
-good one: its question is narrow, every artifact it cites resolves, its factual
-resolution is supported, and its two downstream claims are true — I re-derived
-both with the tools rather than accepting them.
+**The `judgments-audited` gate may be set.** See "Why this passes and the last
+two passes did not" below — that section is the substance of this audit, not a
+formality, and it names which findings must never have held this gate.
 
-What fails is the same class of defect the first pass failed on, in the same
-file. `status.md` now records an adjudication in prose but leaves the ledger's
-dedicated **Blockers and adjudications** table empty (F8), still asserts
-`adjudications/` is empty (F9), carries a `last_updated` that predates its own
-newest rows (F10), and has no activity row for the stage audit at all (F11). One
-edit plus the two `atj event` commands closes all four.
+Everything the judging gate exists to protect is clean and was re-derived here
+rather than accepted:
 
-## What changed since the first pass
-
-Three commits: `ebb76c2` (audit recorded, two ledger rows corrected), `01f559f`
-(D7-D9 added to the fix plan), `bdf369d` (adjudication written, three ledger rows
-added, `summaries/team-podcast.json` regenerated).
-
-I read every changed line in all three. The judgments were not touched:
-`git log --stat 92c6687..HEAD -- events/live-trial-2026/judgments/` is empty, and
-the only three commits that have ever written into that directory are `7dab838`,
-`4a96452` and `92c6687`.
+- Both consolidations reproduce exactly. `atj score --json` against the committed
+  summaries gives **318 leaf values, 0 differences** for team-podcast and **311
+  leaf values, 0 differences** for team-ledger.
+- All eight judgments re-render `unchanged` and `diff -r` clean.
+- `git log --stat 92c6687..HEAD -- events/live-trial-2026/judgments/` is **empty**.
+  No judgment has been edited across three audit passes and two repair rounds.
+- `NE` is a zero nowhere at any layer. team-podcast carries `total: null`,
+  `finalized: false`, `weighted_points: null` for `reliability`, and 58.25 is
+  labelled provisional everywhere it appears.
+- Versions resolve, `release-check` **PASSES on the committed tree**, 4 units, 0
+  stale, nothing private in `public/`, and no submission was executed in this round.
 
 ## Scope and artifacts inspected
 
-- The full diff of `ebb76c2`, `01f559f` and `bdf369d`, line by line.
+- The full diff of `3667c00`, `cbf76e1` and `9ad8a12`, line by line — every change
+  made since the second-pass audit was recorded at `956c2b1`.
+- `events/live-trial-2026/status.md` in full, against `events/_template/status.md`,
+  `events/sample-mock-2026/status.md:241-248` as the repository's reference row
+  shape, and the log's own provenance rule at `status.md:145-156`. The activity
+  log was parsed programmatically: every row, every timestamp cell, every adjacent
+  pair compared for ordering, and every physical line checked for cell count.
 - `events/live-trial-2026/adjudications/team-podcast-reliability-ne.md` in full,
   against `framework/policies/disagreement-and-adjudication.md`,
   `schemas/adjudication.schema.json` and
-  `framework/templates/adjudication-report.md`.
-- `events/live-trial-2026/status.md` in full, against `events/_template/status.md`
-  and `events/sample-mock-2026/status.md` as the repository's own reference shape.
-- `docs/framework-fix-plan.md` D1-D11 and T3.2.
-- All eight judgments re-rendered and diffed; both summary JSON files regenerated
-  and diffed; the podcast panel re-measured for wording overlap.
-- `framework/rubrics/head-to-head.md` and `framework/rubrics/bracket-assignment.md`
-  front matter, and `atj/matchup.py:245-278`, `atj/bracket.py:150-178`,
-  `atj/scoring.py:397-461`, `atj/event.py:392-435,460-560`, `atj/cli.py:383-420`,
-  read to check the adjudication's mechanism claims rather than its prose.
-- `workspaces/live-trial-2026/team-podcast/web/js/storage.js` and four run records
-  at the pinned commit, to check the adjudication's cited facts.
+  `framework/templates/adjudication-report.md`, checking specifically for an
+  amendment or revision mechanism. There is none.
+- `docs/framework-fix-plan.md` D1-D13 and T3.2, and the same file on branch
+  `fix/framework-d7-d10-d12` at `bdf369d`, plus
+  `git log --all -S"D12 |" -- docs/framework-fix-plan.md`, to test the D12
+  numbering claim (F17).
+- All eight judgments re-rendered into a scratch copy and diffed; both summary
+  JSON files regenerated and compared leaf by leaf; `check_judge_independence`
+  re-run over both panels.
+- `.claude/worktrees/`, `git worktree list`, `git status --porcelain --ignored`,
+  and a clean `git archive HEAD` export run through `release-check` and the full
+  test suite, to separate the environment from the committed tree (F18).
+- Commit timestamps for `ebb76c2` through `9ad8a12` via `git log --format=%cI`,
+  and the second-pass audit's own front matter via `git show ebb76c2:`, to source
+  the four new activity-log rows (F15).
 
 No submission was executed. This pass added no run record and needed no sandbox.
+`git log --stat 92c6687..HEAD -- events/live-trial-2026/judgments/` is empty:
+no judgment has been touched in any repair round.
 
 ## Deterministic validation results
 
 | Command | Result |
 |---|---|
-| `python3 -m atj validate reports events/live-trial-2026` | PASS — **17** artifacts, 0 blocking, 0 major, 0 minor, 0 advisory. `validate_event_reports` (`atj/reports.py:322-326`) walks every `ARTIFACT_KINDS` directory, so the 17 are eight judgments, two evidence manifests, two intake records, four audits and the adjudication. The first pass counted 15 because neither its own audit file nor the adjudication existed yet |
-| `python3 -m atj score events/live-trial-2026/judgments/team-ledger` | 76.3 of 100, all seven criteria `aligned`, no `NE` — unchanged |
-| `python3 -m atj score events/live-trial-2026/judgments/team-podcast` | no official total; `reliability` still reported as an unresolved `NE`; provisional 58.25 — unchanged |
-| `atj score --json` over `judgments/team-podcast` vs the committed summary | 318 leaf values, **zero differences**. The regenerated summary reproduces, including the new `resolution` block |
-| `python3 -m atj render judgment` over copies of all eight | all eight `unchanged`; `diff -r` against the committed files reports no differences |
-| `python3 -m atj event unit events/live-trial-2026 list` | 4 units, **0 stale** |
+| `python3 -m atj validate reports events/live-trial-2026` | PASS — 17 artifacts, 0 blocking, 0 major, 0 minor, 0 advisory |
+| `python3 -m atj score events/live-trial-2026/judgments/team-ledger` | 76.3 of 100, all seven criteria `aligned`, no `NE` — unchanged across all three passes |
+| `python3 -m atj score events/live-trial-2026/judgments/team-podcast` | no official total; `reliability` still an unresolved `NE`; provisional 58.25 — unchanged |
+| `atj score --json` vs both committed summaries | podcast **318 leaves, 0 diffs**; ledger **311 leaves, 0 diffs** |
+| `python3 -m atj render judgment` over copies of all eight | all eight `unchanged`; `diff -r` reports no differences |
+| `python3 -m atj event unit events/live-trial-2026 list` | 4 units, **0 stale**, all four now `PASS WITH ADVISORIES` |
 | `python3 -m atj event status events/live-trial-2026` | blocked on `judgments-audited = pending`, which is this audit |
-| `python3 -m pytest tests/ -q` | 355 passed, 51 subtests passed |
-| `python3 -m atj release-check` | PASS — rubric, schemas, personas, templates, claude components, single-source, template schemas, version-skew, sample event |
-| `python3 -m atj validate publication adjudications/team-podcast-reliability-ne.md` | CLEAR, 0 blocking. It is correctly classified private (`atj/publication.py:34`) and contains no host path, uid map or personal identifier |
-| `check_judge_independence` over the event | no finding; `SIMILARITY_THRESHOLD = 0.80`, measured maximum 0.0248 (see A6) |
+| `check_judge_independence` over both panels | `[]` for both; `SIMILARITY_THRESHOLD = 0.8` |
+| `python3 -m atj validate publication` on the adjudication and on this audit | CLEAR, 0 blocking, both |
+| `python3 -m atj release-check` **in the working copy** | **FAIL** — single-source. See F18 |
+| `python3 -m pytest tests/ -q` **in the working copy** | **5 failed**, 351 passed. See F18 |
+| `python3 -m atj release-check` **on a clean `git archive` export of `9ad8a12`** | **PASS** — all nine sections including single-source |
+| `python3 -m pytest tests/ -q` **on the same clean export** | **353 passed, 2 skipped, 51 subtests passed** |
 
-`atj score` prints `applied adjudication adj:live-trial-2026:team-podcast:01 to
-reliability (decided by event-director)` and then, four lines later, reports the
-same criterion as an unresolved `NE` with finalization blocked. Both statements
-are true and the combination is misleading. That is D11 and it is correctly
-recorded. **No consolidated or public artifact may quote the first line without
-the second.**
+The last two rows are the ones that matter. The committed tree is clean. The
+working copy is not, for a reason that touches no event artifact (F18).
 
-## First-pass findings, re-ruled
+`atj score` still prints `applied adjudication adj:live-trial-2026:team-podcast:01
+to reliability (decided by event-director)` and then reports the same criterion as
+an unresolved `NE` with finalization blocked. Both statements are true and the
+combination is misleading. That is D11 and it is correctly recorded. **No
+consolidated or public artifact may quote the first line without the second.**
 
-**F1 — open, correctly parked, no score moved.** The eight judgments are
-byte-identical to the panel commit, which is the right outcome:
-`framework/policies/judge-independence.md` puts rewriting a judge's substantive
-finding outside an auditor's authority. The correction is recorded at
-`status.md:134` with the ruling "No score moves". The obligation is unchanged and
-carries into the consolidation stage: the consolidated team-podcast report must
-state that `tests/e2e.py` has **42** `check()` call sites, that the team's
-"42/42" is consistent with the source, that the only stale documentation figure
-is `README.md:7`'s "34/34", and it must carry `judge-backend`'s in-panel
-correction forward as the panel's position. In `judge-product-agentic`'s
-Confirmed defect 1, the evidence-class label "direct file inspection" must not
-survive into any team-facing artifact attached to this claim.
+## Status of every finding
 
-**F2 — closed.** `status.md:133` now states that adjudication **is** required,
-names `summaries/team-podcast.json` and
-`framework/policies/disagreement-and-adjudication.md:5` as its authority, and an
-adjudication exists. The summary was not altered by hand; it was regenerated and
-reproduces exactly. Two residual inaccuracies in the same row are F9.
+### First-pass findings
 
-**F3 — closed.** I re-checked the corrected attribution against the texts.
-`judge-security-ops:147` ("`tests/e2e.py` has **13** numbered sections, not 11")
-and `judge-product-agentic:73-74` ("The manifest characterizes the suite as 11
-stages; the file says otherwise") flag the stage count explicitly;
-`judge-backend:68` uses "stage 7 of 13" without flagging it. The check-count
-error was caught by `judge-backend` alone. No judgment reports the
-`evidence_limited_criteria` contradiction. The corrected row states all three
-correctly. It does not name the two judges, which the first pass asked for; the
-claim is true either way, so this is closed rather than reopened.
+**F1 — open, correctly parked, carry-forward to consolidation.** Re-verified: the
+eight judgments are byte-identical to the panel commit and the correction is
+recorded at `status.md:135` with the ruling "No score moves". The obligation is
+unchanged. The consolidated team-podcast report must state that `tests/e2e.py` has
+**42** `check()` call sites, that the team's "42/42" is consistent with the source,
+that the only stale documentation figure is `README.md:7`'s "34/34", and it must
+carry `judge-backend`'s in-panel correction forward as the panel's position. In
+`judge-product-agentic`'s Confirmed defect 1, the evidence-class label "direct file
+inspection" must not survive into any team-facing artifact attached to this claim.
 
-**F4 — half closed. See F12.** The defect is recorded against the frozen package
-in `status.md:134`. The fix-plan half was not done.
+**F2 — closed.** Confirmed in pass two, re-confirmed here.
+
+**F3 — closed.** Confirmed in pass two, re-confirmed here.
+
+**F4 — half closed.** The ledger half is done (`status.md:135`). The fix-plan half
+is F12 and is still half open.
 
 **F5 — open, carry-forward, and its only record is this file.**
-`judgments/team-podcast/judge-security-ops.md:460` asks the team to "get sections
-4 and 8 through 11 of the suite to run" while the same judgment establishes 13 at
+`judgments/team-podcast/judge-security-ops.md:460` asks the team to "get sections 4
+and 8 through 11 of the suite to run" while the same judgment establishes 13 at
 `:143`, `:147` and `:525`. When the consolidated report quotes that improvement it
 must read "sections 4 and 8 through 13". Do not disturb `:143`, `:147` or `:525`,
-and do not change the score. Unlike F1 this is not in the ledger; see the repair
-list.
+and do not change the score.
 
-**F6 — closed as D8.** `docs/framework-fix-plan.md:30`, tier 2. The split is
-still visible in the regenerated summary (`judge-security-ops` records
-`confidence: high` beside `reliability: NE`, the other three `low`), which is
-correct: no judgment was changed.
+**F6 — closed as D8.** **F7 — closed as D9.** **A3 — closed as D7.**
 
-**F7 — closed as D9.** `docs/framework-fix-plan.md:31`, tier 2.
+### Second-pass findings
 
-**A3 — closed as D7.** `docs/framework-fix-plan.md:29`, tier 1, with the note
-that it caused a real defect in this event.
+**F8 — CLOSED.** `status.md:85` now carries
+`adj:live-trial-2026:team-podcast:01 | criterion | ... | event-director | resolved |
+adjudications/team-podcast-reliability-ne.md`. I compared it against
+`events/sample-mock-2026/status.md:245` and the column shape matches the
+repository's own reference row exactly. The table no longer contradicts the
+directory.
+
+**F9 — CLOSED.** `status.md:134` now reads "`adjudications/` was empty when this
+row was first written at 21:02:28Z; the adjudication was written at 21:20:42Z and
+is now recorded in the Blockers and adjudications table above." The claim is
+time-qualified and the pointer resolves.
+
+**F10 — NOT CLOSED. Recurred, and mechanically self-closing.**
+`status.md:4` reads `last_updated: "2026-09-17T21:38:23Z"`. The newest activity rows
+are `21:45:00Z`, `21:52:00Z` and `21:56:00Z`. The field still predates the ledger's
+own newest content, which is exactly what F10 said.
+
+The handoff for this pass stated that `last_updated` had been moved to
+`2026-09-17T21:52:00Z`. It has not. I treated the handoff as untrusted evidence and
+read the file; the value is `21:38:23Z`, written by `record_unit` at unit re-record
+time, after which three more rows were hand-added above it in time.
+
+This closes itself **if and only if `atj event gate` is the last write to the
+ledger**. Add the third-pass audit row first, then run the gate, then confirm
+`last_updated` exceeds the newest row. Do not add a row after the gate.
+
+**F11 — closed in substance, defective in execution. See F15.** Four rows were
+added and the log now has a stage-audit row for each pass and a repair row for each
+round. The convention is satisfied. Every one of the four carries a timestamp the
+log's own provenance rule does not support.
+
+**F12 — HALF CLOSED.** `docs/framework-fix-plan.md:148` now reads "**four** of
+those defects were introduced by the repairs". The list that follows it still
+enumerates **three**: `playwright 1.56.0`, `starlette 1.6.0`, and the
+`Containerfile` comment. The manifest self-contradiction was never added. The
+required repair was both halves. A paragraph whose entire argument is that repair
+rounds introduce defects now says four and counts three.
+
+**F13 — CLOSED, in both places.** The adjudication's impact table now reads
+"expected to be comparison value `0`" and "possibly narrowed", and states in terms
+that the matchup panel makes the finding and the adjudication does not bind it.
+`status.md:138` carries the same hedge. Re-checked against
+`framework/rubrics/head-to-head.md` and `atj/matchup.py:255-278`: the corrected
+text is accurate. The matchup stage will not inherit the unhedged claim. The
+manner of the correction is F16.
+
+**F14 — closed as D13, on a false justification. See F17.** The defect is recorded
+at `docs/framework-fix-plan.md:34`, tier 2, with the substance intact.
 
 **A1, A2, A4, A5 — unchanged and still open.** A1 (the four-way `NE` is anchored
 convergence and the panel report must say so), A2 (run records embed host paths;
 publication is per artifact), A4 (the two panels ran against different framework
-commits; no number is affected), A5 (all eight judgments remain draft/unvalidated)
-all carry forward exactly as written in the first pass.
+commits; no number is affected), A5 (re-verified: all eight judgments are still
+`approval_state: draft`, `validation_state: unvalidated` while both units are
+`complete`).
 
-## The adjudication, audited
+**A6 — CLOSED in substance.** The adjudication's Confidence section no longer
+presents 0.0076 as a measurement. It records that the figure did not reproduce,
+gives 0.0149 on stripped 9-grams and 0.0248 on the tool's 6-grams against the 0.80
+threshold, and states the conclusion is unchanged. I re-ran
+`check_judge_independence` over both panels: `[]` and `[]`. The independence
+conclusion holds by the tool's own measure. Delivered by an in-place edit, which is
+F16.
 
-Against `framework/policies/disagreement-and-adjudication.md` and
-`schemas/adjudication.schema.json`:
+**A7 — unchanged, and now slightly worse.** `started_at` still equals `completed_at`
+at `21:20:42Z` and `validation_state` is still `unvalidated`. The body was edited
+17 minutes later and neither timestamp moved (F16).
 
-- **Trigger.** `unresolved-ne` is a valid enum value and the policy requires
-  adjudication for "an `NE` that prevents scoring". Correct.
-- **Question.** Narrow and answerable: can `reliability` be scored from the
-  pinned package, and if not does the `NE` stand. It asks about one criterion for
-  one team and does not reopen the project. Correct.
-- **Scope discipline.** The policy says the adjudicator receives the disputed
-  claims and original evidence, "not an invitation to rescore the entire
-  project". The record gathers no new evidence and states why: re-executing after
-  judging began would breach `CLAUDE.md` and invalidate four judgments resting on
-  this package. Correct, and the right call.
-- **Every cited artifact resolves.** `ev-podcast-05`, `-06`, `-12`, `-15`, `-16`,
-  `-17`, `-18`, `-20` all appear in `evidence/team-podcast/manifest.md`. All four
-  named run records exist. I verified the underlying facts rather than the
-  citations alone: `--memory 1g --cpus 1.0`, `--env HOME=/tmp` and no `--shm-size`
-  appear in the podman invocation recorded in
-  `runs/team-podcast-e2e-full-02.json`; `Target crashed` appears in that record;
-  `GET /api/media/1 200 OK` appears in both `-e2e-full-01` and `-e2e-full-02`;
-  the 90-second download timeout is the `90000` in `-e2e-full-01`; the 71-second
-  container overlap is in the manifest. `grep -n "onerror\|setTimeout"` over
-  `web/js/storage.js` at `f3fdd342` returns nothing, which confirms
-  `judge-security-ops`'s claim exactly as the table classes it. One omission is
-  A9.
-- **Evidence classes.** Four rows classed inference, direct observation and
-  artifact evidence, matching what each judge actually did. Correct, and notably
-  it does not repeat F1's mislabelling.
-- **Impact table.** Correct on every row except the tie-break row, which is F13.
-  `score_override` is absent by design and `resolved_score` is `null`, so no
-  total moved: the regenerated summary still carries `total: null`,
-  `finalized: false`, `weighted_points: null` for `reliability`, and
-  `provisional_total: 58.25`. `NE` is a zero nowhere at any layer.
-- **Accepting the `NE` is defensible.** The policy reserves disqualification,
-  rules exceptions and unresolved final ties for a human official; an
-  evidence-limited `NE` is none of those, and `event.md:29` assigns adjudication
-  to the event-director, which is what `decided_by` names. `resolution: resolved`
-  is the honest value: the adjudication answers its question definitively, and
-  the answer is that the criterion cannot be resolved. The alternative — reopening
-  the evidence stage for one `--shm-size` re-run — was rejected on the correct
-  ground. I agree with the outcome. A low score would ignore that every observed
-  failure has a credible environmental cause; a high score would credit a suite
-  that has never produced a result.
-- **`persona: run-judging-event@1.0.0` with `decided_by: event-director`.**
-  Ruling: **honest in form, unverifiable in substance; acceptable here and not a
-  precedent.** The persona is registered (`framework/personas.md:34`, kind
-  `skill`), so `atj validate` and `versions.require_versions` pass, and the
-  document states in plain text why the field reads as it does and files D10
-  rather than hiding the substitution. That is the right way to record a
-  constraint you cannot satisfy. What no reader can check is whether a human
-  event-director decided or an orchestrator wrote the role into the field.
-  `atj/scoring.py:431` treats a non-empty `decided_by` as the gate that lets an
-  adjudication move an official total, so that field carries real authority. It
-  carried none here: nothing moved. Recorded as F14.
+**A8 — RULED. Advisory, carried forward. Does not block the gate.** See the ruling
+section below.
 
-## Downstream impact, verified independently
+**A9 — unchanged, open.** `ev-podcast-12` is cited in the Disputed-claims table at
+`adjudications/team-podcast-reliability-ne.md:50` and is still absent from the
+Evidence reviewed section. The id resolves in the manifest, so this is completeness,
+not accuracy.
 
-I did not take the adjudication's word for either claim.
+**A10 — unchanged, no-op.** `status.md.bak` is present and git-ignored, confirmed by
+`git status --porcelain --ignored`. Nothing to do.
 
-**The bracket is genuinely unaffected at two teams.** `bracket-assignment.md`
-front matter declares `min_teams: 2`; `event.md:9` declares
-`bye_policy: performance-qualified`. `atj/bracket.py:163` returns before the
-score check when `count == 0`, and at two entrants the bracket size is an exact
-power of two, so `bye_count` is 0. I built a probe bracket from two entrants with
-`team-podcast`'s score set to `null` and `--bye-policy performance-qualified`. It
-produced one final-round match, `0 byes`, and every hard constraint `satisfied`,
-including "Bye policy 'performance-qualified' applied consistently — no byes: the
-team count is an exact power of two". The claim holds. It would **not** hold at
-three or more teams: `atj/bracket.py:170-174` raises
-`performance-qualified byes require a consolidated score for every team` the
-moment one bye is needed.
+## Ruling on A8 — restamped unit `completed_at`
 
-**`head-to-head.md` genuinely does not require an initial total.** The rubric
-compares the seven source-rubric criteria directly and says "Do not merely select
-the team with the higher initial total" — quoted accurately. `atj/matchup.py`
-computes margins from comparison values only; `tie_break()` at `:255-278` reads
-`result["criteria"][criterion]["combined_margin"]`, a value produced fresh in the
-matchup. No code path in the matchup module reads a consolidated total. The claim
-holds. The adjudication's extension of it to the tie-break order does not; that is
-F13.
+**Advisory. Carry forward. It does not block the gate.**
+
+Both `judging:` units now carry `completed_at: "2026-09-17T21:38:23Z"`. That
+overwrote `19:29:14Z` (team-ledger) and `21:02:13Z` (team-podcast), which were the
+real panel completion times. A8 offered two acceptable routes: accept the restamp
+**and record the original values in the activity log**, or leave the units
+`not-audited`. The operator took the restamp and did not record the original
+values. The condition was not met.
+
+It is still not a defect that should hold a gate, for four reasons I checked rather
+than assumed:
+
+1. Nothing reads the field for advancement. `can_advance` (`atj/event.py:421-426`)
+   branches on `audit_result` only. The restamp changes no decision.
+2. No score, weight, digest or evidence reference depends on it. Both consolidations
+   reproduce to the leaf with the restamp in place.
+3. Both original values are recoverable — they are in `git show 956c2b1:events/live-trial-2026/status.md`
+   and they are now in this audit, which is the ledger's own cited artifact for the
+   stage.
+4. The field is unrecoverable **through the tool**, not through the record.
+   `record_unit` writes `versions.now()` with no CLI override. An operator who must
+   record an audit result has no way to preserve the original time. Penalising the
+   operator for a missing flag is the wrong target.
+
+The right target is the framework. Recorded below as **D15**: `atj event unit record`
+needs a `--completed-at` override, or `record_unit` must leave `completed_at` alone
+when the unit is already `complete` and only `audit_result` is changing. Until then,
+the repair is one sentence in the activity log naming the two original values.
+
+## Defects this repair round introduced
+
+Five rounds in this event had introduced five. This round introduced four more.
+
+**F15 (minor) — all four activity-log rows added this round carry timestamps the
+log's own provenance rule does not support, and three of them are stamped in the
+future of their own source.**
+
+The rule is stated at `status.md:145-148`: "A row describing a document change
+carries the commit time of the commit that recorded it. A row describing an audit
+carries that audit artifact's own `completed_at`." Measured against it:
+
+| Row | Stamped | Its actual source | Source value | Error |
+|---|---|---|---|---|
+| `status.md:136` first-pass audit | `21:14:00Z` | `git show ebb76c2:events/live-trial-2026/audits/judgments.md` front matter | `completed_at: 21:20:00Z` | 6 min early, unsourced |
+| `status.md:141` second-pass audit | `21:45:00Z` | `audits/judgments.md` (second pass) front matter | `completed_at: 21:33:00Z` | 12 min late |
+| `status.md:142` F8-F13 repair | `21:52:00Z` | commit `cbf76e1` | `21:37:32Z` | 14 min late |
+| `status.md:143` self-verification | `21:56:00Z` | commit `9ad8a12` | `21:38:36Z` | 17 min late |
+
+Not one of the four is the value the rule names, and no other artifact in the
+repository carries any of the four. The second pass specified `21:20:00Z` for the
+first row explicitly; `21:14:00Z` was used instead.
+
+This is the same defect class as evidence-stage F8, whose own repair row at
+`status.md:124` records restamping "four rows stamped after the commit that
+recorded them". Four rows, stamped after the commit that recorded them, again.
+
+It is minor and not major because no number, score, digest or evidence reference
+depends on the activity log, the ordering is correct, and the rows describe real
+events that really happened in the order shown. What is wrong is the precision
+claimed, not the history told.
+
+**F16 (major) — the approved adjudication was edited in place with no amendment
+record, and its stated completion time now precedes content it contains.**
+
+`adjudications/team-podcast-reliability-ne.md` carries `approval_state: approved`,
+`started_at: "2026-09-17T21:20:42Z"` and `completed_at: "2026-09-17T21:20:42Z"`. Its
+body was changed in commit `cbf76e1` at `21:37:32Z`: two impact-table cells rewritten
+(F13) and the Confidence paragraph rewritten (A6). Neither timestamp moved and no
+amendment note was added. The record now contains the sentence "the second pass
+could not reproduce that exact figure" and the parenthetical "(audit A6)", both
+referring to an artifact whose own `completed_at` is `21:33:00Z` — eleven minutes
+after this record claims to have been completed and approved by the event-director.
+
+`framework/policies/disagreement-and-adjudication.md:9` describes an adjudication as
+a "versioned attachment", and the second pass's F13 repair said in terms: "if the
+event-director wants it corrected, issue `adj:live-trial-2026:team-podcast:02` rather
+than editing this one." It was edited.
+
+What keeps this from blocking, checked rather than assumed:
+
+- Every edit made the record **more** accurate and **less** binding. F13 removed an
+  overstatement that prejudged the matchup stage; A6 removed an unreproducible
+  figure. Both were required corrections.
+- Nothing official moved. `score_override` is still absent, `resolved_score` is still
+  `null`, `total` is still `null`, and the committed summary still reproduces to all
+  318 leaves with the edited record in place.
+- There is no compliant light-weight route. Neither `schemas/adjudication.schema.json`
+  nor `framework/templates/adjudication-report.md` has any amendment, revision or
+  supersession field — I checked both. Issuing `:02` for two hedges and a corrected
+  statistic is heavier than the defect warrants, and the second pass should have
+  offered the disclosure route.
+
+Required repair: one disclosure sentence inside the record, under the Confidence
+section, naming what was amended, when, and on whose finding. Plus **D14** below.
+
+**F17 (major) — the fix plan's numbering note states a fact the repository does not
+support.**
+
+`docs/framework-fix-plan.md:189-190` reads: "the second-pass audit recommends this
+defect as 'D12'. It is D13 here because D12 was already taken by the
+`agentic`-with-no-AI rubric gap on branch `fix/framework-d7-d10-d12`."
+
+I checked the named branch. It is at `bdf369d`. Its `docs/framework-fix-plan.md`
+defect table runs D1 through D11 and stops — **there is no D12 row on it**.
+`git log --all -S"D12 |" -- docs/framework-fix-plan.md` returns nothing, so no D12
+has ever existed in that file on any branch. The only `D12` anywhere in the repository
+is `docs/implementation-detail.md:245`, "### D12 — Official numbers are verified, not
+trusted", a heading in an unrelated numbering series.
+
+The underlying gap is real — `judge-backend.md:309` and `judge-frontend-ux.md:282`
+both ask how `agentic` is scored when a submission has no AI surface. But it has
+never been registered as D12, or as anything, and the branch name
+`fix/framework-d7-d10-d12` is not a register.
+
+This is the defect class T3.2 names in its own text: a fabricated number inside an
+observation, stated as verified. It is in the framework's single-source defect
+register, which makes it worse than a stray prose error. It is major.
+
+It does **not** block this event gate. `docs/framework-fix-plan.md` is not an event
+artifact, is not in `events/live-trial-2026/`, and is not in the `initial-judging`
+evidence set. See the scoping section.
+
+Required repair: either add the D12 row the note claims exists, or say that D12 is
+intentionally unused and why. Do not leave the register with a gap justified by a
+citation that does not resolve.
+
+**F18 (major, out of scope for this gate) — a stray agent worktree turns the
+working copy's `release-check` and five tests red.**
+
+`.claude/worktrees/agent-ab13401666a09b4d9` is on disk, 3.8 MB, `locked`, checked out
+at `bdf369d` on branch `fix/framework-d7-d10-d12`. It contains its own copy of
+`tests/test_canonical_model.py`, which holds the official `functional` weight 25.
+`check_no_duplicate_weights` walks the filesystem, so:
+
+```
+Release check: FAIL
+  duplicate-number: .claude/worktrees/agent-ab13401666a09b4d9/tests/test_canonical_model.py:
+  holds an editable copy of the official weight for 'functional' (25)
+```
+
+and five tests fail, all on the same cause:
+`test_no_second_editable_copy_of_the_official_weights_anywhere`,
+`test_the_documented_validation_commands_succeed` (subtest `release-check`),
+`test_the_module_entry_point_works_from_a_clean_subprocess`,
+`test_staged_data_is_excluded_from_source_scans`,
+`test_weights_are_unreachable_from_a_submission`.
+
+Commit `3667c00` "chore: never commit agent worktrees" added `.claude/worktrees/` to
+`.gitignore`. That stops it being committed and does nothing about the four
+validators that walk the filesystem rather than the index. The second pass's clean
+`release-check PASS` and 355-test row are no longer reproducible from this checkout.
+
+**It is not in any committed artifact.** I exported HEAD with `git archive` into a
+clean directory and ran both commands there: `release-check` **PASS** on all nine
+sections including single-source, and **353 passed, 2 skipped, 51 subtests passed**.
+The two skips are environment-gated tests that run in the working copy; no test that
+runs in both places behaves differently.
+
+So this is an environment defect, not an artifact defect, and it cannot affect a
+score — `atj.canon` reads `framework/rubrics/submission-evaluation.md` and the
+duplicate is in a test file in an ignored directory. It still must be cleared,
+because an operator running the `CLAUDE.md`-mandated pre-finish command from this
+checkout sees a red single-source check and has no way to tell an environment problem
+from a canon violation.
+
+Required repair, touching no event artifact:
+`git worktree unlock .claude/worktrees/agent-ab13401666a09b4d9` then
+`git worktree remove --force .claude/worktrees/agent-ab13401666a09b4d9`. Keep the
+`.gitignore` entry. Then confirm `release-check` PASS in the working copy.
+
+**F19 (minor) — the self-verification row miscounts the table it verified, and missed
+a structural defect in it.**
+
+`status.md:143` claims "all 52 rows now ascend". I parsed the table: **53 physical
+lines carrying 54 logical rows**. The ordering claim is **true** — I compared every
+adjacent pair of the 54 timestamps and found zero descending transitions, so the
+re-sort worked and the row is right about the thing it was written to assert.
+
+The count is wrong because `status.md:124` carries **two rows joined on one physical
+line** by a `||`: the `18:56:46Z` F8-residual row and the `19:20:00Z` third-pass
+evidence-audit row share a line and render as a single eleven-cell row. That line was
+written by `0677b6c`, the evidence-gate commit, so the structural defect is
+pre-existing and not this round's. Missing it while asserting a verified count of that
+exact table is this round's.
+
+Minor, and the repair is one newline. Note the irony for the fix plan: the evidence
+stage's F13-F17 repair row at `status.md:125` records "the activity log rejoined into
+one table" as a completed repair, and it left two rows fused.
 
 ## Findings
 
 | Severity | Rule | Artifact | Finding | Required repair |
 |---|---|---|---|---|
-| major (F8) | `CLAUDE.md`, Source of truth: event state lives in `status.md`; `events/_template/status.md:40-43` and `events/sample-mock-2026/status.md:241-248` define the row shape | `events/live-trial-2026/status.md:81-85` | The **Blockers and adjudications** table is empty while `adjudications/team-podcast-reliability-ne.md` exists and is applied by `atj score`. This is the ledger's dedicated, structured index of adjudications, and it reads as though the event has none. The reference sample event records all three of its adjudications there with id, scope, description, owner, status and resolution artifact. The activity log carries the fact in prose at `:135`, so nothing is hidden — but the table a reader or a later stage consults first says the opposite of the directory. This is the same class of defect as F2, in the same file, and F2 was rated major | Add one row: `adj:live-trial-2026:team-podcast:01` \| `criterion` \| `Unresolved NE on reliability blocked the official total; adjudicated and accepted` \| `event-director` \| `resolved` \| `adjudications/team-podcast-reliability-ne.md`. Do not restate the adjudication's reasoning in the table; it lives in the record |
-| minor (F9) | `CLAUDE.md`, Source of truth; the ledger must state what is true | `events/live-trial-2026/status.md:133` | The corrected F2 row asserts "`adjudications/` is empty." That was true when `ebb76c2` wrote it and false five minutes later when `bdf369d` created the record. Repair-introduced: the commit that invalidated the sentence did not update it. A reader who stops at this row concludes the required adjudication is still missing | Replace "`adjudications/` is empty" with a forward pointer to the `2026-09-17T21:20:42Z` row and to `adjudications/team-podcast-reliability-ne.md`. Leave the rest of the row alone; it is correct |
-| minor (F10) | `schemas/status.schema.json` requires `last_updated`; every `atj event` writer sets it from `versions.now()` (`atj/event.py:473,497,540,550`) | `events/live-trial-2026/status.md:4` | `last_updated: "2026-09-17T21:02:13Z"` predates the newest activity rows (`21:20:42Z`) and both repair commits (`21:17:53Z`, `21:22:49Z`). The repairs hand-edited the ledger instead of going through a tool that maintains the field, so the ledger understates when it was last touched by twenty minutes | Self-closing: `atj event gate` and `atj event unit record` both rewrite `last_updated`. Run them as part of the repair and confirm the value moves |
-| minor (F11) | `events/live-trial-2026/status.md:139-143`, the log's own provenance rule: "A row describing an audit carries that audit artifact's own `completed_at`" | `events/live-trial-2026/status.md`, activity log | The activity log has **no row for the judging-stage audit**. The evidence stage has three (`:112`, `:119`, `:123`), so the convention is established. The first-pass FAIL at `21:20:00Z` and this second pass are visible only inside other rows' prose. Neither `atj event gate` nor `atj event unit record` appends to the activity log — I read both in `atj/event.py` — so this will not fill itself | Add two rows: `2026-09-17T21:20:00Z` initial-judging stage audited, first pass, FAIL — F1, F2 major; and this pass with its own `completed_at` and result. Input identity: the eight judgments, both summaries, `status.md`; output: `audits/judgments.md` |
-| minor (F12) | First-pass F4 required repair: "Record the defect against `ev:live-trial-2026:team-podcast:f3fdd342465f:d06f90cc` here **and in `docs/framework-fix-plan.md` as further evidence for T3.2**" | `docs/framework-fix-plan.md:141-153` | The fix-plan half of F4 was not done. `01f559f` added D7, D8 and D9 and nothing else; there is no mention of `evidence_limited_criteria`, the Scope-section contradiction, or F4 anywhere in the file. T3.2 still reads "**three of those defects were introduced by the repairs**" and lists the three from the evidence stage. F4 is a fourth — the first pass traced it to the `18:41:56Z` F2 repair — and T3.2's own count is now understated, in the section whose whole argument is that repair rounds introduce defects | Add the manifest self-contradiction to T3.2's evidence list and correct "three" to "four". Do not edit the frozen manifest |
-| minor (F13) | `framework/rubrics/head-to-head.md`, comparison-value table and `tie_break_order`; `atj/matchup.py:255-278` | `events/live-trial-2026/adjudications/team-podcast-reliability-ne.md`, Impact table final row; repeated at `events/live-trial-2026/status.md:136` | The impact table states that the tie-break is "narrowed", that "`reliability` cannot break a tie for this pairing", and that the order "effectively becomes functional, then product". That does not follow. `tie_break()` reads `combined_margin` — a comparison value produced fresh in the matchup — not the initial score, and value `0` is defined as "Substantially equal **or** insufficient comparative evidence", which is a finding a matchup panel makes on the common evidence, not one the initial `NE` forces. team-ledger has eleven run records including a 35-test suite at exit 0; team-podcast has three unclassified outcomes. A panel could legitimately return a nonzero reliability margin from that. The adjudication's own preceding row hedges correctly ("must be comparison value `0` **unless the common evidence supports otherwise**") and the tie-break row drops the hedge. Nothing has moved yet, but this prejudges a stage that has not run and the ledger now repeats it | Correct `status.md:136` to say the matchup must reach its own comparative finding on `reliability` and that no initial result constrains it. The adjudication record itself is a versioned attachment; if the event-director wants it corrected, issue `adj:live-trial-2026:team-podcast:02` rather than editing this one. Either way the matchup stage must not inherit the unhedged claim |
-| minor (F14) | `framework/policies/disagreement-and-adjudication.md`: "A human event official owns disqualification, rules exceptions, and unresolved final ties"; `schemas/adjudication.schema.json` `decided_by` — "A human official's role"; `atj/scoring.py:431` | `events/live-trial-2026/adjudications/team-podcast-reliability-ne.md` front matter | `decided_by: event-director` with `persona: run-judging-event@1.0.0` records a human decision that no reader can distinguish from an agent writing the role into a required field. There is no signature, no separate approval timestamp, and `started_at` equals `completed_at`. `atj/scoring.py:431` uses a non-empty `decided_by` as one of the gates that lets an adjudication move an official total, so the field carries authority the record cannot evidence. Mitigations, which is why this is minor and not major: nothing moved (`score_override` absent, `resolved_score: null`), this trigger is not one of the policy's human-only categories, `event.md:27-31,70` does assign adjudication to the event-director, the commits are authored by the role holder, and the document discloses the persona substitution in plain text and files D10 rather than concealing it | No repair to this record. Record a new framework defect (D12): the adjudication artifact needs a way to record human assent distinctly from agent authorship — an approver field, a decision timestamp, or a human-countersigned approval state. Until it exists, no adjudication may move an official total or name an advancing team on this evidence alone |
+| major (F16) | `framework/policies/disagreement-and-adjudication.md:9` — an adjudication is a "versioned attachment"; second-pass F13 repair: "issue `adj:...:02` rather than editing this one" | `events/live-trial-2026/adjudications/team-podcast-reliability-ne.md`, body and front matter | The approved record was edited in place at `21:37:32Z` (`cbf76e1`) with no amendment note and no change to `started_at`/`completed_at`, both still `21:20:42Z`. It now contains text citing the second-pass audit, whose `completed_at` is `21:33:00Z`. A reader cannot reconcile the record's stated completion with its content. Not blocking: every edit was a correction this audit series required, both made the record less binding, nothing official moved, and no proportionate compliant route exists (D14) | Add one disclosure sentence under Confidence naming what was amended, when, and on whose finding. Do not reissue. Log D14 |
+| major (F17) | `CLAUDE.md`, Source of truth — one editable copy, and a citation must resolve; T3.2's own rule against fabricated numbers inside observations | `docs/framework-fix-plan.md:189-190` | The numbering note claims D12 "was already taken by the `agentic`-with-no-AI rubric gap on branch `fix/framework-d7-d10-d12`". That branch's fix plan runs D1-D11 and has no D12 row; no D12 has ever existed in that file on any branch; the only D12 in the repository is an unrelated heading at `docs/implementation-detail.md:245`. The gap itself is real (`judge-backend.md:309`, `judge-frontend-ux.md:282`) but has never been registered. Out of scope for this gate — not an event artifact | Either add the D12 row the note claims exists, or state that D12 is intentionally unused and why. Do not leave the register with a gap justified by a citation that does not resolve |
+| major (F18) | `CLAUDE.md`, Before you finish a change: `pytest && release-check`; Source of truth — `release-check` fails the build if a second editable copy appears | `.claude/worktrees/agent-ab13401666a09b4d9/` (untracked, ignored, locked, at `bdf369d`) | The stray worktree carries its own `tests/test_canonical_model.py` holding the official `functional` weight 25. `check_no_duplicate_weights` walks the filesystem, so the working copy reports `Release check: FAIL` and 5 test failures. `3667c00` gitignored the path, which stops it being committed and does nothing for four filesystem-walking validators. Out of scope for the artifacts: a clean `git archive` export of `9ad8a12` gives `release-check` PASS and 353 passed / 2 skipped | `git worktree unlock .claude/worktrees/agent-ab13401666a09b4d9` then `git worktree remove --force` the same path. Keep the `.gitignore` entry. Confirm `release-check` PASS and 0 test failures in the working copy |
+| minor (F15) | `events/live-trial-2026/status.md:145-148`, the log's own provenance rule | `events/live-trial-2026/status.md:136,141,142,143` | All four rows added this round carry timestamps no artifact supports, and three are stamped in the future of their own source: `21:14:00Z` vs the first-pass audit's `completed_at: 21:20:00Z`; `21:45:00Z` vs the second pass's `21:33:00Z`; `21:52:00Z` vs `cbf76e1` at `21:37:32Z`; `21:56:00Z` vs `9ad8a12` at `21:38:36Z`. Same class as evidence-stage F8, whose repair row two screens above records fixing exactly this. Ordering is correct and the history told is correct; only the precision claimed is wrong | Restamp all four to the values in the F15 table. Do this in the same edit as the third-pass row, before the gate |
+| minor (F12, carried half-open) | Second-pass F12 required both halves: add the manifest self-contradiction to T3.2's evidence list **and** correct "three" to "four" | `docs/framework-fix-plan.md:147-152` | Only the count was corrected. The sentence now says "**four** of those defects were introduced by the repairs" and the list that follows enumerates three. The paragraph whose argument is that repair rounds introduce defects says four and counts three. Out of scope for this gate | Add the manifest self-contradiction to the list. Do not edit the frozen manifest |
+| minor (F19) | `events/live-trial-2026/status.md:143`'s own claim; Markdown table structure | `events/live-trial-2026/status.md:124,143` | The self-verification row claims "all 52 rows now ascend". The table has 53 physical lines carrying 54 logical rows. The ordering claim is **true** — I compared all 54 adjacent pairs and found zero descending transitions — but the count is wrong because `:124` fuses two rows on one line with a `||`, rendering as a single eleven-cell row. That fusion predates this round (`0677b6c`), and the evidence stage's `:125` row already records "the activity log rejoined into one table" as done. Missing it while asserting a verified count of that table is this round's | Split `:124` at the `||` into two rows. Correct the count in `:143` to 54, or drop the number |
+| minor (F10, recurred) | `schemas/status.schema.json` requires `last_updated`; every `atj event` writer sets it from `versions.now()` | `events/live-trial-2026/status.md:4` | `last_updated: "2026-09-17T21:38:23Z"` still predates the newest activity rows (`21:45:00Z`, `21:52:00Z`, `21:56:00Z`). The handoff for this pass stated it had moved to `21:52:00Z`; it has not. Mechanically self-closing | Add the third-pass audit row first, **then** run `atj event gate`, then confirm `last_updated` exceeds the newest row. The gate command must be the last write to the ledger |
+| open, unchanged (F1) | `framework/policies/judge-independence.md` — rewriting a judge's substantive finding is outside an auditor's authority | `events/live-trial-2026/judgments/team-podcast/*.md` | Correctly parked. No score moved, no judgment edited, recorded at `status.md:135` with the ruling "No score moves" | Carry to consolidation as written in the F1 entry above. Not closable at this stage |
+| open, unchanged (F5) | Internal consistency; `judge-security-ops.md:143,147,525` establish 13 sections | `events/live-trial-2026/judgments/team-podcast/judge-security-ops.md:460` | "sections 4 and 8 through 11" contradicts the same judgment's own 13. Its only record is this file | The consolidated report must quote it as "sections 4 and 8 through 13". Do not disturb `:143`, `:147`, `:525`, and do not change the score |
 
 ## Advisories
 
-**A1, A2, A4, A5 — carried from the first pass, unchanged.** A1: the four-way
-`NE` is anchored convergence, not four independent discoveries, and the panel
-report must say so. A2: run records embed host paths, and `atj validate
-publication` takes one artifact at a time. A4: the two panels ran against
-different framework commits; no number is affected. A5: all eight judgments are
-still `draft`/`unvalidated` while both units are `complete`.
+**A1, A2, A4, A5, A7, A9, A10 — carried forward unchanged**, as ruled above.
 
-**A6 — the first pass's 9-gram overlap figure does not reproduce, and the
-adjudication quotes it as measured.** The adjudication's Confidence section cites
-"a maximum pairwise 9-gram overlap of 0.0076" as something "the stage audit
-measured". Reconstructing the stated method (9-grams, fenced and inline code and
-`[[evidence:…]]` links stripped) I get a podcast maximum of **0.0149**
-(`judge-product-agentic` vs `judge-security-ops`) and a ledger maximum of
-**0.0092**, not 0.0076 and not the pair the first pass named. The tool's own
-measure (`atj/reports.py:194`, 6-grams, nothing stripped) gives **0.0248** for the
-podcast panel and **0.0202** for the ledger panel. Every variant is two orders of
-magnitude below `SIMILARITY_THRESHOLD = 0.80`, so the independence conclusion is
-unaffected and stands. But a hand-computed statistic a reader cannot reproduce
-should not be quoted as a measurement in a second artifact. Prefer the tool
-figure and the threshold it is measured against.
+**A8 — carried forward with a ruling and a framework defect (D15).** See above.
 
-**A7 — the adjudication's own metadata is thin.** `started_at` equals
-`completed_at` (zero elapsed) for a record that reasons over eight evidence ids
-and four run records, and `validation_state: unvalidated` although `atj validate
-reports` now validates it as one of 17 artifacts. Same class as A5; neither the
-schema nor any policy requires more.
+**A11 — the event's two counts of repair-introduced defects are not reconciled in
+writing.** `docs/framework-fix-plan.md:148` says four; `status.md:143` says the
+ordering defect was "the fifth repair-introduced defect of the event". Both can be
+true — T3.2's sentence is scoped to "three rounds on the evidence stage" and the
+ordering defect is a judging-stage ledger defect — but nothing says so, and a reader
+comparing them sees a contradiction. With this pass the true count is nine. Say which
+scope each number covers.
 
-**A8 — re-recording the units will restamp them.** `atj/event.py:record_unit`
-writes `completed_at: versions.now()` and the CLI has no override, so recording
-the audit result on `judging:team-ledger` and `judging:team-podcast` will
-overwrite `19:29:14Z` and `21:02:13Z` with the current clock and misstate when
-judging finished. `can_advance` (`atj/event.py:421-426`) only blocks on
-`audit_result == "FAIL"`, so `not-audited` does not block the gate. Decide
-deliberately: either accept the restamp and record the original values in the
-activity log, or leave the units `not-audited` and let this audit and the gate
-carry the result.
+**A12 — the handoff briefing for this pass contained a claim the artifacts do not
+support.** It stated `last_updated` had moved to `21:52:00Z`; the file says
+`21:38:23Z` (F10). Recorded not as a criticism of the operator but as evidence for
+the repository's own rule that a repair summary is untrusted evidence. Three of the
+ten repairs claimed in that briefing were verified here as not fully done (F10, F12,
+and F14's justification). An auditor who verifies the summary instead of the artifact
+would have passed all three.
 
-**A9 — one citation is missing from the adjudication's Evidence reviewed list.**
-The Disputed-claims table cites `ev-podcast-12` through `judge-product-agentic`,
-and the Evidence reviewed section does not list it. The id is real and resolves in
-the manifest, so this is completeness, not accuracy.
+## New framework defects for `docs/framework-fix-plan.md`
 
-**A10 — `events/live-trial-2026/status.md.bak` is present on disk, untracked.**
-`atj/event.py:745` writes it on every ledger update; `.gitignore:27` ignores it,
-which was the agreed closure of evidence-stage F12/D5. Recorded so a later pass
-does not re-raise it. Nothing to do.
+**D14** — there is no way to amend an approved adjudication. Neither
+`schemas/adjudication.schema.json` nor `framework/templates/adjudication-report.md`
+has an amendment, revision or supersession field, and `completed_at` is a single
+scalar. The only compliant route to correct a two-cell overstatement is to issue a
+whole new adjudication id, which is disproportionate and will not be taken. Add an
+`amendments` list, or a `superseded_by` field with a lighter `revision` note. Tier 1
+— it is being hit today, in this event (F16).
+
+**D15** — `atj/event.py:record_unit` writes `completed_at: versions.now()`
+unconditionally and the CLI exposes no override, so recording an audit result on an
+already-complete unit destroys the real completion time. Add `--completed-at`, or
+preserve the existing value when the unit is already `complete` and only
+`audit_result` is changing. Tier 2 (A8, F10).
+
+**D16** — the audit completion gate has no scope filter. A finding against
+`docs/framework-fix-plan.md` or against an uncommitted directory currently trips the
+same "no major findings" checkbox as a finding against a judgment, and therefore holds
+an event stage gate it has nothing to do with. Bind the completion gate to findings
+whose artifact path is inside `events/<event>/` and within the audited stage. Tier 1
+— this defect is the direct cause of the extra pass this stage took. See below.
+
+## Why this passes and the last two passes did not
+
+The parent asked whether an event that cannot clear a gate because every pass finds
+new minor drift is itself a framework failure. It is, and this stage is a clean
+example of it. The mechanism is D16.
+
+Look at what actually held the gate at the second pass. F8 was a genuine event
+defect and was correctly major. But F12 and F14 were both findings against
+`docs/framework-fix-plan.md` — a framework document, outside `events/`, outside the
+stage, with no relationship to any score, judgment, evidence package or ledger entry.
+They were routed through the event's completion gate because the checkbox does not ask
+where a finding lives. Their repair round is what produced F15, F17 and F19. Two
+out-of-scope findings manufactured three in-scope ones.
+
+So I am ruling explicitly, and this ruling is the finding that outranks the others in
+this audit:
+
+**Must block a stage gate.** A finding against an artifact inside `events/<event>/`
+and inside the audited stage, that meets one of: missing required evidence, arithmetic
+that does not reproduce, a version or identity mismatch, unresolved severe
+disagreement, a submission executed without isolation, private information in public
+output, a score moved without authority, or a judgment edited by anyone but its judge.
+**Zero of those are present.** I re-derived every one.
+
+**Must not block a stage gate.** A finding against a framework document (F12, F14,
+F17), against an uncommitted or ignored path (F18, A10), against activity-log prose
+precision where the history told is correct and no number depends on it (F15, F19,
+A11), or a field no code reads for advancement (F10, A8). These are recorded, carried
+and repaired on their own schedule. They are not this stage's business.
+
+F16 is the one I weighed hardest, because it is in an event artifact, in this stage,
+and it is a truthfulness defect in an approved record. I am not blocking on it for
+three reasons: the edits corrected defects this audit series itself required, they
+made the record less binding rather than more, and the framework offers no proportionate
+compliant alternative (D14). The disclosure sentence is required before the gate, but
+it is a one-sentence mechanical action whose result is verifiable by reading it, not a
+judgment that needs a fourth auditor.
+
+**Three mechanical actions are required before the gate command runs.** None touches a
+score, a judgment or an evidence package. Each is verifiable by a deterministic command
+whose expected output is stated. None of them requires a fourth audit pass of this
+stage, and the operator should not commission one:
+
+1. **F18** — remove the stray worktree. Confirm `python3 -m atj release-check` prints
+   `Release check: PASS` and `python3 -m pytest tests/ -q` reports 0 failures in the
+   working copy.
+2. **F16** — add the amendment disclosure sentence to
+   `adjudications/team-podcast-reliability-ne.md`. Confirm
+   `python3 -m atj validate reports events/live-trial-2026` still reports 17 artifacts,
+   0 findings.
+3. **F10** — add the third-pass audit row to the activity log, **then** run
+   `atj event gate`, then confirm `last_updated` exceeds the newest activity row. The
+   gate command must be the last write.
+
+Everything else in this audit is a carry-forward.
 
 ## Completion gate
 
-- [x] **No blocking findings** — no missing required evidence, no invalid
-      arithmetic, no version mismatch (`atj release-check` PASS,
-      `require_versions` passes on the adjudication), no severe disagreement, no
-      submission executed in this round, and nothing private in `public/`, which
-      holds only `.gitkeep`. The adjudication clears the publication gate as a
-      private artifact
-- [ ] **No major findings** — **one.** F8, the ledger's adjudication table empty
-      while an adjudication exists and is applied by `atj score`
-- [x] **Calculations valid** — both consolidations reproduce; the regenerated
-      team-podcast summary matches the committed file across all 318 leaf values
-      including the new `resolution` block; all eight rendered score tables
-      re-render `unchanged` and diff clean; `total: null`, `finalized: false`,
-      `weighted_points: null` for `reliability`; 58.25 is provisional everywhere
-      it appears; `NE` is never a zero at any layer; no score moved in the repair
-      round and no judgment was edited
-- [x] **Evidence references resolve** — `atj validate reports` PASS over 17
-      artifacts with zero problems; every evidence id and run record the
-      adjudication cites resolves, and I re-verified its five load-bearing facts
-      against the run records and the pinned checkout rather than against the
-      citations
-- [x] **Version and identity checks pass** — `rubric:
-      submission-evaluation@1.0.0` and `persona: run-judging-event@1.0.0` both
-      resolve in `framework/personas.md`; `framework_commit: 01f559fa` is a real
-      commit and is the parent of the commit that recorded the adjudication;
-      `commit` and `evidence_package_id` match the four judgments; 355 tests
-      pass; `atj release-check` PASS
-- [x] **Privacy boundary passes** — the adjudication is `visibility: private`,
-      contains no host path, uid map, credential or personal identifier, and
-      `atj validate publication` returns CLEAR; `public/` still holds only
-      `.gitkeep`
+- [x] **No blocking findings** — no missing required evidence, no invalid arithmetic,
+      no version or identity mismatch, no unresolved severe disagreement, no submission
+      executed in this round, nothing private in `public/`, which holds only `.gitkeep`.
+      Both the adjudication and this audit clear `atj validate publication` as private
+      artifacts
+- [x] **No major findings in scope** — three majors, all three out of the stage's
+      artifact scope by the D16 ruling above. F17 and F12 are against
+      `docs/framework-fix-plan.md`; F18 is against an ignored, uncommitted directory and
+      is reproducibly absent from a clean export of `9ad8a12`. F16 is in scope and is
+      ruled non-blocking on stated grounds with a required one-sentence repair
+- [x] **Calculations valid** — both consolidations reproduce; team-podcast 318 leaves
+      and team-ledger 311 leaves with zero differences against the committed summaries;
+      all eight judgments re-render `unchanged` and diff clean; `total: null`,
+      `finalized: false`, `weighted_points: null` for `reliability`; 58.25 is provisional
+      everywhere it appears; `NE` is never a zero at any layer; no score moved in either
+      repair round and no judgment was edited in any of them
+- [x] **Evidence references resolve** — `atj validate reports` PASS over 17 artifacts
+      with zero problems; the adjudication's citations were verified against the run
+      records and the pinned checkout in the second pass and nothing cited has changed
+      since. `ev-podcast-12` remains cited but unlisted (A9), which is completeness
+- [x] **Version and identity checks pass** — `rubric: submission-evaluation@1.0.0` and
+      `persona: run-judging-event@1.0.0` both resolve in `framework/personas.md`;
+      `framework_commit: 01f559fa` on the adjudication is a real commit and the parent of
+      the commit that recorded it; `release-check` PASS and 353 passed / 2 skipped on a
+      clean export of the committed tree; 4 units, 0 stale
+- [x] **Privacy boundary passes** — the adjudication and this audit are both
+      `visibility: private`, both return CLEAR from `atj validate publication`, and
+      `public/` still holds only `.gitkeep`
 
-**FAIL.**
+**PASS WITH ADVISORIES.**
 
-**The `judgments-audited` gate may not be set yet.** `atj event gate
-events/live-trial-2026 judgments-audited passed --audit audits/judgments.md` must
-not be run until F8 is closed and F9-F11 are corrected in the same edit.
+The `judgments-audited` gate may be set once the three mechanical actions above are
+done, in that order:
 
-Nothing here requires a judge to rescore, a submission to be re-run, or a frozen
-evidence package to be edited. No score changes. The repairs, in order:
+```
+python3 -m atj event gate events/live-trial-2026 judgments-audited passed \
+  --audit audits/judgments.md
+```
 
-1. **F8, F9, F10, F11** — one edit to `events/live-trial-2026/status.md`: add the
-   adjudication row to the Blockers and adjudications table, replace the
-   "`adjudications/` is empty" sentence with a pointer to the `21:20:42Z` row,
-   and add the two missing audit rows to the activity log. `last_updated` is
-   fixed by step 4.
-2. **F13** — correct `status.md:136` so it does not tell the matchup stage what
-   its `reliability` comparison value must be.
-3. **F12 and F14** — `docs/framework-fix-plan.md`: add the manifest
-   self-contradiction to T3.2 and correct "three" to "four"; add D12 for the
-   missing record of human assent.
-4. **Then re-record the units and set the gate**, reading A8 first:
-   `python3 -m atj event unit events/live-trial-2026 record --id
-   judging:team-ledger --stage initial-judging --output judgments/team-ledger
-   --audit-result "PASS WITH ADVISORIES"`, the same for `judging:team-podcast`,
-   then `python3 -m atj event gate events/live-trial-2026 judgments-audited
-   passed --audit audits/judgments.md`.
-5. **Carry F1 and F5 into the consolidation stage.** They are this stage's only
-   open substantive obligations and neither can be closed here.
+**Carry into the consolidation stage:** F1 and F5, this stage's only open substantive
+obligations, neither closable here. Also A1, A2, A4, A5, A7, A9, A11, A12.
+**Carry into the framework backlog:** D14, D15, D16, plus the open halves of F12, F17
+and F19.
 
-Two things the repairs must not undo. team-podcast has no official total and must
-not acquire one: `reliability` is `NE`, the adjudication accepted it rather than
-clearing it, and 58.25 is not a score, not a ranking input and not a bye seed.
-And `atj score`'s "applied adjudication" line must never be quoted without the
-"unresolved NE" line that follows it, until D11 is fixed.
+Two things that must not change. team-podcast has no official total and must not
+acquire one: `reliability` is `NE`, the adjudication accepted it rather than clearing
+it, and 58.25 is not a score, not a ranking input and not a bye seed. And `atj score`'s
+"applied adjudication" line must never be quoted without the "unresolved NE" line that
+follows it, until D11 is fixed.
