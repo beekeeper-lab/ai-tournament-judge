@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/live-trial-2026/team-ledger:/submission:ro,Z localhost/atj-live-trial/ledger:2 sh -c 'export PYTHONPATH=/submission/src\npython3 <<'\"'\"'PY'\"'\"'\nfrom fin.adapters.citi_pdf import CitiPdfAdapter\nfrom fin.ingest import check_control_totals, IngestRejected\n\n# Synthetic pdftotext -layout output, dates inside the stated billing period,\n# reproducing the documented hazards: wrapped merchant description, page\n# furniture between rows, rewards-column bleed after the real amount, and an\n# interest row carrying a single date column. Totals are constructed to\n# balance exactly so the control-total gate should accept this one.\ntext = \"\"\"Citicards.com\nBilling Period: 07/15/26 - 08/14/26\nAccount number ending in: 4021\n\nPrevious balance                              $500.00\nPayments                                     -$500.00\nCredits                                        -$5.00\nPurchases                                     $232.43\nFees                                            $0.00\nInterest                                        $4.10\nNew balance                                   $231.53\n\nPayments, Credits and Adjustments\n    08/01         ONLINE PAYMENT, THANK YOU                -$500.00\n    08/02  08/01  AMAZON MKTPLACE PMTS Amzn.com/billWA        -$5.00\n\nStandard Purchases\n                            LEATHER BY DRAGONFLY\n    07/20                                                    $232.43   1.2X\n                            WWW.LEATHERBYOH\n402100\nPage 1 of 2\n\nInterest Charged\n    08/14  INTEREST CHARGE ON PURCHASES                      $4.10\n\nInterest Charge Calculation\n    Some rate disclosure text that must not be parsed as a row  $999.99\n\"\"\"\n\npf = CitiPdfAdapter().parse_text(text, \"citi-costco-4021\", \"synthetic-statement-2.pdf\")\nprint(\"rows parsed:\", len(pf.rows))\nfor r in pf.rows:\n    print(\" \", r.post_date, r.sale_date, r.kind, r.amount_cents, repr(r.descriptor))\nprint(\"period:\", pf.period_start, pf.period_end, \"close:\", pf.close_date)\nprint(\"totals:\", pf.totals)\nprint(\"warnings:\", pf.warnings)\n\ntry:\n    check_control_totals(pf)\n    print(\"control totals: PASSED (statement'\"'\"'s own arithmetic reproduced exactly)\")\nexcept IngestRejected as exc:\n    print(\"control totals: REJECTED ->\", exc)\nPY'",
+  "completed_at": "2026-09-17T00:04:21Z",
+  "duration_seconds": 0.38,
+  "exit_status": 0,
+  "image": "localhost/atj-live-trial/ledger:2",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 60,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-17T00:04:21Z",
+  "stderr": "",
+  "stdout": "rows parsed: 4\n  2026-08-01 None payment -50000 'ONLINE PAYMENT, THANK YOU'\n  2026-08-01 2026-08-02 refund -500 'AMAZON MKTPLACE PMTS Amzn.com/billWA'\n  2026-07-20 None purchase 23243 'LEATHER BY DRAGONFLY WWW.LEATHERBYOH'\n  2026-08-14 None interest 410 'INTEREST CHARGE ON PURCHASES'\nperiod: 2026-07-15 2026-08-14 close: 2026-08-14\ntotals: ControlTotals(previous_balance_cents=50000, new_balance_cents=23153, payments_cents=-50000, credits_cents=-500, purchases_cents=23243, fees_cents=0, interest_cents=410)\nwarnings: []\ncontrol totals: PASSED (statement's own arithmetic reproduced exactly)\n",
+  "timed_out": false
+}

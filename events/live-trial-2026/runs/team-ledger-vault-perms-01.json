@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/live-trial-2026/team-ledger:/submission:ro,Z localhost/atj-live-trial/ledger:2 sh -c 'export PYTHONPATH=/submission/src\nexport FIN_DATA_DIR=/tmp/data\ncat > /tmp/good.csv <<CSV\nStatus,Date,Description,Debit,Credit,Member Name\nCleared,08/06/2026,KROGER 4021 STORE,12.34,,CARDHOLDER NAME\nCSV\npython3 -m fin.cli ingest /tmp/good.csv --account citi-costco-4021\necho \"vault dir perm: $(stat -c '\"'\"'%a'\"'\"' /tmp/data)\"\necho \"archived raw file perm:\"\nfind /tmp/data/raw -type f -exec stat -c '\"'\"'%a %n'\"'\"' {} \\;'",
+  "completed_at": "2026-09-17T00:04:39Z",
+  "duration_seconds": 0.46,
+  "exit_status": 0,
+  "image": "localhost/atj-live-trial/ledger:2",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 60,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-17T00:04:38Z",
+  "stderr": "",
+  "stdout": "good.csv: 1 rows -> 1 new, 0 merged, 0 already known [UNVERIFIED (no control totals)]\nvault dir perm: 700\narchived raw file perm:\n600 /tmp/data/raw/3f08e4abc066-good.csv\n",
+  "timed_out": false
+}

@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/live-trial-2026/team-ledger:/submission:ro,Z localhost/atj-live-trial/ledger:2 sh -c 'set -e\nmkdir -p /tmp/data\ncat > /tmp/statement.csv <<CSV\nStatus,Date,Description,Debit,Credit,Member Name\nCleared,08/06/2026,AMAZON MKTPL*A1B2C3D4E Amzn.com/billWA,20.68,,CARDHOLDER NAME\nCleared,08/10/2026,COSTCO WHSE 123 SEATTLE WA,45.12,,CARDHOLDER NAME\nCleared,08/12/2026,AMAZON MKTPLACE PMTS Amzn.com/billWA,,-5.00,CARDHOLDER NAME\nCSV\nexport PYTHONPATH=/submission/src\nexport FIN_DATA_DIR=/tmp/data\necho \"=== ingest ===\"\npython3 -m fin.cli ingest /tmp/statement.csv --account citi-costco-4021\necho \"=== status ===\"\npython3 -m fin.cli status\necho \"=== detect ===\"\npython3 -m fin.cli detect\necho \"=== validate ===\"\npython3 -m fin.cli validate'",
+  "completed_at": "2026-09-17T00:02:58Z",
+  "duration_seconds": 0.684,
+  "exit_status": 0,
+  "image": "localhost/atj-live-trial/ledger:2",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 120,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-17T00:02:58Z",
+  "stderr": "",
+  "stdout": "=== ingest ===\nstatement.csv: 3 rows -> 3 new, 0 merged, 0 already known [UNVERIFIED (no control totals)]\n=== status ===\nvault: /tmp/data\n  statements              0\n  transactions            3\n  sources                 3\n  orders                  0\n  merchant_charges        0\n  matches                 0\n  anomalies               0\n  date range         2026-08-06 .. 2026-08-12\n=== detect ===\n[critical] D0  2 AMAZON charges on citi-costco-4021, which is not a permitted card for this merchant  ($15.68)\n[    info] D1  No merchant order feed loaded; reconciliation cannot run  ($15.68)\n=== validate ===\nOK: conservation, exclusivity, and idempotence all hold.\n",
+  "timed_out": false
+}
