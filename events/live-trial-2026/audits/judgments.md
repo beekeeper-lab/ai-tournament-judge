@@ -1,6 +1,6 @@
 ---
 event_id: live-trial-2026
-audit_scope: initial-judging stage, both teams
+audit_scope: initial-judging stage, both teams, second pass over the repair round
 audit_id: judgments
 team_id: null
 match_id: null
@@ -8,17 +8,21 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.0.0
 persona: judging-auditor@1.0.0
-framework_commit: 92c66879b382115957dd395e0f76855c0cd17ee0
+framework_commit: bdf369d41596a4330338336c6ed50cefa2061875
 model_requested: claude-opus-5
 model_used: claude-opus-5
-started_at: "2026-09-17T21:05:00Z"
-completed_at: "2026-09-17T21:20:00Z"
+started_at: "2026-09-17T21:24:00Z"
+completed_at: "2026-09-17T21:33:00Z"
 visibility: private
 approval_state: approved
 validation_state: valid
 result: FAIL
 ---
-# Judging Audit — initial-judging stage, team-ledger and team-podcast
+# Judging Audit — initial-judging stage, second pass
+
+This replaces the first-pass audit of the same scope. Finding IDs are preserved:
+F1-F7 and A1-A5 mean exactly what they meant in the first pass. New findings from
+this pass start at F8 and A6.
 
 `team_id`, `commit` and `evidence_package_id` are `null` because this audit
 covers two teams, two pinned commits and two evidence packages. Each finding
@@ -26,549 +30,343 @@ names its own.
 
 ## Result
 
-**FAIL.** No blocking finding. Two major findings. Five minor, four advisory.
+**FAIL.** No blocking finding. One major (F8). Six minor (F9-F14). Five new
+advisories (A6-A10).
 
-Neither major requires a judge to rescore, a submission to be re-run, or a
-frozen evidence package to be edited. Both are text corrections — three
-sentences across three judgments, and one row of the ledger.
+The repair round did its substantive work. **F2 is closed, F3 is closed, F4, F6,
+F7 and A3 are recorded, and F1 is correctly parked as a carry-forward with no
+score moved and no judgment edited.** The adjudication the round produced is a
+good one: its question is narrow, every artifact it cites resolves, its factual
+resolution is supported, and its two downstream claims are true — I re-derived
+both with the tools rather than accepting them.
 
-The stage is in better shape than that verdict sounds, and it is worth saying
-where, because the repairs must not disturb it:
+What fails is the same class of defect the first pass failed on, in the same
+file. `status.md` now records an adjudication in prose but leaves the ledger's
+dedicated **Blockers and adjudications** table empty (F8), still asserts
+`adjudications/` is empty (F9), carries a `last_updated` that predates its own
+newest rows (F10), and has no activity row for the stage audit at all (F11). One
+edit plus the two `atj event` commands closes all four.
 
-- **Every official number reproduces.** Both consolidations, both summary JSON
-  files, and all eight rendered score tables regenerate byte-identically from
-  the front-matter scores and `framework/rubrics/submission-evaluation.md`. No
-  judge typed a weight, a weighted point value or a total anywhere.
-- **`NE` is handled correctly end to end.** `reliability` carries
-  `weighted_points: null`, `mean: null`, `total: null`, `finalized: false`. It
-  is never a zero, it is excluded from the provisional sum rather than counted
-  as 0, and it blocks the official total exactly as the rubric requires. 58.25
-  appears in three places and is labelled provisional in all three.
-- **Independence holds.** Maximum pairwise wording overlap is 0.8% against the
-  tool's 80% threshold, and every shared phrase traces to a document both judges
-  legitimately read. No cross-team material appears in either panel.
-- **Citation accuracy is high on the ledger panel and good on the podcast
-  panel.** I re-derived roughly thirty-five citations against the pinned
-  checkouts and the run records. The ledger panel produced zero misdirected
-  citations across four judgments. The podcast panel produced one, inherited
-  from its evidence package, in three judgments — F1.
+## What changed since the first pass
 
-What fails is F1, a false and team-adverse factual claim that three of four
-podcast judges inherited from a wrong observation in a frozen manifest, and F2,
-a ledger row that states the opposite of the tool output it cites on whether an
-adjudication is required.
+Three commits: `ebb76c2` (audit recorded, two ledger rows corrected), `01f559f`
+(D7-D9 added to the fix plan), `bdf369d` (adjudication written, three ledger rows
+added, `summaries/team-podcast.json` regenerated).
+
+I read every changed line in all three. The judgments were not touched:
+`git log --stat 92c6687..HEAD -- events/live-trial-2026/judgments/` is empty, and
+the only three commits that have ever written into that directory are `7dab838`,
+`4a96452` and `92c6687`.
 
 ## Scope and artifacts inspected
 
-- `events/live-trial-2026/judgments/team-ledger/` and `judgments/team-podcast/`
-  — all eight judgments in full, front matter and body.
-- `events/live-trial-2026/summaries/team-ledger.json` and
-  `summaries/team-podcast.json` — every field, diffed against freshly derived
-  `atj score --json` output.
-- `events/live-trial-2026/status.md` (the ledger), `event.md`, `teams.md`, both
-  evidence manifests, all 27 run records, both `Containerfile`s.
-- `events/live-trial-2026/audits/evidence.md` as the specification for what the
-  previous gate already ruled on, so this audit does not re-litigate it.
-- The pinned checkouts `workspaces/live-trial-2026/team-ledger` (`9d21b770`) and
-  `team-podcast` (`f3fdd342`), both confirmed clean at the pinned commit with
-  `git rev-parse HEAD`.
-- `framework/rubrics/submission-evaluation.md`,
-  `framework/rubrics/panel-consolidation.md`,
-  `framework/policies/judge-independence.md`,
-  `framework/policies/evidence-and-citation.md`,
-  `framework/policies/disagreement-and-adjudication.md`,
-  `framework/templates/individual-judgment.md`,
-  `framework/templates/consolidated-team-report.md`,
-  `schemas/judgment.schema.json`, `framework/personas.md`.
-- `atj/reports.py` (`check_judge_independence`, `check_consolidation`) and
-  `docs/framework-fix-plan.md`, to avoid re-reporting D1-D6.
-- `git diff 0677b6cf..3da42c5 -- framework/ schemas/ atj/ VERSION` and
-  `git log 152dd2c1..HEAD -- framework/rubrics/`.
+- The full diff of `ebb76c2`, `01f559f` and `bdf369d`, line by line.
+- `events/live-trial-2026/adjudications/team-podcast-reliability-ne.md` in full,
+  against `framework/policies/disagreement-and-adjudication.md`,
+  `schemas/adjudication.schema.json` and
+  `framework/templates/adjudication-report.md`.
+- `events/live-trial-2026/status.md` in full, against `events/_template/status.md`
+  and `events/sample-mock-2026/status.md` as the repository's own reference shape.
+- `docs/framework-fix-plan.md` D1-D11 and T3.2.
+- All eight judgments re-rendered and diffed; both summary JSON files regenerated
+  and diffed; the podcast panel re-measured for wording overlap.
+- `framework/rubrics/head-to-head.md` and `framework/rubrics/bracket-assignment.md`
+  front matter, and `atj/matchup.py:245-278`, `atj/bracket.py:150-178`,
+  `atj/scoring.py:397-461`, `atj/event.py:392-435,460-560`, `atj/cli.py:383-420`,
+  read to check the adjudication's mechanism claims rather than its prose.
+- `workspaces/live-trial-2026/team-podcast/web/js/storage.js` and four run records
+  at the pinned commit, to check the adjudication's cited facts.
 
-I read no bracket, matchup, dossier or publication artifact; none exists.
+No submission was executed. This pass added no run record and needed no sandbox.
 
 ## Deterministic validation results
 
 | Command | Result |
 |---|---|
-| `python3 -m atj validate reports events/live-trial-2026` | PASS — 15 artifacts, 0 blocking, 0 major, 0 minor, 0 advisory |
-| `python3 -m atj score events/live-trial-2026/judgments/team-ledger` | 76.3 of 100, all seven criteria `aligned`, no `NE` |
-| `python3 -m atj score events/live-trial-2026/judgments/team-podcast` | no official total; `reliability` unresolved `NE`; provisional 58.25 |
-| `python3 -m atj render judgment` re-run over copies of all eight | all eight `unchanged`; `diff -r` against the committed files reports no differences |
-| `python3 -m atj event unit events/live-trial-2026 list` | 4 units, **0 stale**; both `judging:` units `complete`, `not-audited` |
+| `python3 -m atj validate reports events/live-trial-2026` | PASS — **17** artifacts, 0 blocking, 0 major, 0 minor, 0 advisory. `validate_event_reports` (`atj/reports.py:322-326`) walks every `ARTIFACT_KINDS` directory, so the 17 are eight judgments, two evidence manifests, two intake records, four audits and the adjudication. The first pass counted 15 because neither its own audit file nor the adjudication existed yet |
+| `python3 -m atj score events/live-trial-2026/judgments/team-ledger` | 76.3 of 100, all seven criteria `aligned`, no `NE` — unchanged |
+| `python3 -m atj score events/live-trial-2026/judgments/team-podcast` | no official total; `reliability` still reported as an unresolved `NE`; provisional 58.25 — unchanged |
+| `atj score --json` over `judgments/team-podcast` vs the committed summary | 318 leaf values, **zero differences**. The regenerated summary reproduces, including the new `resolution` block |
+| `python3 -m atj render judgment` over copies of all eight | all eight `unchanged`; `diff -r` against the committed files reports no differences |
+| `python3 -m atj event unit events/live-trial-2026 list` | 4 units, **0 stale** |
 | `python3 -m atj event status events/live-trial-2026` | blocked on `judgments-audited = pending`, which is this audit |
 | `python3 -m pytest tests/ -q` | 355 passed, 51 subtests passed |
-| `python3 -m atj release-check` | PASS — rubric, schemas, personas, templates, single-source, version-skew, sample event |
-| `python3 -m atj personas` | PASS, 15 agents; all four judge personas `@1.0.0` |
+| `python3 -m atj release-check` | PASS — rubric, schemas, personas, templates, claude components, single-source, template schemas, version-skew, sample event |
+| `python3 -m atj validate publication adjudications/team-podcast-reliability-ne.md` | CLEAR, 0 blocking. It is correctly classified private (`atj/publication.py:34`) and contains no host path, uid map or personal identifier |
+| `check_judge_independence` over the event | no finding; `SIMILARITY_THRESHOLD = 0.80`, measured maximum 0.0248 (see A6) |
 
-`atj validate reports` covers 15 artifacts: eight judgments, two manifests, two
-intake records, `event.md`, `teams.md` and `status.md`. It does not cover
-`summaries/*.json` (see A3) and it does not schema-check audit reports —
-`atj/reports.py:33` maps `audits` to schema `None`.
+`atj score` prints `applied adjudication adj:live-trial-2026:team-podcast:01 to
+reliability (decided by event-director)` and then, four lines later, reports the
+same criterion as an unresolved `NE` with finalization blocked. Both statements
+are true and the combination is misleading. That is D11 and it is correctly
+recorded. **No consolidated or public artifact may quote the first line without
+the second.**
 
-## Calculation integrity, re-derived
+## First-pass findings, re-ruled
 
-### Both consolidations reproduce exactly
+**F1 — open, correctly parked, no score moved.** The eight judgments are
+byte-identical to the panel commit, which is the right outcome:
+`framework/policies/judge-independence.md` puts rewriting a judge's substantive
+finding outside an auditor's authority. The correction is recorded at
+`status.md:134` with the ruling "No score moves". The obligation is unchanged and
+carries into the consolidation stage: the consolidated team-podcast report must
+state that `tests/e2e.py` has **42** `check()` call sites, that the team's
+"42/42" is consistent with the source, that the only stale documentation figure
+is `README.md:7`'s "34/34", and it must carry `judge-backend`'s in-panel
+correction forward as the panel's position. In `judge-product-agentic`'s
+Confirmed defect 1, the evidence-class label "direct file inspection" must not
+survive into any team-facing artifact attached to this claim.
 
-I regenerated both with `atj score --json` and compared every key against the
-committed summaries. Both are **structurally identical** — no key missing, no
-key extra, no value different.
+**F2 — closed.** `status.md:133` now states that adjudication **is** required,
+names `summaries/team-podcast.json` and
+`framework/policies/disagreement-and-adjudication.md:5` as its authority, and an
+adjudication exists. The summary was not altered by hand; it was regenerated and
+reproduces exactly. Two residual inaccuracies in the same row are F9.
 
-`team-ledger`: `total: 76.25`, `display_total: 76.3`, `finalized: true`,
-`blocked_reasons: []`, `adjudication_required: []`, `integrity_problems: []`.
-The 76.25 → 76.3 step is the rubric's declared `rounding: half-up` at
-`display_decimals: 1`; Python's default banker's rounding is not in play at this
-value and would not change it.
+**F3 — closed.** I re-checked the corrected attribution against the texts.
+`judge-security-ops:147` ("`tests/e2e.py` has **13** numbered sections, not 11")
+and `judge-product-agentic:73-74` ("The manifest characterizes the suite as 11
+stages; the file says otherwise") flag the stage count explicitly;
+`judge-backend:68` uses "stage 7 of 13" without flagging it. The check-count
+error was caught by `judge-backend` alone. No judgment reports the
+`evidence_limited_criteria` contradiction. The corrected row states all three
+correctly. It does not name the two judges, which the first pass asked for; the
+claim is true either way, so this is closed rather than reopened.
 
-`team-podcast`: `total: null`, `display_total: null`, `finalized: false`,
-`provisional_total: 58.25`, `blocked_reasons: ["reliability: unresolved NE from
-judge-backend, judge-frontend-ux, judge-product-agentic, judge-security-ops"]`.
+**F4 — half closed. See F12.** The defect is recorded against the frozen package
+in `status.md:134`. The fix-plan half was not done.
 
-### No judge typed a weight, a weighted point value or a total
+**F5 — open, carry-forward, and its only record is this file.**
+`judgments/team-podcast/judge-security-ops.md:460` asks the team to "get sections
+4 and 8 through 11 of the suite to run" while the same judgment establishes 13 at
+`:143`, `:147` and `:525`. When the consolidated report quotes that improvement it
+must read "sections 4 and 8 through 13". Do not disturb `:143`, `:147` or `:525`,
+and do not change the score. Unlike F1 this is not in the ledger; see the repair
+list.
 
-I copied both judgment directories to a scratch path and re-ran
-`atj render judgment` over the copies. All eight reported `unchanged`, and
-`diff -r` against the committed originals reported no differences. The rendered
-blocks are therefore derivable from front-matter scores plus the canonical
-rubric alone.
+**F6 — closed as D8.** `docs/framework-fix-plan.md:30`, tier 2. The split is
+still visible in the regenerated summary (`judge-security-ops` records
+`confidence: high` beside `reliability: NE`, the other three `low`), which is
+correct: no judgment was changed.
 
-I then scanned every judgment body outside the `atj:scores` block for a typed
-weight, weighted value or total. Every match is either prose using "weight" as a
-verb ("I weight it lightly", "if the panel weights demonstrated agent behavior
-heavily") or the judge's own declaration that it typed none. No numeric weight,
-no weighted point value and no total appears outside a generated block in any of
-the eight files.
+**F7 — closed as D9.** `docs/framework-fix-plan.md:31`, tier 2.
 
-### Agreement classification is correct against the consolidation rubric
+**A3 — closed as D7.** `docs/framework-fix-plan.md:29`, tier 1, with the note
+that it caused a real defect in this event.
 
-`framework/rubrics/panel-consolidation.md` front matter: `aligned_max_range: 1`,
-`material_max_range: 2`, `outlier_distance: 2`, `minimum_panel: 2`. Every scored
-criterion on both teams has a range of 0 or 1, so `aligned` is correct in all
-thirteen cases, `possible_outliers` is empty everywhere, and no criterion
-reaches material or severe disagreement. Panel size is 4 against a minimum of 2.
+**A1, A2, A4, A5 — unchanged and still open.** A1 (the four-way `NE` is anchored
+convergence and the panel report must say so), A2 (run records embed host paths;
+publication is per artifact), A4 (the two panels ran against different framework
+commits; no number is affected), A5 (all eight judgments remain draft/unvalidated)
+all carry forward exactly as written in the first pass.
 
-There is no severe disagreement anywhere in this stage. The lone one-off
-directional score — `judge-security-ops` at 4 on team-ledger `reliability` where
-the other three are at 3 — is range 1, `aligned`, and its rationale is
-independently grounded (I verified `src/fin/store.py:109-121`,
-`src/fin/detect/detectors.py:36-37`, `src/fin/cli.py:53`,
-`src/fin/adapters/citi_pdf.py:87` and `src/fin/validate.py:45`; all five support
-the claims made of them).
+## The adjudication, audited
 
-### 58.25 is never presented as an official total
+Against `framework/policies/disagreement-and-adjudication.md` and
+`schemas/adjudication.schema.json`:
 
-It appears in exactly three places, and all three label it:
-`summaries/team-podcast.json` as `provisional_total` alongside `total: null`;
-`status.md:74` as "no official total — NE blocks finalization; provisional sum
-of scored criteria 58.25"; `status.md:133` as "explicitly not an official total
-and not usable for bye seeding". `atj score`'s own output appends the same
-warning. Correct.
+- **Trigger.** `unresolved-ne` is a valid enum value and the policy requires
+  adjudication for "an `NE` that prevents scoring". Correct.
+- **Question.** Narrow and answerable: can `reliability` be scored from the
+  pinned package, and if not does the `NE` stand. It asks about one criterion for
+  one team and does not reopen the project. Correct.
+- **Scope discipline.** The policy says the adjudicator receives the disputed
+  claims and original evidence, "not an invitation to rescore the entire
+  project". The record gathers no new evidence and states why: re-executing after
+  judging began would breach `CLAUDE.md` and invalidate four judgments resting on
+  this package. Correct, and the right call.
+- **Every cited artifact resolves.** `ev-podcast-05`, `-06`, `-12`, `-15`, `-16`,
+  `-17`, `-18`, `-20` all appear in `evidence/team-podcast/manifest.md`. All four
+  named run records exist. I verified the underlying facts rather than the
+  citations alone: `--memory 1g --cpus 1.0`, `--env HOME=/tmp` and no `--shm-size`
+  appear in the podman invocation recorded in
+  `runs/team-podcast-e2e-full-02.json`; `Target crashed` appears in that record;
+  `GET /api/media/1 200 OK` appears in both `-e2e-full-01` and `-e2e-full-02`;
+  the 90-second download timeout is the `90000` in `-e2e-full-01`; the 71-second
+  container overlap is in the manifest. `grep -n "onerror\|setTimeout"` over
+  `web/js/storage.js` at `f3fdd342` returns nothing, which confirms
+  `judge-security-ops`'s claim exactly as the table classes it. One omission is
+  A9.
+- **Evidence classes.** Four rows classed inference, direct observation and
+  artifact evidence, matching what each judge actually did. Correct, and notably
+  it does not repeat F1's mislabelling.
+- **Impact table.** Correct on every row except the tie-break row, which is F13.
+  `score_override` is absent by design and `resolved_score` is `null`, so no
+  total moved: the regenerated summary still carries `total: null`,
+  `finalized: false`, `weighted_points: null` for `reliability`, and
+  `provisional_total: 58.25`. `NE` is a zero nowhere at any layer.
+- **Accepting the `NE` is defensible.** The policy reserves disqualification,
+  rules exceptions and unresolved final ties for a human official; an
+  evidence-limited `NE` is none of those, and `event.md:29` assigns adjudication
+  to the event-director, which is what `decided_by` names. `resolution: resolved`
+  is the honest value: the adjudication answers its question definitively, and
+  the answer is that the criterion cannot be resolved. The alternative — reopening
+  the evidence stage for one `--shm-size` re-run — was rejected on the correct
+  ground. I agree with the outcome. A low score would ignore that every observed
+  failure has a credible environmental cause; a high score would credit a suite
+  that has never produced a result.
+- **`persona: run-judging-event@1.0.0` with `decided_by: event-director`.**
+  Ruling: **honest in form, unverifiable in substance; acceptable here and not a
+  precedent.** The persona is registered (`framework/personas.md:34`, kind
+  `skill`), so `atj validate` and `versions.require_versions` pass, and the
+  document states in plain text why the field reads as it does and files D10
+  rather than hiding the substitution. That is the right way to record a
+  constraint you cannot satisfy. What no reader can check is whether a human
+  event-director decided or an orchestrator wrote the role into the field.
+  `atj/scoring.py:431` treats a non-empty `decided_by` as the gate that lets an
+  adjudication move an official total, so that field carries real authority. It
+  carried none here: nothing moved. Recorded as F14.
 
-## `NE` handling
+## Downstream impact, verified independently
 
-`NE` is treated as a missing observation and never as a zero, at every layer:
+I did not take the adjudication's word for either claim.
 
-- **In the rubric.** "`NE` means not enough evidence and is not a numeric zero."
-- **In the summary.** The `reliability` block carries `mean: null`,
-  `weighted_points: null`, `range: null`, `agreement: "not-scored"`,
-  `scores: []`, `mean_inputs: []`, and `ne_judges` listing all four judges. A
-  zero would have produced `mean: 0.0` and `weighted_points: 0.0`.
-- **In the arithmetic.** The provisional sum is 58.25 over the six scored
-  criteria carrying 90 weight. Had `NE` been read as 0, the sum would be the
-  same number but presented against 100 weight as a finalizable total. It is
-  not: `total` and `display_total` are both `null` and `finalized` is `false`.
-- **In the rendered tables.** All four podcast judgments print
-  `| reliability | NE | 10 | — | ... |` and
-  `**not finalizable (unresolved NE)**` in the total row, followed by the line
-  "`NE` on reliability — this judge produced no finalizable total. `NE` is not a
-  zero." No judge-level total was produced for team-podcast.
-- **In the gate.** `finalized: false` and a populated `blocked_reasons` are what
-  stop the official total. This is correct and must survive the repairs below.
+**The bracket is genuinely unaffected at two teams.** `bracket-assignment.md`
+front matter declares `min_teams: 2`; `event.md:9` declares
+`bye_policy: performance-qualified`. `atj/bracket.py:163` returns before the
+score check when `count == 0`, and at two entrants the bracket size is an exact
+power of two, so `bye_count` is 0. I built a probe bracket from two entrants with
+`team-podcast`'s score set to `null` and `--bye-policy performance-qualified`. It
+produced one final-round match, `0 byes`, and every hard constraint `satisfied`,
+including "Bye policy 'performance-qualified' applied consistently — no byes: the
+team count is an exact power of two". The claim holds. It would **not** hold at
+three or more teams: `atj/bracket.py:170-174` raises
+`performance-qualified byes require a consolidated score for every team` the
+moment one bye is needed.
 
-Every one of the four podcast judges states in prose that `NE` is a statement
-about the evidence rather than a finding against the submission, and none of
-them converts it to a low score by another route.
-
-## Evidence support — the priority check
-
-`atj validate reports` confirms a citation resolves. It cannot confirm the
-target contains the claim (D4). So I sampled citations across both panels and
-checked each against ground truth rather than against the manifest.
-
-**Coverage.** Every file-path citation in all eight judgments was machine-checked
-against the pinned checkouts: all resolve, and no cited line number exceeds its
-file's length. Three apparent misses are not citations —
-`config/accounts.yaml` and `config/merchant-rules.yaml` appear inside quoted
-error-message text and a description of a file the system writes, and
-`tests/e2e-smoke.py` is a file `judge-security-ops` proposes the team should
-add. I then hand-verified roughly thirty-five substantive citations.
-
-**team-ledger — zero misdirected citations across four judgments.** Verified
-among others:
-
-- `judge-backend` F2, "tier 3 `SUBSET_SUM` can never produce a `COMMITTED`
-  match". Confirmed at source: `resolve()` is called only on
-  `build_edges(...)` (`src/fin/match/engine.py:218-219`), and
-  `subset_sum_edges` is generated afterward straight into `by_txn`, whose only
-  output is an `outcome="AMBIGUOUS"` link. A correct and high-value finding the
-  evidence package did not contain.
-- `judge-backend` F7, "`UNMATCHED` links persist `method="AMOUNT_DATE_UNIQUE"`",
-  `src/fin/match/engine.py:283`. Exact.
-- `judge-frontend-ux` on `src/fin/render.py:29-32` (the DO-NOT-EDIT banner),
-  `:158-162` (unmatched ordered before explained) and `:216` (dispute states
-  ordered `EXPIRING, OPEN, EXPIRED, NO_STATEMENT`). All three exact.
-- `judge-product-agentic` on the dispute clock, `src/fin/cli.py:174` and
-  `src/fin/analyze/spend.py:141`. Exact: `as_of = args.as_of or
-  spend.as_of(transactions)`, and `as_of()` returns `max(post_date, default=
-  date.today())`.
-- `judge-security-ops` on `src/fin/validate.py:45` checking only the
-  sources→transactions direction, so the torn state it describes passes
-  validation clean. Exact.
-
-**team-podcast — one inherited misdirection (F1), otherwise sound.** Verified
-among others:
-
-- `judge-backend` C1, the data-loss chain. Every link holds:
-  `prune_missing` issues a bare `DELETE FROM episodes` when `present` is empty
-  (`server/db.py:94-98`), it is called unconditionally from `index_library()`
-  (`server/app.py:64`), `progress` cascades (`server/db.py` `ON DELETE
-  CASCADE`) with `PRAGMA foreign_keys = ON`, and `README.md:53` labels that
-  directory "Safe to delete".
-- `judge-backend` C6, `/api/rescan` returning `transcode.failed` while the UI
-  reads only `data.indexed` (`server/app.py:96-97` versus
-  `web/js/app.js:368`). Exact.
-- `judge-security-ops` F4, `web/js/storage.js:13-31` registering only
-  `worker.onmessage`. Confirmed: no `onerror`, no `onmessageerror`, no timeout
-  on the promise at `:49-76`. A dead worker leaves it unsettled.
-- The `hidePlayed` chain cited by `judge-backend` R2 and `judge-security-ops`:
-  `web/js/app.js:19` default `"1"`, and the filter at `:105-118` reading
-  `(!hidePlayed || !isFinished(e.id) || playing?.id === e.id)`. Quoted
-  verbatim, correctly.
-- Every run-record claim I checked reconciles. `judge-product-agentic`
-  independently re-derived the 71-second container overlap; I re-derived it
-  again from both windows (`e2e-full-01` 00:15:30-00:17:26, `e2e-02`
-  00:16:15-00:19:19 → 71s). `e2e-full-02` `duration_seconds: 24.474` → "24.5s".
-  `GET /api/media/1 200 OK` is present in both stage-3 failure records, as two
-  judges claim. No podman invocation in any record sets `--shm-size`, as
-  `judge-backend` claims.
-
-The one failure is F1: the manifest's own `ev-podcast-05` miscounts `check()`
-call sites, and three judges repeated the miscount.
-
-## The three known evidence defects, verified and ruled on
-
-`status.md:134` records three defects found during podcast judging and not
-repaired, because the evidence package is frozen for a judged team. I verified
-each independently against the pinned checkout and rule on each below. The
-question is whether the judgments stand, not whether the manifest can be edited.
-
-### (a) `tests/e2e.py` stage count — real, judgments stand
-
-**Verified.** The file prints numbered stage headers at
-`tests/e2e.py:54,90,98,140,171,181,202,214,225,238,258,305,337,379` — that is
-1 through 13, plus an "11b" at `:305`. The manifest describes the suite as
-"11 stages" in `ev-podcast-06`, in the Scope section, and in the Missing-evidence
-section, and reports the best run as "stage 7 of 11".
-
-**Effect.** It overstates executed coverage. "Stage 7 of 11" is really stage 7
-of 13, and the unexecuted remainder is stages 8-13 — including "12. Delete
-downloads" and "13. No JavaScript errors" — not stages 8-11.
-
-**Ruling: invalidates no judgment.** Three of four judges used the correct
-figure. `judge-security-ops:147` and `judge-product-agentic:69-74,452-453` both
-raise it explicitly as a package correction, with line numbers;
-`judge-backend:68` writes "stage 7 of 13" and "42 checks across 13 printed
-sections" without labelling it. `judge-frontend-ux` never states a stage total
-and enumerates the unreached stages individually (`:158`), so it is not wrong
-either. See F5 for the one residual.
-
-### (b) The `evidence_limited_criteria` self-contradiction — real, judgments stand
-
-**Verified.** `evidence/team-podcast/manifest.md:74-76` reads "No criterion is
-listed in `evidence_limited_criteria` because every criterion has at least
-partial direct evidence or corroborated artifact evidence", while line 11 of its
-own front matter reads `evidence_limited_criteria: [reliability]` and line 220
-of its Missing-evidence section reads "**`reliability` is recorded in
-`evidence_limited_criteria`.**" The Scope sentence is stale text left behind by
-the F2 repair of 2026-09-17T18:41:56Z, which set the front-matter field and
-added the Missing-evidence bullet. The third-pass evidence audit did not catch
-it — exactly the pattern `docs/framework-fix-plan.md` T3.2 describes.
-
-**Ruling: invalidates no judgment.** The operative signal reaching the judges was
-consistent: front matter said `[reliability]`, the Missing-evidence section said
-`[reliability]` and gave a page of reasoning for it. No judge cited the stale
-Scope sentence; `judge-backend:419` reads the front matter correctly and the
-other three reason from the run records. The contradiction pointed toward
-scoring `reliability` anyway, and no judge took that path.
-
-See F3 — the ledger's attribution of this defect to "three judges independently"
-is not supported. No judge reported it.
-
-### (c) `ev-podcast-05`'s `check()` count — real, and the manifest's conclusion is wrong
-
-**Verified.** Against `workspaces/live-trial-2026/team-podcast` at `f3fdd342`:
-`grep -c "check("` returns 43; `grep -n "def check("` returns exactly one hit,
-the definition at `tests/e2e.py:33`; 43 minus that definition is **42 call
-sites**.
-
-So the team's "42/42" claim (`README.md:285`, `DECISIONS.md:9`) is **consistent
-with the source**. The manifest's `req-07` conclusion — "contradicted —
-internally inconsistent, and neither figure matches the 43 `check()` call sites
-actually in `tests/e2e.py`" — is wrong in its second half. The real defect is
-narrower: `README.md:7` is stale at "34/34" against a suite of 42.
-
-**Ruling: the judgments stand, but three of them carry the error and must be
-corrected before consolidation.** That is F1.
-
-## Independence
-
-**Tool check.** `atj validate reports` runs `check_judge_independence`
-(`atj/reports.py:199`) at a 0.80 overlap threshold on 6-grams. It reports no
-finding.
-
-**My own check, stricter.** I measured pairwise Jaccard overlap on 9-grams with
-code spans and `[[evidence:…]]` links stripped, so shared citations cannot
-inflate the score. Maximum across all twelve pairs is **0.0076** (podcast
-backend vs security-ops); the ledger maximum is 0.0069. That is two orders of
-magnitude below any contamination threshold.
-
-**Every shared phrase traces to a shared source, not to a sibling.** I checked
-the top shared n-grams individually. They fall into three groups: the template's
-own declaration checklist; sentences quoted from the evidence manifest that all
-four judges legitimately read ("a statement about the evidence, not a finding
-against the submission" is the manifest's own wording at
-`evidence/team-podcast/manifest.md:230-232`; "against the same commit and the
-same image produced three different outcomes" is its wording at `:221-224`); and
-one phrase quoted from the submission itself ("an AWS bill is not retail Amazon
-fraud" is `tests/test_properties.py:325` in the ledger checkout).
-
-**No cross-team leakage.** The only occurrences of `team-ledger` in the podcast
-panel are the four negative assertions in the independence declarations ("no
-`team-ledger` material was read"). There are zero occurrences of `team-podcast`,
-`ev-podcast` or the podcast submission in the ledger panel.
-
-**Every declaration is complete.** All eight judgments carry all four checkboxes
-checked, and six of the eight add a specific account of what was and was not
-opened.
-
-### The four-way `NE` on `reliability`: convergence, not contamination
-
-I treated this as the highest-risk independence question in the stage and
-resolved it against the texts rather than the outcome.
-
-It is **convergence**, for four reasons:
-
-1. **Each judge added analysis the others did not have.** `judge-backend`
-   introduces the `--shm-size` / 64 MB `/dev/shm` hypothesis from the recorded
-   podman command lines. `judge-product-agentic` introduces a second, different
-   hypothesis the package does not name — Chromium's profile under `HOME=/tmp`
-   inside the same 64 MB tmpfs that already held 12 MB of media — and
-   independently re-derived the 71-second overlap from the run windows.
-   `judge-frontend-ux` notices a pattern the manifest does not draw out, that
-   both two-episode runs failed at the same stage-3 wait while the isolated
-   single-episode probe completed in 1s. `judge-security-ops` raises F4, the
-   missing `worker.onerror`, and explicitly notes it pulls in the *opposite*
-   direction from the host-contention reading. Four different additions is not
-   what a copied report looks like.
-2. **The improvement recommendations differ completely** — unit tests under the
-   range parser and the last-write-wins comparison; a self-creating fixture
-   library with live console capture and a generated check count; nothing
-   (deferred to a separate section); and `worker.onerror` plus a promise
-   timeout.
-3. **The wording overlap is 0.3%-0.8%.**
-4. **There is a shared, legitimate cause.** The manifest's front matter and
-   Missing-evidence section both told all four judges that `reliability` is
-   evidence-limited, and gave the reasoning: three executions, three outcomes,
-   none classified. Four judges reading one explicit package signal and each
-   independently verifying it against the run records is the expected result,
-   not a suspicious one.
-
-Point 4 carries a caveat recorded as A1 below: because the package pre-declared
-the limit, the panel should not describe this as four wholly independent
-arrivals at the same conclusion. Each judge verified it; none discovered it
-unprompted.
-
-## Completeness, versions and identity
-
-- **Four judgments per team**, eight total, one per configured judge id, matching
-  `judge_ids` and `judge_run_ids` in both summaries.
-- **All required template sections present in all eight**: Executive assessment,
-  Scores, Criterion findings, Surprises, Blocking and major issues, Calculation
-  and independence declaration. Five of eight add a "Most valuable single
-  improvement" section, which the rubric's required criterion response asks for
-  per criterion and which no template rule forbids.
-- **Rubric and persona versions correct and uniform**: all eight declare
-  `rubric: submission-evaluation@1.0.0` and `persona: judge-<id>@1.0.0`, matching
-  `framework/personas.md` (`atj personas` PASS).
-- **Pinned commit and evidence package id correct in every front matter.** All
-  four ledger judgments carry `commit: 9d21b7707f204ef60f5a1cee612f1d4db0a4a575`
-  and `evidence_package_id:
-  ev:live-trial-2026:team-ledger:9d21b7707f20:b859a240`; all four podcast
-  judgments carry `commit: f3fdd342465fa6bc2a52d226a8613b082ad329e0` and
-  `ev:live-trial-2026:team-podcast:f3fdd342465f:d06f90cc`. Both match
-  `teams.md`, both manifests and both checkouts' `git rev-parse HEAD`.
-- **The rubric was not touched during judging.** `git log 152dd2c1..HEAD --
-  framework/rubrics/` is empty. Weights, criteria, scale, rounding and the `NE`
-  rule are byte-identical to what both panels scored against. Personas remain
-  `@1.0.0` for all four judges, as `docs/framework-fix-plan.md` requires.
-- **The two panels carry different `framework_commit`s** — ledger `0677b6cf`,
-  podcast `3da42c5`. See A4; this is disclosed, permitted and affects no number.
-
-## Privacy and visibility
-
-- All eight judgments declare `visibility: private`. No judgment is anything
-  else.
-- `events/live-trial-2026/public/` contains only `.gitkeep`.
-- No email address, personal name or student-facing identifier appears in any
-  judgment. The only identifiers are team ids, the `beekeeper-lab` repository
-  org from the roster, and persona ids.
-- No judgment quotes an evaluator's or official's name.
-- Evidence-stage advisory A5 still applies and is carried as A2 below: the 27
-  run records embed absolute host paths and a `65534:65534` uid map. Private
-  only. Nothing has left the panel; `atj validate publication` takes a single
-  artifact path, not an event directory, and must be run per artifact before
-  anything does.
+**`head-to-head.md` genuinely does not require an initial total.** The rubric
+compares the seven source-rubric criteria directly and says "Do not merely select
+the team with the higher initial total" — quoted accurately. `atj/matchup.py`
+computes margins from comparison values only; `tie_break()` at `:255-278` reads
+`result["criteria"][criterion]["combined_margin"]`, a value produced fresh in the
+matchup. No code path in the matchup module reads a consolidated total. The claim
+holds. The adjudication's extension of it to the tie-break order does not; that is
+F13.
 
 ## Findings
 
 | Severity | Rule | Artifact | Finding | Required repair |
 |---|---|---|---|---|
-| major (F1) | `framework/policies/evidence-and-citation.md`: "Every material conclusion must be traceable to the pinned evidence package" and "Reports must distinguish these classes"; `framework/rubrics/submission-evaluation.md`: "Separate observation from inference" | `events/live-trial-2026/judgments/team-podcast/judge-frontend-ux.md:369`, `judge-product-agentic.md:184,466`, `judge-security-ops.md:187,323` | Three of four podcast judges state that `tests/e2e.py` contains 43 `check()` call sites and that the team's "42/42" claim therefore fails to match the source. It contains **42**; the 43rd `grep -c "check("` match is the definition at `tests/e2e.py:33`, which I verified directly at `f3fdd342`. The team's "42/42" is correct and the only stale figure is `README.md:7`'s "34/34". The error originates in the frozen manifest's `ev-podcast-05` and `req-07`; `judge-backend:606-615` caught it and corrected it in-panel, and the other three repeated it. It is used adversely: `judge-security-ops:187` lists it in the `product` deficiencies and `:323` gives it as a reason it "cannot fall back on" the team's own claim when setting `reliability` to `NE`; `judge-product-agentic:466` lists it as **Confirmed defect 1** attributed to "direct file inspection", an evidence class that judge did not exercise on this claim and that the source contradicts. **No score changes.** `judge-product-agentic` and `judge-frontend-ux` score `product` 4 regardless; `judge-security-ops`'s `product` 3 rests in its score rationale on the library-size contradiction (28 vs 33 vs 56 files), which I verified independently and which stands; `reliability` is `NE` on all four | Do **not** edit the frozen manifest and do **not** change any score. Record the correction once, at panel level, in the consolidated team-podcast report: `tests/e2e.py` has 42 `check()` call sites, the team's "42/42" is consistent with the source, and the documentation defect is `README.md:7` alone. Carry `judge-backend`'s correction forward as the panel's position. In `judge-product-agentic`'s Confirmed defect 1, the evidence-class label "direct file inspection" must not survive into any team-facing artifact attached to this claim |
-| major (F2) | `framework/policies/disagreement-and-adjudication.md`: "Adjudication is required for an `NE` that prevents scoring"; `CLAUDE.md`, Source of truth: event state lives in `status.md` | `events/live-trial-2026/status.md:133` | The ledger row for the team-podcast consolidation states "no outlier, **no adjudication required**". `summaries/team-podcast.json`, the artifact that row names as its own output, records `adjudication_required: [{"criterion": "reliability", "trigger": "unresolved-ne"}]`, and the policy requires adjudication for exactly this condition. The "no outlier" half is correct; the adjudication half states the opposite of both the tool output and the policy. `events/live-trial-2026/adjudications/` contains only `.gitkeep`, so the required adjudication does not exist. Left uncorrected, the next stage advances believing none is owed. The most likely origin is A3 below: `atj score`'s human-readable output prints `blocked_reasons` but never prints `adjudication_required`, so an operator reading the console sees no adjudication mentioned | Correct the `2026-09-17T21:02:28Z` row in `status.md` to state that adjudication **is** required on `reliability`, trigger `unresolved-ne`, per `summaries/team-podcast.json` and `framework/policies/disagreement-and-adjudication.md`. Do not alter the summary; it is correct. The adjudication record itself belongs to the consolidation stage, not to this one |
-| minor (F3) | `CLAUDE.md`, Source of truth: event state lives in `status.md`; the ledger must state what happened | `events/live-trial-2026/status.md:134` | The row reads "EVIDENCE DEFECT found by three judges independently" and then lists all three defects. Checked against the judgment texts, the attribution does not hold per defect. The `evidence_limited_criteria` contradiction (b) was reported by **no** judge — `judge-backend:419` reads the front-matter value correctly and no judgment mentions the Scope sentence. The `check()` miscount (c) was reported by **one**, `judge-backend:606-615`; the other three repeated the error, which is F1. Only the stage count (a) approaches three, and only if `judge-backend:68`'s silent use of the correct figure counts alongside `judge-security-ops:147` and `judge-product-agentic:69-74`, which raise it explicitly. The ledger currently credits the panel with two catches it did not make, and hides F1 | Restate the row per defect with its actual finder: stage count — `judge-security-ops` and `judge-product-agentic` explicitly, `judge-backend` implicitly; `check()` miscount — `judge-backend` only, with the other three repeating it (F1); `evidence_limited_criteria` contradiction — found by this audit, not by the panel |
-| minor (F4) | `framework/templates/evidence-manifest.md`; `framework/policies/evidence-and-citation.md` | `events/live-trial-2026/evidence/team-podcast/manifest.md:74-76` versus `:11` and `:220` | The Scope section states "No criterion is listed in `evidence_limited_criteria`" while the front matter and the Missing-evidence section both list `reliability`. Verified. Stale text from the 18:41:56Z F2 repair that the third-pass evidence audit passed over. It invalidates no judgment (ruling (b) above), but it is a live contradiction in an approved, frozen package that the consolidation stage and any later matchup will read | The package is frozen for a judged team, so do not edit it. Record the defect against `ev:live-trial-2026:team-podcast:f3fdd342465f:d06f90cc` here and in `docs/framework-fix-plan.md` as further evidence for T3.2, and state in the consolidated report that the front matter and Missing-evidence section are authoritative. If the package is ever unfrozen, delete the sentence at `:74-76` |
-| minor (F5) | `framework/policies/evidence-and-citation.md`: cite what the artifact contains | `events/live-trial-2026/judgments/team-podcast/judge-security-ops.md:460` versus `:143` and `:525` | Internal inconsistency inside one judgment. This judge correctly establishes at `:143` and `:525` that the suite has 13 sections and that sections 4 and 8 **through 13** are unexecuted — and then its `functional` improvement line at `:460` asks the team to "get sections 4 and 8 through 11 of the suite to run", reverting to the manifest's wrong figure. The judgment's own correction at `:147` is right; this one line contradicts it | Correct `:460` to "sections 4 and 8 through 13" when the consolidated report quotes this improvement. Do not disturb `:143`, `:147` or `:525`, which are correct, and do not change the score |
-| minor (F6) | `framework/templates/individual-judgment.md` and `schemas/judgment.schema.json`: `confidence` is `low` / `medium` / `high` with no stated meaning for an `NE` criterion | `events/live-trial-2026/judgments/team-podcast/judge-security-ops.md` front matter versus `judge-frontend-ux.md`, `judge-backend.md`, `judge-product-agentic.md` | New framework defect, not D1-D6. `confidence` is undefined for a criterion scored `NE`, and the four podcast judges split on identical reasoning. `judge-frontend-ux` writes "Low confidence in any numeric score, which is the point. High confidence that `NE` is the correct disposition" and records `low`. `judge-security-ops` writes "High confidence in the `NE` determination itself" and records `high`. `judge-backend` records `low` and explains that it "describes the evidence state, not a suppressed numeric score". The rendered scores table then shows `high` in the Confidence column beside `NE` for one judge and `low` for the other three, which reads as disagreement about the evidence where none exists. The schema accepts both and `atj validate reports` cannot see it | Framework repair, next version, not this event: state in `framework/templates/individual-judgment.md` and in the rubric that for an `NE` criterion `confidence` describes confidence in the `NE` determination, and have `atj render judgment` label the column accordingly. Change no judgment; both readings are defensible under the current text |
-| minor (F7) | `schemas/common.schema.json` `model_record`; `framework/templates/individual-judgment.md`: "`verified`: how the model identity was established, or why it could not be" | `events/live-trial-2026/judgments/team-podcast/judge-backend.md` front matter versus the other three podcast judgments | New framework defect, not D1-D6. `model.verified` has no defined threshold, and four judges in the same panel, on materially the same basis, split. `judge-backend` records `verified: false` and reasons that it "has no means of attesting its own model identity from inside the run, so `verified` is false rather than assumed true". The other three record `verified: true` while their notes describe the same situation — runtime self-report plus orchestrator dispatch, "no external attestation", "a corroborated assertion rather than a cryptographic verification". One of them adds that "the timestamps are placeholders supplied by the orchestrator, not clock readings taken here" and still records `true`. All four are schema-valid, so the field currently carries no comparable information. The team-ledger panel's four all record `true` with an identical orchestrator-written note, which is a third pattern | Framework repair, next version: define `verified` as true only for an attestation external to the run, and require the basis in `note`. Change no judgment |
+| major (F8) | `CLAUDE.md`, Source of truth: event state lives in `status.md`; `events/_template/status.md:40-43` and `events/sample-mock-2026/status.md:241-248` define the row shape | `events/live-trial-2026/status.md:81-85` | The **Blockers and adjudications** table is empty while `adjudications/team-podcast-reliability-ne.md` exists and is applied by `atj score`. This is the ledger's dedicated, structured index of adjudications, and it reads as though the event has none. The reference sample event records all three of its adjudications there with id, scope, description, owner, status and resolution artifact. The activity log carries the fact in prose at `:135`, so nothing is hidden — but the table a reader or a later stage consults first says the opposite of the directory. This is the same class of defect as F2, in the same file, and F2 was rated major | Add one row: `adj:live-trial-2026:team-podcast:01` \| `criterion` \| `Unresolved NE on reliability blocked the official total; adjudicated and accepted` \| `event-director` \| `resolved` \| `adjudications/team-podcast-reliability-ne.md`. Do not restate the adjudication's reasoning in the table; it lives in the record |
+| minor (F9) | `CLAUDE.md`, Source of truth; the ledger must state what is true | `events/live-trial-2026/status.md:133` | The corrected F2 row asserts "`adjudications/` is empty." That was true when `ebb76c2` wrote it and false five minutes later when `bdf369d` created the record. Repair-introduced: the commit that invalidated the sentence did not update it. A reader who stops at this row concludes the required adjudication is still missing | Replace "`adjudications/` is empty" with a forward pointer to the `2026-09-17T21:20:42Z` row and to `adjudications/team-podcast-reliability-ne.md`. Leave the rest of the row alone; it is correct |
+| minor (F10) | `schemas/status.schema.json` requires `last_updated`; every `atj event` writer sets it from `versions.now()` (`atj/event.py:473,497,540,550`) | `events/live-trial-2026/status.md:4` | `last_updated: "2026-09-17T21:02:13Z"` predates the newest activity rows (`21:20:42Z`) and both repair commits (`21:17:53Z`, `21:22:49Z`). The repairs hand-edited the ledger instead of going through a tool that maintains the field, so the ledger understates when it was last touched by twenty minutes | Self-closing: `atj event gate` and `atj event unit record` both rewrite `last_updated`. Run them as part of the repair and confirm the value moves |
+| minor (F11) | `events/live-trial-2026/status.md:139-143`, the log's own provenance rule: "A row describing an audit carries that audit artifact's own `completed_at`" | `events/live-trial-2026/status.md`, activity log | The activity log has **no row for the judging-stage audit**. The evidence stage has three (`:112`, `:119`, `:123`), so the convention is established. The first-pass FAIL at `21:20:00Z` and this second pass are visible only inside other rows' prose. Neither `atj event gate` nor `atj event unit record` appends to the activity log — I read both in `atj/event.py` — so this will not fill itself | Add two rows: `2026-09-17T21:20:00Z` initial-judging stage audited, first pass, FAIL — F1, F2 major; and this pass with its own `completed_at` and result. Input identity: the eight judgments, both summaries, `status.md`; output: `audits/judgments.md` |
+| minor (F12) | First-pass F4 required repair: "Record the defect against `ev:live-trial-2026:team-podcast:f3fdd342465f:d06f90cc` here **and in `docs/framework-fix-plan.md` as further evidence for T3.2**" | `docs/framework-fix-plan.md:141-153` | The fix-plan half of F4 was not done. `01f559f` added D7, D8 and D9 and nothing else; there is no mention of `evidence_limited_criteria`, the Scope-section contradiction, or F4 anywhere in the file. T3.2 still reads "**three of those defects were introduced by the repairs**" and lists the three from the evidence stage. F4 is a fourth — the first pass traced it to the `18:41:56Z` F2 repair — and T3.2's own count is now understated, in the section whose whole argument is that repair rounds introduce defects | Add the manifest self-contradiction to T3.2's evidence list and correct "three" to "four". Do not edit the frozen manifest |
+| minor (F13) | `framework/rubrics/head-to-head.md`, comparison-value table and `tie_break_order`; `atj/matchup.py:255-278` | `events/live-trial-2026/adjudications/team-podcast-reliability-ne.md`, Impact table final row; repeated at `events/live-trial-2026/status.md:136` | The impact table states that the tie-break is "narrowed", that "`reliability` cannot break a tie for this pairing", and that the order "effectively becomes functional, then product". That does not follow. `tie_break()` reads `combined_margin` — a comparison value produced fresh in the matchup — not the initial score, and value `0` is defined as "Substantially equal **or** insufficient comparative evidence", which is a finding a matchup panel makes on the common evidence, not one the initial `NE` forces. team-ledger has eleven run records including a 35-test suite at exit 0; team-podcast has three unclassified outcomes. A panel could legitimately return a nonzero reliability margin from that. The adjudication's own preceding row hedges correctly ("must be comparison value `0` **unless the common evidence supports otherwise**") and the tie-break row drops the hedge. Nothing has moved yet, but this prejudges a stage that has not run and the ledger now repeats it | Correct `status.md:136` to say the matchup must reach its own comparative finding on `reliability` and that no initial result constrains it. The adjudication record itself is a versioned attachment; if the event-director wants it corrected, issue `adj:live-trial-2026:team-podcast:02` rather than editing this one. Either way the matchup stage must not inherit the unhedged claim |
+| minor (F14) | `framework/policies/disagreement-and-adjudication.md`: "A human event official owns disqualification, rules exceptions, and unresolved final ties"; `schemas/adjudication.schema.json` `decided_by` — "A human official's role"; `atj/scoring.py:431` | `events/live-trial-2026/adjudications/team-podcast-reliability-ne.md` front matter | `decided_by: event-director` with `persona: run-judging-event@1.0.0` records a human decision that no reader can distinguish from an agent writing the role into a required field. There is no signature, no separate approval timestamp, and `started_at` equals `completed_at`. `atj/scoring.py:431` uses a non-empty `decided_by` as one of the gates that lets an adjudication move an official total, so the field carries authority the record cannot evidence. Mitigations, which is why this is minor and not major: nothing moved (`score_override` absent, `resolved_score: null`), this trigger is not one of the policy's human-only categories, `event.md:27-31,70` does assign adjudication to the event-director, the commits are authored by the role holder, and the document discloses the persona substitution in plain text and files D10 rather than concealing it | No repair to this record. Record a new framework defect (D12): the adjudication artifact needs a way to record human assent distinctly from agent authorship — an approver field, a decision timestamp, or a human-countersigned approval state. Until it exists, no adjudication may move an official total or name an advancing team on this evidence alone |
 
 ## Advisories
 
-**A1 — the four-way `NE` is anchored convergence, and the panel report should
-say so.** The team-podcast manifest declared `evidence_limited_criteria:
-[reliability]` in its front matter and devoted a Missing-evidence bullet to the
-reasoning before any judge read it. Four judges independently *verified* that
-limit against the run records, and each added distinct analysis (see the
-Independence section) — which is why I rule convergence rather than
-contamination. But none of them discovered it unprompted. The consolidated
-report should describe the `NE` as four independent confirmations of a
-package-declared limit, not as four independent discoveries. The distinction
-matters if the head-to-head later weighs how much of this team's evidence gap is
-the framework's doing.
+**A1, A2, A4, A5 — carried from the first pass, unchanged.** A1: the four-way
+`NE` is anchored convergence, not four independent discoveries, and the panel
+report must say so. A2: run records embed host paths, and `atj validate
+publication` takes one artifact at a time. A4: the two panels ran against
+different framework commits; no number is affected. A5: all eight judgments are
+still `draft`/`unvalidated` while both units are `complete`.
 
-**A2 — run records still embed host paths; nothing may be published without a
-per-artifact publication check.** Carried from evidence advisory A5. All 27
-records contain an absolute host path and the `65534:65534` uid map, and the
-judgments quote run-record content extensively. This is correct for private
-artifacts. Note that `atj validate publication` takes a single artifact path and
-fails with "Is a directory" when handed an event directory, so the pre-publication
-gate has to be run per artifact and cannot be satisfied in one command.
+**A6 — the first pass's 9-gram overlap figure does not reproduce, and the
+adjudication quotes it as measured.** The adjudication's Confidence section cites
+"a maximum pairwise 9-gram overlap of 0.0076" as something "the stage audit
+measured". Reconstructing the stated method (9-grams, fenced and inline code and
+`[[evidence:…]]` links stripped) I get a podcast maximum of **0.0149**
+(`judge-product-agentic` vs `judge-security-ops`) and a ledger maximum of
+**0.0092**, not 0.0076 and not the pair the first pass named. The tool's own
+measure (`atj/reports.py:194`, 6-grams, nothing stripped) gives **0.0248** for the
+podcast panel and **0.0202** for the ledger panel. Every variant is two orders of
+magnitude below `SIMILARITY_THRESHOLD = 0.80`, so the independence conclusion is
+unaffected and stands. But a hand-computed statistic a reader cannot reproduce
+should not be quoted as a measurement in a second artifact. Prefer the tool
+figure and the threshold it is measured against.
 
-**A3 — `atj score`'s human-readable output omits `adjudication_required`.** The
-text rendering prints the criteria table, `**Finalization blocked:**` with
-`blocked_reasons`, and the provisional-sum warning. It never prints
-`adjudication_required`, which is present in `--json` and in the written summary.
-An operator working from the console can therefore state "no adjudication
-required" while the committed artifact says the opposite — which is F2. New
-framework defect, not D1-D6, and the cheapest of the four to close: print the
-field. Related: `summaries/*.json` is covered by no validator.
-`check_consolidation` (`atj/reports.py:238`) globs `summaries/*.md`, so it will
-engage at the consolidation stage against the `.md` report and has correctly
-found nothing to check so far. I verified both JSON summaries by regenerating
-and diffing them instead.
+**A7 — the adjudication's own metadata is thin.** `started_at` equals
+`completed_at` (zero elapsed) for a record that reasons over eight evidence ids
+and four run records, and `validation_state: unvalidated` although `atj validate
+reports` now validates it as one of 17 artifacts. Same class as A5; neither the
+schema nor any policy requires more.
 
-**A4 — the two panels ran against different framework commits, and the template
-changed between them.** team-ledger's four judgments record `framework_commit:
-0677b6cf`; team-podcast's record `3da42c5`. `git diff` between them touches three
-files: `atj/cli.py` (+40, the A10 render guard) and two templates, including
-`framework/templates/individual-judgment.md` (+33/-11, the D2 fix that moved
-`scores`/`confidence` into front matter and added the `model` block). The rubric,
-personas, schemas and `atj/scoring.py` are byte-identical across both, so no
-number is affected, and `CLAUDE.md`'s freeze list — rubric version, weights,
-personas, bracket policy, evidence — is not breached. The ledger discloses the
-consequence at `status.md:128`: the four team-ledger judgments failed validation
-on the `model` block and had it added from their own front matter. Recording it
-here so the head-to-head does not have to rediscover that the two panels
-followed different template text.
+**A8 — re-recording the units will restamp them.** `atj/event.py:record_unit`
+writes `completed_at: versions.now()` and the CLI has no override, so recording
+the audit result on `judging:team-ledger` and `judging:team-podcast` will
+overwrite `19:29:14Z` and `21:02:13Z` with the current clock and misstate when
+judging finished. `can_advance` (`atj/event.py:421-426`) only blocks on
+`audit_result == "FAIL"`, so `not-audited` does not block the gate. Decide
+deliberately: either accept the restamp and record the original values in the
+activity log, or leave the units `not-audited` and let this audit and the gate
+carry the result.
 
-**A5 — all eight judgments remain `approval_state: draft` /
-`validation_state: unvalidated` while both units are `complete`.** This is the
-template's default and neither the schema nor any policy requires promotion, so
-it is not a finding. But the intake stage promoted its records to approved/valid
-on audit (ledger, A2 of the intake audit), and the same should happen here once
-the F1/F2 repairs land, so that `atj render judgment`'s approval guard has
-something to protect.
+**A9 — one citation is missing from the adjudication's Evidence reviewed list.**
+The Disputed-claims table cites `ev-podcast-12` through `judge-product-agentic`,
+and the Evidence reviewed section does not list it. The id is real and resolves in
+the manifest, so this is completeness, not accuracy.
+
+**A10 — `events/live-trial-2026/status.md.bak` is present on disk, untracked.**
+`atj/event.py:745` writes it on every ledger update; `.gitignore:27` ignores it,
+which was the agreed closure of evidence-stage F12/D5. Recorded so a later pass
+does not re-raise it. Nothing to do.
 
 ## Completion gate
 
 - [x] **No blocking findings** — no missing required evidence, no invalid
-      arithmetic, no version mismatch, no severe disagreement (every scored
-      criterion is `aligned` at range ≤ 1), no submission executed during
-      judging by any judge, and nothing private in `public/`, which holds only
-      `.gitkeep`
-- [ ] **No major findings** — **two.** F1, a false and team-adverse factual
-      claim inherited from `ev-podcast-05` into three of four podcast
-      judgments. F2, a ledger row asserting no adjudication is required where
-      the tool output it cites and the adjudication policy both say one is
-- [x] **Calculations valid** — both consolidations and all eight rendered score
-      tables reproduce byte-identically from `atj score` and
-      `atj render judgment`; both summary JSON files are structurally identical
-      to freshly derived output; 76.25 → 76.3 follows the rubric's declared
-      half-up rounding; team-podcast has `total: null`, `finalized: false`, and
-      58.25 is labelled provisional in all three places it appears; `NE` is
-      never a zero at any layer
-- [x] **Evidence references resolve** — `atj validate reports` PASS with zero
-      problems; every file-path citation in all eight judgments resolves against
-      its pinned checkout with no line number past end of file; roughly
-      thirty-five substantive citations hand-verified against ground truth, with
-      zero misdirected on the ledger panel and one inherited class on the
-      podcast panel, recorded as F1
+      arithmetic, no version mismatch (`atj release-check` PASS,
+      `require_versions` passes on the adjudication), no severe disagreement, no
+      submission executed in this round, and nothing private in `public/`, which
+      holds only `.gitkeep`. The adjudication clears the publication gate as a
+      private artifact
+- [ ] **No major findings** — **one.** F8, the ledger's adjudication table empty
+      while an adjudication exists and is applied by `atj score`
+- [x] **Calculations valid** — both consolidations reproduce; the regenerated
+      team-podcast summary matches the committed file across all 318 leaf values
+      including the new `resolution` block; all eight rendered score tables
+      re-render `unchanged` and diff clean; `total: null`, `finalized: false`,
+      `weighted_points: null` for `reliability`; 58.25 is provisional everywhere
+      it appears; `NE` is never a zero at any layer; no score moved in the repair
+      round and no judgment was edited
+- [x] **Evidence references resolve** — `atj validate reports` PASS over 17
+      artifacts with zero problems; every evidence id and run record the
+      adjudication cites resolves, and I re-verified its five load-bearing facts
+      against the run records and the pinned checkout rather than against the
+      citations
 - [x] **Version and identity checks pass** — `rubric:
-      submission-evaluation@1.0.0` and `persona: judge-*@1.0.0` in all eight and
-      matching `framework/personas.md`; the correct pinned commit and evidence
-      package id in every front matter; `git log 152dd2c1..HEAD --
-      framework/rubrics/` empty, so the rubric was not touched during judging;
-      `atj release-check` PASS; `atj personas` PASS; 355 tests pass. The
-      cross-panel `framework_commit` difference is A4 and affects no number
-- [x] **Privacy boundary passes** — all eight `visibility: private`; `public/`
-      holds only `.gitkeep`; no personal identifier in any judgment; no
-      cross-team material in either panel beyond four negative assertions in the
-      independence declarations
+      submission-evaluation@1.0.0` and `persona: run-judging-event@1.0.0` both
+      resolve in `framework/personas.md`; `framework_commit: 01f559fa` is a real
+      commit and is the parent of the commit that recorded the adjudication;
+      `commit` and `evidence_package_id` match the four judgments; 355 tests
+      pass; `atj release-check` PASS
+- [x] **Privacy boundary passes** — the adjudication is `visibility: private`,
+      contains no host path, uid map, credential or personal identifier, and
+      `atj validate publication` returns CLEAR; `public/` still holds only
+      `.gitkeep`
 
 **FAIL.**
 
-**The `judgments-audited` gate may not be set.** `atj event gate
-events/live-trial-2026 judgments-audited passed --audit audits/judgments.md`
-must not be run until F1 and F2 are repaired and re-audited.
+**The `judgments-audited` gate may not be set yet.** `atj event gate
+events/live-trial-2026 judgments-audited passed --audit audits/judgments.md` must
+not be run until F8 is closed and F9-F11 are corrected in the same edit.
 
 Nothing here requires a judge to rescore, a submission to be re-run, or a frozen
-evidence package to be edited. No score in this stage changes. The repairs, in
-order:
+evidence package to be edited. No score changes. The repairs, in order:
 
-1. Repair **F2** and **F3** — two rows of `status.md`. Neither is a unit output,
-   so neither changes a `judging:` input digest.
-2. Repair **F1** and **F5** by writing the corrections into the consolidated
-   team-podcast report when it is produced, and by recording F1 against the
-   panel now so it cannot be lost between stages. Do not edit the eight
-   judgments: they are the judges' own records, `atj render judgment` guards
-   them, and rewriting a judge's finding is outside an auditor's authority under
-   `framework/policies/judge-independence.md` ("An audit may inspect all
-   artifacts but may not rewrite substantive judgment"). If the panel decides
-   the three affected judgments must carry the correction themselves, that is an
-   adjudication under `framework/policies/disagreement-and-adjudication.md`
-   attached as a versioned addendum, not an edit.
-3. Record **F4**, **F6**, **F7** and **A3** in `docs/framework-fix-plan.md`. F4
-   is further evidence for T3.2. F6, F7 and A3 are new defects, none of them
-   D1-D6, and A3 is a one-line fix that would have prevented F2.
-4. Re-audit this stage. `docs/framework-fix-plan.md` T3.2 is explicit that a
-   repair round must itself be audited before the gate, and this event has
-   already produced three repair-introduced defects at the evidence stage.
-5. Then re-record both units with the result and set the gate:
+1. **F8, F9, F10, F11** — one edit to `events/live-trial-2026/status.md`: add the
+   adjudication row to the Blockers and adjudications table, replace the
+   "`adjudications/` is empty" sentence with a pointer to the `21:20:42Z` row,
+   and add the two missing audit rows to the activity log. `last_updated` is
+   fixed by step 4.
+2. **F13** — correct `status.md:136` so it does not tell the matchup stage what
+   its `reliability` comparison value must be.
+3. **F12 and F14** — `docs/framework-fix-plan.md`: add the manifest
+   self-contradiction to T3.2 and correct "three" to "four"; add D12 for the
+   missing record of human assent.
+4. **Then re-record the units and set the gate**, reading A8 first:
    `python3 -m atj event unit events/live-trial-2026 record --id
    judging:team-ledger --stage initial-judging --output judgments/team-ledger
-   --audit-result "<result>"`, the same for `judging:team-podcast`, and
-   `python3 -m atj event gate events/live-trial-2026 judgments-audited passed
-   --audit audits/judgments.md`.
+   --audit-result "PASS WITH ADVISORIES"`, the same for `judging:team-podcast`,
+   then `python3 -m atj event gate events/live-trial-2026 judgments-audited
+   passed --audit audits/judgments.md`.
+5. **Carry F1 and F5 into the consolidation stage.** They are this stage's only
+   open substantive obligations and neither can be closed here.
 
-One thing the repairs must not undo: team-podcast has no official total and must
-not acquire one. `reliability` stays `NE` until an adjudication resolves it on
-the evidence, and 58.25 is not a score, not a ranking input, and not a bye seed.
+Two things the repairs must not undo. team-podcast has no official total and must
+not acquire one: `reliability` is `NE`, the adjudication accepted it rather than
+clearing it, and 58.25 is not a score, not a ranking input and not a bye seed.
+And `atj score`'s "applied adjudication" line must never be quoted without the
+"unresolved NE" line that follows it, until D11 is fixed.
