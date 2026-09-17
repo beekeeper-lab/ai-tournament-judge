@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
 current_stage: consolidation
-last_updated: "2026-09-17T21:51:54Z"
+last_updated: "2026-09-17T22:00:01Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -47,6 +47,22 @@ units:
   - judgments/team-podcast
   audit_result: PASS WITH ADVISORIES
   completed_at: "2026-09-17T21:38:23Z"
+- unit_id: consolidation:team-ledger
+  stage: consolidation
+  state: complete
+  input_digest: 2ac058c32c73de6d
+  outputs:
+  - summaries/team-ledger.md
+  audit_result: not-audited
+  completed_at: "2026-09-17T22:00:01Z"
+- unit_id: consolidation:team-podcast
+  stage: consolidation
+  state: complete
+  input_digest: 25184930dc9bc887
+  outputs:
+  - summaries/team-podcast.md
+  audit_result: not-audited
+  completed_at: "2026-09-17T22:00:01Z"
 gate_evidence:
   configuration-audited: audits/configuration.md
   roster-frozen: audits/intake.md

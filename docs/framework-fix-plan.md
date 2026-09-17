@@ -36,6 +36,7 @@ version.
 | D15 | `atj event unit record` restamps `completed_at` with the current clock and offers no override, so re-recording a unit to change only `audit_result` destroys the real completion time | 1 |
 | D16 | The stage completion gate has no scope filter: a finding against a framework document, an ignored path, or activity-log prose blocks a stage gate exactly as hard as a wrong score | 1 |
 | D17 | An agent worktree inside the repository makes `release-check` FAIL and breaks four validators, because they walk the filesystem rather than git. Gitignoring the directory does not help | 1 |
+| D18 | `framework/templates/consolidated-team-report.md` cites `atj consolidate` and the `atj:consolidated` marker region implies `atj render consolidated`. Neither command exists — `atj render` has only the `judgment` subcommand — so the one region a template says a tool must own can only be filled by hand | 1 |
 
 D3 fixed in `3a798ad` (command added, reproduces the committed sample byte for
 byte) and `4ac09ba` (refuses to rewrite an approved judgment without `--force`,
@@ -233,3 +234,12 @@ D14, D15 and D17 were all found the same way — by running the event, not by re
 the code. D17 is the sharpest operational one: the fix work for this plan was done in
 an agent worktree, and the worktree silently broke `release-check` for as long as it
 existed.
+
+D18 is D3 repeating one artifact type later. D3 was `atj render judgment` cited by
+the judgment template and never built; it was found the same way, by a panel needing
+it. Both consolidated reports for live-trial-2026 were therefore transcribed by the
+consolidator, and both consolidators said so unprompted and asked for regeneration.
+Neither could be regenerated, so each table was instead verified cell by cell against
+`summaries/<team>.json` by a deterministic script: seven criteria, every judge score,
+both totals and the finalization flag, zero mismatches on both teams. That check is
+what `atj render consolidated` should do, and it should be built from it.
