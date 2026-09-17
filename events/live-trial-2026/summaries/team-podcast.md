@@ -14,8 +14,8 @@ judge_run_ids:
 - jr:live-trial-2026:team-podcast:judge-security-ops:d06f90cc:01
 model_requested: claude-opus-5
 model_used: claude-opus-5
-started_at: "2026-09-17T22:30:00Z"
-completed_at: "2026-09-17T22:30:00Z"
+started_at: "2026-09-17T21:52:01Z"
+completed_at: "2026-09-17T21:58:17Z"
 total: null
 display_total: null
 finalized: false
@@ -97,11 +97,11 @@ by `atj render consolidated` before `atj validate` runs against this file.**
 | reliability | judge-backend=NE, judge-frontend-ux=NE, judge-product-agentic=NE, judge-security-ops=NE | — | 10 | — | not-scored |
 | security | judge-backend=3.0, judge-frontend-ux=3.0, judge-product-agentic=3.0, judge-security-ops=3.0 | 3.00 | 10 | 6.00 | aligned |
 | innovation | judge-backend=3.0, judge-frontend-ux=4.0, judge-product-agentic=3.0, judge-security-ops=3.0 | 3.25 | 10 | 6.50 | aligned |
-| **Overall** |  |  | **100** | **not finalizable — unresolved `NE` on reliability** |  |
+| **Overall** |  |  | **100** | **not finalized** |  |
 
 <!-- atj:consolidated:end -->
 
-**Overall:** no official total. `total: null`, `display_total: null`,
+**Overall:** no official total. The score block above is the tool's own wording; `not finalized` there means exactly what this section states (audit C7). `total: null`, `display_total: null`,
 `finalized: false` (`summaries/team-podcast.json`). The provisional sum of the six
 scored criteria is 58.25; it is unofficial, unpublishable, and not a seeding
 input.
@@ -655,7 +655,7 @@ is attributed and no score moves.
 
 ## Prioritized improvements
 
-Ranked by what they prevent, not by effort. Three of the four judges named the
+Ranked by what they prevent, not by effort. Two of the four judges named the
 first item as the single most valuable change.
 
 1. **Stop an indexing pass from destroying listening history, and stop telling the
