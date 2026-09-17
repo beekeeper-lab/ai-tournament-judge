@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
 current_stage: evidence
-last_updated: "2026-09-16T23:57:11Z"
+last_updated: "2026-09-17T00:20:00Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -38,8 +38,8 @@ gate_evidence:
 
 | Team ID | Intake | Evidence | Four judgments | Consolidated | Audited | Dossier |
 |---|---|---|---|---|---|---|
-| team-podcast | done, pinned f3fdd342465fa6bc2a52d226a8613b082ad329e0 | pending | pending | pending | pending | pending |
-| team-ledger | done, pinned 9d21b7707f204ef60f5a1cee612f1d4db0a4a575 | pending | pending | pending | pending | pending |
+| team-podcast | done, pinned f3fdd342465fa6bc2a52d226a8613b082ad329e0 | done, not yet audited (ev:live-trial-2026:team-podcast:f3fdd342465f:3f2ddc4f) | pending | pending | pending | pending |
+| team-ledger | done, pinned 9d21b7707f204ef60f5a1cee612f1d4db0a4a575 | done, not yet audited (ev:live-trial-2026:team-ledger:9d21b7707f20:b859a240) | pending | pending | pending | pending |
 
 Intake is not a unit in the ledger: `atj event unit` derives digests only for
 `evidence:`, `judging:` and `consolidation:`. Intake state is tracked here and in
@@ -69,3 +69,5 @@ the roster.
 | 2026-09-16T23:56:58Z | Image IDs recorded in event.md to close intake F4 | podman images | event.md | not-audited |
 | 2026-09-16T23:56:58Z | team-ledger suite re-run WITH a run record, closing intake F2 | 9d21b770 @ localhost/atj-live-trial/ledger:2 | runs/team-ledger-pytest-01.json — 35 passed, exit 0, no network | not-audited |
 | 2026-09-16T23:56:58Z | Intake records moved to approved/valid (A2); team-ledger execution footer corrected | audits/intake.md | submissions/*.md | not-audited |
+| 2026-09-17T00:15:00Z | Evidence prepared for team-ledger: 10 new sandboxed executions (CLI help surface, CSV ingest + D0, ingest rejection/idempotency paths, Amazon ingest + match tiers + D1, analyze/render/dispute, PDF-adapter parsing grammar via synthetic layout text x2, vault/file permission check), plus the existing pytest run | 9d21b770 @ localhost/atj-live-trial/ledger:2, runs/team-ledger-*.json (11 total) | evidence/team-ledger/manifest.md — execution_status sandboxed-partial (real end-to-end PDF-file CLI ingest not exercisable: no PDF-authoring tool in image) | `atj validate reports` PASS, 0 blocking |
+| 2026-09-17T00:20:00Z | Evidence prepared for team-podcast: 5 sandboxed executions (env probe confirming no ffmpeg/ffprobe in the approved image; server boot on an empty library; direct route-level byte-range + progress/resume tests via a synthetic media file; a full `tests/e2e.py` attempt that reached Chromium and static-asset serving but stopped at check 1 for lack of transcoded media; a `run.sh` attempt showing its venv step cannot run against the read-only mount) | f3fdd342 @ localhost/atj-live-trial/podcast:2, runs/team-podcast-*.json (5 total) | evidence/team-podcast/manifest.md — execution_status sandboxed-partial (no ffmpeg/ffprobe in image blocks populating the library; iPhone-specific claims remain team claims by nature) | `atj validate reports` PASS, 0 blocking |
