@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
 current_stage: evidence
-last_updated: "2026-09-17T00:20:00Z"
+last_updated: "2026-09-17T00:10:14Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -71,3 +71,7 @@ the roster.
 | 2026-09-16T23:56:58Z | Intake records moved to approved/valid (A2); team-ledger execution footer corrected | audits/intake.md | submissions/*.md | not-audited |
 | 2026-09-17T00:15:00Z | Evidence prepared for team-ledger: 10 new sandboxed executions (CLI help surface, CSV ingest + D0, ingest rejection/idempotency paths, Amazon ingest + match tiers + D1, analyze/render/dispute, PDF-adapter parsing grammar via synthetic layout text x2, vault/file permission check), plus the existing pytest run | 9d21b770 @ localhost/atj-live-trial/ledger:2, runs/team-ledger-*.json (11 total) | evidence/team-ledger/manifest.md — execution_status sandboxed-partial (real end-to-end PDF-file CLI ingest not exercisable: no PDF-authoring tool in image) | `atj validate reports` PASS, 0 blocking |
 | 2026-09-17T00:20:00Z | Evidence prepared for team-podcast: 5 sandboxed executions (env probe confirming no ffmpeg/ffprobe in the approved image; server boot on an empty library; direct route-level byte-range + progress/resume tests via a synthetic media file; a full `tests/e2e.py` attempt that reached Chromium and static-asset serving but stopped at check 1 for lack of transcoded media; a `run.sh` attempt showing its venv step cannot run against the read-only mount) | f3fdd342 @ localhost/atj-live-trial/podcast:2, runs/team-podcast-*.json (5 total) | evidence/team-podcast/manifest.md — execution_status sandboxed-partial (no ffmpeg/ffprobe in image blocks populating the library; iPhone-specific claims remain team claims by nature) | `atj validate reports` PASS, 0 blocking |
+| 2026-09-17T00:10:14Z | team-ledger evidence package complete, 11 run records, sandboxed-partial | 9d21b770 @ ledger:2 | evidence/team-ledger/manifest.md | not-audited |
+| 2026-09-17T00:10:14Z | team-podcast evidence, first pass: e2e blocked at stage 1 of 11 by a missing ffmpeg in the approved image | f3fdd342 @ podcast:2 | evidence/team-podcast/manifest.md | superseded |
+| 2026-09-17T00:10:14Z | Image amended to podcast:3 (c3670644bc7b) adding ffmpeg, a README prerequisite. Omitting it was an operator error that disadvantaged this team relative to team-ledger, whose image already carries poppler-utils on identical reasoning | README prerequisites | event.md, podcast:3 | not-audited |
+| 2026-09-17T00:10:14Z | team-podcast execution evidence re-run against the corrected image | f3fdd342 @ podcast:3 | evidence/team-podcast/manifest.md, runs/ | pending evidence audit |

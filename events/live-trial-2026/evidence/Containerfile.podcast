@@ -1,7 +1,15 @@
 # Evidence image for team-podcast (podcast-listener).
-# tests/e2e.py points at /usr/bin/chromium, so chromium is baked in.
+# Contents track what the submission itself declares:
+#   fastapi, pydantic   - imported by server/
+#   uvicorn[standard]   - what run.sh installs; plain uvicorn is a different runtime
+#   playwright          - tests/requirements.txt
+#   chromium            - tests/e2e.py hardcodes /usr/bin/chromium
+#   ffmpeg              - README prerequisite; supplies ffmpeg/ffprobe, without which
+#                         the library cannot be populated and e2e stops at stage 1.
+#                         Same reasoning as poppler-utils in the ledger image.
+# No httpx and no pytest: neither appears anywhere in the checkout.
 FROM docker.io/library/python:3.12-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      chromium fonts-liberation ca-certificates \
+      chromium fonts-liberation ca-certificates ffmpeg \
  && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir fastapi pydantic uvicorn httpx "playwright>=1.50" pytest
+RUN pip install --no-cache-dir fastapi pydantic "uvicorn[standard]" "playwright>=1.50"

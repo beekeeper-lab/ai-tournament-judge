@@ -102,7 +102,7 @@ container can run without it.
 | Team | Approved image | Image ID | Contents |
 |---|---|---|---|
 | team-ledger | `localhost/atj-live-trial/ledger:2` | `7780b2b9e6e1` | python:3.12-slim, poppler-utils, pyyaml, duckdb, pytest |
-| team-podcast | `localhost/atj-live-trial/podcast:2` | `5ff34ae63320` | python:3.12-slim, chromium, fonts-liberation, fastapi, pydantic, uvicorn[standard], playwright |
+| team-podcast | `localhost/atj-live-trial/podcast:3` | `c3670644bc7b` | python:3.12-slim, chromium, fonts-liberation, ffmpeg, fastapi, pydantic, uvicorn[standard], playwright |
 
 Where each package comes from, stated exactly rather than loosely:
 
@@ -113,7 +113,12 @@ Where each package comes from, stated exactly rather than loosely:
   the submission's quality. It is added deliberately and named here.
 - team-podcast: `fastapi` and `pydantic` are imported by `server/`; `playwright`
   is `tests/requirements.txt`; `chromium` is the browser `tests/e2e.py` expects
-  at `/usr/bin/chromium`. `uvicorn[standard]` matches what `run.sh` installs —
+  at `/usr/bin/chromium`. `ffmpeg` supplies the `ffmpeg` and `ffprobe` binaries the
+  README lists as prerequisites; without them the library cannot be populated and
+  `tests/e2e.py` stops at stage 1 of 11 for a reason that has nothing to do with the
+  submission. Added on the same reasoning as `poppler-utils` above, after an initial
+  omission produced an unfair evidence asymmetry against this team.
+  `uvicorn[standard]` matches what `run.sh` installs —
   plain `uvicorn` is a different server runtime and was corrected. An earlier
   build of this image also carried `httpx` and `pytest`, neither of which appears
   anywhere in the checkout; both were removed.
