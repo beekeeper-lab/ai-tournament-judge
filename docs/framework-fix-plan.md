@@ -147,8 +147,12 @@ the repair round must itself be audited before the gate.
 Evidence from this event: three rounds on the evidence stage, each finding real
 defects the previous round missed, and **four of those defects were introduced
 by the repairs** — a fabricated `playwright 1.56.0`, a `starlette 1.6.0`
-attributed to a measurement never taken, and a `Containerfile` comment citing a
-path that does not exist at the pinned commit.
+attributed to a measurement never taken, a `Containerfile` comment citing a
+path that does not exist at the pinned commit, and the manifest Scope paragraph
+left contradicting its own front matter by the 18:41:56Z repair itself.
+
+The judging stage then repeated the pattern: five more repair rounds produced
+five more defects, including the ascending-order rule breaking for a second time.
 
 Repair is a source of defects, not only a sink. An audit cycle that stops at the
 first PASS stops one round too early.

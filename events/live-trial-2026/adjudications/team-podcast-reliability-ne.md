@@ -118,6 +118,15 @@ quoted as measured (audit A6). The uncertainty that produced the `NE` is thoroug
 documented; the decision that it cannot be resolved within this event is not
 itself uncertain.
 
+**Amendment disclosure.** This record was approved at `completed_at:
+2026-09-17T21:20:42Z` and then edited in place at 21:37:32Z to correct the
+tie-break overstatement (audit F13) and to stop quoting an independence figure
+that did not reproduce (audit A6). The front matter timestamps describe the
+original decision, not the edit, so text in this file references an audit that
+post-dates its own `completed_at`. No score, no resolution and no decision
+changed. The schema and template have no amendment field, which is why this is
+prose; recorded as framework defect D14 (audit F16).
+
 ## Human decision
 
 Decided by the **event-director**, who declined to reopen the evidence stage.
