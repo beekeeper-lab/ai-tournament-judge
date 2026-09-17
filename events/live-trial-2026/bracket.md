@@ -53,6 +53,10 @@ bracket, as `adjudications/team-podcast-reliability-ne.md` predicted.
 
 Byes: none.
 
+**Result:** `team-ledger` advances from `mu:live-trial-2026:final:01`,
+recorded into `bracket.json` by `atj bracket advance` from the private matchup report.
+Combined margin +35.00, outcome `confirmed`, no adjudication required.
+
 ## Constraint audit
 
 5 hard constraints evaluated: 4 satisfied, 2 not-applicable.
