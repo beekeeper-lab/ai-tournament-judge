@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
 current_stage: evidence
-last_updated: "2026-09-17T00:10:14Z"
+last_updated: "2026-09-17T00:24:30Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -38,7 +38,7 @@ gate_evidence:
 
 | Team ID | Intake | Evidence | Four judgments | Consolidated | Audited | Dossier |
 |---|---|---|---|---|---|---|
-| team-podcast | done, pinned f3fdd342465fa6bc2a52d226a8613b082ad329e0 | done, not yet audited (ev:live-trial-2026:team-podcast:f3fdd342465f:3f2ddc4f) | pending | pending | pending | pending |
+| team-podcast | done, pinned f3fdd342465fa6bc2a52d226a8613b082ad329e0 | done, not yet audited (ev:live-trial-2026:team-podcast:f3fdd342465f:d06f90cc) | pending | pending | pending | pending |
 | team-ledger | done, pinned 9d21b7707f204ef60f5a1cee612f1d4db0a4a575 | done, not yet audited (ev:live-trial-2026:team-ledger:9d21b7707f20:b859a240) | pending | pending | pending | pending |
 
 Intake is not a unit in the ledger: `atj event unit` derives digests only for
@@ -75,3 +75,4 @@ the roster.
 | 2026-09-17T00:10:14Z | team-podcast evidence, first pass: e2e blocked at stage 1 of 11 by a missing ffmpeg in the approved image | f3fdd342 @ podcast:2 | evidence/team-podcast/manifest.md | superseded |
 | 2026-09-17T00:10:14Z | Image amended to podcast:3 (c3670644bc7b) adding ffmpeg, a README prerequisite. Omitting it was an operator error that disadvantaged this team relative to team-ledger, whose image already carries poppler-utils on identical reasoning | README prerequisites | event.md, podcast:3 | not-audited |
 | 2026-09-17T00:10:14Z | team-podcast execution evidence re-run against the corrected image | f3fdd342 @ podcast:3 | evidence/team-podcast/manifest.md, runs/ | pending evidence audit |
+| 2026-09-17T00:24:30Z | team-podcast manifest revised in place: transcode/index/serve pipeline demonstrated end to end (podcast:3), tests/e2e.py reached stage 7 of 11 (up from stage 1), 64 MB tmpfs recorded as the framework's cap (not the submission's), two candidate findings (stage-7 stall, 1-vs-2-episode download timing) recorded as inconclusive rather than confirmed defects; e2e-attempt-01 kept as the record of the original blocked attempt | f3fdd342 @ podcast:3, runs/team-podcast-*.json (11 total) | evidence/team-podcast/manifest.md — execution_status sandboxed-partial (stages 8-11 and all iPhone-specific claims remain unexecuted) | `atj validate reports` PASS, 0 blocking |
