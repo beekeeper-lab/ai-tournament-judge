@@ -39,9 +39,9 @@ Three gotchas that cost time on team-ledger:
    you persist it. That is sanctioned by `judge-submission` step 4. Ask for the
    whole file in one fenced block and tell them to leave the `atj:scores` block
    empty and omit any duplicate `scores:` yaml from the body.
-2. **The schema needs a `model` block the template does not show.** Add it after
-   the judges return, from each file's own front matter, or validation fails
-   blocking on all four.
+2. **The `model` block.** This cost team-ledger a repair round. Closed in
+   `25624c7`: the template now shows it, so the judges should return it. Check
+   one file before promoting all four rather than assuming either way.
 3. **Judges have no clock.** Their timestamps are invented. Replace
    `started_at`/`completed_at` with the real bounds of the run.
 
@@ -59,13 +59,17 @@ presentation orders, then dossiers, publication validation and the final audit.
 
 ## Framework defects this event has found
 
-These belong in the final event report. None was repaired mid-event except where
-noted, because the rubric, personas and policies are frozen once judging starts.
+Tracked as D1-D6 in `docs/framework-fix-plan.md`, which is the source of truth
+for what is scheduled and why. This list is the narrative record. A defect is
+repaired mid-event only when the repair cannot touch the rubric, the personas or
+the policies, which are frozen once judging starts.
 
 1. **Judge personas cannot write their own artifact** (above). Needs a new
    persona version with a staging-scoped `Write`.
 2. **`schemas/judgment.schema.json` and `framework/templates/individual-judgment.md`
-   disagree** about the `model` block. One of them is wrong.
+   disagree** about the `model` block. D2, closed in `25624c7`: the template now
+   shows it, and `release-check` compares every template's front matter against
+   its schema's required list, which found two further instances at once.
 3. **`atj render judgment` did not exist** though the template cited it by name.
    Added in `3a798ad` — it adds no arithmetic and reproduces the committed sample
    byte for byte. Guarded against rewriting approved judgments in `4ac09ba`.
@@ -81,3 +85,5 @@ noted, because the rubric, personas and policies are frozen once judging starts.
    blocked a `git commit` whose message body merely *named* a submission's test
    file. The guard is right to be blunt, but it inspects the whole command
    string, so writing prose about a submission can look like running one.
+   D6, closed in `25624c7`: heredoc bodies are stripped and a runner must sit
+   adjacent to the submission path. 12 cases pin both directions.
