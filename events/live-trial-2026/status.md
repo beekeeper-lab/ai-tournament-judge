@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
 current_stage: initial-judging
-last_updated: "2026-09-17T19:29:14Z"
+last_updated: "2026-09-17T21:02:13Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -39,6 +39,14 @@ units:
   - judgments/team-ledger
   audit_result: not-audited
   completed_at: "2026-09-17T19:29:14Z"
+- unit_id: judging:team-podcast
+  stage: initial-judging
+  state: complete
+  input_digest: 9ed387f6a70da5dd
+  outputs:
+  - judgments/team-podcast
+  audit_result: not-audited
+  completed_at: "2026-09-17T21:02:13Z"
 gate_evidence:
   configuration-audited: audits/configuration.md
   roster-frozen: audits/intake.md
@@ -63,7 +71,7 @@ gate_evidence:
 
 | Team ID | Intake | Evidence | Four judgments | Consolidated | Audited | Dossier |
 |---|---|---|---|---|---|---|
-| team-podcast | done, pinned f3fdd342465fa6bc2a52d226a8613b082ad329e0 | done, repaired after evidence audit FAIL, re-audit pending (ev:live-trial-2026:team-podcast:f3fdd342465f:d06f90cc) — `reliability` evidence-limited | pending | pending | pending | pending |
+| team-podcast | done, pinned f3fdd342465fa6bc2a52d226a8613b082ad329e0 | done, audited PASS WITH ADVISORIES on the third pass (ev:live-trial-2026:team-podcast:f3fdd342465f:d06f90cc) — `reliability` evidence-limited | done, 4 of 4, six criteria aligned, `reliability` NE from all four | no official total — NE blocks finalization; provisional sum of scored criteria 58.25 | pending | pending |
 | team-ledger | done, pinned 9d21b7707f204ef60f5a1cee612f1d4db0a4a575 | done, audited PASS WITH ADVISORIES (ev:live-trial-2026:team-ledger:9d21b7707f20:b859a240) | done, 4 of 4, all criteria aligned | scored 76.3, panel report pending | pending | pending |
 
 Intake is not a unit in the ledger: `atj event unit` derives digests only for
@@ -120,6 +128,10 @@ the roster.
 | 2026-09-17T19:35:00Z | FRAMEWORK DEFECT found: `schemas/judgment.schema.json` requires a `model` block that `framework/templates/individual-judgment.md` does not show. Four judgments failed validation on it and the block was added from each file's own front matter | atj validate reports | judgments/team-ledger/*.md | pending judgments audit |
 | 2026-09-17T19:35:00Z | Scores table generated for all four by `atj render judgment`; no weight or total was typed by any judge | framework/rubrics/submission-evaluation.md | judgments/team-ledger/*.md | not-audited |
 | 2026-09-17T19:35:00Z | team-ledger panel consolidated by `atj score`: 76.3 of 100, all seven criteria aligned, no NE, no outlier, no adjudication required | judgments/team-ledger/ | summaries/team-ledger.json | not-audited |
+| 2026-09-17T20:23:16Z | Four independent judgments for team-podcast, staged under `workspaces/live-trial-2026/staging/team-podcast/` then promoted together | ev:live-trial-2026:team-podcast:f3fdd342465f:d06f90cc @ f3fdd342 | judgments/team-podcast/{judge-backend,judge-frontend-ux,judge-product-agentic,judge-security-ops}.md | not-audited |
+| 2026-09-17T20:23:16Z | Scores tables generated for all four by `atj render judgment`; no weight or total was typed by any judge. Each table records `not finalizable (unresolved NE)` rather than a sum | framework/rubrics/submission-evaluation.md | judgments/team-podcast/*.md | not-audited |
+| 2026-09-17T21:02:28Z | team-podcast panel consolidated by `atj score`: **no official total**. `reliability` is `NE` from all four judges independently, which blocks finalization. Six scored criteria all `aligned`, no outlier, no adjudication required. Provisional sum of scored criteria 58.25 of 100, explicitly not an official total and not usable for bye seeding | judgments/team-podcast/ | summaries/team-podcast.json | not-audited |
+| 2026-09-17T21:02:28Z | EVIDENCE DEFECT found by three judges independently, after the evidence gate passed: the team-podcast manifest contradicts itself on evidence limits (Scope section says no criterion is listed in `evidence_limited_criteria`; front matter and the Missing-evidence section both say `reliability` is), states `tests/e2e.py` has 11 stages where the file prints 13, and ev-podcast-05's `check()` count of 43 includes the function definition, so the team's own "42/42" claim is consistent with the source and the manifest's "neither figure matches" is wrong. Not repaired here: the evidence package is frozen for a judged team. Belongs to the judging-stage audit | judgments/team-podcast/*.md | this entry | pending judgments audit |
 
 Timestamp provenance in this log, stated exactly rather than loosely. A row
 describing an execution carries the `completed_at` of the last run record it
