@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
-current_stage: initial-judging
-last_updated: "2026-09-17T21:51:38Z"
+current_stage: consolidation
+last_updated: "2026-09-17T21:51:54Z"
 blocked: false
 blocked_reason: null
 stage_gates:
