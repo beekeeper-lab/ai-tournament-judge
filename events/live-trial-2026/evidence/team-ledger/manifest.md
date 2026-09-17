@@ -52,7 +52,7 @@ validation_state: valid
 |---|---|---|---|
 | R1 | `fin ingest <paths> --account <id>` loads a card statement/CSV, verifying control totals when present, rejecting outright rather than partially importing | Intake "Primary workflows" #1; `src/fin/ingest.py`, `src/fin/adapters/citi_csv.py` | Direct observation — [[evidence:ev-ledger-02]] (a clean load, reporting itself `UNVERIFIED (no control totals)` because the CSV adapter carries none), [[evidence:ev-ledger-08]] (control-total verification actually rejecting a statement whose own arithmetic does not close), [[evidence:ev-ledger-04]] (four rejected attempts leaving every table empty — the no-partial-import half of the claim) |
 | R2 | `fin ingest-amazon <path>` loads an Amazon order-history or transactions export | Intake "Primary workflows" #2; `src/fin/adapters/amazon.py` | Direct observation — [[evidence:ev-ledger-06]] |
-| R3 | `fin match` reconciles card charges to merchant records via a tiered matcher (reference, amount+date, subset-sum, unmatched) | Intake "Primary workflows" #3; `src/fin/match/engine.py` | Direct observation, partial — [[evidence:ev-ledger-06]], [[evidence:ev-ledger-15]]. Three of the four tiers were exercised: `REFERENCE` (tier 0), `AMOUNT_DATE_UNIQUE` (tier 1) and `UNMATCHED`. `SUBSET_SUM` (tier 3, `src/fin/match/engine.py:9` and `subset_sum_edges` at line 173) was never exercised — the scenario contained no split charge for it to resolve. The tier exists in code and is read statically; its behavior is not observed. |
+| R3 | `fin match` reconciles card charges to merchant records via a tiered matcher (reference, amount+date, subset-sum, unmatched) | Intake "Primary workflows" #3; `src/fin/match/engine.py` | Direct observation, partial — [[evidence:ev-ledger-06]], [[evidence:ev-ledger-15]]. `src/fin/match/engine.py:6-10` declares five tiers, not four: `REFERENCE` (0), `AMOUNT_DATE_UNIQUE` (1), an ambiguity tier (2, more than one candidate, commits nothing), `SUBSET_SUM` (3) and `UNMATCHED` (4). Three were exercised: tier 0, tier 1 and tier 4. Tier 2 was not — the scenario produced no amount-and-date collision — and tier 3 was not (`subset_sum_edges` at line 173) — the scenario contained no split charge. Both exist in code and are read statically; neither behavior is observed. The requirement text above reproduces the intake's four-tier wording, which is itself one tier short of the implementation. |
 | R4 | `fin detect` runs anomaly detectors, including D0 (unpermitted-card binding violation), the system's headline feature | Intake "Primary workflows" #4; `src/fin/detect/detectors.py` | Direct observation — [[evidence:ev-ledger-03]], [[evidence:ev-ledger-06]] |
 | R5 | `fin validate` asserts conservation, exclusivity, and idempotence invariants | Intake "Primary workflows" #5; `src/fin/validate.py` | Direct observation — [[evidence:ev-ledger-03]] and [[evidence:ev-ledger-06]] (`fin validate` reporting all invariants hold after a detect run), [[evidence:ev-ledger-04]] (idempotence specifically: a second identical ingest reports `0 new, 1 already known`) |
 | R6 | `fin render` regenerates markdown reports (findings, reconciliation, spending, per-statement, index) | Intake "Primary workflows" #6; `src/fin/render.py` | Direct observation, partial — [[evidence:ev-ledger-07]]. Three of the five report kinds were written (`README.md` index, `findings.md`, `spending.md`). The reconciliation report and the per-statement report were not produced, because that scenario ingested no merchant feed and no statement for them to describe. Their absence is a property of the scenario, not an observed failure. |
@@ -137,7 +137,7 @@ validation_state: valid
 - **`.env.example`'s exact variable list is unverified.** A host-level deny
   rule blocks reading any `.env*` file under `workspaces/` in this repository
   (carried forward from the intake record). Source inspection (this
-  preparation's own grep, ev-ledger-10, and the intake's) found no
+  preparation's own grep, ev-ledger-20, and the intake's) found no
   `os.environ` read in `src/fin/` other than `FIN_DATA_DIR`, so nothing found
   suggests a runtime secret is actually required — but the file's contents
   remain unconfirmed.
@@ -151,7 +151,7 @@ validation_state: valid
   engineered to hit the documented hazards.
 - **SPEC.md §9's claim that an LLM proposes `merchant-rules.yaml` entries**
   cannot be demonstrated from this checkout: no code path in `src/fin/` calls
-  any model API (confirmed by grep, ev-ledger-10 and intake), and the
+  any model API (confirmed by grep, ev-ledger-20 and intake), and the
   described workflow depends on an interactive agent session outside what a
   sandboxed run can produce. Recorded as a team claim (R15/R16), not
   evidence-limiting any criterion, since the absence of an API call is itself

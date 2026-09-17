@@ -431,9 +431,15 @@ def cmd_render_judgment(args) -> int:
     numeric. Weights, weighted points and the total come from the canonical
     rubric through :mod:`atj.scoring`, so a hand-copied weight cannot drift into
     an official artifact.
+
+    Every file is scored and checked before any file is written. A run that is
+    going to refuse refuses having changed nothing, rather than leaving the
+    first half of a panel rendered and the second half not.
     """
     root = _root(args)
-    written, unchanged = [], []
+    planned: list[tuple[Path, dict, str]] = []
+    unchanged: list[Path] = []
+    forced: list[Path] = []
     for target in args.paths:
         path = Path(target)
         paths = sorted(path.glob("*.md")) if path.is_dir() else [path]
@@ -448,24 +454,35 @@ def cmd_render_judgment(args) -> int:
             if rendered == body:
                 unchanged.append(source)
                 continue
-            if metadata.get("approval_state") == "approved" and not args.force:
-                raise AtjError(
-                    f"{source} is approved and rendering would change its scores "
-                    f"table. An approved judgment is a reviewed artifact; silently "
-                    f"rewriting its official numbers is how a panel comes to cite a "
-                    f"total no one approved. Re-render before approval, or pass "
-                    f"--force and record why in the event ledger."
-                )
-            source.write_text(frontmatter.dump(metadata, rendered), encoding="utf-8")
-            written.append(source)
+            if metadata.get("approval_state") == "approved":
+                if not args.force:
+                    raise AtjError(
+                        f"{source} is approved and rendering would change its scores "
+                        f"table. An approved judgment is a reviewed artifact; silently "
+                        f"rewriting its official numbers is how a panel comes to cite a "
+                        f"total no one approved. Re-render before approval, or pass "
+                        f"--force and record why in the event ledger. Nothing was "
+                        f"written."
+                    )
+                forced.append(source)
+            planned.append((source, metadata, rendered))
+
+    for source, metadata, rendered in planned:
+        source.write_text(frontmatter.dump(metadata, rendered), encoding="utf-8")
+
+    written = [source for source, _, _ in planned]
     if args.json:
-        _emit({"rendered": [str(p) for p in written],
-               "unchanged": [str(p) for p in unchanged]}, args)
+        _emit({"rendered": [str(s) for s in written],
+               "unchanged": [str(s) for s in unchanged],
+               "forced_over_approval": [str(s) for s in forced]}, args)
         return OK
     for source in written:
-        print(f"rendered {source}")
+        print(f"rendered {source}" + (" (FORCED over approval)" if source in forced else ""))
     for source in unchanged:
         print(f"unchanged {source}")
+    if forced:
+        print(f"\n{len(forced)} approved judgment(s) re-rendered with --force. "
+              f"Record why in the event ledger.")
     return OK
 
 
@@ -1288,7 +1305,10 @@ def build_parser() -> argparse.ArgumentParser:
     render_parser = sub.add_parser(
         "render", help="generate official numbers into a reviewed artifact"
     )
-    render_sub = render_parser.add_subparsers(dest="render_command", required=True)
+    render_sub = render_parser.add_subparsers(
+        dest="render_command", required=True,
+        parser_class=lambda **kw: argparse.ArgumentParser(parents=[shared], **kw),
+    )
     render_judgment = render_sub.add_parser(
         "judgment", help="generate the scores table into an individual judgment"
     )

@@ -3,7 +3,8 @@
 # alpine tries to compile it from source and fails.
 # Built with network so the container can RUN with --network none.
 #
-# poppler-utils supplies pdftotext, which src/fin/ingest/pdf.py shells out to.
+# poppler-utils supplies pdftotext, which src/fin/adapters/citi_pdf.py:198
+# shells out to.
 # Without it the PDF statement adapter cannot run at all, which is the exact
 # condition the intake audit (A9) said would force NE on a criterion. Same
 # reasoning as ffmpeg in the podcast image: a declared prerequisite of the

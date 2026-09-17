@@ -5,6 +5,8 @@ commands an operator runs. A change that breaks the workflow fails here rather
 than being discovered during an event.
 """
 
+import contextlib
+import io
 import json
 import shutil
 import subprocess
@@ -309,6 +311,45 @@ class RenderJudgmentTests(unittest.TestCase):
                 self._rendered_block(target.read_text(encoding="utf-8")),
                 self._rendered_block(original),
             )
+
+    def test_a_refused_render_writes_nothing_at_all(self):
+        """A run that will refuse must refuse before it has changed anything."""
+        original = self.SOURCE.read_text(encoding="utf-8")
+        blanked = original.replace(self._rendered_block(original),
+                                   "<!-- atj:scores:begin -->\n")
+        with tempfile.TemporaryDirectory() as directory:
+            staged = Path(directory) / "team-lumen"
+            staged.mkdir()
+            # One file the command can render, one it must refuse. Sorted order
+            # puts the renderable one first, so a mid-loop raise would leave it
+            # written.
+            draft = staged / "a-draft.md"
+            draft.write_text(
+                blanked.replace("approval_state: approved", "approval_state: draft"),
+                encoding="utf-8",
+            )
+            approved = staged / "b-approved.md"
+            approved.write_text(blanked, encoding="utf-8")
+            self.assertEqual(run_cli("render", "judgment", str(staged)), 1)
+            self.assertNotIn("| functional |", draft.read_text(encoding="utf-8"))
+            self.assertNotIn("| functional |", approved.read_text(encoding="utf-8"))
+
+    def test_forcing_over_an_approval_is_reported_machine_readably(self):
+        original = self.SOURCE.read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "judge-security-ops.md"
+            target.write_text(
+                original.replace(self._rendered_block(original),
+                                 "<!-- atj:scores:begin -->\n"),
+                encoding="utf-8",
+            )
+            buffer = io.StringIO()
+            with contextlib.redirect_stdout(buffer):
+                self.assertEqual(
+                    run_cli("render", "judgment", "--force", "--json", str(target)), 0
+                )
+            payload = json.loads(buffer.getvalue())
+            self.assertEqual(payload["forced_over_approval"], [str(target)])
 
     def test_a_missing_generated_block_is_an_error_not_a_silent_skip(self):
         original = self.SOURCE.read_text(encoding="utf-8")
