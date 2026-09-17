@@ -32,6 +32,10 @@ version.
 | D10 | `framework/templates/adjudication-report.md` invites `persona: ADJUDICATOR-AGENT-OR-HUMAN@VERSION`, but `atj validate` requires a persona registered in `framework/personas.md` as `name@x.y.z`. There is no adjudicator persona and no way to name a human decision-maker | 1 |
 | D11 | An adjudication can *clear* an `NE` through `score_override`, but nothing can express one that *accepts* it. `atj score` re-reports an adjudicated `NE` as `unresolved` and keeps listing `adjudication_required`, so a completed adjudication is indistinguishable from a missing one | 2 |
 | D13 | `atj/scoring.py:431` treats a non-empty `decided_by` as one of the gates that lets an adjudication move an official total, and nothing distinguishes a human deciding from an agent writing a role into a required field | 2 |
+| D14 | Neither `schemas/adjudication.schema.json` nor `framework/templates/adjudication-report.md` has an amendment field, so an approved adjudication corrected after the fact cannot disclose the correction structurally and ends up citing an audit that post-dates its own `completed_at` | 2 |
+| D15 | `atj event unit record` restamps `completed_at` with the current clock and offers no override, so re-recording a unit to change only `audit_result` destroys the real completion time | 1 |
+| D16 | The stage completion gate has no scope filter: a finding against a framework document, an ignored path, or activity-log prose blocks a stage gate exactly as hard as a wrong score | 1 |
+| D17 | An agent worktree inside the repository makes `release-check` FAIL and breaks four validators, because they walk the filesystem rather than git. Gitignoring the directory does not help | 1 |
 
 D3 fixed in `3a798ad` (command added, reproduces the committed sample byte for
 byte) and `4ac09ba` (refuses to rewrite an approved judgment without `--force`,
@@ -193,3 +197,39 @@ acceptable once but not as a precedent.
 Numbering note: the second-pass audit recommends this defect as "D12". It is D13
 here because D12 was already taken by the `agentic`-with-no-AI rubric gap on branch
 `fix/framework-d7-d10-d12`.
+
+## D16 — the gate needs a scope filter
+
+This is the most reusable result of live-trial-2026 and the one to land before the
+next tournament. The `judgments-audited` gate took three audit passes and five
+repair rounds. Those repair rounds produced five new defects. The mechanism is not
+auditor pedantry; it is that `can_advance` branches on an audit's verdict alone,
+and an auditor has no way to mark a finding as outside the thing being gated.
+
+At the second pass, two findings held the gate: one that `docs/framework-fix-plan.md`
+said "three" where it meant "four", and one about a numbering collision between two
+branches. Neither is inside `events/`, inside the audited stage, or attached to any
+score. Repairing them introduced three new findings, two of which then held the gate
+again.
+
+The third-pass auditor was asked to rule on this directly and named the split.
+
+**Must block** — findings inside `events/<event>/`, inside the audited stage, that hit:
+missing evidence, arithmetic that does not reproduce, a version mismatch, severe
+disagreement, unsafe execution, private data in public output, an unauthorised score
+move, or an edited judgment.
+
+**Must not block** — findings against framework documents; uncommitted or ignored
+paths; activity-log prose precision where the underlying history is correct; and
+fields no code reads.
+
+Proposed shape: give each finding a `scope` of `event` or `framework` and a
+`blocking` boolean the auditor must set, and make `can_advance` consider only
+`scope: event` findings marked blocking. Then a verdict can be FAIL for the record
+while the gate still opens, which is the state this event was actually in for two
+of its three passes.
+
+D14, D15 and D17 were all found the same way — by running the event, not by reading
+the code. D17 is the sharpest operational one: the fix work for this plan was done in
+an agent worktree, and the worktree silently broke `release-check` for as long as it
+existed.
