@@ -869,6 +869,10 @@ def cmd_release_check(args) -> int:
     failures += [f"duplicate-number: {p}" for p in problems]
     print(f"single-source     {'PASS' if not problems else 'FAIL'}")
 
+    problems = check_template_schemas(root)
+    failures += [f"template-schema: {p}" for p in problems]
+    print(f"template schemas  {'PASS' if not problems else 'FAIL'}")
+
     problems = check_declared_versions(root)
     failures += [f"version-skew: {p}" for p in problems]
     print(f"version-skew      {'PASS' if not problems else 'FAIL'}")
@@ -888,6 +892,42 @@ def cmd_release_check(args) -> int:
         return FAILURE
     print("\nRelease check: PASS")
     return OK
+
+
+def check_template_schemas(root: Path) -> list[str]:
+    """Every template must show every field its own schema requires.
+
+    A template is the instruction an author follows. When it omits a field the
+    schema demands, the author writes a conforming-looking artifact that fails
+    validation only after the work is done. That is not hypothetical: the
+    judgment template omitted the ``model`` block for the whole of
+    live-trial-2026 and four finished judgments failed blocking on it.
+
+    This compares keys, never values, because a template's values are
+    placeholders by design.
+    """
+    problems: list[str] = []
+    directory = root / reports.TEMPLATE_DIR
+    for kind, (schema_name, template_name) in sorted(reports.ARTIFACT_KINDS.items()):
+        if not schema_name or not template_name:
+            continue
+        path = directory / template_name
+        if not path.is_file():
+            problems.append(f"{template_name}: declared by kind {kind!r} but missing")
+            continue
+        try:
+            metadata, _ = frontmatter.read(path)
+        except AtjError as exc:
+            problems.append(f"{template_name}: {exc.message}")
+            continue
+        document = schema.get_schema(schema_name, root)
+        for field in document.get("required", []):
+            if field not in metadata:
+                problems.append(
+                    f"{template_name}: missing {field!r}, which "
+                    f"{schema_name}.schema.json requires"
+                )
+    return problems
 
 
 def check_templates(root: Path) -> list[str]:

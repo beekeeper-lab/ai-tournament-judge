@@ -1,6 +1,7 @@
 ---
 event_id: EVENT-ID
 adjudication_id: ADJUDICATION-ID
+question: the single decision this adjudication settles, stated as a question
 scope: team
 team_id: TEAM-ID
 match_id: null
