@@ -8,504 +8,375 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.0.0
 persona: judging-auditor@1.0.0
-framework_commit: 152dd2c10547a1c15bb56c4b1a90764b28354c59
+framework_commit: 44e5f87b090c8b1bd5c691677980419230c286c8
 model_requested: claude-opus-5
 model_used: claude-opus-5
-started_at: "2026-09-17T18:05:00Z"
-completed_at: "2026-09-17T18:35:00Z"
+started_at: "2026-09-17T18:42:00Z"
+completed_at: "2026-09-17T18:50:00Z"
 visibility: private
 approval_state: approved
 validation_state: valid
 result: FAIL
 ---
-# Judging Audit — evidence stage
+# Judging Audit — evidence stage (re-audit after repair)
+
+This replaces the first-pass report of 2026-09-17. Finding codes F1-F9 and
+A1-A7 are carried from that report so the history stays traceable. New findings
+are coded F10 onward and A8.
 
 ## Result
 
-**FAIL** until the four major findings are resolved.
+**FAIL**, on two major findings that the repair did not reach.
 
-Nothing here is a safety failure and nothing is fabricated. Every one of the 22
-run records shows genuine container isolation, every sampled observation I
-followed into its run record was there and was stated accurately, and the two
-packages are the most carefully hedged evidence this event has produced. The
-stage fails on four things that are cheap to fix and that judging cannot
-proceed without: an image recipe that does not build the image the evidence was
-produced on, an `evidence_limited_criteria` list that is empty where it should
-name one criterion, a ledger with no `evidence:` unit to bind either manifest,
-and a requirements table in the team-ledger package whose evidence citations
-point at the wrong observations in nine of sixteen rows.
+The four majors the first pass raised are genuinely fixed. F1's reconciliation
+is real and I verified it independently against `podman history`. F2's
+`evidence_limited_criteria: [reliability]` is now correct and its new third
+outcome is stated accurately and hedged properly. F3's units bind. F4's nine
+misdirected citations are all repointed to observations that contain the claim.
+Seven of the nine findings and four of the seven advisories are closed.
 
-I did not re-read any judgment, bracket or publication artifact. None exists.
+Two things block the gate, both found by doing the wider walk the repair brief
+asked for and the repair itself did not complete:
+
+- **F10** — the re-walk of the team-ledger requirements table covered the nine
+  rows the first audit named and not the other seven. R1, R5 and R12 still cite
+  observations that do not contain the claim, and R12's principal claim has no
+  supporting evidence row anywhere in the package.
+- **F11** — `ev-podcast-21`, one of the two evidence rows added by this repair,
+  states a `playwright` version that no run record produced and that the one
+  run record carrying a playwright version contradicts.
+
+Nothing here is a safety failure, nothing reached `public/`, and no scoring
+arithmetic exists yet to be wrong. Both repairs are small.
 
 ## Scope and artifacts inspected
 
-- `events/live-trial-2026/event.md`, `teams.md`, `status.md`
-- `events/live-trial-2026/submissions/team-podcast.md`, `submissions/team-ledger.md`
-- `events/live-trial-2026/evidence/team-podcast/manifest.md` (19 evidence IDs,
-  10 requirement rows)
-- `events/live-trial-2026/evidence/team-ledger/manifest.md` (19 evidence IDs,
-  16 requirement rows)
-- `events/live-trial-2026/evidence/Containerfile.podcast`, `Containerfile.ledger`
-- All 22 run records in `events/live-trial-2026/runs/` — 11 per team. The task
-  brief says 23; the directory holds 22 records plus `.gitkeep`.
-- `events/live-trial-2026/audits/configuration.md`, `audits/intake.md` — F1-F5
-  and A1-A10 checked for closure
-- `framework/rubrics/submission-evaluation.md`, `framework/personas.md`,
-  `framework/templates/audit-report.md`, `framework/templates/evidence-manifest.md`,
-  `framework/policies/evidence-and-citation.md`, `schemas/evidence-manifest.schema.json`
-- `atj/sandbox.py` (`DEFAULT_LIMITS`, `evidence_limitation`,
-  `EXECUTION_DEPENDENT_CRITERIA`), `atj/event.py` (`derive_digests`,
-  `check_staleness`), `atj/ids.py` (`evidence_package_id`)
-- Both checkouts under `workspaces/live-trial-2026/`, for provenance and for
-  re-deriving sampled claims
-- `podman images`; `git log` for the framework commit and both Containerfiles
+- The first-pass report at this path, as the specification for this re-audit.
+- `git show --stat 44e5f87`, `git diff a82ea17..44e5f87` — every changed line.
+- `events/live-trial-2026/event.md`, `status.md`, `status.md.bak`, `teams.md`
+- `events/live-trial-2026/evidence/team-podcast/manifest.md` (21 evidence IDs),
+  `evidence/team-ledger/manifest.md` (19 evidence IDs, 16 requirement rows)
+- `events/live-trial-2026/evidence/Containerfile.ledger`, `Containerfile.podcast`
+- All 27 run records in `events/live-trial-2026/runs/` — 11 ledger, 16 podcast.
+  The five added by this repair were read in full.
+- `podman history --no-trunc` for `ledger:2`, `podcast:2` and `podcast:3`
+- `workspaces/live-trial-2026/team-podcast/.agentic/project.yaml` (F9)
+- `git diff 152dd2c1..HEAD -- framework/ schemas/ atj/ VERSION` and the
+  `atj render judgment` implementation added in `3a798ad`
+- `framework/templates/audit-report.md`, `framework/personas.md`,
+  `framework/policies/evidence-and-citation.md`,
+  `framework/rubrics/submission-evaluation.md`
+
+I did not re-read any judgment, bracket or publication artifact. None exists.
+I did not re-verify the sampled observations the first pass already walked and
+found exact, except where this repair changed the row.
 
 ## Deterministic validation results
 
-Re-run rather than taken on trust. All four agree with the operator's report.
+Re-run, not taken on trust.
 
 | Command | Result |
 |---|---|
 | `python3 -m atj event validate events/live-trial-2026` | PASS, 0 problems, stage evidence |
-| `python3 -m atj validate reports events/live-trial-2026` | PASS, 6 artifacts, 0 blocking / 0 major / 0 minor / 0 advisory |
+| `python3 -m atj validate reports events/live-trial-2026` | PASS, 7 artifacts, 0 blocking / 0 major / 0 minor / 0 advisory |
 | `python3 -m atj release-check` | PASS — single-source PASS, version-skew PASS, sample event PASS |
-| `python3 -m atj personas` | PASS, 15 agents |
-| `python3 -m atj sandbox preflight` | AVAILABLE — podman 6.1.0 (rootless) |
-| `python3 -m atj event status events/live-trial-2026` | stage evidence, gate `evidence-validated` pending, **units: none recorded** |
-| `python3 -m atj event unit events/live-trial-2026 list` | 0 unit(s), 0 stale |
+| `python3 -m atj event unit events/live-trial-2026 list` | 2 unit(s), 0 stale — `evidence:team-podcast` and `evidence:team-ledger`, both `complete`, both `not-audited` |
+| `python3 -m atj event status events/live-trial-2026` | stage evidence, `units: {'complete': 2}`, gate `evidence-validated` pending |
+| `python3 -m pytest tests/ -q` | 351 passed, 51 subtests passed |
 
-The validators cannot reach F2, F3 or F4. `atj validate reports` checks that an
-`[[evidence:ID]]` target exists, not that it contains the claim made of it; it
-has no view on whether `evidence_limited_criteria` is correct; and a missing
-unit is an absence, not an invalid artifact. That gap is the reason this audit
-exists.
+The validators still cannot reach F10 or F11. `atj validate reports` checks that
+an `[[evidence:ID]]` target exists, not that it contains the claim made of it,
+and it has no view on whether an observation matches its own run record. That
+gap is the reason both majors survived a repair whose commit message says they
+were checked.
 
-## Provenance
+## F1 — the `podman history` reconciliation, verified independently
 
-Verified and correct:
+The operator's claim is that `Containerfile.ledger` was reconciled against
+`podman history localhost/atj-live-trial/ledger:2` rather than by rebuilding. I
+checked this rather than accepting it.
 
-- `git -C workspaces/live-trial-2026/team-podcast rev-parse HEAD` →
-  `f3fdd342465fa6bc2a52d226a8613b082ad329e0`, matching `teams.md`, the intake
-  record and the manifest. Working tree clean.
-- `git -C workspaces/live-trial-2026/team-ledger rev-parse HEAD` →
-  `9d21b7707f204ef60f5a1cee612f1d4db0a4a575`, likewise. Working tree clean.
-- `framework_commit: 152dd2c10547a1c15bb56c4b1a90764b28354c59` resolves to a
-  real object in this repository ("Add `atj intake`, the missing front door",
-  2026-09-16) and is identical in `event.md`, both manifests and both prior
-  audits.
-- `podman images` confirms every ID in `event.md`: `ledger:2` =
-  `7780b2b9e6e1`, `podcast:3` = `c3670644bc7b`. The superseded `podcast:2` =
-  `5ff34ae63320` matches the ID the podcast manifest records for it.
-- All 22 run records name an approved image. Ledger: 11 of 11 on `ledger:2`.
-  Podcast: 7 on `podcast:3`, 4 on `podcast:2`.
+`podman history --no-trunc localhost/atj-live-trial/ledger:2` shows, top down:
 
-Not correct: F1 (the ledger image recipe) and F6 (three `podcast:2` runs still
-carrying current evidence). On the specific question asked — `e2e-attempt-01`
-is properly kept and properly labelled as the record of the original blocked
-attempt, and it is not cited as current evidence for anything. But it is not the
-only `podcast:2` record in play. `server-boot-01` (ev-podcast-02),
-`media-progress-01` (ev-podcast-03) and `runsh-attempt-01` (ev-podcast-11) also
-ran on `:2` and are all cited as live evidence, and `ev-podcast-03` is the sole
-support for req-02 and req-04. See F6.
+1. layer `7780b2b9e6e1…` — `pip install --no-cache-dir "pyyaml>=6.0" "duckdb>=1.0" "pytest>=8.0"`
+2. layer `7e1b52138efd…` — `apt-get update && apt-get install -y --no-install-recommends poppler-utils  && rm -rf /var/lib/apt/lists/*`, whose `COMMENT` column is `FROM docker.io/library/python:3.12-slim`
+3. everything below is the stock `python:3.12-slim` base, `PYTHON_VERSION=3.12.14`
 
-## Execution integrity
+The committed recipe is `FROM docker.io/library/python:3.12-slim`, then the
+poppler-utils apt layer, then the pip layer. That is the same two `RUN`
+commands, in the same order, on the same base, character for character
+including the double space the `\` line continuation produces before `&& rm`.
+The top layer ID is the image ID `event.md` records. The recipe now describes
+the image the evidence ran on.
 
-Clean. Every one of the 22 records carries, in its own `command` field:
+**"Verified against build history instead of rebuilt" is the correct closure
+here, not a deferral.** A rebuild would not have proved anything about
+`7780b2b9e6e1`; it would have produced a different image and left the question
+of what built the old one exactly where it was. `podman history` answers that
+question directly, and the operator's reason for not rebuilding — new apt and
+pip resolutions, a new image ID, 11 invalidated run records — is sound. I
+applied the same check to `podcast:2` and `podcast:3` and it holds there too:
+the two differ only by `ffmpeg` in the apt layer, and the pip layer command is
+identical.
+
+One residual, which `event.md` already states and I am not raising as a
+finding: neither recipe pins versions, so neither is byte-reproducible. The
+image ID, not the recipe, is what makes a silent rebuild detectable. That is
+recorded and correct.
+
+## F4 re-walk — all sixteen team-ledger requirement rows
+
+The repair brief asked for all sixteen, not the nine the first audit named. All
+sixteen, with the evidence IDs each now cites:
+
+| Row | Cites | Verdict |
+|---|---|---|
+| R1 | ev-ledger-01, -02 | **Wrong. See F10.** Neither contains "verifying control totals when present" (ev-ledger-02 is the *absent* case, `UNVERIFIED`) nor "rejecting outright rather than partially importing" (that is ev-ledger-04's "no partial import"; the control-total gate is ev-ledger-08) |
+| R2 | ev-ledger-06 | Correct — Amazon ingest is in ev-ledger-06 |
+| R3 | ev-ledger-06, -15 | Correct, and correctly marked "Direct observation, partial" with `SUBSET_SUM` named as unexercised |
+| R4 | ev-ledger-03, -06 | Correct — D0 is in both |
+| R5 | ev-ledger-01, -03 | **Undercited. See F10.** ev-ledger-03 says only "all invariants hold"; idempotence is demonstrated in ev-ledger-04, which is not cited. ev-ledger-01 is the help surface |
+| R6 | ev-ledger-07 | Correct, and correctly marked partial with the two unwritten report kinds named |
+| R7 | ev-ledger-07 | Correct |
+| R8 | ev-ledger-07, -17 | Correct |
+| R9 | ev-ledger-06 | Correct — I confirmed `=== sql: matches ===` and its three-row result are in `runs/team-ledger-amazon-match-detect-01.json` |
+| R10 | ev-ledger-02, -04 | Correct — `fin status` appears in both |
+| R11 | ev-ledger-08, -09 | Correct, unchanged, already the model row |
+| R12 | ev-ledger-10 | **Wrong. See F10.** ev-ledger-10 is an injection-phrasing grep of `.claude/skills/*/SKILL.md` and `hooks/pre-commit`. It does not look at `src/fin/` and does not search for network, HTTP or model-API calls |
+| R13 | ev-ledger-06, -16 | Correct |
+| R14 | ev-ledger-11 | Acceptable. The dispute-CSV `0600` half is in ev-ledger-07 rather than ev-ledger-11; both are in the package and the row's substance holds. Folded into F10's repair as a courtesy, not a separate finding |
+| R15 | none | Correct — labelled a team claim, no citation required |
+| R16 | none | Labelled part team claim, part "direct observation (repeat grep)". The observation half has no evidence ID. Same root cause as R12; folded into F10 |
+
+The nine rows the first audit named are all fixed. Three of the other seven are
+not.
+
+## F11 — an unsupported version in a new evidence row
+
+`ev-podcast-21`, added by this repair, reads: "The approved image
+`localhost/atj-live-trial/podcast:3` carries exactly the runtime
+`ev-podcast-01` recorded on the superseded `:2`: Chromium 152.0.7977.82, Python
+3.12.14, Debian 13 (trixie), `fastapi` 0.141.1, `pydantic` 2.13.5, `uvicorn`
+0.53.0, `starlette` 1.6.0, `playwright` 1.56.0 …", class "direct observation
+(execution)", confidence "high", reproduction
+`runs/team-podcast-env-probe-03.json`.
+
+Every value in that list is confirmed by that run record except the last one.
+`env-probe-03`'s probe of `playwright.__version__` **failed**; its `stderr` is:
+
+```
+AttributeError: module 'playwright' has no attribute '__version__'
+```
+
+So the cited record produced no playwright version at all. The only run record
+in the event that carries one is `runs/team-podcast-server-boot-02.json`, also
+added by this repair, whose first two lines of stdout are `PLAYWRIGHT:` and
+`1.63.0`. The string `1.56.0` appears nowhere else in the event directory or in
+either checkout. `ev-podcast-01` on `:2` recorded only "playwright ok", with no
+version, so there is no earlier measurement it could have been copied from —
+and because `Containerfile.podcast` pins `"playwright>=1.50"`, the `:2` and `:3`
+pip layers resolved independently and cannot be assumed equal anyway.
+
+The rest of ev-podcast-21 is sound, including its `podman history` claim, which
+I verified: `:2` and `:3` differ only by `ffmpeg` in the apt layer.
+
+## Repairs checked for weakening an accurate finding
+
+I compared the diff against the first report's text. Nothing accurate was
+removed or softened into uselessness:
+
+- `ev-ledger-05` (A3) lost the phrase "a real judgment-relevant
+  reliability/engineering gap, not a hypothetical one" and gained "Recorded as
+  observed; how much it matters is the panel's call." The observation itself —
+  two of four rejection paths surface as a traceback — is intact and still
+  stated at high confidence. Editorializing removed, finding preserved. Correct.
+- `ev-podcast-02` (A2) lost "with correct headers" and gained the actual
+  captured headers from `server-boot-02`. Strengthened, not weakened.
+- `ev-podcast-03` (A2) now separates the run record's
+  `HTTPException: malformed Range header` from the `400` status read at
+  `server/app.py:164,168`. Correct.
+- `ev-podcast-01` and `ev-podcast-11` gained superseded-image labels rather
+  than losing content.
+- `ev-podcast-16` (F5) gained the overlap disclosure verbatim and accurately:
+  "this run (00:15:30-00:17:26) overlapped `runs/team-podcast-e2e-02.json`
+  (00:16:15-00:19:19) by 71 seconds". Both windows match the run records.
+
+## The five new run records
+
+All five are genuinely sandboxed. Each carries, in its own `command` field,
 `--network none`, `--read-only`, `--tmpfs /tmp:rw,noexec,nosuid,size=64m`,
-`--cap-drop ALL`, `--security-opt no-new-privileges`, `--user 65534:65534`, and
-a `--volume …:/submission:ro,Z` mount pointing at that team's own workspace and
-no other. No record contains `--network=host`, `--privileged`, `--userns=host`,
-`--cap-add`, or a writable submission mount. `runtime: podman`,
-`runtime_version: 6.1.0`, and `timed_out: false` throughout. Nothing ran on the
-host; the two run records that show a read-only filesystem error
-(`runsh-attempt-01`, `e2e-02`) are the sandbox policy working, and both are
-described as environmental rather than as submission defects, correctly.
+`--cap-drop ALL`, `--security-opt no-new-privileges`, `--user 65534:65534`,
+`--pids-limit 256`, `--memory 1g`, `--cpus 1.0`, and a single
+`…/workspaces/live-trial-2026/team-podcast:/submission:ro,Z` mount and no
+other. None contains `--privileged`, `--network=host`, `--userns=host` or
+`--cap-add`. `runtime: podman`, `runtime_version: 6.1.0`, `timed_out: false`
+throughout. Each is cited by the manifest that claims it.
 
-I verified more than the six sampled claims per team the brief asked for.
+The "identical results" claim, checked by comparing the records field by field:
 
-team-podcast, verified against the cited JSON:
+- `runsh-attempt-02` vs `-01` — byte-identical on every field except the
+  timestamps, image and command. Identical.
+- `media-progress-02` vs `-01` — byte-identical on the same basis. Identical.
+- `server-boot-02` vs `-01` — **not identical, and better.** The command was
+  extended to capture response headers and `/manifest.webmanifest`, closing A2.
+  All four original routes return the same statuses and the same body prefixes.
+  Consistent and a superset, not identical. `event.md` says "with identical
+  results" for all four; the manifest's own Tests row says "capturing response
+  headers", which is accurate. See A8.
+- `env-probe-03` — confirms on `:3`: `/usr/bin/ffmpeg`, `/usr/bin/ffprobe`,
+  Chromium 152.0.7977.82, Python 3.12.14, Debian 13 trixie, fastapi 0.141.1,
+  pydantic 2.13.5, uvicorn 0.53.0, starlette 1.6.0, tmpfs 64M. Every version
+  `ev-podcast-01` attributed to the runtime is now measured on the approved
+  image. Only playwright failed to report (F11).
+- `e2e-full-02` — a real, isolated third execution. Transcode of both episodes
+  succeeded (4,884,617 and 6,690,229 output bytes, 6.9s and 10.4s, 12 MB in the
+  64 MB tmpfs), stage 1 ran all five checks with output preserved, stage 2
+  passed, and stage 3 ended with
+  `playwright._impl._errors.Error: Page.wait_for_function: Target crashed`.
+  Wall clock 18:36:04 to 18:36:28, 24 seconds, consistent with the "24.5s" the
+  manifest states.
 
-1. ev-podcast-01 — no ffmpeg/ffprobe, Chromium 152.0.7977.82, fastapi 0.141.1,
-   pydantic 2.13.5, uvicorn 0.53.0, playwright importable. Exact.
-2. ev-podcast-02 — `/healthz` → `200 {"ok":true,"episodes":0}`, `/api/library`
-   → `200` empty list, `/` and `/sw.js` → `200`. Exact.
-3. ev-podcast-03 — `206` with `Content-Range: bytes 100000-199999/5000000` and
-   100000 streamed bytes; suffix `bytes 4999500-4999999/5000000`; open-ended
-   4999900 bytes; `416` with `bytes */5000000`; stale `PUT` rejected and the
-   stored 42.5 unchanged; newer `PUT` applied to 1195.0 with `completed: 1`;
-   unknown-episode `GET` returns a zero row and `PUT` raises. All present.
-4. ev-podcast-04 — `E2E_EXIT:1`, Playwright `TimeoutError` on
-   `wait_for_selector(".ep")` at `tests/e2e.py:56`, every static asset `200`
-   in the server log. Exact.
-5. ev-podcast-12 — `/usr/bin/ffmpeg`, `/usr/bin/ffprobe`, ffmpeg 7.1.5,
-   `tmpfs 64M … 0 used`. Exact.
-6. ev-podcast-15 — `{"transcode":{"done":1,"skip":0,"failed":0},"indexed":1,…}`,
-   `duration_sec: 578.896009`, `size_bytes: 4884617`, stage 5 `[FAIL] seek to
-   600s landed — 578.9s`, four stage-6 `[PASS]` lines, stage 7 timeout at
-   `e2e.py:206`. Exact, including the `tail -34` in the command that the
-   manifest itself discloses truncated stages 1-4.
-7. ev-podcast-16 — stage 1 four PASS and `[FAIL] episodes carry blog release
-   dates — 0 of 2 dated`, stage 2 pass, stage 3 `Timeout 90000ms exceeded`.
-   Exact.
-8. ev-podcast-17 — download at `t+1s`, OPFS `1.m4a` 4884617 bytes, IndexedDB
-   `state: "done"`, `usage` 132322 → 5015459 with `fileSystem: 4884929`, empty
-   `ALL_CONSOLE_LINES` and `ALL_PAGE_ERRORS`. Exact.
-9. ev-podcast-05 — I re-derived this one from the checkout rather than the run
-   record, because the manifest says it is file inspection: 56 `.m4a` files,
-   2.2 GB, and `grep -c "check(" tests/e2e.py` → 43. All three confirmed.
-10. ev-podcast-11 and ev-podcast-13 — `Errno 30 … '/submission/.venv'` and
-    `OSError: [Errno 30] … '/submission/data'` with
-    `net::ERR_CONNECTION_REFUSED`. Exact.
+`ev-podcast-20` states all of this accurately and **does not overclaim**. It
+says the crash "is most readily explained by the sandbox's resource cap, but
+that is an inference: no memory measurement was taken at the moment of the
+crash, and no run has been observed to complete." That is the right handling
+and it is what makes F2's closure sound rather than nominal.
 
-team-ledger, verified against the cited JSON:
+## Both manifests still validate and still state no score
 
-1. ev-ledger-02 — `3 rows -> 3 new, 0 merged, 0 already known [UNVERIFIED (no
-   control totals)]`, with `status` and `validate` following. Exact.
-2. ev-ledger-03 — `[critical] D0  2 AMAZON charges on citi-costco-4021 … ($15.68)`
-   and the $20.68 / -$5.00 pair. Exact.
-3. ev-ledger-04 / 05 — four rejections, `REJECTED` one-liners for two of them, a
-   Python `Traceback` with `ValueError` for the other two, `0 new … 1 already
-   known` on re-ingest. Exact, and the error-contract finding is real.
-4. ev-ledger-06 — `REFERENCE | COMMITTED | 1.0`, `AMOUNT_DATE_UNIQUE |
-   COMMITTED | 0.95`, one `UNMATCHED`, then `D0 … ($165.79)` and `[warning] D1
-   1 of 3 merchant-feed charges … ($99.99)`. Exact.
-5. ev-ledger-07 — all four `analyze` subcommands, `wrote 3 markdown reports`,
-   D0/D1 reproduced verbatim in `findings.md`, `NO_STATEMENT`, `interest
-   attributable to disputed principal: $0.29`, mode `600`. Exact. The 22.49%
-   APR is not in the run record; it is in
-   `workspaces/live-trial-2026/team-ledger/config/accounts.example.yaml:14`
-   (`apr_bp: 2249`), which I checked. See A2.
-6. ev-ledger-08 — 3 rows parsed, then `control totals: REJECTED … payments:
-   parsed $0.00 vs stated -$500.00 (off by $500.00)`. Exact.
-7. ev-ledger-09 — exactly 4 rows classified payment/refund/purchase/interest,
-   `1.2X` and `$232.43` hazards present, `control totals: PASSED`. Exact.
-8. ev-ledger-11 — `vault dir perm: 700`, `600 /tmp/data/raw/…-good.csv`. Exact.
-9. ev-ledger-12 — `35 passed in 0.07s`, exit 0, `ledger:2`, timestamped
-   2026-09-16T23:56:26Z, before preparation began. Exact, and it closes intake
-   F2.
-10. ev-ledger-01 — the help surface matches. The count does not: the manifest
-    says "all 9 subcommand `--help` screens" and then lists ten subcommands,
-    and `envcheck-02` shows argparse offering ten. Folded into F7.
+`atj validate reports` passes on 7 artifacts. Neither manifest states,
+recommends or implies a score. The only occurrences of the word are the
+team-podcast manifest's own reasoning about why `reliability` is
+evidence-limited — "a judge could defend a low score or a high one, which is
+what `NE` is for" — and "rather than treat any score as fully executed". Both
+are statements about evidence sufficiency addressed to the panel, not scores.
 
-## Evidence sufficiency per rubric criterion
+`public/` holds only `.gitkeep`. Every artifact in scope is
+`visibility: private`. No operator name, email or personal identifier appears
+in either manifest or any of the 27 run records. The five new records embed the
+same absolute host path the other 22 do, which remains correct in a private
+artifact and is carried at A5.
 
-This is the question the brief most wanted tested, so here is the test I
-applied and then the result for all fourteen criterion-team pairs.
+## `atj render judgment`, added mid-event in `3a798ad`
 
-`atj/sandbox.py` gives an automatic answer in exactly one case: when isolation
-is unavailable, `evidence_limitation()` returns
-`EXECUTION_DEPENDENT_CRITERIA = ("functional", "reliability")`. Isolation was
-available here, so nothing is automatic and `sandboxed-partial` carries no
-default list. The only other rule in force is the rubric's own —
-"`NE` means not enough evidence" — and the citation policy's "Use `NE` when
-required evidence is unavailable. Do not manufacture certainty."
+**Acceptable.** I checked the whole delta, not the commit message.
+`git diff 152dd2c1..HEAD -- framework/ schemas/ atj/ VERSION` is 49 added lines
+in `atj/cli.py` and nothing else. `framework/rubrics/`, `framework/personas.md`
+and `VERSION` are byte-identical between the commit the evidence packages pin
+and HEAD. The rule in `CLAUDE.md` — do not change an active event's rubric
+version, weights, personas, bracket policy or evidence after judging begins —
+is not engaged: none of those changed, and judging has not begun.
 
-The test I used: **can a judge produce the full criterion response the rubric
-demands — score, what worked, what was deficient, reasoning from cited
-evidence, confidence — without the decisive question being one the package
-itself declines to answer?** A criterion that is thinly evidenced but
-answerable is scored with low confidence, not `NE`. A criterion whose score
-would swing across the whole anchor scale depending on a question the package
-explicitly leaves open is `NE`.
+The command itself adds no arithmetic. `cmd_render_judgment` reads front
+matter, calls the existing `scoring.Judgment.from_metadata` and
+`scoring.individual_score`, calls the existing
+`render.individual_scores_table`, and replaces only the `atj:scores` generated
+block. `atj/scoring.py` and `atj/render.py` are untouched. `release-check`
+reports sample event PASS and 351 tests pass, which is what exercises the
+byte-for-byte reproduction claim.
 
-**team-podcast — `reliability` must be listed. Nothing else.**
+On the version skew: judgments will record `framework_commit: 44e5f87` or later
+while the evidence packages record `152dd2c1`. That is fine and should simply
+be stated in the judging audit, because the delta between those two commits is
+an additive CLI subcommand with no effect on any evidence artifact, any
+criterion, any weight or any total. `atj release-check` version-skew passes.
 
-`reliability` asks whether failures can be prevented, detected, understood and
-recovered from. For this submission that question is carried almost entirely by
-`tests/e2e.py`, 43 checks across 11 stages, and the package cannot say whether
-it passes. The furthest any run reached is stage 7 of 11, and in that run the
-per-check results for stages 1-4 were destroyed by a `tail -34` in the
-operator's own command. A second run stalled at stage 3. The package records
-two behaviors — the stage-7 resume stall and the two-episode download stall —
-and in its own words does not resolve either: "inconclusive whether that is
-single-vs-two-episode flakiness or a real defect, not re-tested further", and
-ev-podcast-19 is labelled an evaluator inference at medium confidence,
-"reasoning only — not independently re-executed". F5 below adds a third
-candidate explanation the package does not consider. On top of that the
-submission's own pass claim is internally contradictory and unresolvable
-without a complete run (34/34 vs 42/42 vs 43 call sites, ev-podcast-05).
+## Carryover
 
-A judge asked to score `reliability` therefore chooses between "the suite works
-and both stalls are fixture artifacts" (3-4) and "the app stalls on download
-and on resume-after-reload" (1-2) with nothing in the package that separates
-them. That is the definition of not enough evidence. It is not a criticism of
-the preparation, which is honest about every one of these gaps — it is a
-mismatch between prose that says "inconclusive" five times and a front-matter
-field that says `[]`, and the field is what the judging skill reads.
-
-The genuine partial evidence that exists for `reliability` — correct `400`,
-`416` and stale-write handling in ev-podcast-03, clean startup and shutdown —
-does not change this, because none of it speaks to the two open questions.
-
-`functional` is the closest call and I am **not** requiring it. Four of the six
-workflows req-01 advertises are directly observed: transcode, index and serve
-(ev-podcast-14, -15), byte-range seeking (ev-podcast-03), resume tracking
-(ev-podcast-03, e2e stage 6), and download into OPFS (ev-podcast-17). Two are
-not: offline playback from the OPFS blob, which the manifest concedes was never
-confirmed, and iPhone home-screen install, which no container can exercise. A
-judge can place this on the scale with confidence reduced, and the rubric's
-"confirmed inability to complete the primary advertised workflow" clause is not
-triggered because nothing was confirmed to fail. Both gaps are already named in
-Missing or inaccessible evidence, which is where they belong.
-
-The other five: `product` — the UI was rendered, ordered, filtered, downloaded
-from and seeked in a real browser (ev-podcast-15, -16, -17), and the service
-worker registered; scoreable. `agentic` — a full read of every server and web
-module found no model, API key or AI SDK anywhere (ev-podcast-07), which is a
-conclusive negative, not an evidence gap; a judge can score it, and anchor 0
-("not demonstrated") exists for exactly this. `engineering` — every module read
-(ev-podcast-07). `security` — same read plus the D11 tailnet decision and the
-Cloudflare disclosure (ev-podcast-08), with the limits of a source-only review
-stated. `innovation` — the OPFS/Worker/byte-range/service-worker design was
-both read and exercised.
-
-**team-ledger — none.**
-
-All ten declared primary workflows were driven through the CLI in the sandbox
-with correct, checked output. The one real gap is R11: the CLI-level PDF path
-`fin ingest x.pdf` was never invoked, because the approved image has no
-PDF-authoring tool. But what is untested there is the
-`subprocess.run(["pdftotext","-layout",…])` shim and the `.pdf` suffix check.
-The substance behind it — the line grammar against all four documented hazards,
-and the control-total gate rejecting a statement whose arithmetic does not
-close — was exercised directly against synthetic layout text (ev-ledger-08,
--09), and `pdftotext` was confirmed present in the image. The manifest already
-marks R11 "Direct observation, partial" and explains precisely what confidence
-is limited. That is the correct handling, and it does not rise to `NE` on
-`functional`.
-
-`agentic` was the pair I expected to fail and it does not, narrowly. The whole
-agentic surface is four `.claude/skills/*.md` files driving `fin`, and the
-package concedes the agent loop cannot be run offline. Three of the criterion's
-four sub-questions are still answerable from artifacts: appropriateness and
-control are visible in the architecture, and the CLI's own help text states the
-split; observability is visible in what `fin` prints. Only effectiveness is
-unobservable. The package also contributes a substantive negative finding here
-— the `fin-ingest` skill's description of tier-0 matching is contradicted by
-the implementation. A judge has enough to score with low confidence.
-
-`reliability` is strong (35 tests passing offline, four rejection paths,
-idempotent re-ingest, invariant validation, plus a real error-contract defect).
-`security` is strong (0700 vault, 0600 dispute CSV, the pre-commit PAN scanner,
-no secret consumption). `product`, `engineering` and `innovation` all rest on
-observed CLI behavior and a full source read.
-
-One caveat that is not an `NE` but must reach the judges: every functional
-observation for team-ledger used synthetic inputs constructed by the preparer.
-The manifest says so plainly. Two requirement rows overstate their coverage
-anyway — see F7.
-
-## Fairness and symmetry
-
-Even-handed, and the reasoning is recorded. Both amendments do the same thing
-for the same stated reason: install a system binary the submission's own
-documentation names as a prerequisite, so that a failure caused by the image is
-not read as a failure of the team. `poppler-utils` for team-ledger closes
-intake A9 in exactly the terms A9 set. `ffmpeg` for team-podcast is justified in
-`event.md` on explicitly identical reasoning, and the status ledger row at
-2026-09-17T00:10:14Z names the omission as "an operator error that
-disadvantaged this team relative to team-ledger". Naming your own error in the
-ledger is the right instinct, and the remedy went further than the disclosure —
-the evidence was re-run and the package rewritten, taking `tests/e2e.py` from
-stage 1 to stage 7.
-
-Three asymmetries remain, none of them favoritism:
-
-1. The remedy was not complete. Three `podcast:2` runs were never re-run on
-   `:3` (F6), while team-ledger has no equivalent split — all 11 of its records
-   are on one image.
-2. Provenance quality differs. `Containerfile.podcast` was updated when the
-   podcast image changed; `Containerfile.ledger` was not when the ledger image
-   changed (F1).
-3. The operator amended the image twice to remove environmental disadvantage
-   but left the 64 MB tmpfs in place, and that cap falls on only one team — a
-   2.2 GB media library cannot be tested inside it. This is defensible, and
-   ev-podcast-18 defends it well: the cap is the framework's, applied
-   identically, and `atj sandbox run` does not expose an override. But the
-   distinction between "fix a missing declared prerequisite" and "do not move a
-   framework-wide resource limit mid-event" is currently only implicit. See A4.
-
-## Privacy and boundaries
-
-Passes. `events/live-trial-2026/public/` contains only `.gitkeep`. Every
-artifact in scope declares `visibility: private`. No operator name, email
-address or personal identifier appears anywhere in either manifest or any run
-record. `public_scores: false` is unchanged. The working tree is clean and the
-stray `status.md.bak` is gone.
-
-No cross-contamination: no team-ledger material appears in the team-podcast
-package or its run records, and none of the reverse. Each run record mounts
-only its own team's workspace. The one cross-reference is the podcast
-manifest naming team-ledger's `poppler-utils` precedent when it explains the
-ffmpeg amendment — fairness documentation, not the other team's evidence, and
-it carries no finding or result about team-ledger. See A6.
-
-Two things to carry to publication: every run record embeds the absolute host
-path `/home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/…`,
-and configuration A7's note about the operator's name in `event.md` still
-stands. Neither may reach `public/` without `atj validate publication`.
-
-## Neutrality
-
-Holds. Neither manifest states or implies a score, recommends a score, or tells
-a judge what a criterion is worth. Both separate direct observation, artifact
-evidence, team claim and evaluator inference, and both do it in the classes
-`framework/policies/evidence-and-citation.md` defines.
-
-The podcast package's "candidate finding" framing survives scrutiny.
-ev-podcast-19 is explicitly labelled `evaluator inference`, confidence
-`medium`, "reasoning only — not independently re-executed", and the Missing
-section calls both candidate findings inconclusive and says neither was chased
-further. The stage-5 seek `[FAIL]` is argued down to a fixture artifact rather
-than a defect, but the argument shows its work — 578.9s landed against
-578.896009s actual duration — and the raw `[FAIL]` line is quoted intact, so a
-judge who disagrees has everything needed to disagree. That is interpretation
-offered transparently, not a conclusion imposed.
-
-One uneven note, A3: ev-ledger-05 calls its finding "a real judgment-relevant
-reliability/engineering gap, not a hypothetical one". That names two rubric
-criteria and pre-weighs the finding for the judge. The observation itself is
-accurate and well-evidenced. The editorializing is the podcast package's
-framing done in reverse, and the podcast framing is the better one.
-
-## Carryover from the configuration and intake audits
-
-| Prior item | State |
-|---|---|
-| config F4 — name the approved images | Closed. Both images named with IDs. |
-| config F5 — ledger timestamp accuracy | Reopened in a new form. See F8. |
-| intake F1 — httpx/pytest/plain uvicorn in the podcast image | Closed. `Containerfile.podcast` now installs `uvicorn[standard]` and neither `httpx` nor `pytest`. |
-| intake F2 — no run record for the 35-test run | Closed. `runs/team-ledger-pytest-01.json` exists, on `ledger:2`, 35 passed. |
-| intake F3 — amendment needs time and authorizing official | Partly closed. Times are logged; no official is named on either amendment row. See F8. |
-| intake F4 — record image IDs | Closed for the current images; superseded `podcast:2` is recorded in the manifest but not in `event.md`. See F6. |
-| intake F5 — line-anchor drift, `.agentic` described as 5 lines | Not closed, and repeated in the evidence package. See F9. |
-| intake A2 — intake records draft/unvalidated | Closed. Both are approved/valid. |
-| intake A5 — re-run preflight at the evidence stage | Closed. Both manifests record `AVAILABLE — podman 6.1.0 (rootless)` before any run, and I re-confirmed it. |
-| intake A6 — justify any timeout above the default | Not closed. See A1. |
-| intake A8 — stale chromium conditional | Closed. Superseded by real run records. |
-| intake A9 — no `pdftotext`, PDF ingest is `NE` unless the image changes | Closed in the image, not in the recipe. See F1. |
-| intake A10 — `tests/e2e.py` is not a pytest suite | Closed. Every attempt starts the server first and runs the script against it. |
-| config/intake A4 — agent-directed files in both checkouts | Closed. Both packages searched independently and treated the files as data. |
-| config/intake A7 — operator name must not reach `public/` | Still open by design, still correct. Carried forward. |
+`configuration/intake A7` — the operator's name in `event.md` must not reach
+`public/` — is still open by design and still correct. Every other prior-stage
+item the first pass tracked stays as that report left it, except intake F3
+(authorizing official), which the F8 repair closes: both image-amendment rows
+now name the event-director.
 
 ## Findings
 
 | Severity | Rule | Artifact | Finding | Required repair |
 |---|---|---|---|---|
-| major (F1) | `events/live-trial-2026/event.md`: "The Containerfiles are committed under `events/live-trial-2026/evidence/`"; intake audit A9's repair named this file | `events/live-trial-2026/evidence/Containerfile.ledger` | The committed recipe does not build the approved image. `event.md` lists `ledger:2` (`7780b2b9e6e1`) as containing poppler-utils, and the binary is genuinely there at run time (`/usr/bin/pdftotext` in `runs/team-ledger-envcheck-01.json` and in `pytest-01`'s stdout), but the Containerfile installs only `pyyaml`, `duckdb` and `pytest` and has never contained poppler-utils in any commit — `git log` on that path shows one commit, `6321a18`, predating the amendment. Rebuilding from this recipe produces an image in which team-ledger's PDF adapter cannot run, which is the exact condition intake A9 said would force `NE`. The intake audit accepted the image amendment partly because the Containerfiles were the inspectable record of what goes into the images; for team-ledger that record is now wrong. | Add the `poppler-utils` install layer to `Containerfile.ledger`. Rebuild and confirm the ID still resolves to `7780b2b9e6e1`, or record the new ID in `event.md` and re-run any affected evidence. Log the correction in `status.md`. |
-| major (F2) | `framework/rubrics/submission-evaluation.md`: "`NE` means not enough evidence"; `framework/policies/evidence-and-citation.md`: "Do not manufacture certainty" | `events/live-trial-2026/evidence/team-podcast/manifest.md`, front matter | `evidence_limited_criteria: []` is not supportable for `reliability`. The submission's reliability story is `tests/e2e.py`, and no run of it completed: the best reached stage 7 of 11 with stages 1-4's per-check output destroyed by the operator's own `tail -34`, and another stalled at stage 3. The package records two behaviors and declines to classify either — "inconclusive whether that is single-vs-two-episode flakiness or a real defect, not re-tested further", and ev-podcast-19 at medium confidence, "reasoning only". F5 adds a third unexamined explanation. The submission's own pass claim is self-contradictory and unresolvable without a complete run. A score of 1 and a score of 4 are both consistent with this package, which is what `NE` is for. The prose says "inconclusive" repeatedly; the field that the judging skill actually reads says nothing. | Set `evidence_limited_criteria: [reliability]` in the team-podcast manifest and state the basis in Missing or inaccessible evidence: the suite never completed, and the two observed stalls are unclassified. Do not add `functional` — see the sufficiency section. Leave the team-ledger list empty. |
-| major (F3) | `CLAUDE.md`: "update `status.md` after verified work"; `atj/event.py` docstring: "an edited judgment or evidence manifest changes the digest, and the unit goes stale" | `events/live-trial-2026/status.md`, front matter `units: []` | Neither evidence package is bound to the ledger. `atj event status` reports "units: none recorded" and `atj event unit … list` reports "0 unit(s), 0 stale", while `atj/event.py:derive_digests` computes `evidence:team-podcast` = `8ef5c7965cda164f` and `evidence:team-ledger` = `b7acf0d1666295f5` from what is on disk right now. With no recorded `input_digest`, `check_staleness` has nothing to compare against: a manifest edited after this gate passes will not be detected, and the judging stage's inputs are not pinned to what was audited. The prose Team progress table records package IDs, but `atj` does not read prose. | Before recording the gate, run `python3 -m atj event unit events/live-trial-2026 record --id evidence:team-podcast --stage evidence --output evidence/team-podcast/manifest.md --audit-result <this audit's result>` and the same for `evidence:team-ledger`. Confirm `atj event unit … list` then shows 2 units, 0 stale. |
-| major (F4) | `framework/policies/evidence-and-citation.md`: "Every material conclusion must be traceable to the pinned evidence package"; `framework/templates/evidence-manifest.md` Validation: "Artifact references resolve" | `events/live-trial-2026/evidence/team-ledger/manifest.md`, Requirements and team claims | Nine of sixteen requirement rows cite at least one evidence ID that does not contain the claimed observation. R2 (`fin ingest-amazon`) cites ev-ledger-04, which is the CSV ingest-rejection observation; Amazon ingest is ev-ledger-06. R3 (tiered matcher) cites ev-ledger-04 and ev-ledger-05; matching is ev-ledger-06. R4 (D0) cites ev-ledger-04; D0 is ev-ledger-03 and ev-ledger-06. R6 (`render`) and R7 (`analyze`) cite ev-ledger-06; both are ev-ledger-07. R8 cites ev-ledger-06 alongside the correct ev-ledger-07. R9 (`fin sql`) cites ev-ledger-04; the `sql` invocation is in ev-ledger-06's run record. R10 (`fin status`) cites ev-ledger-01 and ev-ledger-03; `status` appears in ev-ledger-02 and ev-ledger-04. R13 (the tier-0 documentation contradiction) cites ev-ledger-05; that finding rests on ev-ledger-06 and ev-ledger-16. The right observation exists in the same document in every case, so nothing is unsupported — but a judge following a citation lands on the wrong run record, and this is the table feeding the 25-point `functional` criterion. `atj validate reports` cannot catch it: the IDs exist, so the reference resolves. The manifest is marked `approved`/`valid` with "Artifact references resolve" ticked. | Repoint each of the nine rows at the observation that contains the behavior. Re-tick the Validation box only after walking every `[[evidence:…]]` target and confirming it contains the claim made of it. The team-podcast table was checked the same way and is correct throughout. |
-| minor (F5) | `framework/policies/evidence-and-citation.md`: evidence classes and confidence must reflect what was actually observed | `events/live-trial-2026/runs/team-podcast-e2e-full-01.json`, `team-podcast-e2e-02.json`; team-podcast manifest ev-podcast-16, -17 | Two sandbox containers ran concurrently during the measurement behind an unresolved finding. `e2e-full-01` ran 00:15:30-00:17:26 and `e2e-02` ran 00:16:15-00:19:19 — a 71-second overlap on a host where each container is capped at `--cpus 1.0`, and the 90-second `wait_for_function` that produced ev-podcast-16's download stall falls inside it. The contrasting one-second download in ev-podcast-17 ran alone at 00:19:27. The manifest offers exactly two explanations for the difference, "single-vs-two-episode flakiness or a real defect", and never mentions that the slow run shared the host with a second Chromium and uvicorn while the fast one did not. Timing-sensitive evidence should not be gathered concurrently. | Record the overlap in ev-podcast-16, or re-run `e2e-full-01` in isolation and let the result stand or fall on its own. Either way this strengthens rather than weakens F2. |
-| minor (F6) | `events/live-trial-2026/event.md`, approved-images table: "a deviation from this table is visible at the judgments audit" | `events/live-trial-2026/event.md`; team-podcast manifest ev-podcast-02, -03, -11 | Three run records still carrying current evidence ran on the superseded image. `server-boot-01`, `media-progress-01` and `runsh-attempt-01` all used `podcast:2` (`5ff34ae63320`), which `event.md` no longer lists as approved for this team, and `Containerfile.podcast` was overwritten in `3dd629c`, so `:2`'s recipe is no longer in the repository. ev-podcast-03 is the only evidence for req-02 and req-04. The results are almost certainly unaffected — `:3` is `:2` plus ffmpeg — but "almost certainly" is not recorded anywhere, and the Tests table does not mark those three rows as superseded-image results the way `e2e-attempt-01` is marked. Separately, the runtime facts in ev-podcast-01 (fastapi 0.141.1, pydantic 2.13.5, uvicorn 0.53.0, Chromium 152.0.7977.82) were observed on `:2` only; `env-probe-02` checked ffmpeg and tmpfs on `:3` and nothing else, and `Containerfile.podcast` pins no versions, so nothing establishes that `:3` carries the runtime the manifest attributes to it. | List both `podcast:2` (`5ff34ae63320`) and `podcast:3` (`c3670644bc7b`) in `event.md` with the scope and date of each, or re-run the three on `:3`. Re-probe the Python and Chromium versions on `:3` and record them. Mark the three Tests rows with the image they used, as the `e2e-attempt-01` row already is. |
-| minor (F7) | `framework/policies/evidence-and-citation.md`: evidence class must match what was demonstrated; the manifest's own precedent at R11 ("Direct observation, partial") | `events/live-trial-2026/evidence/team-ledger/manifest.md`, R3, R6, ev-ledger-01 | Three rows claim more coverage than the runs show. R3 names a tiered matcher including subset-sum and is marked "Direct observation"; `src/fin/match/engine.py:9` declares `tier 3 SUBSET_SUM` and `subset_sum_edges` at line 173, and the run exercised only REFERENCE, AMOUNT_DATE_UNIQUE and UNMATCHED. R6 names five report kinds and is marked "Direct observation"; `runs/team-ledger-analyze-render-dispute-01.json` shows "wrote 3 markdown reports" — no reconciliation report and no per-statement report, because that scenario had neither a merchant feed nor an ingested statement. ev-ledger-01 says "all 9 subcommand `--help` screens" and then lists ten subcommands; argparse in `envcheck-02` shows ten. The manifest gets this exactly right at R11, so the convention exists and these three rows depart from it. | Mark R3 and R6 "Direct observation, partial" and name what was not exercised. Correct the subcommand count to ten. |
-| minor (F8) | intake audit F3's required repair: "for the amendment name the time and the authorizing official"; configuration audit F5: a ledger row may not misstate when work happened | `events/live-trial-2026/status.md`, Activity log | The ledger is incomplete and out of order. Neither amendment row names an authorizing official — not the approved-images row at 2026-09-16T23:49:05Z, which intake F3 asked for explicitly, nor the ffmpeg row at 2026-09-17T00:10:14Z, which repeats the omission for a second amendment to the same gated section. The log is also not chronological: the rows stamped 00:15:00 and 00:20:00 sit above four rows stamped 00:10:14. And the 00:20:00 row describes the five-run `podcast:2` package as a completed deliverable with "`atj validate reports` PASS, 0 blocking" and no superseded marker, while the marker sits on a different row further down. A reader reconstructing the sequence from this ledger gets the wrong order and may treat a superseded package as current. | Name the authorizing official on both amendment rows. Restamp or reorder the log so rows ascend. Mark the 00:20:00 row superseded, as the 00:10:14 first-pass row already is. |
-| minor (F9) | intake audit F5, unclosed and now propagated | `events/live-trial-2026/evidence/team-podcast/manifest.md`, ev-podcast-09 | The evidence package repeats an error the intake audit already found. ev-podcast-09 describes `.agentic/project.yaml` as "five inert metadata lines" and cites it as "(full file, 5 lines)"; `wc -l` gives 6 and the file has six keys — `schema_version`, `project_id`, `slug`, `kind`, `created_at`, `created_on`. Intake F5 flagged precisely this ("described as five lines and is six"). The substantive finding — the file is inert metadata with no instruction to an agent — is correct and I re-verified it. | Correct to six lines and six keys. Re-check the other line anchors intake F5 listed before judging begins, since judges will quote them. |
+| major (F10) | `framework/policies/evidence-and-citation.md`: "Every material conclusion must be traceable to the pinned evidence package"; the F4 repair's own standard, "walking every `[[evidence:…]]` target and confirming it contains the claim made of it" | `events/live-trial-2026/evidence/team-ledger/manifest.md`, R1, R5, R12 (and R14, R16) | The re-walk covered the nine rows the first audit named and stopped there. R12 is the serious one: its principal claim — "the deterministic `fin` package makes no network, HTTP, or LLM API calls" — cites only ev-ledger-10, which is a grep of `.claude/skills/*/SKILL.md` and `hooks/pre-commit` for *injection phrasing*. It does not examine `src/fin/` and does not search for network or model-API calls. No evidence row anywhere in the package records that grep, although the Missing-evidence section attributes it to ev-ledger-10 twice more ("confirmed by grep, ev-ledger-10 and intake"; "this preparation's own grep, ev-ledger-10 … found no `os.environ` read in `src/fin/`"). R12 feeds `agentic` and `security`. R1 cites ev-ledger-01 (help surface) and ev-ledger-02 for a claim whose control-total clause is ev-ledger-08 and whose no-partial-import clause is ev-ledger-04. R5 cites ev-ledger-03 for three named invariants, of which idempotence is demonstrated only in ev-ledger-04. R14's dispute-CSV `0600` half sits in ev-ledger-07, not the cited ev-ledger-11; R16 asserts a direct observation with no ID. The Validation box "Artifact references resolve" is ticked on the strength of a walk that did not happen for these rows. | Add the `src/fin/` network/HTTP/model-API/`os.environ` grep as its own observation row, or extend ev-ledger-10's observation text to record it, and cite that from R12 and from the two Missing-evidence bullets. Add ev-ledger-04 and ev-ledger-08 to R1. Add ev-ledger-04 to R5. Add ev-ledger-07 to R14 and an ID to R16's observation half. Then re-tick the Validation box against all sixteen rows. |
+| major (F11) | `framework/policies/evidence-and-citation.md`: evidence classes and confidence must reflect what was actually observed; `framework/templates/evidence-manifest.md`: an observation's Reproduction column is the record it came from | `events/live-trial-2026/evidence/team-podcast/manifest.md`, ev-podcast-21 | The row states `playwright` 1.56.0 on `podcast:3` as a "direct observation (execution)" at "high" confidence, reproduced by `runs/team-podcast-env-probe-03.json`. That run's playwright probe raised `AttributeError: module 'playwright' has no attribute '__version__'` and returned no version. The only run record in the event carrying a playwright version is `runs/team-podcast-server-boot-02.json`, which reports **1.63.0**. `1.56.0` appears nowhere else in the event directory or in either checkout, and `ev-podcast-01` on `:2` recorded only "playwright ok", so there is no prior measurement it restates. Because `Containerfile.podcast` pins `"playwright>=1.50"`, the `:2` and `:3` pip layers resolved separately and equality cannot be assumed either. The row's whole purpose is to assure judges that `:3`'s runtime equals the one `ev-podcast-01` recorded; one of its eight values is unmeasured and contradicted. Everything else in the row is confirmed, including the `podman history` layer-equality claim. | Replace `playwright 1.56.0` with `playwright 1.63.0` and cite `runs/team-podcast-server-boot-02.json` for it, or drop the playwright entry and record that `env-probe-03`'s version probe failed. State plainly that `ev-podcast-01` never captured a playwright version, so no `:2`-vs-`:3` comparison is available for that package. |
+| minor (F12) | `CLAUDE.md`, Source of truth: "Event state … `events/<event>/status.md`" and "There is exactly one editable copy of each" | `events/live-trial-2026/status.md.bak` | The repair commit added and committed a 99-line `status.md.bak`. It is a second copy of the event ledger and it is already stale: it is identical to `status.md` except that it is missing the `evidence:team-ledger` unit block, so it records one unit where the ledger records two. The first-pass report noted "the stray `status.md.bak` is gone" as a passing observation; this reintroduces it and puts it under version control. `atj release-check` single-source passes, so nothing automated catches it, and the `.claude/hooks/` guard on event artifacts does not cover a `.bak` suffix. No private information beyond what `status.md` already holds. | `git rm events/live-trial-2026/status.md.bak`. If a backup is wanted during edits, keep it outside the event directory or add `*.bak` to `.gitignore`. |
+
+## Disposition of the first-pass findings
+
+| Code | Disposition | Basis |
+|---|---|---|
+| F1 | **Closed** | `podman history` for `ledger:2` shows exactly the two `RUN` layers the committed recipe now contains, in order, on the same base, with the top layer ID equal to `7780b2b9e6e1`. Reconciliation without rebuild is the right closure, and the reasoning is recorded in `event.md` and `status.md`. |
+| F2 | **Closed** | `evidence_limited_criteria: [reliability]`, with the basis written into Missing or inaccessible evidence and naming all three outcomes. `ev-podcast-20` states the third one accurately against `e2e-full-02` and labels the resource-cap explanation an inference with no measurement behind it. It does not overclaim. |
+| F3 | **Closed as to mechanism; one step outstanding** | `atj event unit … list` shows 2 units, 0 stale, and the recorded digests (`259d298fbae6db7f`, `36f69f52d934b790`) differ from the first pass's, so they bind the repaired manifests rather than the audited-and-failed ones. Both still carry `audit_result: not-audited` and must be re-recorded with this audit's result. Repairing F10 and F11 will change both digests, so re-record after the repair, not before. |
+| F4 | **Closed** | All nine rows repointed and each verified against the run record behind the target. See the sixteen-row table above. The three rows that remain wrong are ones F4 did not name; they are F10. |
+| F5 | **Closed** | `ev-podcast-16` now records the 71-second overlap with `e2e-02`, both windows matching the run records, and names host contention as a third candidate explanation. The isolated repeat is cross-referenced. |
+| F6 | **Closed** | All four `podcast:2` runs repeated on `:3`. `runsh-attempt-02` and `media-progress-02` are byte-identical to their originals; `server-boot-02` is consistent and a deliberate superset; `env-probe-03` measures the `:3` runtime directly. `podcast:2` is listed in `event.md` with its scope and the five records that used it. The one defect in the new material is F11. |
+| F7 | **Closed** | R3 and R6 are "Direct observation, partial" with `SUBSET_SUM` and the two unwritten report kinds named specifically. The subcommand count is ten in both `ev-ledger-01` and the Tests table. |
+| F8 | **Partially closed** | Ordering and attribution are fixed: the log now ascends, both image-amendment rows name the event-director (closing intake F3), and the five-run `podcast:2` package is marked SUPERSEDED. Three accuracy problems remain. (a) Four rows are stamped **after the commit that contains them** — 18:45:00Z, 18:50:00Z, 18:55:00Z and 19:00:00Z, against a commit at 18:41:56Z and `last_updated: 18:41:16Z`. (b) The audit row is stamped 14:10:00Z while `audits/evidence.md` records `completed_at: 18:35:00Z` and its commit is 18:32:58Z, a 4h25m misstatement. (c) The new closing note says "Execution timestamps in this log are the completion time of the last run record the row describes"; that is false for the two team-ledger rows at 00:15:00Z (last ledger run completed 00:04:39Z) and for the six rows that describe no run record at all. This is the third appearance of the rule from configuration F5. Not blocking on its own. Repair: restamp the four future rows at or before 18:41:16Z, correct the audit row to 18:35:00Z, and narrow the closing note to the rows it actually describes. |
+| F9 | **Closed** | `ev-podcast-09` says "six inert metadata lines, six keys" and "(full file, 6 lines)". `wc -l` on the file is 6 and it has six keys. |
+| A1 | **Closed** | The timeout paragraph is in the podcast manifest and is accurate: three 780s runs and two 400s runs are browser-automation runs, the 300s pytest run predates the preparation. |
+| A2 | **Closed** | `ev-podcast-02` carries real captured headers; `ev-podcast-03` separates the record's `HTTPException` from the `400` read at `server/app.py:164,168`; `ev-ledger-07` cites `config/accounts.example.yaml:14` for the APR and says the record carries the computed $0.29, not the rate. |
+| A3 | **Closed** | `ev-ledger-05` no longer names rubric criteria or pre-weighs itself. The observation is unchanged. |
+| A4 | **Closed** | `event.md` now records why a missing declared prerequisite was fixed by amending the image while the 64 MB tmpfs cap was not. |
+| A5 | **Carried forward** | Still correct. All 27 run records embed the absolute host path and the `65534:65534` uid map; configuration A7's note about the operator's name in `event.md` stands. Both are fine in private artifacts. Run `atj validate publication` on anything leaving the panel. |
+| A6 | **Carried forward** | The podcast manifest still cites the `poppler-utils` precedent when it explains the ffmpeg amendment. Fairness documentation, no finding about the other team. Keep it out of a team-facing dossier. |
+| A7 | **Carried forward** | `evidence_package_id` still cannot be reproduced from the artifact by an auditor, so the `evidence:` units remain this event's only working staleness detection. A framework observation, outside this stage. |
 
 ## Advisories
 
-**A1 — run timeouts above the module default are still unjustified, closing
-nothing on intake A6.** `atj/sandbox.py:52` sets `timeout_seconds: 120`. Five
-runs exceed it: `team-podcast-e2e-02`, `-03` and `-04` at 780 seconds, six and a
-half times the default; `e2e-full-01` at 400; `team-ledger-pytest-01` at 300.
-The podcast Tests table lists a timeout for its 60s, 90s, 120s and 400s rows and
-omits it for exactly the three 780s rows; the ledger table says only "capped
-CPU/memory/pids/time". Nothing was harmed and every applied limit is in its run
-record, which is why this is an advisory and not a finding. Intake A6 asked for
-a sentence of justification in the evidence package. Add it — a browser
-automation suite legitimately needs longer than a CLI, and saying so costs one
-line.
+**A8 — `event.md` says "identical results" for four repeats where one is a
+superset.** `server-boot-02` was deliberately extended to capture response
+headers and `/manifest.webmanifest`, which is how A2 was closed. Its results are
+consistent with `server-boot-01` — same four routes, same statuses, same body
+prefixes — but the run is not identical and the word invites a reader to think
+it was. The manifest's own Tests row gets this right ("capturing response
+headers"). Match `event.md` to the manifest.
 
-**A2 — two podcast observations assert detail the run record does not
-contain.** ev-podcast-03 says a malformed `Range` header "is rejected with
-`400`"; the record captured only `"exception": "HTTPException: malformed Range
-header"`. The claim is true — `server/app.py:164` and `:168` raise
-`HTTPException(400, "malformed Range header")` — but it is a source read
-standing in an observation row without the source cited for that specific
-point. ev-podcast-02 says `/sw.js` is served "with correct headers"; the record
-captured a status code and a body prefix, no headers. The ledger package has the
-same shape at ev-ledger-07, where the 22.49% APR comes from
-`config/accounts.example.yaml:14` rather than the run. Cite the source line
-beside the run record when an observation leans on both.
-
-**A3 — the two packages editorialize unevenly.** ev-ledger-05 calls its finding
-"a real judgment-relevant reliability/engineering gap, not a hypothetical one",
-naming two rubric criteria and pre-weighing the finding. The observation is
-accurate and valuable; the framing is not the manifest's job. The podcast
-package does the same job better — "recorded as inconclusive rather than a
-confirmed defect" — and is the model to follow. No score is stated anywhere in
-either package, so this is a matter of degree, not a boundary breach.
-
-**A4 — record why one environmental gap was closed and another was not.** The
-operator amended the approved image twice to remove disadvantages caused by a
-missing declared prerequisite, and declined to move the 64 MB tmpfs that blocks
-full-library testing for one team only. Both decisions are right, for different
-reasons: a missing README prerequisite is an operator error to fix, while a
-framework-wide resource cap applied identically to everyone is not something to
-move mid-event for one team. ev-podcast-18 makes the second half of that
-argument well. Put the distinction in `event.md` so the panel does not have to
-infer it.
-
-**A5 — privacy passes now; two items to carry to publication.** All 22 run
-records embed the absolute host path
-`/home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/…` and the
-`65534:65534` uid map, and configuration A7's note about the operator's name in
-`event.md` still stands. Both are correct in private artifacts. Run `atj
-validate publication` on anything that would leave the panel.
-
-**A6 — the podcast manifest names the other team.** Scope and provenance cites
-the `poppler-utils` precedent to justify ffmpeg. That is fairness
-documentation, contains no finding or result about team-ledger, and the ledger
-package carries no podcast material at all. Keep it out of any team-facing
-dossier, where a team has no reason to read about another team's image.
-
-**A7 — `evidence_package_id` cannot be checked at audit time.**
-`atj/ids.py:98-104` promises the ID changes whenever recorded evidence changes,
-"which is what marks downstream judgments stale". Neither this event's IDs nor
-the committed sample event's IDs equal a digest of the manifest file, so the
-digest input is not reproducible from the artifact and the guarantee cannot be
-verified by an auditor. This is a framework observation, outside this stage's
-scope, and it is the reason F3 matters: with the ID unverifiable, the
-`evidence:` units are the only working staleness detection this event has.
+**A9 — `atj render judgment` writes in place with no dry-run.**
+`cmd_render_judgment` rewrites the judgment file whenever the rendered block
+differs, and nothing checks `approval_state` first. At the judging stage that
+means a re-render can silently rewrite the official scores table of an approved
+judgment. The command is correct for this event and adds no arithmetic; this is
+a framework note for whoever writes the judging audit, not an evidence-stage
+finding.
 
 ## Completion gate
 
-- [ ] No blocking findings — none raised
-- [ ] No major findings — F1, F2, F3 and F4 are open
-- [x] Calculations valid — no official arithmetic exists at the evidence stage;
-      no score, weight or total was computed, and nothing in either package
-      presents one. The arithmetic I did check reconciles: $20.68 − $5.00 =
-      $15.68 in D0, $0.29 interest against `apr_bp: 2249`, 578.896009s duration
-      against the 578.9s clamp, 4884617 transcoded bytes matching the OPFS file
-      byte for byte, and 56 source files / 2.2 GB against a 64 MB tmpfs
+- [x] No blocking findings — none raised. Execution integrity is clean across
+      all 27 run records; the five new ones were checked flag by flag
+- [ ] No major findings — F10 and F11 are open
+- [x] Calculations valid — no official arithmetic exists at the evidence stage
+      and neither package presents a score. The arithmetic I re-checked in the
+      new material reconciles: 4,884,617 + 6,690,229 output bytes against the
+      "12 MB combined" and the 18% tmpfs occupancy `df` reports; 24 seconds of
+      wall clock in `e2e-full-02` against the "24.5s" the manifest states; the
+      71-second overlap against both run windows
 - [ ] Evidence references resolve — every `runs/*.json` path cited by either
-      manifest exists, and every sampled observation I followed was present and
-      accurately stated. But nine of sixteen team-ledger requirement rows point
-      at the wrong observation (F4), and three claim coverage the runs do not
-      show (F7)
-- [x] Version and identity checks pass — both checkouts match their pinned
-      commits, `framework_commit` resolves and is consistent across every
-      artifact, `rubric: submission-evaluation@1.0.0` and `persona:
-      prepare-submission@1.1.0` match `framework/personas.md`,
-      `atj personas` PASS on all 15 components, `atj release-check` PASS
+      manifest exists, all nine F4 repairs land on the right observation, and
+      all five new records are cited by the manifest that claims them. But R1,
+      R5 and R12 cite observations that do not contain the claim (F10), and
+      ev-podcast-21 cites a record that contradicts it (F11)
+- [x] Version and identity checks pass — `framework_commit: 152dd2c1` is
+      consistent across both manifests and resolves; the only framework change
+      since it is 49 additive lines in `atj/cli.py`, with rubric, personas and
+      `VERSION` byte-identical; `persona: prepare-submission@1.1.0` and
+      `rubric: submission-evaluation@1.0.0` match `framework/personas.md`;
+      `atj release-check` PASS including version-skew
 - [x] Privacy boundary passes — `public/` holds only `.gitkeep`, every artifact
       is `visibility: private`, no personal identifier appears in any evidence
-      artifact, and neither team's material appears in the other's package
+      artifact or run record, and neither team's material appears in the
+      other's package
 
-**FAIL.** Repairs required, in order:
+**FAIL.** What still blocks the gate, in order:
 
-1. Add `poppler-utils` to `Containerfile.ledger` and reconcile the image ID (F1).
-2. Set `evidence_limited_criteria: [reliability]` in the team-podcast manifest
-   and state the basis (F2).
-3. Repoint the nine misdirected evidence citations in the team-ledger
-   requirements table (F4), and mark R3 and R6 partial (F7).
-4. Record both `evidence:` units in the ledger, then re-run
-   `atj event unit … list` and confirm 2 units, 0 stale (F3).
-5. Close the minors: note the concurrent runs (F5), account for the three
-   `podcast:2` records (F6), complete and reorder the activity log (F8), fix
-   the five-versus-six line count (F9).
-6. Re-audit, then record the gate with `atj event gate`.
+1. **F10** — cite the `src/fin/` no-network/no-model-API grep from R12, or
+   record it as an observation if it is not yet one. Fix R1 and R5, and while
+   there, R14 and R16. Re-tick Validation against all sixteen rows.
+2. **F11** — correct or withdraw `playwright 1.56.0` in `ev-podcast-21`.
+3. **F12** — remove the committed `status.md.bak`.
+4. **F8** — restamp the four future-dated activity-log rows, correct the audit
+   row to `2026-09-17T18:35:00Z`, and narrow the run-record derivation note.
 
-Nothing here requires re-running a submission except by choice: F5 and F6 can be
-closed by recording what happened instead of re-executing, though re-running
-`e2e-full-01` alone would settle a question the package currently leaves open.
+Then re-record both `evidence:` units — the manifest edits in steps 1 and 2 will
+change both digests and mark the units stale — and re-audit before
+`atj event gate`.
+
+Nothing here requires re-running a submission. Every repair is an edit to an
+artifact, and F11's correct value is already sitting in a run record this
+repair produced.

@@ -448,6 +448,14 @@ def cmd_render_judgment(args) -> int:
             if rendered == body:
                 unchanged.append(source)
                 continue
+            if metadata.get("approval_state") == "approved" and not args.force:
+                raise AtjError(
+                    f"{source} is approved and rendering would change its scores "
+                    f"table. An approved judgment is a reviewed artifact; silently "
+                    f"rewriting its official numbers is how a panel comes to cite a "
+                    f"total no one approved. Re-render before approval, or pass "
+                    f"--force and record why in the event ledger."
+                )
             source.write_text(frontmatter.dump(metadata, rendered), encoding="utf-8")
             written.append(source)
     if args.json:
@@ -1286,6 +1294,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     render_judgment.add_argument(
         "paths", nargs="+", help="judgment files, or directories of them"
+    )
+    render_judgment.add_argument(
+        "--force", action="store_true",
+        help="re-render a judgment already marked approved; record why in the ledger",
     )
     render_judgment.set_defaults(func=cmd_render_judgment)
 

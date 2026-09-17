@@ -109,9 +109,13 @@ container can run without it.
 evidence package, four of them as current evidence: `env-probe-01`,
 `server-boot-01`, `media-progress-01`, `runsh-attempt-01`, and `e2e-attempt-01`
 (kept deliberately as the record of the originally blocked attempt). Every one of
-the four was repeated on `:3` after the evidence audit, with identical results,
-and the runtime carried by `:3` was probed directly rather than assumed
-(`runs/team-podcast-env-probe-03.json`). `podman history` shows the two images
+the four was repeated on `:3` after the evidence audit. Stated exactly:
+`runsh-attempt-02` and `media-progress-02` reproduce their `:2` counterparts'
+results; `server-boot-02` reproduces the same status codes and additionally
+captures response headers the `:2` run did not; `env-probe-03` is a wider probe
+than `env-probe-01`, not a repeat of it, and measures `:3`'s runtime directly
+rather than assuming it. No observation was found to differ between the two
+images. `podman history` shows the two images
 differ only by `ffmpeg` in the apt layer. `Containerfile.podcast` describes `:3`;
 `:2` is `:3` with `ffmpeg` removed from that one line.
 

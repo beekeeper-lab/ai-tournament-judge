@@ -21,3 +21,7 @@ atj/data/
 # Build output. F2: a committed build/lib made the wheel ship stale code.
 build/
 *.egg-info/
+
+# atj writes status.md.bak as crash recovery every time it updates the ledger.
+# It is a runtime artifact of the tool, never a reviewed one.
+*.bak

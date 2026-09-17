@@ -258,7 +258,9 @@ class RenderJudgmentTests(unittest.TestCase):
                 self._rendered_block(original), "<!-- atj:scores:begin -->\n"
             )
             target.write_text(blanked, encoding="utf-8")
-            self.assertEqual(run_cli("render", "judgment", str(target)), 0)
+            # --force because the committed sample is already approved; the
+            # guard against re-rendering an approved judgment has its own test.
+            self.assertEqual(run_cli("render", "judgment", "--force", str(target)), 0)
             self.assertEqual(
                 self._rendered_block(target.read_text(encoding="utf-8")),
                 self._rendered_block(original),
@@ -288,6 +290,25 @@ class RenderJudgmentTests(unittest.TestCase):
                         encoding="utf-8"
                     ),
                 )
+
+    def test_an_approved_judgment_is_not_silently_re_rendered(self):
+        """An approved judgment is a reviewed artifact, not a scratch file."""
+        original = self.SOURCE.read_text(encoding="utf-8")
+        self.assertIn("approval_state: approved", original)
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "judge-security-ops.md"
+            target.write_text(
+                original.replace(self._rendered_block(original),
+                                 "<!-- atj:scores:begin -->\n"),
+                encoding="utf-8",
+            )
+            self.assertEqual(run_cli("render", "judgment", str(target)), 1)
+            self.assertNotIn("| functional |", target.read_text(encoding="utf-8"))
+            self.assertEqual(run_cli("render", "judgment", "--force", str(target)), 0)
+            self.assertEqual(
+                self._rendered_block(target.read_text(encoding="utf-8")),
+                self._rendered_block(original),
+            )
 
     def test_a_missing_generated_block_is_an_error_not_a_silent_skip(self):
         original = self.SOURCE.read_text(encoding="utf-8")
