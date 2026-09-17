@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
 current_stage: consolidation
-last_updated: "2026-09-17T22:00:01Z"
+last_updated: "2026-09-17T22:14:54Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -9,7 +9,7 @@ stage_gates:
   roster-frozen: passed
   evidence-validated: passed
   judgments-audited: passed
-  consolidation-audited: pending
+  consolidation-audited: passed
   bracket-audited: pending
   tournament-audited: pending
   dossiers-approved: pending
@@ -50,24 +50,25 @@ units:
 - unit_id: consolidation:team-ledger
   stage: consolidation
   state: complete
-  input_digest: 2ac058c32c73de6d
+  input_digest: be70393f10f80e05
   outputs:
   - summaries/team-ledger.md
-  audit_result: not-audited
-  completed_at: "2026-09-17T22:00:01Z"
+  audit_result: PASS WITH ADVISORIES
+  completed_at: "2026-09-17T22:14:54Z"
 - unit_id: consolidation:team-podcast
   stage: consolidation
   state: complete
-  input_digest: 25184930dc9bc887
+  input_digest: c68ba1d4e6cafbf7
   outputs:
   - summaries/team-podcast.md
-  audit_result: not-audited
-  completed_at: "2026-09-17T22:00:01Z"
+  audit_result: PASS WITH ADVISORIES
+  completed_at: "2026-09-17T22:14:54Z"
 gate_evidence:
   configuration-audited: audits/configuration.md
   roster-frozen: audits/intake.md
   evidence-validated: audits/evidence.md
   judgments-audited: audits/judgments.md
+  consolidation-audited: audits/consolidation.md
 ---
 # Event Status
 
@@ -159,12 +160,19 @@ the roster.
 | 2026-09-17T21:33:00Z | Initial-judging stage re-audited after the first repair round | audits/judgments.md (first pass), commits ebb76c2, 01f559f, bdf369d | audits/judgments.md (replaced) | FAIL — F2, F3, F6, F7 closed; adjudication passes; new F8 major, F9-F14 minor, A6-A10 advisory |
 | 2026-09-17T21:37:32Z | F8-F13 repaired: the adjudication recorded in the Blockers table, the stale "`adjudications/` is empty" claim corrected, the tie-break overstatement corrected here and in the adjudication, stage-audit rows added, `last_updated` brought forward. F12 and the A6 independence figure corrected. F14 logged as D13 | audits/judgments.md (second pass) | status.md, adjudications/team-podcast-reliability-ne.md, docs/framework-fix-plan.md | pending re-audit |
 | 2026-09-17T21:38:36Z | Repair round self-verified before the gate. The F11 stage-audit rows had been appended out of order (21:14:00Z after 21:20:42Z), re-breaking the ascending-order rule the evidence audit established at F8. Caught and re-sorted; all 52 rows now ascend. This is the fifth repair-introduced defect of the event and the first caught before an audit saw it. The F8-F13 repair round was operator-verified, NOT independently audited; the final event audit covers it | audits/judgments.md (second pass) | status.md | operator-verified, pending final audit |
-| 2026-09-17T22:19:00Z | Initial-judging stage audited, third pass. F8, F9, F13, F14, A6 closed; F1 and F5 correctly parked as carry-forward to consolidation; A8 ruled advisory. New F15-F19 and D14-D16. **F17 is a false finding**: it claims branch `fix/framework-d7-d10-d12` has no D12, but that branch carries D12 as a defect-table row and a full section — the audit's pickaxe search missed it. F18 was real and is closed: an agent worktree inside the repo made `release-check` FAIL, because four validators walk the filesystem rather than git; removing the worktree restored PASS | audits/judgments.md (second pass), commits 3667c00, cbf76e1, 9ad8a12 | audits/judgments.md (replaced) | PASS WITH ADVISORIES |
-| 2026-09-17T22:19:00Z | F10, F12, F15, F16, F19 repaired and F17 rebutted with evidence; worktree removed closing F18. Repair round self-verified against deterministic commands, per the third pass's instruction not to commission a fourth | audits/judgments.md (third pass) | status.md, adjudications/team-podcast-reliability-ne.md, docs/framework-fix-plan.md | operator-verified, pending final audit |
+| 2026-09-17T21:49:23Z | Initial-judging stage audited, third pass. F8, F9, F13, F14, A6 closed; F1 and F5 correctly parked as carry-forward to consolidation; A8 ruled advisory. New F15-F19 and D14-D16. **F17 is a false finding**: it claims branch `fix/framework-d7-d10-d12` has no D12, but that branch carries D12 as a defect-table row and a full section — the audit's pickaxe search missed it. F18 was real and is closed: an agent worktree inside the repo made `release-check` FAIL, because four validators walk the filesystem rather than git; removing the worktree restored PASS | audits/judgments.md (second pass), commits 3667c00, cbf76e1, 9ad8a12 | audits/judgments.md (replaced) | PASS WITH ADVISORIES |
+| 2026-09-17T21:49:30Z | F10, F12, F15, F16, F19 repaired and F17 rebutted with evidence; worktree removed closing F18. Repair round self-verified against deterministic commands, per the third pass's instruction not to commission a fourth | audits/judgments.md (third pass) | status.md, adjudications/team-podcast-reliability-ne.md, docs/framework-fix-plan.md | operator-verified, pending final audit |
 | 2026-09-17T21:58:17Z | Both consolidated panel reports written by `panel-consolidator@1.0.0`, run concurrently and independently. team-ledger finalized at 76.3; team-podcast carries no official total and keeps the provisional 58.25 out of its score block entirely. team-podcast's report carries the two corrections the judging audit ordered (check count is 42 not 43; one judge's attribution unsupported) and records the `agentic` 2/3/3/3 split as an unresolved interpretation disagreement rather than a settled mean | judgments/{team-ledger,team-podcast}/, both summaries/*.json, adjudications/team-podcast-reliability-ne.md | summaries/team-ledger.md, summaries/team-podcast.md | not-audited |
 | 2026-09-17T21:58:17Z | FRAMEWORK DEFECT D18: `atj render consolidated` and `atj consolidate` are both cited by the consolidated template and neither exists, so neither report's score block could be generated. Both consolidators disclosed the hand transcription unprompted. Each table was instead verified cell by cell against the canonical JSON by a deterministic script — zero mismatches on both teams — and the consolidation audit re-derived both independently, twice | framework/templates/consolidated-team-report.md, `atj render --help` | docs/framework-fix-plan.md | not-audited |
 | 2026-09-17T22:35:00Z | Consolidation stage audited by `judging-auditor@1.0.0`, FIRST pass. The auditor was given D16's scope rule up front — block only on event-scope findings — and returned PASS WITH ADVISORIES in one pass rather than the three the judging stage needed. Arithmetic re-derived twice: `atj score --json` against both committed summaries at 311 and 318 leaves with 0 diffs, then every criterion recomputed independently from the eight judgment front matters and the rubric weights | summaries/*.md, summaries/*.json, the eight judgments, both manifests, the adjudication | audits/consolidation.md | PASS WITH ADVISORIES |
 | 2026-09-17T22:40:00Z | C1-C5 and C7 repaired: the template boilerplate claiming `atj consolidate` generated the block and that it was "never transcribed by hand" corrected in place (D19), two unanimity overstatements corrected, both reports restamped to their real run bounds, and the one hand-edited cell inside the generator-owned region restored to the tool's own wording. Both tables re-verified against canonical JSON after the edits, zero mismatches | audits/consolidation.md | summaries/*.md, status.md | operator-verified |
+
+One exception to the audit rule below, recorded rather than hidden: the third-pass
+judging audit's artifact carries `completed_at: 2026-09-17T22:19:00Z` while the commit
+that recorded it landed at 21:49:23Z. Auditors have no clock (audit A7), and that
+fabricated value sorted after work that genuinely happened later. Those two rows carry
+their commit time instead. The same defect in judges is why every judgment's timestamps
+were replaced by the orchestrator.
 
 Timestamp provenance in this log, stated exactly rather than loosely. A row
 describing an execution carries the `completed_at` of the last run record it
