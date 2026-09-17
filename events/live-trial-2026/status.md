@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
-current_stage: consolidation
-last_updated: "2026-09-17T22:14:54Z"
+current_stage: bracket
+last_updated: "2026-09-17T22:15:17Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -166,6 +166,7 @@ the roster.
 | 2026-09-17T21:58:17Z | FRAMEWORK DEFECT D18: `atj render consolidated` and `atj consolidate` are both cited by the consolidated template and neither exists, so neither report's score block could be generated. Both consolidators disclosed the hand transcription unprompted. Each table was instead verified cell by cell against the canonical JSON by a deterministic script — zero mismatches on both teams — and the consolidation audit re-derived both independently, twice | framework/templates/consolidated-team-report.md, `atj render --help` | docs/framework-fix-plan.md | not-audited |
 | 2026-09-17T22:35:00Z | Consolidation stage audited by `judging-auditor@1.0.0`, FIRST pass. The auditor was given D16's scope rule up front — block only on event-scope findings — and returned PASS WITH ADVISORIES in one pass rather than the three the judging stage needed. Arithmetic re-derived twice: `atj score --json` against both committed summaries at 311 and 318 leaves with 0 diffs, then every criterion recomputed independently from the eight judgment front matters and the rubric weights | summaries/*.md, summaries/*.json, the eight judgments, both manifests, the adjudication | audits/consolidation.md | PASS WITH ADVISORIES |
 | 2026-09-17T22:40:00Z | C1-C5 and C7 repaired: the template boilerplate claiming `atj consolidate` generated the block and that it was "never transcribed by hand" corrected in place (D19), two unanimity overstatements corrected, both reports restamped to their real run bounds, and the one hand-edited cell inside the generator-owned region restored to the tool's own wording. Both tables re-verified against canonical JSON after the edits, zero mismatches | audits/consolidation.md | summaries/*.md, status.md | operator-verified |
+| 2026-09-17T22:50:00Z | Bracket built by `atj bracket build`, seed `live-trial-2026`, roster version 1, input digest `5bd7a2f7e711e721`. Single-elimination, 2 entrants, 1 final, 0 byes. All five hard constraints satisfied; affiliation separation not-applicable with one team per group. Rebuilt from the same seed and byte-identical, and `atj bracket verify` re-derived the constraints from the roster: PASS. The `performance-qualified` bye policy never reads a total here because two teams is an exact power of two and produces no byes — which is why team-podcast's missing total does not block the bracket, as the adjudication predicted | teams.md (frozen v1), event.md | bracket.json | not-audited |
 
 One exception to the audit rule below, recorded rather than hidden: the third-pass
 judging audit's artifact carries `completed_at: 2026-09-17T22:19:00Z` while the commit
