@@ -25,3 +25,6 @@ build/
 # atj writes status.md.bak as crash recovery every time it updates the ledger.
 # It is a runtime artifact of the tool, never a reviewed one.
 *.bak
+
+# agent worktrees, never committed
+.claude/worktrees/
