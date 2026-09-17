@@ -235,6 +235,73 @@ class CommandLineTests(unittest.TestCase):
         self.assertEqual(run_cli("event", "validate", "/nonexistent/event"), 1)
 
 
+class RenderJudgmentTests(unittest.TestCase):
+    """`atj render judgment` is the only sanctioned way a judgment gets numbers.
+
+    The template tells the judge to write raw scores and nothing else numeric.
+    These tests hold that promise: the generated table matches what the
+    committed sample already contains, and the judge's prose survives.
+    """
+
+    SOURCE = EVENT_DIR / "judgments" / "team-lumen" / "judge-security-ops.md"
+
+    def _rendered_block(self, text: str) -> str:
+        start = text.index("<!-- atj:scores:begin -->")
+        end = text.index("<!-- atj:scores:end -->")
+        return text[start:end]
+
+    def test_rendering_reproduces_the_committed_table(self):
+        original = self.SOURCE.read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "judge-security-ops.md"
+            blanked = original.replace(
+                self._rendered_block(original), "<!-- atj:scores:begin -->\n"
+            )
+            target.write_text(blanked, encoding="utf-8")
+            self.assertEqual(run_cli("render", "judgment", str(target)), 0)
+            self.assertEqual(
+                self._rendered_block(target.read_text(encoding="utf-8")),
+                self._rendered_block(original),
+            )
+
+    def test_an_unresolved_ne_is_reported_rather_than_totalled(self):
+        original = self.SOURCE.read_text(encoding="utf-8")
+        self.assertIn("not finalizable (unresolved NE)", original)
+
+    def test_it_leaves_the_judge_prose_untouched(self):
+        original = self.SOURCE.read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "judge-security-ops.md"
+            target.write_text(original, encoding="utf-8")
+            self.assertEqual(run_cli("render", "judgment", str(target)), 0)
+            self.assertEqual(target.read_text(encoding="utf-8"), original)
+
+    def test_a_directory_renders_every_judgment_in_it(self):
+        with tempfile.TemporaryDirectory() as directory:
+            staged = Path(directory) / "team-lumen"
+            shutil.copytree(EVENT_DIR / "judgments" / "team-lumen", staged)
+            self.assertEqual(run_cli("render", "judgment", str(staged)), 0)
+            for path in staged.glob("*.md"):
+                self.assertEqual(
+                    path.read_text(encoding="utf-8"),
+                    (EVENT_DIR / "judgments" / "team-lumen" / path.name).read_text(
+                        encoding="utf-8"
+                    ),
+                )
+
+    def test_a_missing_generated_block_is_an_error_not_a_silent_skip(self):
+        original = self.SOURCE.read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "judge-security-ops.md"
+            target.write_text(
+                original.replace("<!-- atj:scores:begin -->", "").replace(
+                    "<!-- atj:scores:end -->", ""
+                ),
+                encoding="utf-8",
+            )
+            self.assertEqual(run_cli("render", "judgment", str(target)), 1)
+
+
 class InterruptAndResumeTests(unittest.TestCase):
     """An interrupted run must resume without redoing valid completed work."""
 

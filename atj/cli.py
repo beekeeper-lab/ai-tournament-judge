@@ -424,6 +424,43 @@ def cmd_score(args) -> int:
     return OK if result["finalized"] else FAILURE
 
 
+def cmd_render_judgment(args) -> int:
+    """Generate the official scores table into an individual judgment.
+
+    The judge writes raw scores and confidence in front matter and nothing else
+    numeric. Weights, weighted points and the total come from the canonical
+    rubric through :mod:`atj.scoring`, so a hand-copied weight cannot drift into
+    an official artifact.
+    """
+    root = _root(args)
+    written, unchanged = [], []
+    for target in args.paths:
+        path = Path(target)
+        paths = sorted(path.glob("*.md")) if path.is_dir() else [path]
+        if not paths:
+            raise AtjError(f"no judgment files under {path}")
+        for source in paths:
+            metadata, body = frontmatter.read(source)
+            judgment = scoring.Judgment.from_metadata(metadata, source=str(source))
+            result = scoring.individual_score(judgment, root=root)
+            table = render.individual_scores_table(result, root)
+            rendered = render.replace_block(body, "scores", table)
+            if rendered == body:
+                unchanged.append(source)
+                continue
+            source.write_text(frontmatter.dump(metadata, rendered), encoding="utf-8")
+            written.append(source)
+    if args.json:
+        _emit({"rendered": [str(p) for p in written],
+               "unchanged": [str(p) for p in unchanged]}, args)
+        return OK
+    for source in written:
+        print(f"rendered {source}")
+    for source in unchanged:
+        print(f"unchanged {source}")
+    return OK
+
+
 def cmd_matchup(args) -> int:
     root = _root(args)
     payload = json.loads(Path(args.input).read_text(encoding="utf-8"))
@@ -1239,6 +1276,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     score.add_argument("--output", help="write the structured result to this path")
     score.set_defaults(func=cmd_score)
+
+    render_parser = sub.add_parser(
+        "render", help="generate official numbers into a reviewed artifact"
+    )
+    render_sub = render_parser.add_subparsers(dest="render_command", required=True)
+    render_judgment = render_sub.add_parser(
+        "judgment", help="generate the scores table into an individual judgment"
+    )
+    render_judgment.add_argument(
+        "paths", nargs="+", help="judgment files, or directories of them"
+    )
+    render_judgment.set_defaults(func=cmd_render_judgment)
 
     match = sub.add_parser("matchup", help="resolve an order-balanced head-to-head")
     match.add_argument("input", help="JSON with team_a, team_b, a_first, b_first")
