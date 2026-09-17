@@ -1,14 +1,14 @@
 ---
 event_id: live-trial-2026
 current_stage: initial-judging
-last_updated: "2026-09-17T21:38:23Z"
+last_updated: "2026-09-17T21:51:38Z"
 blocked: false
 blocked_reason: null
 stage_gates:
   configuration-audited: passed
   roster-frozen: passed
   evidence-validated: passed
-  judgments-audited: pending
+  judgments-audited: passed
   consolidation-audited: pending
   bracket-audited: pending
   tournament-audited: pending
@@ -51,6 +51,7 @@ gate_evidence:
   configuration-audited: audits/configuration.md
   roster-frozen: audits/intake.md
   evidence-validated: audits/evidence.md
+  judgments-audited: audits/judgments.md
 ---
 # Event Status
 
