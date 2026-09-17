@@ -103,6 +103,17 @@ container can run without it.
 |---|---|---|---|
 | team-ledger | `localhost/atj-live-trial/ledger:2` | `7780b2b9e6e1` | python:3.12-slim, poppler-utils, pyyaml, duckdb, pytest |
 | team-podcast | `localhost/atj-live-trial/podcast:3` | `c3670644bc7b` | python:3.12-slim, chromium, fonts-liberation, ffmpeg, fastapi, pydantic, uvicorn[standard], playwright |
+| team-podcast (superseded) | `localhost/atj-live-trial/podcast:2` | `5ff34ae63320` | as `:3` without `ffmpeg` |
+
+`podcast:2` is listed because five run records made on it are still cited by the
+evidence package, four of them as current evidence: `env-probe-01`,
+`server-boot-01`, `media-progress-01`, `runsh-attempt-01`, and `e2e-attempt-01`
+(kept deliberately as the record of the originally blocked attempt). Every one of
+the four was repeated on `:3` after the evidence audit, with identical results,
+and the runtime carried by `:3` was probed directly rather than assumed
+(`runs/team-podcast-env-probe-03.json`). `podman history` shows the two images
+differ only by `ffmpeg` in the apt layer. `Containerfile.podcast` describes `:3`;
+`:2` is `:3` with `ffmpeg` removed from that one line.
 
 Where each package comes from, stated exactly rather than loosely:
 
@@ -132,10 +143,30 @@ from a mutable base and use open-ended version ranges, so the tag alone would le
 a silent rebuild pass unnoticed; the ID is what makes a rebuild detectable. The
 Containerfiles are committed under `events/live-trial-2026/evidence/`.
 
+`Containerfile.ledger` was corrected after the evidence audit found (F1) that it
+omitted the `poppler-utils` layer, and so did not build the image it describes.
+It was reconciled against `podman history localhost/atj-live-trial/ledger:2`,
+which shows the two `RUN` layers that actually produced `7780b2b9e6e1`, and it
+now matches them in content and order. It was deliberately **not** reconciled by
+rebuilding: a rebuild resolves current apt and pip versions and would produce a
+new image ID, invalidating eleven run records to fix a recipe that the build
+history already shows the existing image was made from. `Containerfile.podcast`
+was checked the same way and already matched `:3`.
+
 An untrusted submission now influences what is installed into the image that
 judges it, and package installation runs third-party setup code with network at
 build time. That happens inside podman, never on the host, and never runs the
 submission's own code. The dependency lists are short, mainstream, and recorded.
+
+Two environmental limitations were treated differently on purpose. A missing
+declared prerequisite — `poppler-utils` for one team, `ffmpeg` for the other — is
+an operator error that penalizes a submission for something outside it, so both
+were fixed by amending the image. The sandbox's 64 MB `/tmp` tmpfs is not: it is
+a framework-wide resource cap applied identically to every submission, and moving
+it mid-event for the one team it constrains would be the unfair act, not the
+fair one. The consequence is recorded rather than removed — team-podcast's full
+56-file, 2.2 GB library cannot be exercised, and `reliability` is marked
+evidence-limited for that team as a result.
 
 This table was amended after the configuration gate passed, which is permitted
 only because no judging has begun. The amendment is in scope for the intake stage

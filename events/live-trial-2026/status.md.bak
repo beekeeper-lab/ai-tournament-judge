@@ -23,14 +23,6 @@ units:
   - evidence/team-podcast/manifest.md
   audit_result: not-audited
   completed_at: "2026-09-17T18:41:16Z"
-- unit_id: evidence:team-ledger
-  stage: evidence
-  state: complete
-  input_digest: 36f69f52d934b790
-  outputs:
-  - evidence/team-ledger/manifest.md
-  audit_result: not-audited
-  completed_at: "2026-09-17T18:41:16Z"
 gate_evidence:
   configuration-audited: audits/configuration.md
   roster-frozen: audits/intake.md
