@@ -113,6 +113,34 @@ def consolidated_table(result: dict[str, Any], root: Path | None = None) -> str:
     return "\n".join(rows)
 
 
+def adjudication_notice(result: dict[str, Any]) -> str:
+    """The consolidation's outstanding adjudications, for the console.
+
+    `consolidated_table` prints `blocked_reasons` but not `adjudication_required`,
+    and the two are not the same list: a criterion can require adjudication
+    without blocking, and an operator reading only the table sees no mention of
+    an adjudication that the written JSON demands. That is how live-trial-2026
+    got "no adjudication required" into its ledger while
+    `summaries/team-podcast.json` recorded the opposite (D7).
+
+    Kept out of `consolidated_table` on purpose: that function's output is
+    committed into every consolidated team report, and this is an operator
+    prompt, not part of the official record.
+    """
+    required = result.get("adjudication_required") or []
+    if not required:
+        return ""
+    rows = ["**Adjudication required:**"]
+    for entry in required:
+        rows.append(f"- {entry['criterion']}: {entry['trigger']}")
+    rows.append("")
+    rows.append(
+        "Recorded as `adjudication_required` in the structured result. Do not "
+        "report this panel as needing no adjudication."
+    )
+    return "\n".join(rows)
+
+
 def matchup_table(result: dict[str, Any], root: Path | None = None) -> str:
     rows = ["| Criterion | Weight | A-first value | B-first normalized | Combined margin | Order |",
             "|---|---:|---:|---:|---:|---|"]

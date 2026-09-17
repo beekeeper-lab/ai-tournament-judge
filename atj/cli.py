@@ -416,6 +416,10 @@ def cmd_score(args) -> int:
         _emit(result, args)
         return OK if result["finalized"] else FAILURE
     print(render.consolidated_table(result))
+    notice = render.adjudication_notice(result)
+    if notice:
+        print()
+        print(notice)
     if args.output:
         Path(args.output).write_text(
             json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"

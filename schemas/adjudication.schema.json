@@ -11,6 +11,7 @@
     "question",
     "resolution",
     "decided_by",
+    "persona",
     "rubric",
     "framework_commit",
     "visibility",
@@ -108,6 +109,10 @@
       "type": "string",
       "minLength": 1,
       "$comment": "A human official's role. Disqualification, unresolved ties and rules exceptions are human-only."
+    },
+    "persona": {
+      "$ref": "common.schema.json#/$defs/reference",
+      "$comment": "What produced this record, not who decided: a component registered in framework/personas.md. The deciding human is decided_by."
     },
     "rubric": {
       "$ref": "common.schema.json#/$defs/reference"
