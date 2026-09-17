@@ -26,11 +26,22 @@ version.
 | D4 | `atj validate reports` verifies that a citation resolves, not that its target contains the claim | 3 |
 | D5 | `atj/event.py:745` writes `status.md.bak` on every ledger update; it was committed twice | done |
 | D6 | `.claude/hooks/pre-advance.sh` inspects the whole command string, so prose naming a submission path trips the run-on-host guard | 1 |
+| D7 | `atj score`'s text output prints `blocked_reasons` but never `adjudication_required`, so an operator reading the console can state the opposite of the committed JSON | 1 |
+| D8 | `confidence` is undefined for an `NE` criterion; four judges on identical reasoning split between `low` and `high` because one described the evidence and one described the determination | 2 |
+| D9 | `model.verified` has no defined threshold; on the same basis `judge-backend` recorded `false` and three judges recorded `true` | 2 |
 
 D3 fixed in `3a798ad` (command added, reproduces the committed sample byte for
 byte) and `4ac09ba` (refuses to rewrite an approved judgment without `--force`,
 checks every file before writing any, reports `forced_over_approval` in `--json`).
 D5 fixed by gitignoring `*.bak` with the `atj/event.py:745` reason recorded.
+
+D7, D8 and D9 were found by the `initial-judging` stage audit of live-trial-2026
+(`events/live-trial-2026/audits/judgments.md`). D7 is tier 1 because it caused a real
+defect in that event: the operator wrote "no adjudication required" into the ledger
+while `summaries/team-podcast.json` recorded the opposite. It is a print statement.
+D8 and D9 are tier 2 because they set what a judge must write, and personas and
+templates are frozen while an event is judging.
+
 
 ## Tier 1 — land during the event
 
