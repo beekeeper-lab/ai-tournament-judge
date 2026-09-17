@@ -1,0 +1,470 @@
+{
+  "adjudication_required": [],
+  "blocked_reasons": [],
+  "criteria": {
+    "agentic": {
+      "agreement": "aligned",
+      "criterion": "agentic",
+      "maximum": 4.0,
+      "mean": 3.5,
+      "mean_inputs": [
+        3.0,
+        3.0,
+        4.0,
+        4.0
+      ],
+      "minimum": 3.0,
+      "name": "Agentic and AI system design",
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 1.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        3.0,
+        3.0,
+        4.0,
+        4.0
+      ],
+      "source_scores": {
+        "judge-backend": 3.0,
+        "judge-frontend-ux": 3.0,
+        "judge-product-agentic": 4.0,
+        "judge-security-ops": 4.0
+      },
+      "weight": 15,
+      "weighted_points": 10.5
+    },
+    "engineering": {
+      "agreement": "aligned",
+      "criterion": "engineering",
+      "maximum": 4.0,
+      "mean": 4.0,
+      "mean_inputs": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "minimum": 4.0,
+      "name": "Engineering and maintainability",
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "source_scores": {
+        "judge-backend": 4.0,
+        "judge-frontend-ux": 4.0,
+        "judge-product-agentic": 4.0,
+        "judge-security-ops": 4.0
+      },
+      "weight": 15,
+      "weighted_points": 12.0
+    },
+    "functional": {
+      "agreement": "aligned",
+      "criterion": "functional",
+      "maximum": 4.0,
+      "mean": 4.0,
+      "mean_inputs": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "minimum": 4.0,
+      "name": "Functional correctness and completeness",
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "source_scores": {
+        "judge-backend": 4.0,
+        "judge-frontend-ux": 4.0,
+        "judge-product-agentic": 4.0,
+        "judge-security-ops": 4.0
+      },
+      "weight": 25,
+      "weighted_points": 20.0
+    },
+    "innovation": {
+      "agreement": "aligned",
+      "criterion": "innovation",
+      "maximum": 4.0,
+      "mean": 4.0,
+      "mean_inputs": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "minimum": 4.0,
+      "name": "Innovation and technical ambition",
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "source_scores": {
+        "judge-backend": 4.0,
+        "judge-frontend-ux": 4.0,
+        "judge-product-agentic": 4.0,
+        "judge-security-ops": 4.0
+      },
+      "weight": 10,
+      "weighted_points": 8.0
+    },
+    "product": {
+      "agreement": "aligned",
+      "criterion": "product",
+      "maximum": 4.0,
+      "mean": 3.75,
+      "mean_inputs": [
+        4.0,
+        3.0,
+        4.0,
+        4.0
+      ],
+      "minimum": 3.0,
+      "name": "Product value and usability",
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 1.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        4.0,
+        3.0,
+        4.0,
+        4.0
+      ],
+      "source_scores": {
+        "judge-backend": 4.0,
+        "judge-frontend-ux": 3.0,
+        "judge-product-agentic": 4.0,
+        "judge-security-ops": 4.0
+      },
+      "weight": 15,
+      "weighted_points": 11.25
+    },
+    "reliability": {
+      "agreement": "aligned",
+      "criterion": "reliability",
+      "maximum": 4.0,
+      "mean": 3.25,
+      "mean_inputs": [
+        3.0,
+        3.0,
+        3.0,
+        4.0
+      ],
+      "minimum": 3.0,
+      "name": "Reliability, testing, and observability",
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 1.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        3.0,
+        3.0,
+        3.0,
+        4.0
+      ],
+      "source_scores": {
+        "judge-backend": 3.0,
+        "judge-frontend-ux": 3.0,
+        "judge-product-agentic": 3.0,
+        "judge-security-ops": 4.0
+      },
+      "weight": 10,
+      "weighted_points": 6.5
+    },
+    "security": {
+      "agreement": "aligned",
+      "criterion": "security",
+      "maximum": 4.0,
+      "mean": 4.0,
+      "mean_inputs": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "minimum": 4.0,
+      "name": "Security, privacy, and responsible AI",
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "source_scores": {
+        "judge-backend": 4.0,
+        "judge-frontend-ux": 4.0,
+        "judge-product-agentic": 4.0,
+        "judge-security-ops": 4.0
+      },
+      "weight": 10,
+      "weighted_points": 8.0
+    }
+  },
+  "display_total": 76.3,
+  "finalized": true,
+  "individuals": [
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "engineering": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "functional": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 25,
+          "weighted_points": 20.0
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        },
+        "product": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "reliability": {
+          "confidence": "high",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        },
+        "security": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        }
+      },
+      "display_total": 75.0,
+      "judge_id": "judge-backend",
+      "judge_run_id": "jr:live-trial-2026:team-ledger:judge-backend:b859a240:01",
+      "partial_total": 75.0,
+      "persona": "judge-backend@1.0.0",
+      "total": 75.0,
+      "unresolved_ne": []
+    },
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "engineering": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "functional": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 25,
+          "weighted_points": 20.0
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        },
+        "product": {
+          "confidence": "high",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "reliability": {
+          "confidence": "high",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        },
+        "security": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        }
+      },
+      "display_total": 72.0,
+      "judge_id": "judge-frontend-ux",
+      "judge_run_id": "jr:live-trial-2026:team-ledger:judge-frontend-ux:b859a240:01",
+      "partial_total": 72.0,
+      "persona": "judge-frontend-ux@1.0.0",
+      "total": 72.0,
+      "unresolved_ne": []
+    },
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "engineering": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "functional": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 25,
+          "weighted_points": 20.0
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        },
+        "product": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "reliability": {
+          "confidence": "high",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        },
+        "security": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        }
+      },
+      "display_total": 78.0,
+      "judge_id": "judge-product-agentic",
+      "judge_run_id": "jr:live-trial-2026:team-ledger:judge-product-agentic:b859a240:01",
+      "partial_total": 78.0,
+      "persona": "judge-product-agentic@1.0.0",
+      "total": 78.0,
+      "unresolved_ne": []
+    },
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "engineering": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "functional": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 25,
+          "weighted_points": 20.0
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        },
+        "product": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "reliability": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        },
+        "security": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        }
+      },
+      "display_total": 80.0,
+      "judge_id": "judge-security-ops",
+      "judge_run_id": "jr:live-trial-2026:team-ledger:judge-security-ops:b859a240:01",
+      "partial_total": 80.0,
+      "persona": "judge-security-ops@1.0.0",
+      "total": 80.0,
+      "unresolved_ne": []
+    }
+  ],
+  "integrity_problems": [],
+  "judge_count": 4,
+  "judge_ids": [
+    "judge-backend",
+    "judge-frontend-ux",
+    "judge-product-agentic",
+    "judge-security-ops"
+  ],
+  "judge_run_ids": [
+    "jr:live-trial-2026:team-ledger:judge-backend:b859a240:01",
+    "jr:live-trial-2026:team-ledger:judge-frontend-ux:b859a240:01",
+    "jr:live-trial-2026:team-ledger:judge-product-agentic:b859a240:01",
+    "jr:live-trial-2026:team-ledger:judge-security-ops:b859a240:01"
+  ],
+  "provisional_total": 76.25,
+  "rubric": "submission-evaluation@1.0.0",
+  "total": 76.25
+}

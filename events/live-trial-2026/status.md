@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
-current_stage: evidence
-last_updated: "2026-09-17T19:12:31Z"
+current_stage: initial-judging
+last_updated: "2026-09-17T19:29:14Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -31,6 +31,14 @@ units:
   - evidence/team-ledger/manifest.md
   audit_result: PASS WITH ADVISORIES
   completed_at: "2026-09-17T19:12:26Z"
+- unit_id: judging:team-ledger
+  stage: initial-judging
+  state: complete
+  input_digest: 22215ab0e39dee06
+  outputs:
+  - judgments/team-ledger
+  audit_result: not-audited
+  completed_at: "2026-09-17T19:29:14Z"
 gate_evidence:
   configuration-audited: audits/configuration.md
   roster-frozen: audits/intake.md
@@ -56,7 +64,7 @@ gate_evidence:
 | Team ID | Intake | Evidence | Four judgments | Consolidated | Audited | Dossier |
 |---|---|---|---|---|---|---|
 | team-podcast | done, pinned f3fdd342465fa6bc2a52d226a8613b082ad329e0 | done, repaired after evidence audit FAIL, re-audit pending (ev:live-trial-2026:team-podcast:f3fdd342465f:d06f90cc) — `reliability` evidence-limited | pending | pending | pending | pending |
-| team-ledger | done, repaired after evidence audit FAIL, re-audit pending, pinned 9d21b7707f204ef60f5a1cee612f1d4db0a4a575 | done (ev:live-trial-2026:team-ledger:9d21b7707f20:b859a240) | pending | pending | pending | pending |
+| team-ledger | done, pinned 9d21b7707f204ef60f5a1cee612f1d4db0a4a575 | done, audited PASS WITH ADVISORIES (ev:live-trial-2026:team-ledger:9d21b7707f20:b859a240) | done, 4 of 4, all criteria aligned | scored 76.3, panel report pending | pending | pending |
 
 Intake is not a unit in the ledger: `atj event unit` derives digests only for
 `evidence:`, `judging:` and `consolidation:`. Intake state is tracked here and in
@@ -107,6 +115,11 @@ the roster.
 | 2026-09-17T18:56:46Z | F8 residual repair: four rows stamped after the commit that recorded them restamped to 18:41:56Z; the audit row restamped to its artifact's completed_at; the provenance note below corrected | audits/evidence.md F8; git log, runs/*.json | status.md | pending re-audit || 2026-09-17T19:20:00Z | Evidence stage audited, third pass | audits/evidence.md (second pass), commit 4ac09ba, both manifests, 27 run records, re-run of the src/fin/ grep | audits/evidence.md (replaced) | PASS WITH ADVISORIES — F1-F12 closed; new F13-F17 minor, A10-A13 advisory |
 | 2026-09-17T19:20:00Z | F13-F17 and A10-A13 repaired: two Missing-evidence bullets repointed from ev-ledger-10 to ev-ledger-20; ev-podcast-21's starlette and Debian values marked as :3-only measurements; req-03 now names ev-ledger-20's re-test; four rows restamped to commit 4ac09ba's time and the F6 row to the last of its records; Containerfile.ledger's caller path corrected to src/fin/adapters/citi_pdf.py:198; the activity log rejoined into one table; R3 corrected to five tiers with tier 2 also unexercised; the 24.5s figure separated into 17.3s transcode and ~7s suite | audits/evidence.md F13-F17, A10-A13 | both manifests, evidence/Containerfile.ledger, status.md, atj/cli.py | pending gate |
 | 2026-09-17T19:20:00Z | A10 repair: `atj render judgment` now scores and checks every file before writing any, so a run that will refuse refuses having written nothing, and reports `forced_over_approval` in `--json` | audits/evidence.md A10 | atj/cli.py, tests/test_end_to_end.py | pending gate |
+| 2026-09-17T19:20:52Z | Four independent judgments for team-ledger, staged then promoted together | ev:live-trial-2026:team-ledger:9d21b7707f20:b859a240 @ 9d21b770 | judgments/team-ledger/{judge-backend,judge-frontend-ux,judge-product-agentic,judge-security-ops}.md | not-audited |
+| 2026-09-17T19:35:00Z | FRAMEWORK DEFECT found: the four judge personas declare `tools: Read, Grep, Glob` and cannot write the artifact judge-submission requires of them. All four returned their document as text; the orchestrator persisted each verbatim, which the skill's step 4 permits ("hold each returned report in the orchestrator's own context"). Personas were NOT changed — judging had begun, and CLAUDE.md forbids changing a persona mid-event. Needs a new persona version before the next event | .claude/agents/judge-*.md | judgments/team-ledger/*.md, this entry | pending judgments audit |
+| 2026-09-17T19:35:00Z | FRAMEWORK DEFECT found: `schemas/judgment.schema.json` requires a `model` block that `framework/templates/individual-judgment.md` does not show. Four judgments failed validation on it and the block was added from each file's own front matter | atj validate reports | judgments/team-ledger/*.md | pending judgments audit |
+| 2026-09-17T19:35:00Z | Scores table generated for all four by `atj render judgment`; no weight or total was typed by any judge | framework/rubrics/submission-evaluation.md | judgments/team-ledger/*.md | not-audited |
+| 2026-09-17T19:35:00Z | team-ledger panel consolidated by `atj score`: 76.3 of 100, all seven criteria aligned, no NE, no outlier, no adjudication required | judgments/team-ledger/ | summaries/team-ledger.json | not-audited |
 
 Timestamp provenance in this log, stated exactly rather than loosely. A row
 describing an execution carries the `completed_at` of the last run record it
