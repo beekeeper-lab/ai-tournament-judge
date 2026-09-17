@@ -190,7 +190,14 @@
       ],
       "possible_outliers": [],
       "range": null,
-      "resolution": null,
+      "resolution": {
+        "adjudication_id": "adj:live-trial-2026:team-podcast:01",
+        "decided_by": "event-director",
+        "rationale": null,
+        "resolved_score": null,
+        "source": "events/live-trial-2026/adjudications/team-podcast-reliability-ne.md"
+      },
+      "resolution_note": "adjudicated resolution recorded alongside the source scores; no source score was modified",
       "scores": [],
       "source_scores": {
         "judge-backend": "NE",

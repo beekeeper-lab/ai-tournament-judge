@@ -29,6 +29,8 @@ version.
 | D7 | `atj score`'s text output prints `blocked_reasons` but never `adjudication_required`, so an operator reading the console can state the opposite of the committed JSON | 1 |
 | D8 | `confidence` is undefined for an `NE` criterion; four judges on identical reasoning split between `low` and `high` because one described the evidence and one described the determination | 2 |
 | D9 | `model.verified` has no defined threshold; on the same basis `judge-backend` recorded `false` and three judges recorded `true` | 2 |
+| D10 | `framework/templates/adjudication-report.md` invites `persona: ADJUDICATOR-AGENT-OR-HUMAN@VERSION`, but `atj validate` requires a persona registered in `framework/personas.md` as `name@x.y.z`. There is no adjudicator persona and no way to name a human decision-maker | 1 |
+| D11 | An adjudication can *clear* an `NE` through `score_override`, but nothing can express one that *accepts* it. `atj score` re-reports an adjudicated `NE` as `unresolved` and keeps listing `adjudication_required`, so a completed adjudication is indistinguishable from a missing one | 2 |
 
 D3 fixed in `3a798ad` (command added, reproduces the committed sample byte for
 byte) and `4ac09ba` (refuses to rewrite an approved judgment without `--force`,
@@ -169,3 +171,9 @@ Two things follow, and they belong in the final event report:
 
 T3.1 narrows the gap. It does not close it, and the framework's documentation
 should stop implying that validation and correctness are the same property.
+
+D10 and D11 were found while writing the only adjudication live-trial-2026 has
+produced (`events/live-trial-2026/adjudications/team-podcast-reliability-ne.md`).
+D10 is tier 1: a template and a validator disagree, and the template loses.
+D11 is tier 2 because the repair changes what `atj score` prints for an official
+result, which should not move while an event is being scored.
