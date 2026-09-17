@@ -31,6 +31,7 @@ version.
 | D9 | `model.verified` has no defined threshold; on the same basis `judge-backend` recorded `false` and three judges recorded `true` | 2 |
 | D10 | `framework/templates/adjudication-report.md` invites `persona: ADJUDICATOR-AGENT-OR-HUMAN@VERSION`, but `atj validate` requires a persona registered in `framework/personas.md` as `name@x.y.z`. There is no adjudicator persona and no way to name a human decision-maker | 1 |
 | D11 | An adjudication can *clear* an `NE` through `score_override`, but nothing can express one that *accepts* it. `atj score` re-reports an adjudicated `NE` as `unresolved` and keeps listing `adjudication_required`, so a completed adjudication is indistinguishable from a missing one | 2 |
+| D13 | `atj/scoring.py:431` treats a non-empty `decided_by` as one of the gates that lets an adjudication move an official total, and nothing distinguishes a human deciding from an agent writing a role into a required field | 2 |
 
 D3 fixed in `3a798ad` (command added, reproduces the committed sample byte for
 byte) and `4ac09ba` (refuses to rewrite an approved judgment without `--force`,
@@ -144,7 +145,7 @@ Add to `framework/rubrics/README.md`: when an audit pass also specifies repairs,
 the repair round must itself be audited before the gate.
 
 Evidence from this event: three rounds on the evidence stage, each finding real
-defects the previous round missed, and **three of those defects were introduced
+defects the previous round missed, and **four of those defects were introduced
 by the repairs** — a fabricated `playwright 1.56.0`, a `starlette 1.6.0`
 attributed to a measurement never taken, and a `Containerfile` comment citing a
 path that does not exist at the pinned commit.
@@ -177,3 +178,14 @@ produced (`events/live-trial-2026/adjudications/team-podcast-reliability-ne.md`)
 D10 is tier 1: a template and a validator disagree, and the template loses.
 D11 is tier 2 because the repair changes what `atj score` prints for an official
 result, which should not move while an event is being scored.
+
+D13 was found by the second-pass judging audit of live-trial-2026 while ruling on
+D10. It carried no weight in that event because the one adjudication written has no
+`score_override`, so nothing official moved. The audit's ruling is worth keeping:
+the substitution of `run-judging-event@1.0.0` for a human adjudicator is honest in
+form because the record discloses it in plain text, unverifiable in substance, and
+acceptable once but not as a precedent.
+
+Numbering note: the second-pass audit recommends this defect as "D12". It is D13
+here because D12 was already taken by the `agentic`-with-no-AI rubric gap on branch
+`fix/framework-d7-d10-d12`.

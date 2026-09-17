@@ -97,8 +97,8 @@ is not a zero.
 | team-podcast provisional sum | 58.25 of 100, unofficial | unchanged, remains unofficial and unpublishable | no change |
 | Bracket assignment | — | unaffected | 2 eligible teams, `min_teams: 2`, one matchup, no byes, so no bye seeding reads a total |
 | Head-to-head matchup | — | unaffected | `framework/rubrics/head-to-head.md` compares the seven criteria directly and states "Do not merely select the team with the higher initial total" |
-| `reliability` in the matchup | — | must be comparison value `0` unless the common evidence supports otherwise | "Substantially equal or insufficient comparative evidence" is the defined value for this case |
-| Tie-break | — | narrowed | `tie_break_order: [functional, reliability, product]`; `reliability` cannot break a tie for this pairing, so the order effectively becomes functional, then product |
+| `reliability` in the matchup | — | expected to be comparison value `0` | "Substantially equal or insufficient comparative evidence" is the defined value for this case. The matchup panel decides it on the common evidence; this adjudication does not bind it |
+| Tie-break | — | possibly narrowed | `tie_break_order: [functional, reliability, product]`. Comparison value `0` means "substantially equal **or** insufficient comparative evidence" and is the matchup panel's finding to make, not this adjudication's to impose. If the panel returns `0`, `reliability` contributes no margin and the effective order becomes functional, then product |
 
 No score was overridden. `score_override` is absent by design. The impact table
 was derived from `atj score` output and the two rubric front matters, not by
@@ -108,8 +108,13 @@ hand.
 
 `high`. The determination rests on direct observation of three recorded
 executions and on the unanimous, independently reached conclusion of four
-judges whose reports the stage audit measured at a maximum pairwise 9-gram
-overlap of 0.0076. The uncertainty that produced the `NE` is thoroughly
+judges whose reports the stage audit found independent by every method it tried.
+The first pass quoted a maximum pairwise 9-gram overlap of 0.0076; the second
+pass could not reproduce that exact figure under its own stated method, getting
+0.0149 for this panel on stripped 9-grams and 0.0248 on the tool's 6-grams
+against a 0.80 threshold. Every measure is far below any contamination
+threshold and the conclusion is unchanged, but the precise figure should not be
+quoted as measured (audit A6). The uncertainty that produced the `NE` is thoroughly
 documented; the decision that it cannot be resolved within this event is not
 itself uncertain.
 
