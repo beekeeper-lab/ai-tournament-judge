@@ -50,7 +50,7 @@
   "event_id": "live-trial-2026",
   "feasible": true,
   "format": "single-elimination",
-  "framework_commit": "uncommitted",
+  "framework_commit": "1e761e639141d099f975cd6b4e3efaa296e6602f",
   "input_digest": "5bd7a2f7e711e721",
   "policy": "bracket-assignment@1.0.0",
   "roster_version": 1,
