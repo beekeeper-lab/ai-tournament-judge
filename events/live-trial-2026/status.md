@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
 current_stage: bracket
-last_updated: "2026-09-17T22:15:17Z"
+last_updated: "2026-09-17T22:27:08Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -10,7 +10,7 @@ stage_gates:
   evidence-validated: passed
   judgments-audited: passed
   consolidation-audited: passed
-  bracket-audited: pending
+  bracket-audited: passed
   tournament-audited: pending
   dossiers-approved: pending
   final-audit-passed: pending
@@ -69,6 +69,7 @@ gate_evidence:
   evidence-validated: audits/evidence.md
   judgments-audited: audits/judgments.md
   consolidation-audited: audits/consolidation.md
+  bracket-audited: audits/bracket.md
 ---
 # Event Status
 
