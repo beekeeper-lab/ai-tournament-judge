@@ -31,6 +31,14 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius
 .meta{display:flex;flex-wrap:wrap;gap:.5rem .75rem;font-size:.85rem;color:var(--muted);
   border-top:1px solid var(--border);padding-top:.9rem;margin-top:.2rem}
 .meta b{color:var(--ink);font-weight:600}
+.subjects{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:.75rem;margin:0 0 1rem}
+.subj{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:.7rem .8rem}
+.subj-hd{font-weight:650;font-size:.98rem;margin-bottom:.15rem}
+.subj-src{color:var(--muted);font-size:.8rem;margin-bottom:.4rem;word-break:break-all}
+.subj-state{font-size:.86rem;line-height:1.45;border-left:3px solid var(--border);padding-left:.55rem}
+.subj-state.done{border-left-color:#2e7d52}
+.subj-state.todo{border-left-color:#b4842c}
 .chip{display:inline-block;background:var(--chip-bg);color:var(--chip-ink);
   border:1px solid var(--chip-border);border-radius:999px;padding:.12rem .6rem;
   font-size:.78rem;font-weight:600;white-space:nowrap}
@@ -114,11 +122,31 @@ footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);
   <p class="sub">First live run of the AI Tournament Judge framework against real
   applications, real container isolation, and real model judgment. The subject under
   test is the framework itself.</p>
+
+  <div class="subjects">
+    <div class="subj">
+      <div class="subj-hd"><code>team-ledger</code> — Hive Ledger</div>
+      <div class="subj-src">github.com/beekeeper-lab/hive-ledger @ <code>9d21b770</code></div>
+      <div class="subj-state done">Judged — 4 of 4 judges, consolidated <b>76.3 / 100</b>,
+      all 7 criteria aligned, no NE. Panel report and stage audit still pending.</div>
+    </div>
+    <div class="subj">
+      <div class="subj-hd"><code>team-podcast</code> — Podcast Listener</div>
+      <div class="subj-src">github.com/beekeeper-lab/podcast-listener @ <code>f3fdd342</code></div>
+      <div class="subj-state todo">Not judged — evidence package audited
+      (<code>reliability</code> evidence-limited); <b>0 of 4</b> judgments written.</div>
+    </div>
+  </div>
+
   <div class="meta">
-    <span><b>Status</b> In progress — stage 4 of 11</span>
+    <span><b>Status</b> In progress — stage 4 of 11 (<code>initial-judging</code>)</span>
+    <span><b>Blocked on</b> gate <code>judgments-audited</code></span>
+    <span><b>Evaluated</b> 1 of 2 teams</span>
+    <span><b>Rubric</b> 7 criteria, 4 independent judges per team</span>
+    <span><b>Sandboxed runs</b> 27 (429s container time)</span>
     <span><b>Date</b> 2026-09-17</span>
     <span><b>Branch</b> <code>feature/first-live-event</code></span>
-    <span><b>Head</b> <code>7cd307a</code></span>
+    <span><b>Head</b> <code>25624c7</code></span>
     <span><b>Owner</b> event-director</span>
   </div>
 </header>
