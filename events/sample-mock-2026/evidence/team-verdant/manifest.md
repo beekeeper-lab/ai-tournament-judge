@@ -32,18 +32,18 @@ skill against the frozen rubric. All content below is invented for this fixture.
 
 | ID | Claim or requirement | Source | Evidence status |
 |---|---|---|---|
-| req-01 | A campus energy dashboard with anomaly alerts over meter data. | team statement | partially demonstrated |
-| req-02 | Honest uncertainty handling: alerts show confidence and can be dismissed. | team statement | demonstrated |
-| req-03 | No known blocking defect | team statement | contradicted |
+| req-01 | A campus energy dashboard with anomaly alerts over meter data. | team statement | partially demonstrated — [[evidence:ev-verdant-01]] |
+| req-02 | Honest uncertainty handling: alerts show confidence and can be dismissed. | team statement | demonstrated — [[evidence:ev-verdant-02]] |
+| req-03 | No known blocking defect | team statement | contradicted — [[evidence:ev-verdant-03]] |
 
 ## Direct observations
 
-| Evidence ID | Class | Observation |
-|---|---|---|
-| ev-verdant-01 | direct-observation | Alert confidence is shown and dismissals persist. |
-| ev-verdant-02 | artifact | src/ingest.py:14 hard-codes the meter endpoint. |
-| ev-verdant-03 | direct-observation | A failed ingest leaves the dashboard silently stale. |
-| ev-verdant-04 | artifact | Nine integration tests cover the alerting path. |
+| Evidence ID | Observation | Supports | Class |
+|---|---|---|---|
+| ev-verdant-01 | Alert confidence is shown and dismissals persist. | req-01 | direct-observation |
+| ev-verdant-02 | src/ingest.py:14 hard-codes the meter endpoint. | req-02 | artifact |
+| ev-verdant-03 | A failed ingest leaves the dashboard silently stale. | req-03 | direct-observation |
+| ev-verdant-04 | Nine integration tests cover the alerting path. | - | artifact |
 
 ## Tests and execution
 

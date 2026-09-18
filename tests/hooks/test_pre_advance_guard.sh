@@ -57,5 +57,26 @@ expect allow "atj commands that mention nothing" \
 expect allow "listing a checkout" \
   'ls workspaces/live-trial-2026/team-podcast'
 
-printf '\npre-advance run-on-host guard: %d passed, %d failed\n' "$pass" "$fail"
+# --- D23: the gate check reads pre-command state, so order matters ---
+# Both committed events are `complete`, so `atj event status` reports them
+# blocked and a bare advance is refused. That is the baseline for these cases.
+ADV='python3 -m atj event advance events/live-trial-2026'
+GATE='python3 -m atj event gate events/live-trial-2026 final-audit-passed passed --audit audits/final.md'
+OTHER_GATE='python3 -m atj event gate events/sample-mock-2026 final-audit-passed passed --audit audits/final.md'
+PENDING='python3 -m atj event gate events/live-trial-2026 final-audit-passed pending'
+
+expect block "a bare advance of a blocked event" "$ADV"
+expect allow "a gate recorded before the advance in the same chain" "$GATE && $ADV"
+expect block "a gate recorded after the advance" "$ADV && $GATE"
+expect block "a gate for a different event before the advance" "$OTHER_GATE && $ADV"
+expect block "a gate set to pending before the advance" "$PENDING && $ADV"
+
+# The gate half read the raw command string long after D6 fixed the execution
+# half, so a heredoc that merely wrote the words down was blocked.
+expect allow "a heredoc describing an advance" \
+  "$(printf 'cat > notes.md <<%sNOTES%s\nThen run %s to finish the event.\nNOTES' "'" "'" "$ADV")"
+expect allow "a commit message describing an advance" \
+  "git commit -m \"docs: $ADV is the last step\""
+
+printf '\npre-advance guard: %d passed, %d failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

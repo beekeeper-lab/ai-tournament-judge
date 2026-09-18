@@ -73,15 +73,50 @@ unavailable, record executable evidence as unavailable and score affected
 criteria NE."
 fi
 
-# Match an actual invocation, not the phrase appearing anywhere in the command.
+# Match an actual invocation in the command itself, not a phrase in text the
+# command is only writing down. This reads $scan, the heredoc-stripped copy, for
+# the same reason the execution guard above does: during live-trial-2026 the
+# execution half false-positived on prose, D6 fixed that half, and this half kept
+# reading the raw string. It then blocked a heredoc that merely contained the
+# words, which is the defect twice in one file.
 # Matching loosely made this hook block unrelated commands that merely mentioned
 # advancing, and pick an event directory out of surrounding text.
-case "$command" in
-  *"atj event advance events/"*|*"atj event advance ./events/"*)
-    event_dir="$(printf '%s' "$command" \
-      | grep -oE 'atj event advance \.?/?events/[A-Za-z0-9._-]+' \
+advance='(python3?([[:space:]]+-m)?[[:space:]]+)?atj event advance[[:space:]]+\.?/?events/'
+if printf '%s' "$scan" | grep -qE "${boundary}${advance}"; then
+    # The invocation has to start a command, not sit inside an argument. A
+    # `git commit -m "... atj event advance events/x ..."` is a sentence about
+    # advancing, and blocking it is the same false positive D6 removed from the
+    # execution half of this hook.
+    event_dir="$(printf '%s' "$scan" \
+      | grep -oE "${boundary}${advance}[A-Za-z0-9._-]+" \
       | head -n1 | grep -oE 'events/[A-Za-z0-9._-]+')"
     [ -z "$event_dir" ] && exit 0
+
+    # D23: this check reads the gate state as it is *before* the command runs,
+    # and the command may be the thing that passes the gate. A single chain that
+    # records a gate and then advances was blocked on a state its own first half
+    # was about to change, which is a false positive of the same family as D6:
+    # the guard was reading a string, not a sequence.
+    #
+    # Split the chain on its sequencing operators and compare positions. When a
+    # gate for this same event is passed earlier in the chain than the advance,
+    # the pre-command state is not the state the advance will see, so this hook
+    # has nothing reliable to say and `atj event advance` -- which re-reads the
+    # ledger at execution time and refuses a pending gate itself -- is the
+    # authority. Order matters: a gate recorded *after* the advance still blocks.
+    sequence="$(printf '%s' "$scan" | sed -E 's/(&&|\|\||;)/\n/g')"
+    gate_line="$(printf '%s\n' "$sequence" \
+      | grep -nE "atj event gate[[:space:]]+\.?/?${event_dir}[[:space:]]+[A-Za-z0-9-]+[[:space:]]+passed" \
+      | head -n1 | cut -d: -f1)"
+    advance_line="$(printf '%s\n' "$sequence" \
+      | grep -nE "atj event advance[[:space:]]+\.?/?${event_dir}" \
+      | head -n1 | cut -d: -f1)"
+    if [ -n "$gate_line" ] && [ -n "$advance_line" ] && [ "$gate_line" -lt "$advance_line" ]; then
+      warn "this command records a gate for $event_dir before advancing it; \
+leaving the decision to \`atj event advance\`, which re-reads the ledger and \
+refuses a pending gate on its own"
+      exit 0
+    fi
     # Resolve against the command's own working directory when it is inside the
     # repository; otherwise this hook has nothing reliable to say.
     if [ -d "$REPO_ROOT/$event_dir" ]; then
@@ -100,6 +135,5 @@ case "$command" in
 Run the stage audit, record the result with \`atj event gate\`, then advance.
 Advancing past a failed audit is what the gate exists to prevent."
     fi
-    ;;
-esac
+fi
 exit 0

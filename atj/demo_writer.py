@@ -123,10 +123,27 @@ def _identity(team: Team, extra: dict[str, Any] | None = None) -> dict[str, Any]
     return base
 
 
-def _evidence_table(team: Team) -> str:
-    rows = ["| Evidence ID | Class | Observation |", "|---|---|---|"]
-    rows += [f"| {eid} | {kind} | {note} |" for eid, kind, note in team.evidence]
+def _evidence_table(team: Team, *, supports: bool = False) -> str:
+    """The observation table.
+
+    With ``supports``, each row also declares which requirements it establishes.
+    T3.1 checks that declaration against the requirements table's own citations,
+    so the fixture has to carry both halves or it would demonstrate a manifest
+    the framework rejects.
+    """
+    if not supports:
+        rows = ["| Evidence ID | Class | Observation |", "|---|---|---|"]
+        rows += [f"| {eid} | {kind} | {note} |" for eid, kind, note in team.evidence]
+        return "\n".join(rows)
+    rows = ["| Evidence ID | Observation | Supports | Class |", "|---|---|---|---|"]
+    for index, (eid, kind, note) in enumerate(team.evidence):
+        rows.append(f"| {eid} | {note} | {_SUPPORTS.get(index, '-')} | {kind} |")
     return "\n".join(rows)
+
+
+# Which requirement each of a team's three observations establishes. The sample
+# manifest's requirements cite these ids, and T3.1 asserts the two agree.
+_SUPPORTS = {0: "req-01", 1: "req-02", 2: "req-03"}
 
 
 def _write(path: Path, metadata: dict[str, Any], body: str) -> None:
@@ -291,13 +308,13 @@ skill against the frozen rubric. All content below is invented for this fixture.
 
 | ID | Claim or requirement | Source | Evidence status |
 |---|---|---|---|
-| req-01 | {team.summary} | team statement | partially demonstrated |
-| req-02 | {team.strength} | team statement | demonstrated |
-| req-03 | No known blocking defect | team statement | contradicted |
+| req-01 | {team.summary} | team statement | partially demonstrated — [[evidence:{team.evidence[0][0]}]] |
+| req-02 | {team.strength} | team statement | demonstrated — [[evidence:{team.evidence[1][0]}]] |
+| req-03 | No known blocking defect | team statement | contradicted — [[evidence:{team.evidence[2][0]}]] |
 
 ## Direct observations
 
-{_evidence_table(team)}
+{_evidence_table(team, supports=True)}
 
 ## Tests and execution
 
@@ -1303,26 +1320,29 @@ def write_status(directory: Path, root: Path, drawn: dict[str, Any]) -> None:
         })
         units.append({
             "unit_id": f"dossier:{team.id}", "stage": "dossiers", "state": "complete",
-            "input_digest": ids.digest(package, "dossier", length=16),
+            # D21: this used to be `ids.digest(package, "dossier")` -- a value
+            # nothing could re-derive, so the drift check skipped the unit
+            # entirely and an edited dossier looked current forever.
+            "input_digest": derived[f"dossier:{team.id}"],
             "outputs": [f"dossiers/{team.id}.md"],
             "audit_result": "PASS", "completed_at": FINISH,
         })
     units.append({
         "unit_id": "bracket:draw", "stage": "bracket", "state": "complete",
-        "input_digest": drawn["input_digest"],
+        "input_digest": derived["bracket:draw"],
         "outputs": ["bracket.md", "bracket.json"],
         "audit_result": "PASS", "completed_at": FINISH,
     })
     for name in MATCHUPS:
         units.append({
             "unit_id": f"matchup:{name}", "stage": "tournament", "state": "complete",
-            "input_digest": ids.digest(name, drawn["input_digest"], length=16),
+            "input_digest": derived[f"matchup:{name}"],
             "outputs": [f"matchups/{name}.md", f"public/{name}.md"],
             "audit_result": "PASS", "completed_at": FINISH,
         })
     units.append({
         "unit_id": "final:audit", "stage": "final-audit", "state": "complete",
-        "input_digest": ids.digest("final", drawn["input_digest"], length=16),
+        "input_digest": derived["final:audit"],
         "outputs": ["audits/final-event.md", "public/event-summary.md"],
         "audit_result": "PASS WITH ADVISORIES", "completed_at": FINISH,
     })

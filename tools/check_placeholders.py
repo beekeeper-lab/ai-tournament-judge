@@ -9,6 +9,7 @@ never filled in, which is exactly the defect this check exists to catch.
 from __future__ import annotations
 
 import sys
+import re
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -30,6 +31,19 @@ EXEMPT_PREFIXES = (
     "atj/event.py",
     "CHANGELOG.md",
 )
+# D29: files that *document* placeholders rather than containing unresolved ones.
+# A placeholder here is allowed only inside backticks -- as a citation, which is
+# what quoting it makes it. `docs/framework-fix-plan.md` explains D10, D27 and
+# D29 themselves, each of which is about a template inviting
+# `persona: PERSONA@VERSION`, so the plan cannot discuss them without naming
+# them. Naming one in running prose is still a defect, and still caught.
+QUOTED_ONLY = (
+    "docs/framework-fix-plan.md",
+    "docs/final-audit.md",
+    "docs/agent-verification.md",
+)
+_QUOTED = re.compile(r"`[^`\n]*`")
+
 SCANNED_SUFFIXES = (".md", ".json", ".yml", ".yaml", ".html")
 SKIP_PARTS = {".git", "__pycache__", "node_modules", "dist", ".pytest_cache",
               "workspaces", "data"}
@@ -49,6 +63,9 @@ def main() -> int:
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
             continue
+        if any(relative == name for name in QUOTED_ONLY):
+            # Remove the citations, then hold the rest to the same standard.
+            text = _QUOTED.sub("", text)
         for placeholder in PLACEHOLDERS:
             if placeholder in text:
                 problems.append(f"{relative}: unresolved placeholder {placeholder!r}")

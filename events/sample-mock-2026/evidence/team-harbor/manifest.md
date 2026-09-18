@@ -32,18 +32,18 @@ skill against the frozen rubric. All content below is invented for this fixture.
 
 | ID | Claim or requirement | Source | Evidence status |
 |---|---|---|---|
-| req-01 | An incident-timeline builder that assembles a narrative from logs. | team statement | partially demonstrated |
-| req-02 | Novel log-correlation approach that groups events by causal proximity. | team statement | demonstrated |
-| req-03 | No known blocking defect | team statement | contradicted |
+| req-01 | An incident-timeline builder that assembles a narrative from logs. | team statement | partially demonstrated — [[evidence:ev-harbor-01]] |
+| req-02 | Novel log-correlation approach that groups events by causal proximity. | team statement | demonstrated — [[evidence:ev-harbor-02]] |
+| req-03 | No known blocking defect | team statement | contradicted — [[evidence:ev-harbor-03]] |
 
 ## Direct observations
 
-| Evidence ID | Class | Observation |
-|---|---|---|
-| ev-harbor-01 | artifact | src/correlate.py groups by timestamp proximity only. |
-| ev-harbor-02 | direct-observation | The demo timeline file is committed, not generated. |
-| ev-harbor-03 | direct-observation | Two of nine documented workflows complete. |
-| ev-harbor-04 | artifact | No tests cover the correlation heuristic. |
+| Evidence ID | Observation | Supports | Class |
+|---|---|---|---|
+| ev-harbor-01 | src/correlate.py groups by timestamp proximity only. | req-01 | artifact |
+| ev-harbor-02 | The demo timeline file is committed, not generated. | req-02 | direct-observation |
+| ev-harbor-03 | Two of nine documented workflows complete. | req-03 | direct-observation |
+| ev-harbor-04 | No tests cover the correlation heuristic. | - | artifact |
 
 ## Tests and execution
 
