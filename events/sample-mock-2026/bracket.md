@@ -68,7 +68,7 @@ both, and the seed selects presentation order within it rather than the pairing.
 ```
 python3 -m atj bracket build --event-dir events/sample-mock-2026 --seed sample-mock-2026-draw \
   --output events/sample-mock-2026/bracket.json
-python3 -m atj bracket verify events/sample-mock-2026/bracket.json
+python3 -m atj bracket verify events/sample-mock-2026/bracket.json --event-dir events/sample-mock-2026
 ```
 
 - [x] Every eligible team appears once

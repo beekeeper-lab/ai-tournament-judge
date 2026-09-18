@@ -716,7 +716,7 @@ both, and the seed selects presentation order within it rather than the pairing.
 ```
 python3 -m atj bracket build --event-dir events/{EVENT_ID} --seed {drawn['seed']} \\
   --output events/{EVENT_ID}/bracket.json
-python3 -m atj bracket verify events/{EVENT_ID}/bracket.json
+python3 -m atj bracket verify events/{EVENT_ID}/bracket.json --event-dir events/{EVENT_ID}
 ```
 
 - [x] Every eligible team appears once
@@ -1172,7 +1172,7 @@ def _audit(
 ```
 python3 -m atj event validate events/{EVENT_ID}
 python3 -m atj validate reports events/{EVENT_ID}
-python3 -m atj bracket verify events/{EVENT_ID}/bracket.json
+python3 -m atj bracket verify events/{EVENT_ID}/bracket.json --event-dir events/{EVENT_ID}
 python3 -m atj release-check
 ```
 

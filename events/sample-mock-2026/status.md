@@ -204,7 +204,7 @@ units:
 - unit_id: final:audit
   stage: final-audit
   state: complete
-  input_digest: 1bbca855e2a15bbb
+  input_digest: 0671b8d491c243e9
   outputs:
   - audits/final-event.md
   - public/event-summary.md

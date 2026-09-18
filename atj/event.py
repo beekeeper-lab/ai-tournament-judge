@@ -490,6 +490,82 @@ def bye_count(event: Event) -> int:
     return bracket_module.bracket_size(count) - count
 
 
+_CHECKBOX = re.compile(r"^-\s+\[([ xX])\]\s+(.+?)\s*$", re.MULTILINE)
+
+
+def status_checkbox_labels(root: Path) -> tuple[list[str], str | None]:
+    """The stage-gate checkbox labels, read from the event template.
+
+    The labels have one home, `events/_template/status.md`, and they are paired
+    with `STAGE_GATES` by position: the template writes them in stage order, and
+    a count that disagrees is a defect in the template rather than something to
+    guess around.
+    """
+    template = root / TEMPLATE_DIR / "status.md"
+    if not template.is_file():
+        return [], None
+    _, body = frontmatter.read(template)
+    labels = [label for _, label in _CHECKBOX.findall(body)]
+    gate_count = len(STAGE_GATES)
+    if len(labels) < gate_count:
+        return [], None
+    return labels[:gate_count], labels[gate_count] if len(labels) > gate_count else None
+
+
+def validate_status_narrative(event: Event) -> list[str]:
+    """The prose in status.md must agree with the ledger above it.
+
+    D30. `status.md` carries the ledger in its front matter and a human-readable
+    summary in its body, and nothing compared the two. live-trial-2026 finished
+    with `final-audit-passed: passed`, `current_stage: complete` and two approved
+    dossiers in its front matter, while its own body still showed the final audit
+    unchecked, the event not marked complete, and both dossiers "pending".
+
+    This is D19's shape one file over: an artifact asserting something false in
+    its own voice. The state file is the one place an operator looks to answer
+    "where is this event", so a body that disagrees with the ledger is worse than
+    no body at all.
+    """
+    problems: list[str] = []
+    status_path = event.directory / "status.md"
+    if not status_path.is_file():
+        return problems
+    try:
+        _, body = frontmatter.read(status_path)
+    except ValidationError:
+        return problems  # reported by validate_status
+    boxes = {label: mark.lower() == "x" for mark, label in _CHECKBOX.findall(body)}
+    if not boxes:
+        return problems
+
+    gate_labels, complete_label = status_checkbox_labels(event.root)
+    gates = event.status.get("stage_gates") or {}
+    for gate, label in zip(STAGE_GATES.values(), gate_labels):
+        if label not in boxes:
+            problems.append(
+                f"status.md body no longer lists the {gate!r} checkbox ({label!r}); "
+                f"a reader cannot see the gate state from the body"
+            )
+            continue
+        recorded = str(gates.get(gate, "pending"))
+        if boxes[label] != (recorded == "passed"):
+            problems.append(
+                f"status.md body says {label!r} is "
+                f"{'checked' if boxes[label] else 'unchecked'} while the ledger records "
+                f"{gate}: {recorded}. The body is prose about the ledger and may not "
+                f"contradict it"
+            )
+    if complete_label and complete_label in boxes:
+        complete = event.stage == "complete"
+        if boxes[complete_label] != complete:
+            problems.append(
+                f"status.md body says {complete_label!r} is "
+                f"{'checked' if boxes[complete_label] else 'unchecked'} while "
+                f"current_stage is {event.stage!r}"
+            )
+    return problems
+
+
 def validate_status(event: Event) -> list[str]:
     problems = schema.validate(
         "status", event.status, root=event.root, artifact=str(event.directory / "status.md")
@@ -497,6 +573,7 @@ def validate_status(event: Event) -> list[str]:
     stage = event.status.get("current_stage")
     if stage not in STAGE_INDEX:
         problems.append(f"unknown current_stage: {stage!r}")
+    problems += validate_status_narrative(event)
     return problems
 
 
@@ -603,6 +680,38 @@ def advance(
             "recorded_at": event.status["last_updated"],
         })
     return targets[0]
+
+
+def overrides(event: Event) -> list[dict[str, Any]]:
+    """Every stage advance that bypassed a gate, oldest first.
+
+    The framework refuses to pass a gate without a matching audit, to advance a
+    winner without a confirmed result, and to publish without a named approver.
+    `--force-reason` is the one door through all of that, and the final audit of
+    the release recorded that no command summarised what had gone through it
+    (advisory 6). A control whose exercise nobody can list is a control nobody
+    can review.
+    """
+    return list(event.status.get("overrides") or [])
+
+
+def review_override(
+    event: Event, index: int, *, official: str, note: str | None = None
+) -> dict[str, Any]:
+    """Record that a human read one override. Never that it was justified."""
+    recorded = overrides(event)
+    if not 0 <= index < len(recorded):
+        raise StateError(
+            f"no override at index {index}; the event has {len(recorded)}",
+            artifact=str(event.directory),
+        )
+    entry = event.status["overrides"][index]
+    entry["reviewed_by"] = official
+    entry["reviewed_at"] = versions.now()
+    if note:
+        entry["review_note"] = note
+    event.status["last_updated"] = entry["reviewed_at"]
+    return entry
 
 
 def set_stage(event: Event, stage: str) -> None:

@@ -541,12 +541,19 @@ def check_judge_independence(event_dir: Path) -> list[Finding]:
         return findings
     for team_dir in sorted(p for p in root.iterdir() if p.is_dir()):
         bodies: dict[str, set] = {}
+        vectors: dict[str, tuple] = {}
         for path in sorted(team_dir.glob("*.md")):
             try:
-                _, body = frontmatter.read(path)
+                metadata, body = frontmatter.read(path)
             except AtjError:
                 continue
             bodies[path.name] = _shingles(body)
+            scores = metadata.get("scores")
+            if isinstance(scores, dict) and scores:
+                vectors[path.name] = tuple(
+                    (criterion, str(scores[criterion])) for criterion in sorted(scores)
+                )
+        findings.extend(_check_score_vectors(vectors, team_dir))
         names = sorted(bodies)
         for index, first in enumerate(names):
             for second in names[index + 1:]:
@@ -562,6 +569,38 @@ def check_judge_independence(event_dir: Path) -> list[Finding]:
                         f"phrase it the same way; check whether one saw the other.",
                         team_dir,
                     ))
+    return findings
+
+
+def _check_score_vectors(vectors: dict[str, tuple], team_dir: Path) -> list[Finding]:
+    """Identical score vectors are the other face of contamination.
+
+    The prose detector measures wording, and the release audit recorded its blind
+    spot as advisory 1: "identical score vectors across judges are not examined".
+    Four personas with different lenses, reading the same evidence, landing on the
+    same number for all seven criteria is the outcome the panel exists to make
+    unlikely. It is not proof of anything -- a genuinely unambiguous submission
+    can produce it, and live-trial-2026's `team-podcast` panel aligned on six
+    criteria without matching exactly -- so this is an advisory that names what
+    an auditor should rule on, not a failure.
+    """
+    findings: list[Finding] = []
+    identical: dict[tuple, list[str]] = {}
+    for name, vector in vectors.items():
+        identical.setdefault(vector, []).append(name)
+    for vector, names in sorted(identical.items(), key=lambda item: sorted(item[1])):
+        if len(names) < 2:
+            continue
+        scores = ", ".join(f"{criterion}={value}" for criterion, value in vector)
+        findings.append(_finding(
+            "advisory", "identical-scores",
+            f"{', '.join(sorted(names))} recorded the same score on every criterion "
+            f"({scores}). Independent personas with different lenses can agree, and a "
+            f"whole vector matching is worth a sentence in the audit either way: the "
+            f"prose detector cannot see it, because two judges can paraphrase "
+            f"differently and still have been shown each other's numbers",
+            team_dir,
+        ))
     return findings
 
 

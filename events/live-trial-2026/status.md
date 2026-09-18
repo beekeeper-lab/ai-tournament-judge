@@ -86,19 +86,21 @@ gate_evidence:
 - [x] Bracket frozen and audited
 - [x] Tournament complete
 - [x] All team dossiers approved
-- [ ] Final event audit passed
-- [ ] Event marked complete
+- [x] Final event audit passed
+- [x] Event marked complete
 
 ## Team progress
 
 | Team ID | Intake | Evidence | Four judgments | Consolidated | Audited | Dossier |
 |---|---|---|---|---|---|---|
-| team-podcast | done, pinned f3fdd342465fa6bc2a52d226a8613b082ad329e0 | done, audited PASS WITH ADVISORIES on the third pass (ev:live-trial-2026:team-podcast:f3fdd342465f:d06f90cc) — `reliability` evidence-limited | done, 4 of 4, six criteria aligned, `reliability` NE from all four | done, **no official total** — NE adjudicated and accepted; provisional 58.25 unofficial and kept out of the score block | consolidation audit PASS WITH ADVISORIES | pending |
-| team-ledger | done, pinned 9d21b7707f204ef60f5a1cee612f1d4db0a4a575 | done, audited PASS WITH ADVISORIES (ev:live-trial-2026:team-ledger:9d21b7707f20:b859a240) | done, 4 of 4, all criteria aligned | done, 76.3 finalized, all seven aligned | consolidation audit PASS WITH ADVISORIES | pending |
+| team-podcast | done, pinned f3fdd342465fa6bc2a52d226a8613b082ad329e0 | done, audited PASS WITH ADVISORIES on the third pass (ev:live-trial-2026:team-podcast:f3fdd342465f:d06f90cc) — `reliability` evidence-limited | done, 4 of 4, six criteria aligned, `reliability` NE from all four | done, **no official total** — NE adjudicated and accepted; provisional 58.25 unofficial and kept out of the score block | consolidation audit PASS WITH ADVISORIES | done, approved by the event-director |
+| team-ledger | done, pinned 9d21b7707f204ef60f5a1cee612f1d4db0a4a575 | done, audited PASS WITH ADVISORIES (ev:live-trial-2026:team-ledger:9d21b7707f20:b859a240) | done, 4 of 4, all criteria aligned | done, 76.3 finalized, all seven aligned | consolidation audit PASS WITH ADVISORIES | done, approved by the event-director |
 
-Intake is not a unit in the ledger: `atj event unit` derives digests only for
-`evidence:`, `judging:` and `consolidation:`. Intake state is tracked here and in
-the roster.
+Intake is not a unit in the ledger: `atj event unit` derives no digest for it,
+so intake state is tracked here and in the roster. The bracket, tournament,
+dossier and final-audit stages were in the same position during this event (D21);
+they are derivable now, and this event's ledger was not reopened to backfill
+units for work that had already been audited and gated.
 
 ## Blockers and adjudications
 
@@ -191,6 +193,7 @@ the roster.
 | 2026-09-18T01:00:00Z | FRAMEWORK DEFECTS D25 and D26. D25: nothing in `atj` ever writes `approval_state` — six sites read it, none can set it, and `demo_writer.py` writes `approved` directly so the sample event cannot catch it. D26: `framework/templates/audit-report.md` ships `approval_state: draft` which `atj/event.py:119` then refuses as gate authorization, and `atj/reports.py:32` gives `audits` no schema at all — the artifact kind that authorizes every stage transition is the least validated in the framework | audits/final.md | docs/framework-fix-plan.md | not-audited |
 | 2026-09-18T01:00:00Z | FA2-FA5 repaired: the dossiers checkbox ticked; operator notes brought current and no longer read as instructions; D2 and D6 marked done in the fix plan, having landed in `25624c7`; and the C1/D19 repair corrected again — it had replaced a false provenance claim with an unsatisfiable one, telling the reader to run `atj render consolidated`, which D18 records does not exist | audits/final.md | OPERATOR-NOTES.md, status.md, docs/framework-fix-plan.md, summaries/*.md | operator-verified |
 | 2026-09-18T01:10:00Z | DRIFT CHECK FIRED, correctly, and blocked the completion advance: `inputs changed after these units completed: ['consolidation:team-podcast']`. Cause was the operator's own FA5 prose repair to `summaries/team-podcast.md`, made after that unit was recorded and its gate passed. Before re-recording, `atj score` was re-run over both judgment directories and full-key-diffed against the committed summaries: **0 differing keys for both teams**, team-ledger still 76.25/76.3 finalized, team-podcast still `total: null`, `finalized: false`. The diff is 5 insertions and 4 deletions, entirely the sentence telling a reader to run `atj render consolidated`, a command D18 records does not exist. No score, no agreement band and no finalization state moved. Unit re-recorded on that basis. This is the ledger's stale-unit mechanism working as designed against the operator, recorded rather than worked around. D23 also recurred: the pre-advance hook blocked a single command that re-recorded the units and then advanced, because it evaluates state before the command runs | `atj event advance` hook output, `atj score --json` | status.md, consolidation units | operator-verified |
+| 2026-09-18T03:00:00Z | STATUS BODY BROUGHT TO THE LEDGER (D30, framework). The front matter has recorded `final-audit-passed: passed` and `current_stage: complete` since the event finished, and both dossiers have been approved since the `dossiers-approved` gate passed; this body still showed the final audit unchecked, the event not marked complete, and both dossiers pending. Nothing in the framework compared the prose in `status.md` to the ledger above it, which is D19's shape one file over: an artifact asserting something false in its own voice. `atj event validate` now makes that comparison and reported exactly these two checkboxes. No ledger value, gate, score or artifact changed -- only the sentences describing them. The D21 note in Team progress was also corrected: the bracket, tournament, dossier and final-audit stages are derivable as units now, and this event's ledger was deliberately not reopened to backfill them | `atj event validate events/live-trial-2026` | status.md | operator-verified |
 
 One exception to the audit rule below, recorded rather than hidden: the third-pass
 judging audit's artifact carries `completed_at: 2026-09-17T22:19:00Z` while the commit

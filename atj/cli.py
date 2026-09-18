@@ -217,6 +217,67 @@ def cmd_event_advance(args) -> int:
     return OK
 
 
+def cmd_event_overrides(args) -> int:
+    """List the gate bypasses, and let a human record that they read one.
+
+    The release's final audit closed with six controls that "end in a human and
+    cannot be verified further", and noted that no command summarised
+    `status.overrides` for review. This is that command. It reports what was
+    bypassed; it never judges whether the bypass was justified, because that is
+    the judgment it exists to put in front of a person.
+    """
+    root = _root(args)
+    loaded = event_module.load(Path(args.event_dir), root=root)
+    recorded = event_module.overrides(loaded)
+
+    if args.review is not None:
+        if not args.official:
+            print("usage: --review requires --official", file=sys.stderr)
+            return USAGE
+        entry = event_module.review_override(
+            loaded, args.review, official=args.official, note=args.note
+        )
+        event_module.save_status(loaded)
+        _emit({"reviewed": entry}, args)
+        if not args.json:
+            print(f"override {args.review} marked reviewed by {args.official} "
+                  f"at {entry['reviewed_at']}")
+            print("  Recording that it was read. Not that it was justified.")
+        return OK
+
+    unreviewed = [entry for entry in recorded if not entry.get("reviewed_by")]
+    _emit({
+        "overrides": recorded,
+        "count": len(recorded),
+        "unreviewed": len(unreviewed),
+    }, args)
+    if not args.json:
+        if not recorded:
+            print(f"{args.event_dir}: no stage gate was ever bypassed")
+            return OK
+        print(f"{args.event_dir}: {len(recorded)} override(s), {len(unreviewed)} unreviewed")
+        for index, entry in enumerate(recorded):
+            print(f"\n  [{index}] {entry.get('from')} -> {entry.get('to')}  "
+                  f"{entry.get('recorded_at')}")
+            print(f"      authorized by: {entry.get('authorized_by')}")
+            print(f"      reason:        {entry.get('reason')}")
+            for bypassed in entry.get("bypassed") or []:
+                print(f"      bypassed:      {bypassed}")
+            if entry.get("reviewed_by"):
+                print(f"      reviewed by:   {entry['reviewed_by']} at {entry.get('reviewed_at')}")
+                if entry.get("review_note"):
+                    print(f"      review note:   {entry['review_note']}")
+            else:
+                print(f"      reviewed:      NO — "
+                      f"`atj event overrides {args.event_dir} --review {index} "
+                      f"--official <role>`")
+        if unreviewed:
+            print("\nAn unreviewed override is an open question, not a failure. The "
+                  "framework cannot tell whether a bypass was justified; it can only "
+                  "refuse to let one go unread.")
+    return FAILURE if unreviewed else OK
+
+
 def cmd_event_unit(args) -> int:
     """Write the ledger `atj event status` reads to decide what to resume."""
     root = _root(args)
@@ -920,6 +981,20 @@ def _adjudicated_winner(event_dir: Path, match_id: str, root: Path) -> str | Non
 
 def cmd_bracket_verify(args) -> int:
     root = _root(args)
+    # Advisory 2 of the release audit: the bare form checks structure only, said
+    # so in its label, and exited 0. An operator reading the label was not
+    # misled; one reading the exit code could be, and an exit code is what a
+    # script reads. The weaker check now has to be asked for by name.
+    if not args.reproduce and not args.event_dir and not args.structure_only:
+        print(
+            "usage: this would check the bracket's structure only, trusting the "
+            "constraint audit block inside the file rather than re-deriving it.\n"
+            "  --event-dir events/<id>        re-derive the constraints from the roster\n"
+            "  --reproduce <roster.json>      redraw from the recorded seed and compare\n"
+            "  --structure-only               you meant the weaker check; exit 0 on pass",
+            file=sys.stderr,
+        )
+        return USAGE
     result = json.loads(Path(args.bracket).read_text(encoding="utf-8"))
     teams = None
     if args.reproduce:
@@ -932,9 +1007,9 @@ def cmd_bracket_verify(args) -> int:
             result, _matchup_records(Path(args.event_dir))
         )
     elif not args.reproduce:
-        print("  NOTE structure only: pass --event-dir or --reproduce to re-derive "
-              "the constraints from the roster rather than trusting the audit block "
-              "inside this file.")
+        print("  NOTE structure only, as requested: the constraint audit block inside "
+              "this file is trusted, not re-derived. A tampered bracket that keeps its "
+              "own audit block consistent passes this check.")
     rebuilt = None
     if args.reproduce:
         rebuilt = bracket.build(
@@ -1596,6 +1671,7 @@ def cmd_sandbox_preflight(args) -> int:
         "available": capability.available, "runtime": capability.runtime,
         "version": capability.version, "rootless": capability.rootless,
         "reasons": capability.reasons, "execution_status": capability.execution_status,
+        "privilege_warning": capability.privilege_warning,
         "evidence_limitation": sandbox.evidence_limitation(capability),
     }
     _emit(payload, args)
@@ -1603,6 +1679,8 @@ def cmd_sandbox_preflight(args) -> int:
         return OK if capability.available else FAILURE
     print(f"Sandbox preflight: {'AVAILABLE' if capability.available else 'UNAVAILABLE'}")
     print(f"  {capability.summary()}")
+    if capability.privilege_warning:
+        print(f"  WARNING: {capability.privilege_warning}")
     if not capability.available:
         limitation = sandbox.evidence_limitation(capability)
         print(f"  record execution_status: {limitation['execution_status']}")
@@ -1827,6 +1905,18 @@ def build_parser() -> argparse.ArgumentParser:
     approve.add_argument("--event-dir", help="the event these artifacts belong to")
     approve.set_defaults(func=cmd_event_approve)
 
+    overrides_parser = event_sub.add_parser(
+        "overrides", help="list the stage gates a human bypassed, for review"
+    )
+    overrides_parser.add_argument("event_dir")
+    overrides_parser.add_argument(
+        "--review", type=int, metavar="INDEX",
+        help="mark the override at this index as read by a human official",
+    )
+    overrides_parser.add_argument("--official", help="the role recording the review")
+    overrides_parser.add_argument("--note", help="what the reviewer concluded")
+    overrides_parser.set_defaults(func=cmd_event_overrides)
+
     unit = event_sub.add_parser("unit", help="record or invalidate a unit of work")
     unit.add_argument("event_dir")
     unit.add_argument("action", choices=("record", "stale", "list"))
@@ -1926,6 +2016,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--event-dir",
         help="re-derive the constraints from this event's roster instead of trusting "
              "the audit block inside the bracket file",
+    )
+    verify.add_argument(
+        "--structure-only", action="store_true",
+        help="check shape alone and trust the file's own constraint audit. Required "
+             "to make that the check, so a bare invocation cannot be mistaken for a "
+             "full verification by anything reading only the exit code",
     )
     verify.set_defaults(func=cmd_bracket_verify)
 

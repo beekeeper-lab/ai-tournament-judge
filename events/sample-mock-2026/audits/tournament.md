@@ -34,7 +34,7 @@ all three matchups. Gate: `tournament-audited`.
 ```
 python3 -m atj event validate events/sample-mock-2026
 python3 -m atj validate reports events/sample-mock-2026
-python3 -m atj bracket verify events/sample-mock-2026/bracket.json
+python3 -m atj bracket verify events/sample-mock-2026/bracket.json --event-dir events/sample-mock-2026
 python3 -m atj release-check
 ```
 
