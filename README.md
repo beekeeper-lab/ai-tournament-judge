@@ -5,8 +5,22 @@ AI judges, consolidating their findings, running a constrained-random tournament
 bracket, comparing teams head to head, and producing a feedback dossier for every
 team.
 
-**Version 0.2.0-beta.** Capable of running a complete supervised mock event. Not
-yet used to determine a real award; see [Limitations](#limitations).
+> **Work in progress.** This is an active project, not a finished product. It has
+> run one real event end to end — against two applications, real container
+> isolation and real model judgment — and that event's whole purpose was to find
+> out what the framework gets wrong. It found 31 defects. They are fixed, and the
+> next event will find more. Interfaces, rubric versions and artifact schemas
+> still move between releases.
+>
+> **No event has decided anything real yet.** Do not use this to award anything
+> that matters to a student without doing the work in
+> [`docs/final-audit.md`](docs/final-audit.md) first.
+
+**Version 0.4.0-beta.** Capable of running a complete supervised event, and it has
+run one. Not yet used to determine a real award; see [Limitations](#limitations).
+The full record of what the live event cost to learn is in
+[`CHANGELOG.md`](CHANGELOG.md) and
+[`docs/framework-fix-plan.md`](docs/framework-fix-plan.md).
 
 ## What is deterministic, and what is not
 
