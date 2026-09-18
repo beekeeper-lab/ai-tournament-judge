@@ -41,6 +41,7 @@ version.
 | D20 | `atj/event.py:356-364` fails validation when `bye_policy` is `performance-qualified` and the stage is at or past `bracket`, demanding a consolidated score for every eligible team without checking whether any bye exists. An event with no byes and one unscored team cannot pass validation, and neither in-event repair is permitted | 1 |
 | D21 | `atj event unit record` derives input digests only for `evidence:`, `judging:` and `consolidation:`, so the bracket, tournament and dossier stages cannot be recorded as ledger units and are invisible to `stale_units` and the drift check in `can_advance` | 3 |
 | D22 | `schemas/matchup.schema.json` requires both `passes/a_first/comparisons` and `passes/b_first/comparisons` to be non-empty, so a single order-balanced pass report — which by design must not know the other pass — can never validate, and the framework defines no location for a judge's own pass report | 2 |
+| D23 | `.claude/hooks/pre-advance.sh` inspects the whole command string with no sequencing, so a single command that sets a gate and then advances is blocked on the pre-command gate state. D6 fixed the heredoc/prose false positive; this is the ordering half of the same design | 3 |
 
 D3 fixed in `3a798ad` (command added, reproduces the committed sample byte for
 byte) and `4ac09ba` (refuses to rewrite an approved judgment without `--force`,
@@ -297,6 +298,15 @@ In live-trial-2026 the two judges' reports were stored at
 `events/live-trial-2026/matchup-passes/`, outside `matchups/`, purely to get the event
 to validate. That works but is undeclared: the directory is in no `EVENT_SUBDIRS` list
 and nothing validates its contents.
+
+Verified by the tournament audit: `atj validate reports` covered 22 artifacts, exactly the
+`.md` files in the ten `ARTIFACT_KINDS` directories. The two pass reports are in none of
+them, so no schema, template, placeholder or evidence-reference check reaches the only
+written record of the comparative evidence. The mitigating fact, also verified rather than
+assumed: `atj validate publication` on a pass report returns `BLOCKING [location-unknown]`,
+so the disclosure gate **fails closed** and nothing stored there can be cleared for release.
+That is the property that makes the current arrangement survivable, and it should be stated
+explicitly in whatever replaces it.
 
 The framework's model treats the two passes as JSON *input* to `atj matchup` and only
 the resolved artifact as output. That is defensible, but it discards the judges'
