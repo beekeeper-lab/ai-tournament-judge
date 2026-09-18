@@ -105,6 +105,7 @@ In Claude Code, the slash commands `/event-init`, `/team-ingest`, `/team-judge`,
 | `atj validate publication <artifact>` | Gate one artifact before disclosure |
 | `atj sandbox preflight` | Report whether verified isolation is available |
 | `atj sandbox run <src> <cmd...>` | Run one command against a submission, isolated |
+| `atj sandbox proxy up\|down\|status` | The egress proxy that makes an event's `network_allowlist` enforceable: an internal network with no route out and no resolver, and a deny-by-default filter |
 | `atj ceremony <dir>` | Render the static ceremony view and dossiers |
 | `atj demo check` | Re-derive every condition the sample event must demonstrate, recompute its totals, and re-verify both brackets |
 | `atj release-check` | Every framework-level check required before a release |

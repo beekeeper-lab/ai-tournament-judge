@@ -5,7 +5,22 @@ policies carry their own independent versions; see `framework/rubrics/`.
 
 ## Unreleased
 
-Nothing yet.
+### Added
+
+- `atj sandbox proxy up|down|status`, the egress proxy an event's
+  `network_allowlist` needs to mean anything. Container flags cannot filter by
+  destination, so the allowlist path had been refused outright and never
+  exercised (release advisory 5). The submission joins an internal network with
+  no route off the host and no resolver; the proxy is the only way out and denies
+  by default, with one anchored rule per allowed host and `CONNECT` limited to
+  ports 80 and 443. `atj sandbox run --egress-proxy auto` refuses a proxy whose
+  allowlist differs from the event's, because an allowlist is an official's
+  decision and a leftover proxy would make it quietly false.
+- Verified against a live runtime, not only unit-tested: an allowed host returns
+  200, an allowed subdomain rule matches, a denied host gets 403 from the proxy,
+  a bypass by name cannot resolve and a bypass by raw address cannot connect.
+  `ATJ_LIVE_SANDBOX=1 python3 -m pytest tests/test_egress.py` runs that on an
+  event host; CI stays hermetic.
 
 ## 0.3.0-beta — 2026-09-18
 
