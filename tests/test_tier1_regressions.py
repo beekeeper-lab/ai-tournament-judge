@@ -368,3 +368,288 @@ class ConsolidatedTableIsItsOwnFixedPoint(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AuditFindingsScopeTheGate(unittest.TestCase):
+    """D16: the stage completion gate had no scope filter.
+
+    `can_advance` branched on an audit's verdict alone, so a finding against a
+    framework document, an ignored path, or activity-log prose held a stage gate
+    exactly as hard as a wrong score. live-trial-2026's `judgments-audited` gate
+    took three passes and five repair rounds, and those repair rounds produced
+    five new defects.
+    """
+
+    def audit(self, **overrides) -> dict:
+        base = {
+            "event_id": demo.EVENT_ID,
+            "audit_scope": "initial-judging stage",
+            "audit_id": "judging",
+            "rubric": "submission-evaluation@1.0.0",
+            "persona": "judging-auditor@1.0.0",
+            "framework_commit": "uncommitted",
+            "started_at": "2026-05-18T09:00:00Z",
+            "completed_at": "2026-05-18T10:00:00Z",
+            "visibility": "private",
+            "approval_state": "approved",
+            "validation_state": "valid",
+            "result": "FAIL",
+        }
+        base.update(overrides)
+        return base
+
+    def finding(self, **overrides) -> dict:
+        base = {"id": "F1", "severity": "major", "scope": "framework",
+                "blocking": False, "summary": "the fix plan says three, not four"}
+        base.update(overrides)
+        return base
+
+    def test_a_framework_finding_does_not_hold_an_event_gate(self):
+        metadata = self.audit(findings=[self.finding(), self.finding(id="F2")])
+        self.assertEqual(event_module.gate_findings_problems(metadata, "judging.md"), [])
+        self.assertIn(
+            "the gate opened",
+            event_module.gate_opens_over_a_failing_verdict(metadata) or "",
+        )
+
+    def test_an_event_blocking_finding_holds_the_gate(self):
+        metadata = self.audit(findings=[
+            self.finding(),
+            self.finding(id="F3", scope="event", blocking=True,
+                         summary="team-lumen's total does not reproduce"),
+        ])
+        problems = event_module.gate_findings_problems(metadata, "judging.md")
+        self.assertEqual(len(problems), 1, problems)
+        self.assertIn("F3", problems[0])
+        self.assertIsNone(event_module.gate_opens_over_a_failing_verdict(metadata))
+
+    def test_an_event_finding_the_auditor_did_not_mark_blocking_does_not_hold(self):
+        """`blocking` is the auditor's judgment, not a function of severity."""
+        metadata = self.audit(findings=[
+            self.finding(id="F4", severity="major", scope="event", blocking=False,
+                         summary="activity-log prose is imprecise; history is correct"),
+        ])
+        self.assertEqual(event_module.gate_findings_problems(metadata, "judging.md"), [])
+
+    def test_a_failing_audit_with_no_findings_still_holds_the_gate(self):
+        metadata = self.audit(findings=[])
+        problems = event_module.gate_findings_problems(metadata, "judging.md")
+        self.assertEqual(len(problems), 1, problems)
+        self.assertIn("no findings are recorded", problems[0])
+
+    def test_without_findings_the_verdict_alone_still_decides(self):
+        """Fifteen committed audits carry no `findings:`. None may change meaning."""
+        self.assertEqual(
+            len(event_module.gate_findings_problems(self.audit(), "judging.md")), 1
+        )
+        self.assertEqual(
+            event_module.gate_findings_problems(
+                self.audit(result="PASS WITH ADVISORIES"), "judging.md"
+            ),
+            [],
+        )
+        self.assertIsNone(
+            event_module.gate_opens_over_a_failing_verdict(self.audit())
+        )
+
+    def test_the_committed_audits_are_unaffected(self):
+        """Fifteen audits across two completed events carry no `findings:`.
+
+        None of them may change meaning, and none may start holding a gate it
+        did not hold before.
+        """
+        audits = sorted((ROOT / "events").glob("*/audits/*.md"))
+        self.assertGreaterEqual(len(audits), 15)
+        for audit in audits:
+            with self.subTest(audit=str(audit.relative_to(ROOT))):
+                metadata, _ = frontmatter.read(audit)
+                self.assertNotIn("findings", metadata)
+                passing = metadata["result"] in event_module.PASS_RESULTS
+                problems = event_module.gate_findings_problems(metadata, audit.name)
+                self.assertEqual(problems == [], passing, problems)
+
+    def test_an_opened_gate_is_written_into_the_ledger(self):
+        temporary, directory = sandbox(SAMPLE)
+        try:
+            audit = directory / "audits" / "judging-scoped.md"
+            metadata = self.audit(findings=[self.finding()])
+            metadata["event_id"] = demo.EVENT_ID
+            audit.write_text(
+                frontmatter.dump(metadata, "\n# Judging Audit\n\nOne framework finding.\n"),
+                encoding="utf-8",
+            )
+            code, output = run_cli(
+                "event", "gate", str(directory), "judgments-audited", "passed",
+                "--audit", str(audit),
+            )
+            self.assertEqual(code, 0, output)
+            self.assertIn("the gate opened", output)
+            status, _ = frontmatter.read(directory / "status.md")
+            self.assertIn("judgments-audited", status.get("gate_notes", {}))
+        finally:
+            shutil.rmtree(temporary)
+
+
+class AuditsHaveASchema(unittest.TestCase):
+    """D26: the artifact kind that authorizes every stage transition had none.
+
+    `atj/reports.py` mapped `audits` to no schema at all, so the one artifact a
+    gate reads was the least validated in the framework.
+    """
+
+    def test_audits_are_routed_to_a_schema(self):
+        from atj import reports as reports_module
+
+        self.assertEqual(reports_module.ARTIFACT_KINDS["audits"][0], "audit")
+
+    def test_every_committed_audit_validates(self):
+        from atj import schema as schema_module
+
+        audits = sorted((ROOT / "events").glob("*/audits/*.md"))
+        self.assertGreaterEqual(len(audits), 15)
+        for audit in audits:
+            with self.subTest(audit=str(audit.relative_to(ROOT))):
+                metadata, _ = frontmatter.read(audit)
+                self.assertEqual(
+                    schema_module.validate("audit", metadata, root=ROOT, artifact=str(audit)),
+                    [],
+                )
+
+    def test_a_bogus_verdict_is_rejected(self):
+        from atj import schema as schema_module
+
+        metadata, _ = frontmatter.read(SAMPLE / "audits" / "final-event.md")
+        metadata["result"] = "MOSTLY FINE"
+        self.assertTrue(schema_module.validate("audit", metadata, root=ROOT))
+
+    def test_a_public_audit_is_rejected(self):
+        from atj import schema as schema_module
+
+        metadata, _ = frontmatter.read(SAMPLE / "audits" / "final-event.md")
+        metadata["visibility"] = "public"
+        self.assertTrue(schema_module.validate("audit", metadata, root=ROOT))
+
+    def test_a_malformed_finding_is_rejected(self):
+        from atj import schema as schema_module
+
+        metadata, _ = frontmatter.read(SAMPLE / "audits" / "final-event.md")
+        metadata["findings"] = [{"id": "F1", "severity": "major", "scope": "elsewhere",
+                                 "blocking": True, "summary": "x"}]
+        self.assertTrue(schema_module.validate("audit", metadata, root=ROOT))
+
+    def test_the_template_still_ships_a_draft_and_says_how_to_move_it(self):
+        text = (ROOT / "framework" / "templates" / "audit-report.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("approval_state: draft", text)
+        self.assertIn("atj event approve", text)
+
+
+class ApprovalStateCanBeWritten(unittest.TestCase):
+    """D25: six sites read `approval_state` and nothing could set it.
+
+    Sixteen live-trial-2026 artifacts reached the final gate still `draft` while
+    their stage gates read `passed`, including both team dossiers —
+    `atj/ceremony.py:372` refuses to render a dossier that is not approved, so
+    neither deliverable could be released under a gate named `dossiers-approved`.
+    `demo_writer.py` writes `approved` directly, so the sample event could not
+    catch it.
+    """
+
+    def test_approving_sets_the_state_and_names_the_official(self):
+        temporary, directory = sandbox(SAMPLE)
+        try:
+            target = directory / "audits" / "bracket.md"
+            metadata, body = frontmatter.read(target)
+            metadata["approval_state"] = "draft"
+            metadata["validation_state"] = "unvalidated"
+            target.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+
+            code, output = run_cli("event", "approve", str(target), "--event-dir", str(directory))
+            self.assertEqual(code, 0, output)
+            after, _ = frontmatter.read(target)
+            self.assertEqual(after["approval_state"], "approved")
+            self.assertEqual(after["validation_state"], "valid")
+            self.assertTrue(after["approved_by"])
+            self.assertTrue(after["approved_at"])
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_an_invalid_artifact_is_not_approved(self):
+        """An approval says a human reviewed a valid artifact. Nothing is written."""
+        temporary, directory = sandbox(SAMPLE)
+        try:
+            target = directory / "audits" / "bracket.md"
+            metadata, body = frontmatter.read(target)
+            metadata["approval_state"] = "draft"
+            metadata["result"] = "MOSTLY FINE"
+            target.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+
+            code, output = run_cli("event", "approve", str(target), "--event-dir", str(directory))
+            self.assertEqual(code, 1, output)
+            self.assertIn("Refused", output)
+            self.assertEqual(frontmatter.read(target)[0]["approval_state"], "draft")
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_withdrawing_clears_the_approving_official(self):
+        temporary, directory = sandbox(SAMPLE)
+        try:
+            target = directory / "audits" / "bracket.md"
+            run_cli("event", "approve", str(target), "--event-dir", str(directory))
+            self.assertIn("approved_by", frontmatter.read(target)[0])
+            code, output = run_cli(
+                "event", "approve", str(target), "--state", "withdrawn",
+                "--event-dir", str(directory),
+            )
+            self.assertEqual(code, 0, output)
+            after, _ = frontmatter.read(target)
+            self.assertEqual(after["approval_state"], "withdrawn")
+            self.assertNotIn("approved_by", after)
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_approval_unblocks_the_gate_the_template_would_have_blocked(self):
+        """The D25/D26 pair, end to end: template draft -> approve -> gate opens."""
+        temporary, directory = sandbox(SAMPLE)
+        try:
+            template = ROOT / "framework" / "templates" / "audit-report.md"
+            metadata, template_body = frontmatter.read(template)
+            metadata.update({
+                "event_id": demo.EVENT_ID,
+                "audit_scope": "bracket stage",
+                "audit_id": "bracket-fresh",
+                "commit": None,
+                "evidence_package_id": None,
+                "rubric": "submission-evaluation@1.0.0",
+                "persona": "judging-auditor@1.0.0",
+                "framework_commit": "uncommitted",
+                "model_requested": "claude-opus-5",
+                "model_used": "claude-opus-5",
+                "started_at": "2026-05-18T09:00:00Z",
+                "completed_at": "2026-05-18T10:00:00Z",
+                "result": "PASS",
+                "findings": [],
+            })
+            audit = directory / "audits" / "bracket-fresh.md"
+            # The template's own body, so the required sections are present and
+            # this is the path an auditor actually walks.
+            body = template_body.replace("**FAIL** until all blocking findings are resolved.",
+                                         "**PASS.** The draw reproduces.")
+            audit.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+            self.assertEqual(metadata["approval_state"], "draft")
+            problems = event_module.audit_supports_gate(
+                audit, stage="bracket", root=ROOT, event_id=demo.EVENT_ID
+            )
+            self.assertTrue(any("approval_state" in p for p in problems), problems)
+
+            code, output = run_cli("event", "approve", str(audit), "--event-dir", str(directory))
+            self.assertEqual(code, 0, output)
+            self.assertEqual(
+                event_module.audit_supports_gate(
+                    audit, stage="bracket", root=ROOT, event_id=demo.EVENT_ID
+                ),
+                [],
+            )
+        finally:
+            shutil.rmtree(temporary)

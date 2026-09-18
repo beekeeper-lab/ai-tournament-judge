@@ -90,6 +90,88 @@ def stage_work_present(event: "Event", stage: str) -> list[str]:
     return missing
 
 
+def gate_blocking_findings(metadata: dict[str, Any]) -> list[dict[str, Any]]:
+    """The findings in an audit that must hold a stage gate.
+
+    D16: `can_advance` branched on an audit's verdict alone, and an auditor had
+    no way to mark a finding as outside the thing being gated. In
+    live-trial-2026 the `judgments-audited` gate took three passes and five
+    repair rounds, and those repair rounds produced five new defects. At the
+    second pass the two findings holding the gate were that a framework document
+    said "three" where it meant "four", and a numbering collision between two
+    branches. Neither is inside `events/`, inside the audited stage, or attached
+    to any score. Repairing them introduced three more findings, two of which
+    held the gate again.
+
+    A finding holds the gate when it is `scope: event` and the auditor marked it
+    `blocking: true`. Both are the auditor's judgment, deliberately: severity
+    alone does not decide it, and an auditor who cannot say "real, recorded, and
+    not about this stage" will keep having their verdict overruled by prose.
+    """
+    findings = metadata.get("findings")
+    if not isinstance(findings, list):
+        return []
+    return [
+        entry for entry in findings
+        if isinstance(entry, dict)
+        and entry.get("scope") == "event"
+        and entry.get("blocking") is True
+    ]
+
+
+def gate_findings_problems(metadata: dict[str, Any], name: str) -> list[str]:
+    """Why this audit does or does not authorize its gate.
+
+    With structured `findings`, the scope filter decides and a verdict of FAIL
+    can stand in the record while the gate still opens — which is the state
+    live-trial-2026 was actually in for two of its three judging passes. Without
+    them, behaviour is unchanged: the verdict alone decides.
+    """
+    result = str(metadata.get("result", ""))
+    findings = metadata.get("findings")
+    if not isinstance(findings, list):
+        if result not in PASS_RESULTS:
+            return [f"{name}: result is {result!r}; a gate needs {' or '.join(PASS_RESULTS)}"]
+        return []
+
+    holding = gate_blocking_findings(metadata)
+    if holding:
+        named = ", ".join(str(entry.get("id") or "?") for entry in holding)
+        return [
+            f"{name}: {len(holding)} blocking event-scope finding(s) hold this gate: {named}"
+        ]
+    if result not in PASS_RESULTS and not findings:
+        return [
+            f"{name}: result is {result!r} and no findings are recorded. A failing "
+            f"audit must say what failed, with a scope and a blocking flag on each "
+            f"finding, before the gate can read past the verdict."
+        ]
+    return []
+
+
+def gate_opens_over_a_failing_verdict(metadata: dict[str, Any]) -> str | None:
+    """A one-line record of a gate that opened while the verdict was not a pass.
+
+    This must never be silent. The point of D16 is that a FAIL can be true and
+    still not be about the stage being gated; the point of recording it is that
+    nobody should later find a passed gate behind a failed audit and have to
+    reconstruct why.
+    """
+    result = str(metadata.get("result", ""))
+    findings = metadata.get("findings")
+    if result in PASS_RESULTS or not isinstance(findings, list) or not findings:
+        return None
+    if gate_blocking_findings(metadata):
+        return None
+    outside = sum(1 for f in findings if isinstance(f, dict) and f.get("scope") != "event")
+    non_blocking = len(findings) - outside
+    return (
+        f"result is {result!r} and the gate opened: {len(findings)} finding(s), "
+        f"{outside} outside this event and {non_blocking} not marked blocking. "
+        f"No finding is both event-scope and blocking."
+    )
+
+
 def audit_supports_gate(
     path: Path, *, stage: str, root: Path, event_id: str | None = None
 ) -> list[str]:
@@ -114,9 +196,7 @@ def audit_supports_gate(
         problems.append(
             f"{path.name}: audit_scope {scope!r} does not name the {stage!r} stage"
         )
-    result = str(metadata.get("result", ""))
-    if result not in PASS_RESULTS:
-        problems.append(f"{path.name}: result is {result!r}; a gate needs {' or '.join(PASS_RESULTS)}")
+    problems.extend(gate_findings_problems(metadata, path.name))
     if metadata.get("approval_state") != "approved":
         problems.append(f"{path.name}: approval_state is {metadata.get('approval_state')!r}")
     if metadata.get("visibility") != "private":

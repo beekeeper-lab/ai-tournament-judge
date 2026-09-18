@@ -285,6 +285,123 @@ def cmd_event_unit(args) -> int:
     return OK
 
 
+APPROVAL_STATES = ("draft", "pending-approval", "approved", "rejected", "withdrawn")
+
+
+def cmd_event_approve(args) -> int:
+    """Set `approval_state` on event artifacts, with the validation behind it.
+
+    D25: six sites in `atj` read `approval_state` and no code path wrote it, so
+    every artifact stayed `draft` through every gate. The consequences were real
+    in live-trial-2026 and verified in code: `atj/ceremony.py:372` refuses to
+    render a dossier that is not approved, so neither deliverable could be
+    released under a gate literally named `dossiers-approved`; and
+    `atj/cli.py`'s guard against silently rewriting an approved judgment's
+    scores table never armed for the entire event. `demo_writer.py` writes
+    `approved` directly, so the one fixture that would have caught the gap
+    bypassed it.
+
+    Approving runs the artifact's own validation first and writes
+    `validation_state` from the result. An approval is a claim that a human
+    official reviewed a valid artifact; approving something the validator
+    rejects is the failure the whole gate chain exists to prevent, so it is
+    refused rather than warned about.
+
+    `approved_by` and `approved_at` are recorded alongside. Every artifact
+    schema allows additional properties, so this adds a fact rather than
+    changing a shape, and an approval with no name on it is not an approval.
+    """
+    root = _root(args)
+    event_dir = Path(args.event_dir) if args.event_dir else None
+    paths: list[Path] = []
+    for target in args.paths:
+        path = Path(target)
+        if event_dir is None:
+            event_dir = _event_root_of(path if path.is_dir() else path.parent)
+        paths.extend(sorted(path.rglob("*.md")) if path.is_dir() else [path])
+    if event_dir is None:
+        raise AtjError(
+            "cannot locate the event these artifacts belong to; pass --event-dir. "
+            "Approval is an event official's act and is recorded against an event."
+        )
+    if not paths:
+        raise AtjError(f"no artifacts found under {', '.join(args.paths)}")
+
+    loaded = event_module.load(event_dir, root=root)
+    official = args.official or (loaded.config.get("officials") or {}).get(
+        "publication_approval"
+    )
+    if not official:
+        raise AtjError(
+            f"no approving official. Pass --official <role>, or record one as "
+            f"`officials.publication_approval` in {event_dir / 'event.md'}. An "
+            f"approval with no official behind it is a flag, not an approval."
+        )
+
+    public_scores = bool(loaded.config.get("public_scores"))
+    team_ids = [team["id"] for team in loaded.teams]
+    display_names = {
+        str(team.get("id")): str(team.get("display_name") or team.get("id"))
+        for team in loaded.teams
+    }
+    totals = publication.official_totals(event_dir)
+
+    stamp = versions.now()
+    planned: list[tuple[Path, dict, str, str]] = []
+    refused: list[tuple[Path, list]] = []
+    for path in paths:
+        metadata, body = frontmatter.read(path)
+        report = reports.validate_artifact(
+            path, event_dir, root=root, public_scores=public_scores,
+            all_teams=team_ids, display_names=display_names, totals=totals,
+        )
+        disqualifying = [
+            f for f in report.findings if f.severity in ("blocking", "major")
+        ]
+        state = "valid" if not disqualifying else "invalid"
+        if args.state == "approved" and disqualifying:
+            refused.append((path, disqualifying))
+            continue
+        metadata["validation_state"] = state
+        metadata["approval_state"] = args.state
+        if args.state == "approved":
+            metadata["approved_by"] = official
+            metadata["approved_at"] = stamp
+            if args.note:
+                metadata["approval_note"] = args.note
+        else:
+            for field in ("approved_by", "approved_at", "approval_note"):
+                metadata.pop(field, None)
+        planned.append((path, metadata, body, state))
+
+    if refused:
+        _emit({"refused": [
+            {"artifact": str(path),
+             "findings": [vars(f) for f in findings]} for path, findings in refused
+        ]}, args)
+        if not args.json:
+            print(f"Refused to approve {len(refused)} artifact(s); nothing was written.")
+            for path, findings in refused:
+                print(f"  {path}")
+                for finding in findings:
+                    print(f"    {finding.render()}")
+            print("\nAn approval says a human official reviewed a valid artifact. "
+                  "Repair the findings, or approve the artifacts individually.")
+        return FAILURE
+
+    for path, metadata, body, _ in planned:
+        path.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+
+    _emit({"state": args.state, "official": official, "at": stamp,
+           "artifacts": [{"artifact": str(p), "validation_state": v}
+                         for p, _, _, v in planned]}, args)
+    if not args.json:
+        for path, _, _, state in planned:
+            print(f"{args.state:16s} {path} (validation {state})")
+        print(f"{len(planned)} artifact(s) {args.state} by {official} at {stamp}")
+    return OK
+
+
 def cmd_event_gate(args) -> int:
     """Record a stage audit result.
 
@@ -333,9 +450,21 @@ def cmd_event_gate(args) -> int:
             audit_path.relative_to(loaded.directory)
             if str(audit_path).startswith(str(loaded.directory)) else audit_path
         )
+        # A gate that opened over a failing verdict is recorded in the ledger,
+        # not just printed. Nobody should later find a passed gate behind a
+        # failed audit and have to reconstruct why (D16).
+        note = event_module.gate_opens_over_a_failing_verdict(
+            frontmatter.read(audit_path)[0]
+        )
+        if note:
+            loaded.status.setdefault("gate_notes", {})[args.gate] = note
+            print(f"Gate {args.gate}: {note}")
+        else:
+            loaded.status.get("gate_notes", {}).pop(args.gate, None)
     else:
         gates[args.gate] = args.state
         loaded.status.get("gate_evidence", {}).pop(args.gate, None)
+        loaded.status.get("gate_notes", {}).pop(args.gate, None)
 
     loaded.status["last_updated"] = versions.now()
     event_module.save_status(loaded)
@@ -1567,6 +1696,23 @@ def build_parser() -> argparse.ArgumentParser:
         "--audit", help="the audit artifact justifying a pass; required to pass a gate"
     )
     gate.set_defaults(func=cmd_event_gate)
+
+    approve = event_sub.add_parser(
+        "approve", help="set approval_state on event artifacts, with validation behind it"
+    )
+    approve.add_argument("paths", nargs="+", help="artifact files, or directories of them")
+    approve.add_argument(
+        "--state", choices=APPROVAL_STATES, default="approved",
+        help="the state to set (default: approved)",
+    )
+    approve.add_argument(
+        "--official",
+        help="the role approving, e.g. event-director. Defaults to the event's "
+             "officials.publication_approval",
+    )
+    approve.add_argument("--note", help="recorded as approval_note")
+    approve.add_argument("--event-dir", help="the event these artifacts belong to")
+    approve.set_defaults(func=cmd_event_approve)
 
     unit = event_sub.add_parser("unit", help="record or invalidate a unit of work")
     unit.add_argument("event_dir")

@@ -30,7 +30,7 @@ ARTIFACT_KINDS = {
     "matchups": ("matchup", "matchup-report.md"),
     "adjudications": ("adjudication", "adjudication-report.md"),
     "dossiers": ("dossier", "team-dossier.md"),
-    "audits": (None, "audit-report.md"),
+    "audits": ("audit", "audit-report.md"),
     "submissions": ("submission-intake", "submission-intake.md"),
     "runs": ("model-run", "model-run-record.md"),
     "public": ("public-report", None),

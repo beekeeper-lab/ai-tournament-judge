@@ -118,6 +118,13 @@
       },
       "$comment": "gate name -> the audit artifact that justified passing it"
     },
+    "gate_notes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "$comment": "gate name -> why a gate opened although its audit's verdict was not a pass (D16). Written by `atj event gate`, never by hand."
+    },
     "overrides": {
       "type": "array",
       "items": {

@@ -33,6 +33,7 @@ ARTIFACT_SCHEMAS = {
     "judgment": "judgment.schema.json",
     "consolidated-report": "consolidated-report.schema.json",
     "adjudication": "adjudication.schema.json",
+    "audit": "audit.schema.json",
     "bracket": "bracket.schema.json",
     "matchup": "matchup.schema.json",
     "dossier": "dossier.schema.json",
