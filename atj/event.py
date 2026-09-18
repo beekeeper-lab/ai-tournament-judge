@@ -634,6 +634,28 @@ def can_advance(event: Event) -> tuple[bool, list[str]]:
             f"inputs changed after these units completed: {sorted(drifted)}; "
             f"re-run them before advancing"
         )
+
+    # An event may be *run* past a bypassed gate -- that is what `--force-reason`
+    # is for, and stopping the event dead would only teach an operator to edit
+    # the ledger by hand. It may not be *called complete* while nobody has read
+    # the bypass. This is the one place the framework can insist on the review
+    # it cannot perform, and it is the last transition, so it costs no in-flight
+    # work.
+    if stage == "final-audit":
+        unread = [
+            entry for entry in overrides(event) if not entry.get("reviewed_by")
+        ]
+        if unread:
+            described = ", ".join(
+                f"{entry.get('from')}->{entry.get('to')} ({entry.get('authorized_by')})"
+                for entry in unread
+            )
+            reasons.append(
+                f"{len(unread)} stage gate bypass(es) have not been reviewed: {described}. "
+                f"Read them with `atj event overrides <event>` and record the review; the "
+                f"framework cannot tell whether a bypass was justified, only that nobody "
+                f"has looked"
+            )
     return (not reasons), reasons
 
 

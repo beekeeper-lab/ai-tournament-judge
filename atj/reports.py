@@ -181,6 +181,7 @@ def validate_artifact(
     if schema_name == "judgment":
         findings.extend(_check_judgment_scores(metadata, path, root))
         findings.extend(_check_ne_confidence(metadata, path, event_dir, root))
+        findings.extend(_check_criterion_citations(metadata, body, path, root))
     if kind == "adjudications":
         findings.extend(_check_adjudication_record(metadata, path, event_dir))
     if kind == "evidence":
@@ -422,6 +423,96 @@ def _check_citation_symmetry(
                     f"A requirement rests on the evidence its own row names",
                     path,
                 ))
+    return findings
+
+
+CRITERION_SECTION = "Criterion findings"
+# A citation in any form the framework's own evidence policy permits: an
+# evidence id, an explicit evidence-class marker, or a code reference. The
+# policy says "cite repository-relative paths and line or symbol when
+# practical; cite artifact IDs for non-code evidence", and both live panels use
+# both forms, so a check that recognised only one would be measuring style.
+_CITATION = re.compile(
+    r"\[\[(?:evidence|ev):[^\]]+\]\]"
+    r"|\bev-[a-z0-9-]+\b"
+    r"|\[(?:DO|TC|INF|AE)(?:,\s*(?:DO|TC|INF|AE))*\]"
+    r"|\b(?:direct-observation|artifact-evidence|team-claim|inference)\b"
+    r"|`[^`\n]*\.[A-Za-z0-9]+(?::\d+(?:-\d+)?)?[^`\n]*`",
+    re.IGNORECASE,
+)
+
+
+def _criterion_blocks(section: str, criterion_ids: Iterable[str]) -> dict[str, list[str]]:
+    """The text discussing each criterion, split on line-anchored labels.
+
+    Both committed conventions are line-anchored -- `### functional — 4` and
+    `**functional** — 4.` -- so criterion names occurring in ordinary prose do
+    not split a block. Splitting on every mention instead cut two live blocks off
+    before their evidence, which is how this function came to be written this
+    way.
+    """
+    ids = [str(criterion) for criterion in criterion_ids]
+    if not ids:
+        return {}
+    anchor = re.compile(
+        rf"^(?:#{{2,4}}\s*|\*\*)\s*({'|'.join(re.escape(i) for i in ids)})\b",
+        re.MULTILINE,
+    )
+    found = list(anchor.finditer(section))
+    blocks: dict[str, list[str]] = {}
+    for index, match in enumerate(found):
+        end = found[index + 1].start() if index + 1 < len(found) else len(section)
+        blocks.setdefault(match.group(1), []).append(section[match.start():end])
+    return blocks
+
+
+def _check_criterion_citations(
+    metadata: dict[str, Any], body: str, path: Path, root: Path
+) -> list[Finding]:
+    """Every score cites something. Nothing checked that.
+
+    `CLAUDE.md` requires that "every score and factual conclusion must cite
+    evidence available in the evidence package", and the judgment template's own
+    audit checklist says "every material finding cites evidence". Validation
+    checked the score's range, its criterion id, its rubric version and its
+    persona, and never whether the judge pointed at anything.
+
+    This is a shape check, not a truth check -- it cannot tell whether the
+    citation supports the score, which is D4's territory one artifact over. It
+    catches a criterion scored on assertion alone, and it is `minor`, because a
+    number with no citation is a gap in the record rather than a wrong total.
+    """
+    declared = str(metadata.get("rubric") or "")
+    try:
+        rubric = canon.load_reference(declared, root) if declared else canon.load(root)
+    except AtjError:
+        return []
+    section = _section(body, CRITERION_SECTION)
+    if not section.strip():
+        return [_finding(
+            "minor", "criterion-citation",
+            f"has no {CRITERION_SECTION!r} section, so no score is traceable to anything",
+            path,
+        )]
+    blocks = _criterion_blocks(section, rubric.criterion_ids)
+    findings: list[Finding] = []
+    for criterion in rubric.criterion_ids:
+        discussion = blocks.get(criterion)
+        if not discussion:
+            findings.append(_finding(
+                "minor", "criterion-citation",
+                f"{criterion!r} is scored and never discussed under {CRITERION_SECTION!r}",
+                path,
+            ))
+            continue
+        if not any(_CITATION.search(text) for text in discussion):
+            findings.append(_finding(
+                "minor", "criterion-citation",
+                f"{criterion!r} is discussed and cites nothing: no evidence id, no "
+                f"evidence-class marker, and no code reference. A score with no citation "
+                f"is an assertion",
+                path,
+            ))
     return findings
 
 

@@ -21,6 +21,23 @@ policies carry their own independent versions; see `framework/rubrics/`.
   a bypass by name cannot resolve and a bypass by raw address cannot connect.
   `ATJ_LIVE_SANDBOX=1 python3 -m pytest tests/test_egress.py` runs that on an
   event host; CI stays hermetic.
+- `atj validate reports` checks that every criterion is discussed and cites
+  something: an evidence id, an evidence-class marker, or a code reference.
+  `CLAUDE.md` requires that every score cite evidence and the judgment
+  template's own checklist claims it, and nothing read either. A shape check, not
+  a truth check, and `minor`: a number with no citation is a gap in the record
+  rather than a wrong total. All 24 committed judgments pass it, in both
+  conventions they use.
+
+### Changed
+
+- An event cannot be marked `complete` while a stage-gate bypass recorded by
+  `--force-reason` has not been reviewed. An event may be *run* past a bypassed
+  gate -- that is what the flag is for, and stopping the event dead would teach
+  an operator to edit the ledger by hand -- but it may not be called complete
+  while nobody has read the bypass. It is the last transition, so it costs no
+  in-flight work, and it is the one place the framework can insist on a review it
+  cannot perform itself.
 
 ## 0.3.0-beta — 2026-09-18
 

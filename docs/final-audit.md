@@ -165,7 +165,10 @@ These are open, and stated rather than closed:
    bypass by name cannot resolve, and a bypass by raw address cannot connect.
    `--egress-proxy auto` refuses a proxy whose allowlist differs from the
    event's. The refusal for the no-proxy case stands unchanged.
-6. **Several controls end in a human and cannot be verified further.** The
+6. *Closed on `fix/override-gate`, for the one case the framework can reach:* an
+   event cannot be marked `complete` while a recorded gate bypass is unreviewed.
+   The framework still cannot tell whether the bypass was justified.
+   **Several controls end in a human and cannot be verified further.** The
    framework refuses to pass a gate without a matching audit, to advance a winner
    without a confirmed result or a recorded decision, or to publish without a
    named approver. It cannot check that the audit was thorough, that the approver
