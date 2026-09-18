@@ -12,9 +12,11 @@ Nothing yet.
 The release that ran a real event. `live-trial-2026` took two real applications
 through intake, containerized execution, a four-persona panel, consolidation,
 adjudication, a head-to-head and two dossiers, to `complete`, under nine audited
-stage gates. The subject under test was the framework, and it found **30
-defects**. All 30 are fixed; `docs/framework-fix-plan.md` records each one with
-what was verified rather than what was intended.
+stage gates. The subject under test was the framework, and it found **31
+defects** -- the last two found not by reading the code but by running the
+documentation: `atj event validate` on a completed event, and step 7 of the
+release checklist. All 31 are fixed; `docs/framework-fix-plan.md` records each
+one with what was verified rather than what was intended.
 
 Read this before running an event: a green `atj validate reports` means an
 artifact is well-formed, not that it is true. On the live event it returned zero
@@ -80,8 +82,14 @@ voice.
   final-audit stages could not be recorded as units at all, and the sample event
   recorded three kinds of unit with digests nothing could re-derive — which drift
   detection silently skips.
-- `release-check` gained `version archive`, `write contracts` and
+- `release-check` gained `version archive`, `write contracts`, `packaging` and
   `template schemas`; the last one found two further defects the moment it ran.
+- An in-tree build backend that stages `atj/data/` before any wheel, sdist or
+  editable install, a `MANIFEST.in` that lets an sdist build its own wheel, and a
+  CI step that installs the wheel into a fresh virtualenv and runs it from
+  `/tmp` (D31). The staging tool existed and said to run it in the build step;
+  there was no build step that did, so a released wheel reported `atj unknown`
+  and could not find its own rubric.
 
 ### Changed
 
