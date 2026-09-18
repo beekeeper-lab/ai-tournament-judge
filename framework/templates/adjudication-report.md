@@ -11,7 +11,7 @@ advances_team: null
 commit: IMMUTABLE-COMMIT
 evidence_package_id: EVIDENCE-ID
 rubric: submission-evaluation@1.0.0
-persona: ADJUDICATOR-AGENT-OR-HUMAN@VERSION
+persona: PERSONA@VERSION
 framework_commit: FRAMEWORK-COMMIT
 model_requested: MODEL-REQUESTED
 model_used: MODEL-USED
@@ -29,6 +29,15 @@ decided_by: HUMAN-OFFICIAL-ROLE
 Adjudication resolves a specific disputed question. It is **not** a rescore of the
 project and it never edits an original report. Original judgments are immutable;
 this record attaches to them.
+
+`persona` records **what produced this document**, not who decided. It must name a
+component registered in `framework/personas.md` as `name@x.y.z` — the skill or
+agent that ran the adjudication, such as `run-judging-event` or
+`judging-auditor` at the version the registry declares for it. `atj validate`
+rejects any value that is not in that registry, so a human's name or role never
+goes here. **Who decided** is `decided_by`, which is required and carries the
+human official's role. The two fields answer different questions and an
+adjudication normally fills in both.
 
 ## Question
 
@@ -88,3 +97,5 @@ Leave `resolution: referred-to-human` until a human has actually decided.
 - [ ] No original report was modified
 - [ ] Impact recalculated by `atj score`, not by hand
 - [ ] Human decision recorded where policy requires one
+- [ ] `persona` names a component registered in `framework/personas.md`;
+      the deciding human is in `decided_by`, never in `persona`

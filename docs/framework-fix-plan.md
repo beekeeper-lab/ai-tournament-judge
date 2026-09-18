@@ -31,6 +31,7 @@ version.
 | D9 | `model.verified` has no defined threshold; on the same basis `judge-backend` recorded `false` and three judges recorded `true` | 2 |
 | D10 | `framework/templates/adjudication-report.md` invites `persona: ADJUDICATOR-AGENT-OR-HUMAN@VERSION`, but `atj validate` requires a persona registered in `framework/personas.md` as `name@x.y.z`. There is no adjudicator persona and no way to name a human decision-maker | 1 |
 | D11 | An adjudication can *clear* an `NE` through `score_override`, but nothing can express one that *accepts* it. `atj score` re-reports an adjudicated `NE` as `unresolved` and keeps listing `adjudication_required`, so a completed adjudication is indistinguishable from a missing one | 2 |
+| D12 | The `agentic` criterion does not say how to score a submission that correctly has no AI. Three of its four sub-questions have no subject, and four judges on identical, conclusive facts split across two anchors | 2 |
 | D13 | `atj/scoring.py:431` treats a non-empty `decided_by` as one of the gates that lets an adjudication move an official total, and nothing distinguishes a human deciding from an agent writing a role into a required field | 2 |
 | D14 | Neither `schemas/adjudication.schema.json` nor `framework/templates/adjudication-report.md` has an amendment field, so an approved adjudication corrected after the fact cannot disclose the correction structurally and ends up citing an audit that post-dates its own `completed_at` | 2 |
 | D15 | `atj event unit record` restamps `completed_at` with the current clock and offers no override, so re-recording a unit to change only `audit_result` destroys the real completion time | 1 |
@@ -45,6 +46,7 @@ version.
 | D24 | `atj validate publication` accepts only a single artifact path and errors on a directory, so the event-wide disclosure check `CLAUDE.md` mandates cannot actually be run. Every artifact must be named individually | 1 |
 | D25 | Nothing in `atj` ever writes `approval_state`. Six sites read it and none can set it, so every artifact stays `draft` through every gate; `demo_writer.py` writes `approved` directly, so the sample event cannot catch it | 1 |
 | D26 | `framework/templates/audit-report.md` ships `approval_state: draft`, which `atj/event.py:119` then refuses as gate authorization, and `atj/reports.py:32` gives `audits` no schema. The artifact kind that authorizes every stage transition is the least validated in the framework | 1 |
+| D27 | `framework/templates/calibration-report.md` and `framework/templates/manual-override-record.md` carry the same unresolvable `persona` defect as D10, and neither artifact has a kind the validator routes at all | 1 |
 
 D3 fixed in `3a798ad` (command added, reproduces the committed sample byte for
 byte) and `4ac09ba` (refuses to rewrite an approved judgment without `--force`,
@@ -203,9 +205,11 @@ the substitution of `run-judging-event@1.0.0` for a human adjudicator is honest 
 form because the record discloses it in plain text, unverifiable in substance, and
 acceptable once but not as a precedent.
 
-Numbering note: the second-pass audit recommends this defect as "D12". It is D13
-here because D12 was already taken by the `agentic`-with-no-AI rubric gap on branch
-`fix/framework-d7-d10-d12`.
+Numbering note, now settled. The second-pass audit recommends this defect as "D12";
+it is D13 here because D12 was already taken by the `agentic`-with-no-AI rubric gap
+on branch `fix/framework-d7-d10-d12`. That branch independently used "D13" for the
+calibration/manual-override persona defect. On merge, D13 stayed with this entry —
+event audits cite it — and the branch's defect became **D27**.
 
 ## D16 — the gate needs a scope filter
 
@@ -340,3 +344,258 @@ official named in `event.md:30`. The other fourteen artifacts were deliberately 
 they stand: they are internal panel records, not deliverables, and hand-editing fourteen
 approval flags after their audits had already passed would create more risk than the gap
 it closes. That residual is recorded here rather than quietly fixed.
+<!-- ===== APPEND-ONLY: added on branch fix/framework-d7-d10-d12. Everything
+     below this marker is new. Resolve a merge conflict by keeping both sides
+     in full; nothing here edits a line that existed above it. ===== -->
+
+# Addendum — `fix/framework-d7-d10-d12`
+
+Landed: D7 and D10. Added to the plan without landing: D12, D27.
+
+This branch recorded its two new defects here rather than in the table above, so
+that the merge back into the event branch stayed a concatenation. That merge has
+now happened and both are rows in the main table: D12 unchanged, and the defect
+this branch called "D13" renumbered to **D27**. D13 on the event branch is the
+`decided_by` gate in `atj/scoring.py`, which was cited by
+`events/live-trial-2026/audits/final.md` and `audits/judgments.md` before this
+branch existed, so the event's number stands and the branch's number moved.
+
+| ID | Defect | Tier | State |
+|---|---|---|---|
+| D12 | The rubric does not say how to score `agentic` when a submission correctly has no AI. Three of the criterion's four sub-questions have no subject, and four judges on identical, conclusive facts split across two anchors | 2 | proposed, not landed |
+| D27 | Two more templates invite a `persona` value the registry can never resolve, and neither is caught as a placeholder | 1 | found, not landed |
+
+## D7 — `atj score` prints `adjudication_required` (landed)
+
+`atj score`'s console output now prints the criteria requiring adjudication,
+after the blocked-reasons block:
+
+```
+**Adjudication required:**
+- reliability: unresolved-ne
+```
+
+`render.adjudication_notice` is a new function called only by `cmd_score`. It
+is deliberately **not** part of `render.consolidated_table`, because that
+function's output is written verbatim into every consolidated team report:
+putting the notice there would change the committed sample event and would put
+an operator prompt into the official record. `atj demo build` reproduces the
+sample byte for byte.
+
+No arithmetic changed, no JSON field changed, and no existing line's wording
+changed. The defect was that the human-readable path was a strict subset of the
+machine-readable one on the one field an operator acts on.
+
+Regression: `tests/test_live_trial_regressions.py`,
+`AdjudicationRequiredIsPrintedTests`. It asserts the notice appears on the
+console, that it is silent when nothing is required, and that
+`consolidated_table` still does not contain it.
+
+**Not fixed by this, on purpose.** D11 is untouched. `atj score` still reports
+live-trial-2026's adjudicated `reliability` `NE` as unresolved and still lists
+it under `adjudication_required`, because an adjudication that *accepts* an `NE`
+has no way to say so. D7 makes that state visible; D11 makes it expressible.
+
+## D10 — `persona` names the producer, `decided_by` names the decider (landed)
+
+**The template was wrong.** `schemas/adjudication.schema.json` already carried
+`decided_by` for the human official's role, and every adjudication ever written
+in this repository — the three in the sample event and the one in
+live-trial-2026 — put a registered component in `persona` and the human in
+`decided_by`. The validator, the registry and the committed practice already
+agreed. Only the template dissented, by inviting
+`persona: ADJUDICATOR-AGENT-OR-HUMAN@VERSION`.
+
+Adding an adjudicator persona to the registry was rejected. A registry row is a
+version pin on a file with a content digest; a human official has neither, and
+inventing a row for "a human" would make `atj personas` assert a digest for
+something that does not exist on disk. The framework already separates the two
+ideas and only the template failed to say so.
+
+Landed:
+
+- `framework/templates/adjudication-report.md` now shows
+  `persona: PERSONA@VERSION`, which `atj.reports.PLACEHOLDERS` already
+  recognises. An unreplaced value is now caught as an unresolved placeholder
+  before the work is done, instead of as `unknown persona` after it.
+- The template states the distinction in prose, above `## Question`: `persona`
+  is what produced the document and must resolve in `framework/personas.md`;
+  `decided_by` is who decided and carries the human's role. A new item in the
+  existing `## Validation` checklist repeats it.
+- `schemas/adjudication.schema.json` gains a `persona` property bound to
+  `common.schema.json#/$defs/reference`, and requires it. The schema now rejects
+  both the old placeholder and any human name by shape, without needing the
+  registry lookup that `atj.versions.require_versions` already performs.
+
+No new `##` heading was added to the template. `atj.reports` derives an
+artifact's required sections from the template's `##` headings, so a new heading
+would retroactively make every existing adjudication — including
+live-trial-2026's — fail with a missing-section finding.
+
+Requiring `persona` invalidates nothing: all four committed adjudications carry
+it, and `release-check`'s template-schema comparison passes because the template
+shows the field.
+
+Regression: `tests/test_live_trial_regressions.py`,
+`AdjudicationPersonaTests`. It asserts the template's persona is a recognised
+placeholder, that the schema rejects both a human-shaped persona and a missing
+one, and that every committed adjudication names a component the registry
+actually holds while naming its human in `decided_by`.
+
+## D12 — scoring `agentic` when a submission correctly has no AI
+
+### What happened
+
+`team-podcast` is a local podcast player: no model, no API key, no third-party
+egress. Four judges established that independently and conclusively — each read
+every server module and every client script, `ev-podcast-07` and `ev-podcast-09`
+record the negative finding, and every sandbox run executed with `--network
+none` and still worked. On those identical facts they scored `agentic` 2, 3, 3
+and 3.
+
+Evidence, read-only, at `events/live-trial-2026/judgments/team-podcast/`:
+
+- `judge-backend.md`, `### agentic`: scored at the partial anchor, and said so
+  explicitly — "This is not `NE`. The evidence is complete and conclusive, and
+  it is negative". Its highest-value improvement is "None for the application.
+  The improvement belongs to the rubric: state how `agentic` is scored when a
+  submission has no AI surface."
+- `judge-product-agentic.md`, `### agentic`: scored at the solid anchor. "There
+  is no AI or agentic system to evaluate for control, observability or
+  effectiveness, so two thirds of the criterion's central question have no
+  subject." It rejects the low reading because "penalizing correct abstention
+  would reward every team that bolts a model onto a media player, which is the
+  opposite of what the criterion exists to encourage", and asks consolidation to
+  settle the interpretation rather than average over it.
+- `judge-security-ops.md`, `### agentic`: same anchor, same reasoning from the
+  other direction — scoring at the bottom "would require reading 'no AI' as 'not
+  demonstrated'", and scoring higher "would require an AI system that exceeds
+  expectations, and there is none".
+- `judge-frontend-ux.md`, `### agentic`: same anchor. "There is no AI system
+  here to control, observe or measure, so there is nothing in this criterion to
+  reward beyond the appropriateness of the choice and the cleanliness of the
+  boundary."
+
+The spread stayed inside the aligned band, so nothing blocked and nothing was
+flagged. That is the reason this needs a rubric fix rather than an adjudication:
+the cost was invisible. Four judges spent their reasoning budget re-deriving an
+interpretation the rubric should have stated once, and the panel's number is the
+average of two different readings of the question rather than four readings of
+the evidence.
+
+### Cause
+
+The criterion's central question is "Is AI appropriate, controlled, observable,
+and effective?" Three of those four sub-questions presuppose that AI exists.
+When it does not, a judge has to invent a mapping from "the subject is absent"
+to a number, and the anchors point two ways at once: the bottom anchor reads
+"not demonstrated", which is literally true and substantively wrong, while the
+middle anchors describe degrees of a thing that is not there. Nothing in
+`## Interpretation boundaries` covers it, though the neighbouring line — "Do not
+reward model names, framework choice, agent count, or code volume by themselves"
+— is clearly aimed at the same failure and stops one step short.
+
+`NE` is not the answer and no judge treated it as one. `NE` means the evidence
+is missing. Here the evidence is complete and the subject is missing.
+
+### Options
+
+**O1 — a defined score for correct abstention.** State in the criterion that a
+submission with no AI surface, where the absence is verified and the scoping
+decision is documented, is scored on the abstention alone and lands at a named
+anchor. Settles the number, deterministic to audit, no calculation change.
+Against: it caps the criterion for an abstaining team, which can never reach the
+top anchors that require a demonstrated system.
+
+**O2 — an `N/A` disposition distinct from `NE`.** A criterion with no subject
+contributes no points, its weight drops out of the denominator, and unlike `NE`
+it does not block finalization. Measurement-theoretically the cleanest: you do
+not score what is not there. Against, and this is decisive: it breaks the fixed
+0–100 scale. Two teams judged on different criterion sets produce totals that
+are not the same quantity, and `framework/rubrics/head-to-head.md` and the
+bracket both assume a common scale. It also opens a gaming surface — a team
+that argues a criterion into `N/A` removes the criterion it would have scored
+worst on — and it relocates the disagreement rather than resolving it, because
+four judges would now have to agree on whether `N/A` applies. It needs schema,
+scoring, validation, publication and template changes.
+
+**O3 — reword the central question** so it has a subject either way: "Is the
+decision about whether to use AI correct for this problem, and where AI is used,
+is it appropriate, controlled, observable, and effective?" Cheapest, and it
+removes the presupposition that caused the split. Against: on its own it still
+does not tell a judge what number to write. The four judges did not disagree
+about the question's intent; they disagreed about which anchor the intent lands
+on.
+
+### Recommendation
+
+**Adopt O3 and O1 together in the next `submission-evaluation` version. Reject
+O2.**
+
+O3 fixes the cause and O1 fixes the symptom, and neither alone is sufficient:
+rewording without an anchor leaves the number to be re-derived by each judge,
+and an anchor without the reword leaves the question contradicting its own
+anchor. Together they cost one rubric version and no code.
+
+Concretely, for the next rubric version:
+
+1. Reword the `agentic` central question as in O3.
+2. Add to the criterion: when a submission has no AI surface, the absence is
+   verified in the pinned evidence (no model, no key, no third-party egress),
+   and the scoping decision is documented, score the criterion on the
+   correctness and verifiability of that decision alone. A correct, documented,
+   verified abstention meets primary expectations and is scored at the anchor
+   that means primary expectations are met. It does not reach the anchors above
+   that, which require a demonstrated system. It is never scored at the bottom
+   anchors, which describe a failure; a correct decision is not a failure.
+3. Add to `## Interpretation boundaries`: do not score `agentic` down because a
+   submission contains no AI. Score whether the choice was right for the problem
+   and whether the boundary is verifiable rather than asserted. This is the
+   converse of the existing line about not rewarding model names, and the two
+   belong together.
+4. State that `NE` does not apply to an absent subject. `NE` is missing
+   evidence; a verified absence is evidence.
+
+**Tier 2 — after live-trial-2026 reaches `complete`.** This is a rubric version
+change, and `team-ledger` and `team-podcast` are both judged under the current
+rubric version. Do not retrofit. `team-podcast`'s consolidated `agentic` result
+stands as judged; the fix applies to the next event.
+
+**Done when:** the rubric answers "what do I write for `agentic` when there is
+no AI?" in one reading, and a judge who follows it produces the same anchor as
+another judge on the same facts.
+
+**Residual, not solved by this.** `judge-product-agentic` asked consolidation to
+resolve the interpretation rather than average over it. Consolidation has no
+vocabulary for that request: it computes agreement bands over numbers and has no
+way to record that two judges agreed on the facts and disagreed on the reading.
+The disagreement here was benign and stayed inside the aligned band. A sharper
+one would be averaged away just as silently. That belongs with D8, which is the
+same shape one field over.
+
+## D27 — two more templates invite an unresolvable `persona` (found, not landed)
+
+The same defect class as D10, found while fixing it:
+
+- `framework/templates/calibration-report.md` has `persona: PANEL-VERSIONS`.
+- `framework/templates/manual-override-record.md` has `persona: HUMAN-OFFICIAL`.
+
+Neither value can resolve in `framework/personas.md`, and neither contains any
+string from `atj.reports.PLACEHOLDERS`, so an author who leaves either in place
+gets no placeholder finding — exactly the D10 failure. `HUMAN-OFFICIAL` is one
+hyphenated word short of the real placeholder `HUMAN-OFFICIAL-ROLE`.
+
+Neither is caught today because neither artifact has a kind in
+`atj.reports.ARTIFACT_KINDS` and neither has a directory in
+`atj.event.EVENT_SUBDIRS`, so no event path routes them through
+`atj validate reports` at all. **That is the larger half of this finding**: two
+committed templates describe artifacts the validator has no kind for. A
+calibration report or a manual override written from them is unvalidated, and
+`manual-override-record.md` is the artifact for a human overriding a tool
+result, which is the last artifact that should be unchecked.
+
+Proposed, tier 1: give both templates a persona value that `PLACEHOLDERS`
+already recognises, then either register both kinds with a schema and an event
+subdirectory, or delete the templates for artifacts the framework does not
+actually produce. Deciding which is the work; it is not a one-line change and it
+was out of scope for this branch.
