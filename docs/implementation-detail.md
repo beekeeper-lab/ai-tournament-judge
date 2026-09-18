@@ -351,11 +351,13 @@ python3 -m atj bracket verify <bracket.json> --event-dir events/<id>
 python3 -m atj validate publication <artifact> --event-dir events/<id>
 python3 -m atj sandbox preflight                  # is isolation real right now?
 python3 -m atj demo check                         # is the sample still honest?
+python3 -m atj event overrides events/<id>        # what did a human step over?
+python3 -m atj render consolidated events/<id>/summaries
 ```
 
 ## 7. Tests
 
-244 tests plus 51 subtests.
+487 tests plus 234 subtests, at 0.3.0-beta.
 
 | File | Covers |
 |---|---|
@@ -369,6 +371,19 @@ python3 -m atj demo check                         # is the sample still honest?
 | `test_ceremony.py` | Public-only rendering and refusal behaviour |
 | `test_end_to_end.py` | The committed sample event and interrupt-and-resume |
 | `test_audit_regressions.py` | One test per finding from the independent audits |
+| `test_intake.py` | Pinning, archive refusal, snapshot reproducibility |
+| `test_hooks.py` + `tests/hooks/` | The project-local guard rails, both directions |
+| `test_live_trial_regressions.py` | The defects the first live event exposed |
+| `test_final_audit_regressions.py` | One test per finding from the release audit |
+| `test_release_audit_regressions.py` | The baseline audit's release blockers |
+| `test_tier1_regressions.py` | Tier-1 defects: gate scope, approval, schemas, renderers |
+| `test_tier2_regressions.py` | Supersession, write contracts, the rubric's own rules, adjudication authority |
+| `test_tier3_regressions.py` | Citation symmetry, unit digests, hook sequencing |
+| `test_operator_surface.py` | The release advisories that were closed, and the packaging wiring |
+
+Each regression file names the defect it locks down in the test's own docstring,
+and says what the pre-fix behaviour did. A test whose name records a defect
+number is worth more than a test whose name records a function.
 
 The bracket tests sweep every supported size, every bye policy and many seeds.
 That breadth is deliberate: the alpha's two constraint defects both survived a

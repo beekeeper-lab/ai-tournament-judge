@@ -96,6 +96,11 @@ In Claude Code, the slash commands `/event-init`, `/team-ingest`, `/team-judge`,
 | `atj bracket advance <bracket.json> --match <id> --from <report>` | Record a match winner and carry it forward |
 | `atj bracket verify <bracket.json> --event-dir <event>` | Check a bracket and re-derive its constraints from the roster. `--reproduce <roster.json>` redraws from the recorded seed instead. The weaker check that trusts the file's own audit block must be asked for with `--structure-only`, so nothing reading an exit code mistakes it for a full verification |
 | `atj event unit <dir> list` | Show the unit ledger and any unit whose inputs have changed |
+| `atj event overrides <dir>` | List every stage gate a human bypassed with `--force-reason`. Exits non-zero while one is unreviewed; `--review <index> --official <role>` records that a person read it, never that it was justified |
+| `atj event approve <paths>` | Set `approval_state` on event artifacts, with validation behind it |
+| `atj render judgment <paths>` | Generate the scores table into a judgment from its own front matter |
+| `atj render consolidated <paths>` | Generate the panel score block into a consolidated report |
+| `atj intake <dir> <team> <source>` | Materialize, pin and enroll one submission |
 | `atj validate reports <dir>` | Validate every artifact in an event |
 | `atj validate publication <artifact>` | Gate one artifact before disclosure |
 | `atj sandbox preflight` | Report whether verified isolation is available |
@@ -119,10 +124,17 @@ python3 -m pytest tests/ -q \
   && python3 -m atj demo check \
   && python3 -m atj event validate events/sample-mock-2026 \
   && python3 -m atj validate reports events/sample-mock-2026 \
+  && python3 tools/check_placeholders.py \
   && python3 -m atj bracket verify tests/fixtures/bracket-20-team/bracket.json \
        --reproduce tests/fixtures/bracket-20-team/roster.json \
   && python3 tools/check_placeholders.py
 ```
+
+A wheel is verified the same way, and by CI rather than by a checklist: the build
+stages the framework data into the package, and `The wheel installs and runs
+outside the checkout` installs it into a fresh virtualenv and runs
+`atj release-check` from `/tmp`. A release that would install a command unable to
+find its own rubric fails the build instead.
 
 `atj release-check` alone covers rubric totals, schema self-checks, the component
 registry, template integrity, Claude component structure, the single-source rule,

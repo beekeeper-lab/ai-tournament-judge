@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>live-trial-2026 — Evaluation Results and Framework Findings</title>
+<title>live-trial-2026 — Results, and the 31 Defects It Found</title>
 <style>
 :root{
   --bg:#f7f8fa;--panel:#ffffff;--ink:#1f2937;--muted:#6b7280;--border:#d1d5db;
@@ -144,10 +144,10 @@ footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);
     <span><b>Winner</b> team-ledger, combined margin +35.00, confirmed</span>
     <span><b>Evaluated</b> 2 of 2 teams, both judged</span>
     <span><b>Rubric</b> 7 criteria, 4 independent judges per team</span>
-    <span><b>Sandboxed runs</b> 27 · <b>Framework defects found</b> 26</span>
+    <span><b>Sandboxed runs</b> 27 · <b>Framework defects found</b> 31 · <b>fixed</b> 31</span>
     <span><b>Date</b> 2026-09-16 to 2026-09-18</span>
-    <span><b>Branch</b> <code>feature/first-live-event</code></span>
-    <span><b>Head</b> <code>event complete</code></span>
+    <span><b>Branch</b> <code>main</code></span>
+    <span><b>Head</b> <code>0.3.0-beta</code> — event complete, remediation complete</span>
     <span><b>Owner</b> event-director</span>
   </div>
 </header>
@@ -174,9 +174,20 @@ footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);
   judges independently returned comparison value <code>0</code> on <code>reliability</code> and
   explicitly refused to treat the <code>NE</code> as a deficiency.</p>
 
-  <p><b>The real product of this trial is 26 framework defects</b>, every one found by running
-  the event rather than by reading the code. They are tracked as D1–D26 in
-  <code>docs/framework-fix-plan.md</code>.</p>
+  <p><b>The real product of this trial is 31 framework defects</b>, every one found by
+  running the framework rather than by reading it — and the last two by running its own
+  documentation: <code>atj event validate</code> on the finished event, and step 7 of the
+  release checklist. All 31 are fixed and released as <code>0.3.0-beta</code>. Each is
+  tracked in <code>docs/framework-fix-plan.md</code> with what was verified rather than
+  what was intended.</p>
+
+  <div class="callout">
+    <span class="label">What this document is now</span>
+    <p>The sections below are the event's record, written while it ran. They are kept in
+    that voice. <b>Remediation</b> and <b>What remains</b> at the end say what actually
+    shipped, including the two places where the plan in this document turned out to be
+    wrong.</p>
+  </div>
 </section>
 
 <nav class="toc">
@@ -185,31 +196,33 @@ footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);
     <li><a href="#stands">Where the event stands</a></li>
     <li><a href="#ledger">team-ledger panel result</a></li>
     <li><a href="#convergence">What the judges converged on</a></li>
-    <li><a href="#podcast">team-podcast — evidence only</a></li>
+    <li><a href="#podcast">team-podcast — the accepted <code>NE</code></a></li>
     <li><a href="#audits">The evidence audit: three rounds</a></li>
     <li><a href="#headline">The headline finding</a></li>
     <li><a href="#defects">Framework defects found</a></li>
-    <li><a href="#plan">Remediation plan</a></li>
+    <li><a href="#plan">Remediation — what landed</a></li>
     <li><a href="#remaining">What remains</a></li>
   </ol>
 </nav>
 
 <section class="card" id="stands">
   <h2>Where the event stands</h2>
-  <p class="lede">Nine stage gates. Three passed.</p>
+  <p class="lede">Nine stage gates. All nine passed, each on a recorded audit
+  artifact. Every one returned PASS WITH ADVISORIES; none returned a bare PASS, and the
+  advisories are in the artifacts named here.</p>
 
   <table>
-    <thead><tr><th>Stage gate</th><th>State</th><th>Evidence</th></tr></thead>
+    <thead><tr><th>Stage gate</th><th>State</th><th>Authorizing audit</th></tr></thead>
     <tbody>
-      <tr><td>configuration-audited</td><td><span class="chip ok">passed</span></td><td><code>audits/configuration.md</code> — pass with advisories</td></tr>
-      <tr><td>roster-frozen</td><td><span class="chip ok">passed</span></td><td><code>audits/intake.md</code> — pass with advisories</td></tr>
-      <tr><td>evidence-validated</td><td><span class="chip ok">passed</span></td><td><code>audits/evidence.md</code> — pass with advisories, third pass</td></tr>
-      <tr><td>judgments-audited</td><td><span class="chip warn">pending</span></td><td>team-ledger panel done; team-podcast not started</td></tr>
-      <tr><td>consolidation-audited</td><td><span class="chip">pending</span></td><td>—</td></tr>
-      <tr><td>bracket-audited</td><td><span class="chip">pending</span></td><td>—</td></tr>
-      <tr><td>tournament-audited</td><td><span class="chip">pending</span></td><td>—</td></tr>
-      <tr><td>dossiers-approved</td><td><span class="chip">pending</span></td><td>—</td></tr>
-      <tr><td>final-audit-passed</td><td><span class="chip">pending</span></td><td>—</td></tr>
+      <tr><td>configuration-audited</td><td><span class="chip ok">passed</span></td><td><code>audits/configuration.md</code></td></tr>
+      <tr><td>roster-frozen</td><td><span class="chip ok">passed</span></td><td><code>audits/intake.md</code></td></tr>
+      <tr><td>evidence-validated</td><td><span class="chip ok">passed</span></td><td><code>audits/evidence.md</code></td></tr>
+      <tr><td>judgments-audited</td><td><span class="chip ok">passed</span></td><td><code>audits/judgments.md</code></td></tr>
+      <tr><td>consolidation-audited</td><td><span class="chip ok">passed</span></td><td><code>audits/consolidation.md</code></td></tr>
+      <tr><td>bracket-audited</td><td><span class="chip ok">passed</span></td><td><code>audits/bracket.md</code></td></tr>
+      <tr><td>tournament-audited</td><td><span class="chip ok">passed</span></td><td><code>audits/tournament.md</code></td></tr>
+      <tr><td>dossiers-approved</td><td><span class="chip ok">passed</span></td><td><code>audits/dossiers.md</code></td></tr>
+      <tr><td>final-audit-passed</td><td><span class="chip ok">passed</span></td><td><code>audits/final.md</code></td></tr>
     </tbody>
   </table>
 
@@ -349,14 +362,22 @@ footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);
 </section>
 
 <section class="card" id="podcast">
-  <h2>team-podcast — evidence only, no panel yet</h2>
-  <p class="lede">Podcast Listener, pinned at <code>f3fdd342</code>. Evidence package
-  audited and gated; judging not started.</p>
+  <h2>team-podcast — the accepted <code>NE</code></h2>
+  <p class="lede">Podcast Listener, pinned at <code>f3fdd342</code>. Four judgments, six
+  criteria aligned, <code>reliability</code> <code>NE</code> from all four judges, and
+  <b>no official total</b> — adjudicated and accepted rather than cleared.</p>
 
-  <p>One criterion is already marked <code>evidence_limited_criteria: [reliability]</code>,
-  which means the panel will carry an <code>NE</code> and this team will have
-  <b>no finalizable total</b>. That is the correct outcome, not a failure, and it will
-  propagate into the head-to-head.</p>
+  <p>The evidence package carried
+  <code>evidence_limited_criteria: [reliability]</code> before judging began, so the
+  <code>NE</code> was predicted rather than discovered. The provisional sum of the six
+  scored criteria is 58.25 and is unofficial: it is kept out of the score block, out of
+  the dossier and out of the head-to-head, and the matchup rubric forbids selecting on an
+  initial total in any case.</p>
+
+  <p>Expressing that outcome turned out to be a defect of its own. An adjudication could
+  <em>clear</em> an <code>NE</code> by supplying a score and had no way to
+  <em>accept</em> one, so <code>atj score</code> kept reporting a decision that had been
+  made as one nobody had made (D11, fixed).</p>
 
   <div class="callout warn">
     <span class="label">Why reliability is NE</span>
@@ -483,7 +504,7 @@ footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);
         each judge to produce a file. All four returned their document as chat text.</td>
         <td><code>demo_writer.py</code> generates the sample judgments directly. No
         persona ever ran.</td>
-        <td><span class="chip warn">frozen — needs new persona version</span></td>
+        <td><span class="chip ok">fixed — in the contract, not the tool surface; see Remediation</span></td>
       </tr>
       <tr>
         <td>D2</td>
@@ -493,7 +514,8 @@ footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);
         four judgments failed validation blocking on it.</td>
         <td>The sample's front matter is generated from a fixture that happens to include
         the block.</td>
-        <td><span class="chip info">safe to fix now</span></td>
+        <td><span class="chip ok">fixed — plus a <code>release-check</code> comparing every
+        template against its schema, which found two more</span></td>
       </tr>
       <tr>
         <td>D3</td>
@@ -508,7 +530,8 @@ footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);
         <td><b>Validation cannot check that a citation supports its claim.</b> See the
         headline finding above.</td>
         <td>Fixture manifests are generated with correct citations by construction.</td>
-        <td><span class="chip warn">needs design — next version</span></td>
+        <td><span class="chip ok">fixed — bidirectional linking; the sample now carries
+        both halves</span></td>
       </tr>
       <tr>
         <td>D5</td>
@@ -524,7 +547,7 @@ footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);
         message merely <em>named</em> a submission's test file, reading it as an attempt
         to run submission code on the host.</td>
         <td>The sample event never writes prose about a submission's internals.</td>
-        <td><span class="chip info">safe to fix now</span></td>
+        <td><span class="chip ok">fixed — and again in the gate half as D23</span></td>
       </tr>
     </tbody>
   </table>
@@ -546,84 +569,172 @@ footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);
 </section>
 
 <section class="card" id="plan">
-  <h2>Remediation plan</h2>
-  <p class="lede">Three tiers, ordered by what the live event permits. The source of
-  truth for this plan is <code>docs/framework-fix-plan.md</code>; this section is the
-  review surface.</p>
+  <h2>Remediation — what landed</h2>
+  <p class="lede">All 31 defects are fixed and released as <code>0.3.0-beta</code>. The
+  source of truth is <code>docs/framework-fix-plan.md</code>; this is the review surface.
+  Two things in the plan written above turned out to be wrong, and both are recorded
+  rather than quietly corrected.</p>
 
-  <h3>Tier 1 — land now, during the event</h3>
-  <p>Changes that touch no rubric, no persona, no policy, no evidence, and no number.</p>
+  <div class="callout">
+    <span class="label">The plan's first act broke the frozen record — D28</span>
+    <p>Tier 2 begins with a persona bump, which the plan schedules for exactly the moment
+    the event completes. Doing it produced four blocking version mismatches against
+    <code>live-trial-2026</code>, whose artifacts are frozen:</p>
+    <pre><code>$ sed -i 's/| judge-backend | 1.0.0 |/| judge-backend | 1.1.0 |/' framework/personas.md
+$ python3 -m atj validate reports events/live-trial-2026
+BLOCKING [version] judgments/team-ledger/judge-backend.md: persona mismatch ...
+Report validation: FAIL — 28 artifacts, 4 blocking</code></pre>
+    <p>Nothing recorded a <em>superseded</em> version, so any bump turned every artifact of
+    every completed event into a mismatch whose only in-event repair was to rewrite a
+    frozen record. That is D20's shape exactly: a validation rule whose only permitted
+    repair is an offence. It blocked D1, D8, D9 and D12, and it had to be built first.</p>
+    <p><code>framework/personas.md</code> now carries an append-only <b>Superseded
+    versions</b> table; <code>framework/rubrics/archive/</code> holds retired contract
+    versions; <code>atj score</code> reads a panel's rubric <em>from the panel</em>, so a
+    completed event is recomputed under the contract it was judged under. This event now
+    validates at <b>0 blocking, 61 advisories</b>, each naming a contract that has moved
+    on since it was judged.</p>
+  </div>
+
+  <div class="callout">
+    <span class="label">T2.1 was the wrong fix, and a test said so — D1</span>
+    <p>The plan above says to give the four judges a <code>Write</code> tool. That was
+    implemented, and then reverted, because the prompt-injection suite refused it:</p>
+    <pre><code>judge-backend may use ['Write'], which exceeds read-only evidence access</code></pre>
+    <p>A judge reads untrusted submission content, and <code>Write</code> is the one
+    capability that gives an injected instruction a path to an artifact — for a problem
+    that was never an impossibility, since <code>judge-submission</code> step 4 already
+    sanctions the orchestrator persisting what a judge returns, which is what this event
+    did.</p>
+    <p>The real defect was silence: nothing in a judge's definition said it returns a
+    document rather than writing one, and nothing compared the two halves of that
+    contract. <code>framework/personas.md</code> gained a <code>writes</code> column,
+    every agent gained a <code>## Your own artifact</code> section, and
+    <code>judging-auditor</code> — which already had <code>Bash</code> and could write
+    regardless — is the one component that declares <code>Write</code>.</p>
+  </div>
+
+  <h3>Tier 1 — landed during the event</h3>
   <ul>
-    <li><b>T1.1 (D2)</b> — add the <code>model</code> block to
-    <code>framework/templates/individual-judgment.md</code>, documenting what
-    <code>schemas/judgment.schema.json</code> already enforces. Add a
-    <code>release-check</code> assertion that every template satisfies its own schema, so
-    this class cannot recur silently.</li>
-    <li><b>T1.2 (D6)</b> — narrow <code>.claude/hooks/pre-advance.sh</code> so it
-    inspects the command being executed rather than the whole command string including
-    commit-message bodies and heredoc content. The guard stays blunt about actual
-    execution; it stops firing on documentation.</li>
+    <li><b>D2</b> template and schema agree, and <code>release-check</code> now compares
+    every template's front matter against its schema's required list. It found two further
+    defects the moment it ran.</li>
+    <li><b>D6</b> the run-on-host guard reads a command rather than a string: heredocs
+    stripped, a runner required adjacent to a submission path. 19 behavioural cases now
+    pin both directions.</li>
+    <li><b>D3, D5, D7, D10, D15, D16, D17, D18, D19, D20, D24, D25, D26, D27</b> — the
+    missing renderers, the backup file, the console that contradicted its own JSON, the
+    unnameable adjudicator, the destroyed timestamp, the gate with no scope filter, the
+    worktree that broke four validators, the template that asserted a false provenance in
+    its own voice, the bye check that gated on a policy name, the disclosure check that
+    could not take a directory, the approval field nothing could set, and the audit kind
+    with no schema.</li>
   </ul>
 
-  <h3>Tier 2 — after live-trial-2026 reaches <code>complete</code></h3>
+  <h3>Tier 2 — landed after the event completed</h3>
   <ul>
-    <li><b>T2.1 (D1)</b> — give the four judge personas a <code>Write</code> tool scoped
-    to <code>workspaces/&lt;event&gt;/staging/&lt;team&gt;/</code>, bump each to
-    <code>@1.1.0</code> in <code>framework/personas.md</code>, and add an end-to-end test
-    that spawns a persona and asserts it can produce its own artifact. A persona that
-    cannot write the file its skill demands is a contract violation the test suite should
-    catch.</li>
-    <li><b>T2.2</b> — extend <code>atj release-check</code> to cross-check every agent
-    definition's declared tools against the artifacts its skill requires it to produce.
-    D1 existed because nothing compared the two.</li>
+    <li><b>submission-evaluation@1.1.0</b>: the <code>agentic</code> question has a subject
+    whether or not a submission contains AI, and a new section settles the number for a
+    correct, documented, verified abstention (<b>D12</b>). <code>confidence</code> is
+    defined, and for an <code>NE</code> it describes how firmly the evidence establishes
+    that no observation was possible — enforced by a new <code>ne-confidence</code> check
+    (<b>D8</b>). <code>model.verified</code> has a threshold: outside the model's own
+    statement, or false (<b>D9</b>).</li>
+    <li><b>The adjudication record says what it does</b>: an <code>NE</code> can be
+    <em>accepted</em> and not only cleared (<b>D11</b>); <code>decision_authority</code>
+    separates a human official from an agent writing a role into a required field, and only
+    the former moves an official total (<b>D13</b>); <code>amendments</code> is
+    append-only and must read forward (<b>D14</b>).</li>
+    <li><b>D22</b> the order-balanced pass report has a schema requiring exactly one
+    populated block, a template, and a declared private home. This event's two pass
+    reports had been parked in an undeclared directory, beyond the reach of every check,
+    holding the only written record of the comparative evidence. They validate in place
+    now, unchanged.</li>
+    <li><b>T2.2</b> <code>release-check</code> fails when a component declares a write path
+    and withholds <code>Write</code>, and when it holds <code>Write</code> with no declared
+    path.</li>
   </ul>
 
-  <h3>Tier 3 — next framework version, needs design</h3>
-  <p><b>T3.1 (D4)</b> — make a misdirected citation structurally detectable. Semantic
-  truth is not checkable, but this specific failure is, through bidirectional linking:</p>
-  <pre><code>Requirements table              Direct observations table
-  R2 → cites ev-ledger-06         ev-ledger-06 → supports [R2, R3, R4, R9]
+  <h3>Tier 3 — landed, with the schema migration it needed</h3>
+  <ul>
+    <li><b>D4/T3.1</b> the manifest's observation table declares which requirements each
+    observation supports, written independently of the requirements table, and
+    <code>atj validate reports</code> asserts the two agree. A requirement citing an
+    observation that does not claim to support it is blocking — the exact nine-row failure
+    from audit round 1, now deterministic. This event's manifests predate the column, so
+    they advise rather than fail: they are a frozen record, not a repair job.</li>
+    <li><b>D21</b> the bracket, tournament, dossier and final-audit stages are ledger units
+    at last. The sharper half was in the fixture: the sample event recorded three kinds of
+    unit with digests nothing could re-derive, and drift detection skips what it cannot
+    re-derive.</li>
+    <li><b>D23</b> the advance guard compares positions in a command chain, so recording a
+    gate and then advancing defers to <code>atj event advance</code>. Its prose half was
+    still reading the raw command string long after D6 fixed the execution half — it
+    blocked the heredoc that was writing the test cases for this fix.</li>
+    <li><b>T3.2</b> <code>framework/rubrics/README.md</code> states that a repair round is
+    itself audited before the gate, and that a green validator means well-formed, not
+    true.</li>
+  </ul>
 
-atj validate reports then asserts the two agree.</code></pre>
-  <p>A row citing an observation that does not claim to support it becomes a blocking
-  finding. This catches the exact nine-row failure from audit 1 deterministically,
-  because the observation's author has to independently assert the same link — one
-  person's slip no longer passes silently. It requires a schema change and a migration
-  for existing manifests, which is why it is not a mid-event fix.</p>
-
-  <p><b>T3.2</b> — record in <code>framework/rubrics/README.md</code> that a single
-  audit pass is insufficient when that pass also specifies repairs, and that the repair
-  round must itself be audited. Three rounds on this event; each found defects the last
-  one missed, and three of those defects were created by the repairs.</p>
+  <h3>Found afterwards, by running the documentation</h3>
+  <ul>
+    <li><b>D29</b> CI had been red on <code>main</code> at its <em>No unresolved
+    placeholders</em> step, because the fix plan quotes the placeholder its own defects are
+    about. The three defect logs are now held to a narrower rule — a placeholder may appear
+    inside backticks, as a citation, and nowhere else — rather than exempted.</li>
+    <li><b>D30</b> <code>status.md</code>'s prose could contradict the ledger in its own
+    front matter. This event finished with <code>final-audit-passed: passed</code> recorded
+    and its body still showing the final audit unchecked. <code>atj event validate</code>
+    compares them now.</li>
+    <li><b>D31</b> step 7 of the release checklist — install the wheel in a clean
+    environment — produced <code>atj unknown</code> and a <code>release-check</code> that
+    could not find its own rubric. The staging tool existed and said to run it in the build
+    step; there was no build step that did. There is one now, and CI installs the wheel and
+    runs it from <code>/tmp</code>.</li>
+  </ul>
 </section>
 
 <section class="card" id="remaining">
   <h2>What remains</h2>
-  <ol>
-    <li><b>team-podcast panel</b> — four independent judgments, staged then promoted
-    together. <code>reliability</code> is expected to come back <code>NE</code>.</li>
-    <li><b>Judging audit and gate</b> for both teams, which must state the
-    <code>framework_commit</code> difference between the judgments and the evidence
-    packages.</li>
-    <li><b>Two consolidated panel reports</b> via <code>panel-consolidator</code> into
-    <code>summaries/</code>, then the consolidation gate.</li>
-    <li><b>Bracket</b> — two teams, different affiliation groups, one matchup, no byes.</li>
-    <li><b>Head-to-head</b> judged in both presentation orders, close-call band 5.
-    One team will have no finalizable total, which the matchup rubric must handle
-    explicitly rather than by accident.</li>
-    <li><b>Two dossiers</b>, publication validation, final event audit, mark complete.</li>
-  </ol>
+  <p class="lede">Nothing in the event, and nothing in the fix plan. These are the
+  limitations the framework states about itself, from
+  <code>docs/final-audit.md</code> and <code>CHANGELOG.md</code>.</p>
+  <ul>
+    <li><b>A green validator is not truth.</b> On this event
+    <code>atj validate reports</code> returned zero findings at every stage on manifests
+    containing nine misdirected citations, a scan credited to an observation that never
+    examined the code in question, and a fabricated version number. D4 narrows that gap and
+    does not close it: an observation that is itself wrong, or a fabricated number inside
+    one, remains the audit's job. The LLM audit was the only thing that caught any
+    substantive error here.</li>
+    <li><b>One audit pass is not enough.</b> The evidence stage took three rounds and the
+    judging stage five, and nine of the defects found were introduced by the repairs.</li>
+    <li><b>A network allowlist needs an egress proxy this repository does not provide.</b>
+    Configuring one without a proxy is refused, so that path is untested end to end.</li>
+    <li><b>Judge independence is instructed, then detected.</b> Near-duplicate wording and
+    identical score vectors are both reported now; systematic paraphrase by a contaminated
+    judge is not caught.</li>
+    <li><b>Hooks are guard rails, not a security boundary.</b> <code>atj validate</code>,
+    the publication gate and the audit gates are.</li>
+    <li><b>AI judgment is not deterministic</b>, and nothing here claims otherwise. The
+    sample event's judge scores are scripted so CI can reproduce the pipeline without a
+    model call, and every artifact in it says so.</li>
+    <li><b>No event has decided anything real yet.</b>
+    <code>docs/final-audit.md</code> lists what a human must do first, including reading
+    <code>atj event overrides</code> before calling an event complete.</li>
+  </ul>
   <p>Operator notes with the exact judge brief, the gotchas and the stage order live at
   <code>events/live-trial-2026/OPERATOR-NOTES.md</code>. The official ledger is
   <code>events/live-trial-2026/status.md</code>.</p>
 </section>
 
 <footer>
-  <p>Generated 2026-09-17 for <code>live-trial-2026</code> on branch
-  <code>feature/first-live-event</code>. Scores produced by <code>atj score</code>;
+  <p>Event record generated 2026-09-17; remediation sections updated 2026-09-18 at
+  <code>0.3.0-beta</code> on <code>main</code>. Scores produced by <code>atj score</code>;
   no arithmetic in this document was performed by hand. Private artifact — contains
   pre-publication judging material and has not passed
-  <code>atj validate publication</code>.</p>
+  <code>atj validate publication</code>. Its Markdown companions are
+  <code>docs/framework-fix-plan.md</code> and <code>CHANGELOG.md</code>.</p>
 </footer>
 
 </div>
