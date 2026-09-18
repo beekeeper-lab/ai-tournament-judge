@@ -1300,7 +1300,11 @@ def cmd_release_check(args) -> int:
 
     problems = check_packaging(root)
     failures += [f"packaging: {p}" for p in problems]
-    print(f"packaging         {'PASS' if not problems else 'FAIL'}")
+    if (root / "pyproject.toml").is_file():
+        print(f"packaging         {'PASS' if not problems else 'FAIL'}")
+    else:
+        print(f"packaging         {'PASS' if not problems else 'FAIL'} "
+              f"(version only; an installed wheel carries no build wiring)")
 
     problems = check_version_archive(root)
     failures += [f"archive: {p}" for p in problems]
@@ -1344,6 +1348,14 @@ def check_packaging(root: Path) -> list[str]:
     """
     problems: list[str] = []
     version = (root / "VERSION").read_text(encoding="utf-8").strip()
+    if VERSION != version:
+        problems.append(f"atj.VERSION is {VERSION!r} and VERSION reads {version!r}")
+    if not (root / "pyproject.toml").is_file():
+        # An installed wheel is the *result* of this check, not a subject of it:
+        # it ships the framework data and none of the build wiring. Reading
+        # pyproject.toml here made `atj release-check` fail inside the very
+        # environment the check exists to protect.
+        return problems
     pyproject = (root / "pyproject.toml").read_text(encoding="utf-8")
 
     # PEP 440 form of the same version: 0.3.0-beta -> 0.3.0b0.
@@ -1357,9 +1369,6 @@ def check_packaging(root: Path) -> list[str]:
             f"pyproject.toml does not declare version {expected!r}, the PEP 440 form of "
             f"VERSION ({version!r})"
         )
-    if VERSION != version:
-        problems.append(f"atj.VERSION is {VERSION!r} and VERSION reads {version!r}")
-
     if 'build-backend = "build_backend"' not in pyproject:
         problems.append(
             "pyproject.toml does not use the in-tree build backend, so a wheel can be "
