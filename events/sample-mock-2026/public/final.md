@@ -13,6 +13,7 @@ visibility: public
 approval_state: approved
 approved_by: head judging official
 validation_state: valid
+approved_at: "2026-05-18T17:30:00Z"
 ---
 
 # Matchup Summary: Lumen vs. Quill

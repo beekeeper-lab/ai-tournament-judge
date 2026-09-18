@@ -29,6 +29,8 @@ officials:
   adjudication: head judging official
   publication_approval: head judging official
   security_escalation: head judging official
+approved_by: head judging official
+approved_at: "2026-05-18T17:30:00Z"
 ---
 
 # Sample Mock Event 2026
