@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
 current_stage: final-audit
-last_updated: "2026-09-18T00:23:31Z"
+last_updated: "2026-09-18T00:40:00Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -13,7 +13,7 @@ stage_gates:
   bracket-audited: passed
   tournament-audited: passed
   dossiers-approved: passed
-  final-audit-passed: pending
+  final-audit-passed: passed
 units:
 - unit_id: evidence:team-podcast
   stage: evidence
@@ -54,15 +54,15 @@ units:
   outputs:
   - summaries/team-ledger.md
   audit_result: PASS WITH ADVISORIES
-  completed_at: "2026-09-17T22:14:54Z"
+  completed_at: "2026-09-18T00:40:00Z"
 - unit_id: consolidation:team-podcast
   stage: consolidation
   state: complete
-  input_digest: c68ba1d4e6cafbf7
+  input_digest: ae5621d08e4bbebb
   outputs:
   - summaries/team-podcast.md
   audit_result: PASS WITH ADVISORIES
-  completed_at: "2026-09-17T22:14:54Z"
+  completed_at: "2026-09-18T00:40:00Z"
 gate_evidence:
   configuration-audited: audits/configuration.md
   roster-frozen: audits/intake.md
@@ -72,6 +72,7 @@ gate_evidence:
   bracket-audited: audits/bracket.md
   tournament-audited: audits/tournament.md
   dossiers-approved: audits/dossiers.md
+  final-audit-passed: audits/final.md
 ---
 # Event Status
 
@@ -189,6 +190,7 @@ the roster.
 | 2026-09-18T01:00:00Z | FA1 repaired, and it was a real pre-delivery blocker: sixteen artifacts including both dossiers were still `approval_state: draft` while their gates read `passed`, and `atj/ceremony.py:372` refuses to render an unapproved dossier — so neither team could have received its dossier under a gate named `dossiers-approved`. Both dossiers approved by the `publication_approval` official named in `event.md:30`. The other fourteen are internal panel records and were deliberately left as they stand, because hand-editing fourteen approval flags after their audits had passed would create more risk than the gap it closes. Recorded as a residual against D25 rather than quietly fixed | audits/final.md FA1, atj/ceremony.py:372 | dossiers/*.md, docs/framework-fix-plan.md | operator-verified |
 | 2026-09-18T01:00:00Z | FRAMEWORK DEFECTS D25 and D26. D25: nothing in `atj` ever writes `approval_state` — six sites read it, none can set it, and `demo_writer.py` writes `approved` directly so the sample event cannot catch it. D26: `framework/templates/audit-report.md` ships `approval_state: draft` which `atj/event.py:119` then refuses as gate authorization, and `atj/reports.py:32` gives `audits` no schema at all — the artifact kind that authorizes every stage transition is the least validated in the framework | audits/final.md | docs/framework-fix-plan.md | not-audited |
 | 2026-09-18T01:00:00Z | FA2-FA5 repaired: the dossiers checkbox ticked; operator notes brought current and no longer read as instructions; D2 and D6 marked done in the fix plan, having landed in `25624c7`; and the C1/D19 repair corrected again — it had replaced a false provenance claim with an unsatisfiable one, telling the reader to run `atj render consolidated`, which D18 records does not exist | audits/final.md | OPERATOR-NOTES.md, status.md, docs/framework-fix-plan.md, summaries/*.md | operator-verified |
+| 2026-09-18T01:10:00Z | DRIFT CHECK FIRED, correctly, and blocked the completion advance: `inputs changed after these units completed: ['consolidation:team-podcast']`. Cause was the operator's own FA5 prose repair to `summaries/team-podcast.md`, made after that unit was recorded and its gate passed. Before re-recording, `atj score` was re-run over both judgment directories and full-key-diffed against the committed summaries: **0 differing keys for both teams**, team-ledger still 76.25/76.3 finalized, team-podcast still `total: null`, `finalized: false`. The diff is 5 insertions and 4 deletions, entirely the sentence telling a reader to run `atj render consolidated`, a command D18 records does not exist. No score, no agreement band and no finalization state moved. Unit re-recorded on that basis. This is the ledger's stale-unit mechanism working as designed against the operator, recorded rather than worked around. D23 also recurred: the pre-advance hook blocked a single command that re-recorded the units and then advanced, because it evaluates state before the command runs | `atj event advance` hook output, `atj score --json` | status.md, consolidation units | operator-verified |
 
 One exception to the audit rule below, recorded rather than hidden: the third-pass
 judging audit's artifact carries `completed_at: 2026-09-17T22:19:00Z` while the commit
