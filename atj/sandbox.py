@@ -76,8 +76,35 @@ class Capability:
     def summary(self) -> str:
         if self.available:
             mode = "rootless" if self.rootless else "rootful"
+            if self.rootless is None:
+                mode = "privilege mode unknown"
             return f"{self.runtime} {self.version} ({mode})"
         return "no verified container isolation: " + "; ".join(self.reasons)
+
+    @property
+    def privilege_warning(self) -> str | None:
+        """What a non-rootless runtime costs, said out loud.
+
+        The release audit recorded this as advisory 9: `sandbox preflight`
+        reported the mode and did not judge it. Under a rootful runtime a
+        container escape is host root, and the operator deciding whether to run a
+        stranger's code deserves that sentence rather than the word "rootful".
+        """
+        if not self.available:
+            return None
+        if self.rootless is None:
+            return (
+                f"{self.runtime} did not report whether it is rootless, so the blast "
+                f"radius of an escape is unknown. Treat it as rootful until you have "
+                f"checked: `{self.runtime} info`"
+            )
+        if not self.rootless:
+            return (
+                f"{self.runtime} is running rootful. A container escape from a "
+                f"submission is host root, not a user account. Isolation is available "
+                f"and it is the weaker kind; prefer rootless podman for a real event"
+            )
+        return None
 
 
 def _run(command: Sequence[str], timeout: int = PROBE_TIMEOUT) -> subprocess.CompletedProcess | None:

@@ -94,7 +94,7 @@ In Claude Code, the slash commands `/event-init`, `/team-ingest`, `/team-judge`,
 | `atj matchup <input.json>` | Resolve an order-balanced head-to-head |
 | `atj bracket build --event-dir <dir> --seed <seed>` | Draw a reproducible bracket |
 | `atj bracket advance <bracket.json> --match <id> --from <report>` | Record a match winner and carry it forward |
-| `atj bracket verify <bracket.json>` | Check a bracket; pass `--event-dir` or `--reproduce` to re-derive constraints from the roster rather than trusting the file's own audit block |
+| `atj bracket verify <bracket.json> --event-dir <event>` | Check a bracket and re-derive its constraints from the roster. `--reproduce <roster.json>` redraws from the recorded seed instead. The weaker check that trusts the file's own audit block must be asked for with `--structure-only`, so nothing reading an exit code mistakes it for a full verification |
 | `atj event unit <dir> list` | Show the unit ledger and any unit whose inputs have changed |
 | `atj validate reports <dir>` | Validate every artifact in an event |
 | `atj validate publication <artifact>` | Gate one artifact before disclosure |

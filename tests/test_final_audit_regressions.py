@@ -389,7 +389,14 @@ class IndependenceDetectorTests(unittest.TestCase):
     """F10: independence was asserted and never observed."""
 
     def test_the_committed_judgments_are_not_near_duplicates(self):
-        self.assertEqual(reports.check_judge_independence(EVENT_DIR), [])
+        """The prose detector must stay silent on the fixture.
+
+        Scored against `rule` rather than emptiness: the same function also
+        reports identical score vectors now, and the sample's scripted panels
+        deliberately contain two judges agreeing on every criterion.
+        """
+        findings = reports.check_judge_independence(EVENT_DIR)
+        self.assertEqual([f.render() for f in findings if f.rule == "independence"], [])
 
     def test_a_copied_report_is_detected(self):
         holder, event_dir = sandbox_event()

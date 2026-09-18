@@ -207,7 +207,9 @@ class CommandLineTests(unittest.TestCase):
             ("demo", "check"),
             ("event", "validate", str(EVENT_DIR)),
             ("validate", "reports", str(EVENT_DIR)),
-            ("bracket", "verify", str(EVENT_DIR / "bracket.json")),
+            ("bracket", "verify", str(EVENT_DIR / "bracket.json"), "--structure-only"),
+            ("bracket", "verify", str(EVENT_DIR / "bracket.json"),
+             "--event-dir", str(EVENT_DIR)),
             ("bracket", "verify", str(FIXTURE_DIR / "bracket.json"),
              "--reproduce", str(FIXTURE_DIR / "roster.json")),
         ):
@@ -231,7 +233,11 @@ class CommandLineTests(unittest.TestCase):
                 "seed": "s", "roster_version": 1, "framework_commit": "uncommitted",
                 "feasible": True, "rounds": [], "constraint_audit": [],
             }), encoding="utf-8")
-            self.assertEqual(run_cli("bracket", "verify", str(broken)), 1)
+            self.assertEqual(
+                run_cli("bracket", "verify", str(broken), "--structure-only"), 1
+            )
+            # And the bare form is a usage error now, not a quiet weaker pass.
+            self.assertEqual(run_cli("bracket", "verify", str(broken)), 2)
 
     def test_errors_print_cleanly_rather_than_raising(self):
         self.assertEqual(run_cli("event", "validate", "/nonexistent/event"), 1)

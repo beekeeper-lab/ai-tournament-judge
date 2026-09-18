@@ -117,6 +117,17 @@ been calibrated against sample projects with the event's own officials.
 
 ## Advisories
 
+Written at the release audit. Four were closed afterwards, on branch
+`fix/operator-surface`, and are marked here rather than quietly rewritten:
+**1** (identical score vectors are now examined and reported as an advisory),
+**2** (the structure-only bracket check must be asked for with
+`--structure-only`; the bare form is a usage error, so nothing reading an exit
+code can mistake it for a full verification), **6** (`atj event overrides` lists
+every gate bypass, exits non-zero while one is unreviewed, and records that a
+human read it -- never that it was justified), and **9** (`sandbox preflight`
+now says what a rootful or unknown privilege mode costs: an escape is host
+root). The rest stand as written.
+
 These are open, and stated rather than closed:
 
 1. **The independence detector is a similarity heuristic.** Six-word shingles at
@@ -160,3 +171,6 @@ These are open, and stated rather than closed:
 - Provide a container runtime, or accept that executable evidence is unavailable
   and that affected criteria will be `NE`.
 - Decide whether the independence controls are sufficient for the stakes.
+- Read `atj event overrides <event>` before calling an event complete, and record
+  the review. The command lists every gate the framework was told to skip; it
+  cannot tell you whether skipping it was right.

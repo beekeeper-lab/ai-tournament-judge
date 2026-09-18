@@ -127,8 +127,54 @@
     },
     "overrides": {
       "type": "array",
+      "$comment": "Stage advances that bypassed a gate. Append-only, and reviewed by a human before the event is called complete; `atj event overrides` summarises them.",
       "items": {
-        "type": "object"
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "reason",
+          "authorized_by",
+          "recorded_at"
+        ],
+        "properties": {
+          "from": {
+            "type": "string",
+            "minLength": 1
+          },
+          "to": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authorized_by": {
+            "type": "string",
+            "minLength": 1
+          },
+          "bypassed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "recorded_at": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          },
+          "reviewed_by": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reviewed_at": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          },
+          "review_note": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
       }
     }
   },

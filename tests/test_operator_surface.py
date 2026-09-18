@@ -1,0 +1,295 @@
+"""The advisories the release's final audit left open, closed.
+
+`docs/final-audit.md` ended in ten advisories and a list of what a human must do
+before the framework decides anything real. Four of those advisories were about
+the framework being quieter than it should be: a control nobody could list, a
+runtime whose privilege mode it reported without judging, a contamination signal
+it never looked at, and a weaker check that exited zero. Each test names the
+advisory it closes.
+"""
+
+import shutil
+import tempfile
+import unittest
+from pathlib import Path
+
+from atj.cli import main as cli_main
+from _support import ROOT  # noqa: F401
+from atj import demo, event as event_module, frontmatter, reports, sandbox
+from atj.errors import StateError
+
+SAMPLE = ROOT / "events" / demo.EVENT_ID
+LIVE = ROOT / "events" / "live-trial-2026"
+
+
+def event_copy(source: Path) -> tuple[Path, Path]:
+    holder = Path(tempfile.mkdtemp())
+    shutil.copytree(source, holder / "event")
+    return holder, holder / "event"
+
+
+class OverridesCanBeReviewed(unittest.TestCase):
+    """Advisory 6: "No command currently summarises `status.overrides`."
+
+    `--force-reason` is the one door through every gate the framework enforces,
+    and the record it wrote could only be read by opening status.md by hand.
+    """
+
+    def force(self, event: Path) -> None:
+        loaded = event_module.load(event, root=ROOT)
+        event_module.set_stage(loaded, "dossiers")
+        loaded.status["stage_gates"]["dossiers-approved"] = "pending"
+        event_module.save_status(loaded)
+        loaded = event_module.load(event, root=ROOT)
+        event_module.advance(
+            loaded,
+            force_reason="the dossier audit is scheduled after the ceremony",
+            force_approver="event-director",
+        )
+        event_module.save_status(loaded)
+
+    def test_a_forced_advance_is_listed_and_unreviewed(self):
+        holder, event = event_copy(LIVE)
+        try:
+            self.force(event)
+            loaded = event_module.load(event, root=ROOT)
+            recorded = event_module.overrides(loaded)
+            self.assertEqual(len(recorded), 1)
+            self.assertEqual(recorded[0]["authorized_by"], "event-director")
+            self.assertTrue(recorded[0]["bypassed"])
+            self.assertNotIn("reviewed_by", recorded[0])
+            # Unreviewed is a non-zero exit: a script cannot miss it either.
+            self.assertEqual(cli_main(["--root", str(ROOT), "event", "overrides", str(event)]), 1)
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    def test_a_review_records_that_it_was_read_not_that_it_was_right(self):
+        holder, event = event_copy(LIVE)
+        try:
+            self.force(event)
+            self.assertEqual(
+                cli_main([
+                    "--root", str(ROOT), "event", "overrides", str(event),
+                    "--review", "0", "--official", "event-director",
+                    "--note", "read the dossier audit afterwards",
+                ]), 0,
+            )
+            loaded = event_module.load(event, root=ROOT)
+            entry = event_module.overrides(loaded)[0]
+            self.assertEqual(entry["reviewed_by"], "event-director")
+            self.assertIn("reviewed_at", entry)
+            self.assertEqual(entry["review_note"], "read the dossier audit afterwards")
+            self.assertEqual(cli_main(["--root", str(ROOT), "event", "overrides", str(event)]), 0)
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    def test_reviewing_an_override_that_does_not_exist_is_an_error(self):
+        holder, event = event_copy(LIVE)
+        try:
+            loaded = event_module.load(event, root=ROOT)
+            with self.assertRaises(StateError):
+                event_module.review_override(loaded, 0, official="event-director")
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    def test_an_event_with_no_override_says_so_and_passes(self):
+        for event in (LIVE, SAMPLE):
+            with self.subTest(event.name):
+                self.assertEqual(event_module.overrides(
+                    event_module.load(event, root=ROOT)
+                ), [])
+                self.assertEqual(
+                    cli_main(["--root", str(ROOT), "event", "overrides", str(event)]), 0
+                )
+
+
+class PreflightJudgesThePrivilegeMode(unittest.TestCase):
+    """Advisory 9: it reported the mode and did not judge it.
+
+    Under a rootful runtime a container escape from a submission is host root.
+    """
+
+    def capability(self, rootless):
+        return sandbox.Capability(
+            runtime="docker", version="27.0", available=True, rootless=rootless
+        )
+
+    def test_rootless_needs_no_warning(self):
+        self.assertIsNone(self.capability(True).privilege_warning)
+
+    def test_rootful_says_what_an_escape_costs(self):
+        warning = self.capability(False).privilege_warning
+        self.assertIn("host root", warning)
+
+    def test_an_unknown_mode_is_treated_as_the_worse_one(self):
+        warning = self.capability(None).privilege_warning
+        self.assertIn("unknown", warning)
+        self.assertIn("Treat it as rootful", warning)
+        self.assertIn("privilege mode unknown", self.capability(None).summary())
+
+    def test_an_unavailable_runtime_warns_about_nothing(self):
+        capability = sandbox.Capability(
+            runtime=None, version=None, available=False, rootless=None, reasons=["none found"]
+        )
+        self.assertIsNone(capability.privilege_warning)
+
+
+class IdenticalScoreVectorsAreExamined(unittest.TestCase):
+    """Advisory 1: the detector measured wording and ignored the numbers.
+
+    Two judges can paraphrase differently and still have been shown each other's
+    scores, which is the case the shingle overlap cannot see.
+    """
+
+    def test_a_matching_vector_is_reported_as_an_advisory(self):
+        findings = reports.check_judge_independence(SAMPLE)
+        identical = [f for f in findings if f.rule == "identical-scores"]
+        self.assertTrue(identical, "the sample's scripted panels contain a matching pair")
+        self.assertTrue(all(f.severity == "advisory" for f in identical), identical)
+
+    def test_live_trial_had_no_matching_vector(self):
+        findings = reports.check_judge_independence(LIVE)
+        self.assertEqual([f for f in findings if f.rule == "identical-scores"], [])
+
+    def test_making_two_judges_agree_exactly_is_detected(self):
+        holder, event = event_copy(LIVE)
+        try:
+            team = event / "judgments" / "team-ledger"
+            source, target = sorted(team.glob("*.md"))[:2]
+            donor, _ = frontmatter.read(source)
+            metadata, body = frontmatter.read(target)
+            metadata["scores"] = dict(donor["scores"])
+            target.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+            findings = reports.check_judge_independence(event)
+            identical = [f for f in findings if f.rule == "identical-scores"]
+            self.assertTrue(identical)
+            self.assertIn(source.name, identical[0].detail)
+            self.assertIn(target.name, identical[0].detail)
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+
+class TheWeakerBracketCheckIsAskedForByName(unittest.TestCase):
+    """Advisory 2: it checked structure only, said so, and exited 0.
+
+    An operator reading the label was not misled. A script reading the exit code
+    was.
+    """
+
+    def test_the_bare_form_is_a_usage_error(self):
+        self.assertEqual(
+            cli_main(["--root", str(ROOT), "bracket", "verify",
+                      str(SAMPLE / "bracket.json")]), 2
+        )
+
+    def test_structure_only_is_available_when_meant(self):
+        self.assertEqual(
+            cli_main(["--root", str(ROOT), "bracket", "verify",
+                      str(SAMPLE / "bracket.json"), "--structure-only"]), 0
+        )
+
+    def test_the_full_checks_still_pass(self):
+        for extra in (
+            ["--event-dir", str(SAMPLE)],
+            ["--reproduce", str(ROOT / "tests" / "fixtures" / "bracket-20-team" / "roster.json")],
+        ):
+            with self.subTest(extra[0]):
+                target = (
+                    SAMPLE / "bracket.json" if extra[0] == "--event-dir"
+                    else ROOT / "tests" / "fixtures" / "bracket-20-team" / "bracket.json"
+                )
+                self.assertEqual(
+                    cli_main(["--root", str(ROOT), "bracket", "verify", str(target), *extra]), 0
+                )
+
+    def test_no_committed_artifact_documents_the_bare_form(self):
+        """A generated audit cited the bare command, which now errors.
+
+        This is the D3/D18 shape: an artifact naming a command that does not work
+        as written. The generator was fixed rather than the checker weakened.
+        """
+        for path in sorted(SAMPLE.rglob("*.md")):
+            text = path.read_text(encoding="utf-8", errors="replace")
+            for line in text.splitlines():
+                stripped = line.strip()
+                if "atj bracket verify" not in stripped or stripped.startswith("|"):
+                    continue
+                with self.subTest(f"{path.name}: {stripped[:60]}"):
+                    self.assertTrue(
+                        any(flag in text for flag in
+                            ("--event-dir", "--reproduce", "--structure-only")),
+                        stripped,
+                    )
+
+
+class TheStatusBodyAgreesWithItsLedger(unittest.TestCase):
+    """D30: status.md's prose could contradict the front matter above it.
+
+    live-trial-2026 finished with `final-audit-passed: passed` and
+    `current_stage: complete` recorded, and its own body still showed both
+    unchecked. This is D19's shape one file over -- an artifact asserting
+    something false in its own voice -- in the one file an operator reads to
+    answer "where is this event".
+    """
+
+    def test_both_committed_events_agree_with_themselves(self):
+        for event in (LIVE, SAMPLE):
+            with self.subTest(event.name):
+                loaded = event_module.load(event, root=ROOT)
+                self.assertEqual(event_module.validate_status_narrative(loaded), [])
+
+    def test_an_unticked_passed_gate_is_reported(self):
+        holder, event = event_copy(LIVE)
+        try:
+            status = event / "status.md"
+            status.write_text(
+                status.read_text(encoding="utf-8").replace(
+                    "- [x] Bracket frozen and audited", "- [ ] Bracket frozen and audited", 1
+                ),
+                encoding="utf-8",
+            )
+            problems = event_module.validate_status_narrative(
+                event_module.load(event, root=ROOT)
+            )
+            self.assertTrue(any("bracket-audited" in p for p in problems), problems)
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    def test_a_ticked_pending_gate_is_reported(self):
+        holder, event = event_copy(SAMPLE)
+        try:
+            loaded = event_module.load(event, root=ROOT)
+            loaded.status["stage_gates"]["tournament-audited"] = "pending"
+            event_module.save_status(loaded)
+            problems = event_module.validate_status_narrative(
+                event_module.load(event, root=ROOT)
+            )
+            self.assertTrue(any("tournament-audited" in p for p in problems), problems)
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    def test_a_missing_checkbox_is_reported(self):
+        holder, event = event_copy(LIVE)
+        try:
+            status = event / "status.md"
+            status.write_text(
+                status.read_text(encoding="utf-8").replace(
+                    "- [x] Roster frozen\n", "", 1
+                ),
+                encoding="utf-8",
+            )
+            problems = event_module.validate_status_narrative(
+                event_module.load(event, root=ROOT)
+            )
+            self.assertTrue(any("roster-frozen" in p for p in problems), problems)
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    def test_the_labels_come_from_the_template(self):
+        labels, complete = event_module.status_checkbox_labels(ROOT)
+        self.assertEqual(len(labels), len(event_module.STAGE_GATES))
+        self.assertEqual(complete, "Event marked complete")
+
+
+if __name__ == "__main__":
+    unittest.main()
