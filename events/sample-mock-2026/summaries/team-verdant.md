@@ -25,6 +25,7 @@ visibility: private
 approval_state: approved
 validation_state: valid
 ---
+
 # Consolidated Team Report — Verdant
 
 ## Executive summary
@@ -48,7 +49,6 @@ below was altered.
 | security | judge-backend=3.0, judge-frontend-ux=3.0, judge-product-agentic=3.0, judge-security-ops=3.0 | 3.00 | 10 | 6.00 | aligned |
 | innovation | judge-backend=3.0, judge-frontend-ux=3.0, judge-product-agentic=3.0, judge-security-ops=3.0 | 3.00 | 10 | 6.00 | aligned |
 | **Overall** |  |  | **100** | **59.8** |  |
-
 <!-- atj:consolidated:end -->
 
 ## Confirmed strengths

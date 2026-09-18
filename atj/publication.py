@@ -444,7 +444,11 @@ def check_artifact(
         return [Finding(
             "blocking", "location-unknown",
             f"cannot determine the required visibility for this artifact relative to "
-            f"{event_dir}; pass the correct --event-dir so the gate knows which rules apply",
+            f"{event_dir}. Either --event-dir is wrong, or the artifact sits in a "
+            f"directory the framework does not declare "
+            f"({', '.join(sorted(DIRECTORY_VISIBILITY))}). Undeclared locations are "
+            f"blocked, not skipped: nothing stored outside a declared directory can be "
+            f"cleared for release",
             artifact,
         )]
     totals = totals if totals is not None else official_totals(event_dir)

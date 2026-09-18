@@ -28,7 +28,7 @@ units:
 - unit_id: evidence:team-lumen
   stage: evidence
   state: complete
-  input_digest: e1d847dc2f11fa24
+  input_digest: cd929977f58f9a74
   outputs:
   - evidence/team-lumen/manifest.md
   audit_result: PASS
@@ -36,7 +36,7 @@ units:
 - unit_id: judging:team-lumen
   stage: initial-judging
   state: complete
-  input_digest: 4f29c5ab8cc30817
+  input_digest: e52fb4853eb1c638
   outputs:
   - judgments/team-lumen/judge-backend.md
   - judgments/team-lumen/judge-frontend-ux.md
@@ -47,7 +47,7 @@ units:
 - unit_id: consolidation:team-lumen
   stage: consolidation
   state: complete
-  input_digest: ac8c016e51829dab
+  input_digest: a4a4733bd4ac8ba3
   outputs:
   - summaries/team-lumen.md
   audit_result: PASS WITH ADVISORIES
@@ -63,7 +63,7 @@ units:
 - unit_id: evidence:team-quill
   stage: evidence
   state: complete
-  input_digest: fe77c9633a2b0323
+  input_digest: fb852c7516346beb
   outputs:
   - evidence/team-quill/manifest.md
   audit_result: PASS
@@ -71,7 +71,7 @@ units:
 - unit_id: judging:team-quill
   stage: initial-judging
   state: complete
-  input_digest: bbf8ba990f5e0cf4
+  input_digest: 7284529be308d0d5
   outputs:
   - judgments/team-quill/judge-backend.md
   - judgments/team-quill/judge-frontend-ux.md
@@ -82,7 +82,7 @@ units:
 - unit_id: consolidation:team-quill
   stage: consolidation
   state: complete
-  input_digest: 7284f792da52a8b2
+  input_digest: edf631e949e6b32f
   outputs:
   - summaries/team-quill.md
   audit_result: PASS
@@ -98,7 +98,7 @@ units:
 - unit_id: evidence:team-harbor
   stage: evidence
   state: complete
-  input_digest: 692b5717908c26e6
+  input_digest: b654dbcdaf0d499f
   outputs:
   - evidence/team-harbor/manifest.md
   audit_result: PASS
@@ -106,7 +106,7 @@ units:
 - unit_id: judging:team-harbor
   stage: initial-judging
   state: complete
-  input_digest: c44c97fa2e1620b1
+  input_digest: 84b9df718de44f2f
   outputs:
   - judgments/team-harbor/judge-backend.md
   - judgments/team-harbor/judge-frontend-ux.md
@@ -117,7 +117,7 @@ units:
 - unit_id: consolidation:team-harbor
   stage: consolidation
   state: complete
-  input_digest: 6a92cc26abf06870
+  input_digest: 7246d43e7bf7488a
   outputs:
   - summaries/team-harbor.md
   audit_result: PASS
@@ -133,7 +133,7 @@ units:
 - unit_id: evidence:team-verdant
   stage: evidence
   state: complete
-  input_digest: d4386a703832a00b
+  input_digest: 32f7058152c70625
   outputs:
   - evidence/team-verdant/manifest.md
   audit_result: PASS
@@ -141,7 +141,7 @@ units:
 - unit_id: judging:team-verdant
   stage: initial-judging
   state: complete
-  input_digest: 64b5f6d29d0fda33
+  input_digest: 33623a78f45a8cf3
   outputs:
   - judgments/team-verdant/judge-backend.md
   - judgments/team-verdant/judge-frontend-ux.md
@@ -152,7 +152,7 @@ units:
 - unit_id: consolidation:team-verdant
   stage: consolidation
   state: complete
-  input_digest: d81ca5d4bd311514
+  input_digest: d067b0bac8f24f3b
   outputs:
   - summaries/team-verdant.md
   audit_result: PASS
@@ -211,6 +211,7 @@ units:
   audit_result: PASS WITH ADVISORIES
   completed_at: "2026-05-18T17:30:00Z"
 ---
+
 # Event Status — Sample Mock Event 2026
 
 Complete. This ledger is what `atj event status` reads to decide the next safe

@@ -20,6 +20,7 @@ visibility: private
 approval_state: approved
 validation_state: valid
 ---
+
 # Evidence Manifest — Harbor
 
 ## Scope and provenance

@@ -15,6 +15,7 @@ approval_state: approved
 approved_by: head judging official
 validation_state: valid
 ---
+
 # Event Summary — Sample Mock Event 2026
 
 ## Event overview

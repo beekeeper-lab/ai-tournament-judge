@@ -18,6 +18,7 @@ approval_state: approved
 validation_state: valid
 result: PASS
 ---
+
 # Judging Audit — consolidation of team-lumen (after adjudication)
 
 ## Result

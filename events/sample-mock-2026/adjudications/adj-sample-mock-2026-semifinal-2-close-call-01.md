@@ -7,14 +7,9 @@ match_id: mu:sample-mock-2026:semifinal:01
 criterion: functional
 trigger: close-call
 advances_team: team-quill
-question: Does the evidence establish a winner between Quill and Harbor despite a
-  margin inside the close-call band?
+question: Does the evidence establish a winner between Quill and Harbor despite a margin inside the close-call band?
 resolution: resolved
-resolution_detail: 'Tie-break order applied. Functional correctness and completeness
-  is the first step and favours team-quill in both presentation orders (ev-quill-01
-  against ev-harbor-03: seven of eight documented workflows complete versus two of
-  nine). Recorded as a human decision because the calculated margin was inside the
-  close-call band.'
+resolution_detail: 'Tie-break order applied. Functional correctness and completeness is the first step and favours team-quill in both presentation orders (ev-quill-01 against ev-harbor-03: seven of eight documented workflows complete versus two of nine). Recorded as a human decision because the calculated margin was inside the close-call band.'
 impact: team-quill advances
 confidence: medium
 decided_by: head judging official
@@ -32,6 +27,7 @@ visibility: private
 approval_state: approved
 validation_state: valid
 ---
+
 # Adjudication Report — close-call matchup
 
 ## Question

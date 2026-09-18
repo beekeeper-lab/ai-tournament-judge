@@ -150,14 +150,23 @@ def dump(metadata: dict[str, Any], body: str) -> str:
 
     Key order is preserved as given, so callers control the reading order of the
     generated artifact. ``sort_keys=False`` is deliberate.
+
+    ``dump(*split(text)) == text`` for any artifact this framework writes, and
+    that matters: every ``atj render`` command reads an artifact, changes one
+    generated block and writes the whole file back. A dump that reflowed the
+    front matter or ate a blank line would put unexplained churn in the diff of
+    a reviewed artifact, and a reviewer who learns to skim render diffs is a
+    reviewer who will skim the one that moved a number.
+
+    ``width`` is set beyond any plausible line so a long scalar — a
+    ``blocked_reasons`` entry naming four judges, say — is not re-wrapped into a
+    continuation line on the first re-render.
     """
     block = yaml.dump(
         normalize(metadata), Dumper=_Dumper, sort_keys=False,
-        default_flow_style=False, allow_unicode=True,
+        default_flow_style=False, allow_unicode=True, width=1 << 20,
     )
-    if not body.startswith("\n"):
-        body = "\n" + body
-    return f"---\n{block}---{body}"
+    return f"---\n{block}---\n{body}"
 
 
 def has_frontmatter(text: str) -> bool:

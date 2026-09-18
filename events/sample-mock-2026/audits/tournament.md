@@ -18,6 +18,7 @@ approval_state: approved
 validation_state: valid
 result: PASS WITH ADVISORIES
 ---
+
 # Judging Audit — all three matchups
 
 ## Result

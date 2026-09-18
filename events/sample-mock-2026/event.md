@@ -30,6 +30,7 @@ officials:
   publication_approval: head judging official
   security_escalation: head judging official
 ---
+
 # Sample Mock Event 2026
 
 **This is a synthetic fixture.** Every team, project, school and commit below is

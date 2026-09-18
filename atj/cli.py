@@ -262,12 +262,26 @@ def cmd_event_unit(args) -> int:
         )
         return USAGE
     stage = args.stage or args.id.split(":", 1)[0]
-    event_module.record_unit(
+    existing = event_module.find_unit(loaded, args.id)
+    if args.completed_at and args.completed_at != "now":
+        if not frontmatter.TIMESTAMP.match(args.completed_at):
+            print(f"usage: --completed-at {args.completed_at!r} is not a UTC timestamp "
+                  f"(YYYY-MM-DDTHH:MM:SSZ) or 'now'", file=sys.stderr)
+            return USAGE
+    unit = event_module.record_unit(
         loaded, unit_id=args.id, stage=stage, input_digest=digest,
         outputs=args.output, audit_result=args.audit_result,
+        completed_at=args.completed_at,
     )
     event_module.save_status(loaded)
     print(f"{args.id} recorded complete (digest {digest}, audit {args.audit_result})")
+    if (
+        existing is not None
+        and existing.get("completed_at")
+        and unit.get("completed_at") == existing.get("completed_at")
+    ):
+        print(f"  completed_at kept at {unit['completed_at']} — the inputs did not change. "
+              f"Pass --completed-at now to restamp it.")
     return OK
 
 
@@ -488,6 +502,116 @@ def cmd_render_judgment(args) -> int:
         print(f"\n{len(forced)} approved judgment(s) re-rendered with --force. "
               f"Record why in the event ledger.")
     return OK
+
+
+def cmd_render_consolidated(args) -> int:
+    """Generate the official consolidated score block into a panel report.
+
+    D18: `framework/templates/consolidated-team-report.md` names `atj consolidate`
+    and carries an `atj:consolidated` marker region, and no command existed to
+    fill it. Both of live-trial-2026's panel reports were therefore transcribed
+    by hand, both consolidators disclosed it unprompted, and each table had to be
+    verified cell by cell against `summaries/<team>.json` by a throwaway script.
+    This is that check, built as the generator it should have been.
+
+    The table comes from `atj.scoring.consolidate` over the team's judgments, the
+    same call `atj score` makes, so the report cannot hold a number the tool did
+    not produce. Front-matter `total`, `display_total`, `finalized` and
+    `blocked_reasons` are written from the same result for the same reason.
+
+    Every report is consolidated and checked before any is written, and an
+    approved report is refused without --force, as for judgments.
+    """
+    root = _root(args)
+    planned: list[tuple[Path, dict, str]] = []
+    unchanged: list[Path] = []
+    forced: list[Path] = []
+    for target in args.paths:
+        path = Path(target)
+        paths = sorted(path.glob("*.md")) if path.is_dir() else [path]
+        if not paths:
+            raise AtjError(f"no consolidated reports under {path}")
+        for source in paths:
+            metadata, body = frontmatter.read(source)
+            result = _consolidate_for_report(source, metadata, root=root)
+            table = render.consolidated_table(result, root)
+            rendered = render.replace_block(body, "consolidated", table)
+            updates = {
+                "total": result["total"],
+                "display_total": result["display_total"],
+                "finalized": result["finalized"],
+                "blocked_reasons": list(result["blocked_reasons"]),
+            }
+            drift = {k: v for k, v in updates.items() if metadata.get(k) != v}
+            if rendered == body and not drift:
+                unchanged.append(source)
+                continue
+            if metadata.get("approval_state") == "approved":
+                if not args.force:
+                    raise AtjError(
+                        f"{source} is approved and rendering would change its official "
+                        f"numbers ({', '.join(sorted(drift)) or 'score table'}). An "
+                        f"approved panel report is a reviewed artifact. Re-render before "
+                        f"approval, or pass --force and record why in the event ledger. "
+                        f"Nothing was written."
+                    )
+                forced.append(source)
+            metadata.update(updates)
+            planned.append((source, metadata, rendered))
+
+    for source, metadata, rendered in planned:
+        source.write_text(frontmatter.dump(metadata, rendered), encoding="utf-8")
+
+    written = [source for source, _, _ in planned]
+    if args.json:
+        _emit({"rendered": [str(s) for s in written],
+               "unchanged": [str(s) for s in unchanged],
+               "forced_over_approval": [str(s) for s in forced]}, args)
+        return OK
+    for source in written:
+        print(f"rendered {source}" + (" (FORCED over approval)" if source in forced else ""))
+    for source in unchanged:
+        print(f"unchanged {source}")
+    if forced:
+        print(f"\n{len(forced)} approved report(s) re-rendered with --force. "
+              f"Record why in the event ledger.")
+    return OK
+
+
+def _consolidate_for_report(source: Path, metadata: dict, *, root: Path) -> dict:
+    """Consolidate the judgments behind one panel report.
+
+    The report names its own team and lives inside its own event, so the inputs
+    are derivable: `judgments/<team>/` for the panel, the event's configured
+    judge list for who was expected, and `adjudications/` for any resolution
+    that moves an official number. Deriving them rather than accepting them as
+    arguments is what stops a report being rendered from the wrong panel.
+    """
+    event_dir = _event_root_of(source.parent)
+    if event_dir is None:
+        raise AtjError(
+            f"{source} is not inside an event directory. A consolidated report is "
+            f"rendered from the event's judgments, its configured judge list and its "
+            f"adjudications; none of those can be located from a loose file."
+        )
+    team_id = str(metadata.get("team_id") or source.stem)
+    judgments_dir = event_dir / "judgments" / team_id
+    if not judgments_dir.is_dir():
+        raise AtjError(f"no judgments directory for {team_id!r} at {judgments_dir}")
+    judgments = scoring.load_panel(judgments_dir, root=root)
+    loaded = event_module.load(event_dir, root=root)
+    expected = [str(j) for j in loaded.config.get("expected_judges") or []]
+    if not expected:
+        raise AtjError(
+            f"{event_dir / 'event.md'} configures no expected_judges. Consolidating "
+            f"without knowing who was configured cannot detect a missing judge."
+        )
+    resolutions = scoring.load_resolutions(
+        event_dir / "adjudications", team_id=team_id, root=root
+    )
+    return scoring.consolidate(
+        judgments, expected_judges=expected, resolutions=resolutions, root=root
+    )
 
 
 def cmd_matchup(args) -> int:
@@ -761,26 +885,115 @@ def cmd_validate_reports(args) -> int:
     return FAILURE if summary["result"] == "FAIL" else OK
 
 
+def _event_root_of(path: Path) -> Path | None:
+    """The event directory *path* sits in, found by walking up."""
+    for candidate in [path, *path.parents]:
+        if (candidate / "event.md").is_file() and (candidate / "status.md").is_file():
+            return candidate
+    return None
+
+
+def _publication_targets(path: Path, event_dir: Path) -> list[Path]:
+    """Every artifact under *path* the disclosure gate applies to.
+
+    A single file is itself. A directory is every Markdown and rendered artifact
+    in a *subdirectory* beneath it.
+
+    Subdirectories the gate has no rules for are included on purpose. They are
+    where `publication.check_artifact` returns a blocking `location-unknown`,
+    and that failing-closed is the property the tournament audit relied on to
+    call live-trial-2026's undeclared `matchup-passes/` survivable (D22). A
+    directory scan that quietly skipped an unrecognised directory would remove
+    the one control standing over it.
+
+    The event's own top-level files — `event.md`, `teams.md`, `status.md`,
+    `bracket.md` — are excluded. They are the event's configuration and state,
+    not artifacts that leave the panel, and they have no visibility routing.
+    """
+    if path.is_file():
+        return [path]
+    targets: list[Path] = []
+    for child in sorted(path.iterdir()):
+        if child.is_dir():
+            targets.extend(sorted(child.rglob("*.md")))
+            targets.extend(sorted(child.rglob("*.html")))
+    if path != event_dir:
+        # The request names a subdirectory; its own files are in scope too.
+        targets.extend(sorted(path.glob("*.md")))
+        targets.extend(sorted(path.glob("*.html")))
+    return sorted(set(targets))
+
+
 def cmd_check_publication(args) -> int:
-    """Gate a single artifact before it is shown to anyone outside the panel."""
+    """Gate artifacts before they are shown to anyone outside the panel.
+
+    Takes a file or a directory. D24: this accepted only a single artifact and
+    raised `Is a directory` on anything else, so the event-wide disclosure check
+    CLAUDE.md mandates before anything leaves the panel could not actually be
+    run — every artifact had to be named individually, which is how a check gets
+    skipped.
+    """
     root = _root(args)
     path = Path(args.artifact)
-    event_dir = Path(args.event_dir) if args.event_dir else path.parent.parent
-    metadata, body = frontmatter.read(path)
+    if args.event_dir:
+        event_dir = Path(args.event_dir)
+    else:
+        event_dir = _event_root_of(path if path.is_dir() else path.parent) or path.parent.parent
     try:
         loaded = event_module.load(event_dir, root=root)
         public_scores = bool(loaded.config.get("public_scores"))
         team_ids = [team["id"] for team in loaded.teams]
     except AtjError:
         public_scores, team_ids = False, []
-    findings = publication.check_artifact(
-        path, event_dir, metadata, body, public_scores=public_scores, all_teams=team_ids
-    )
-    _emit({"findings": [vars(f) for f in findings]}, args)
+
+    targets = _publication_targets(path, event_dir)
+    if not targets:
+        raise AtjError(
+            f"no artifacts to gate under {path}. A directory is scanned for the "
+            f"artifact kinds the gate has rules for; {path} holds none."
+        )
+
+    totals = publication.official_totals(event_dir)
+    display_names = {
+        str(team.get("id")): str(team.get("display_name") or team.get("id"))
+        for team in loaded.teams
+    } if team_ids else {}
+
+    findings: list[publication.Finding] = []
+    per_artifact: list[dict] = []
+    for target in targets:
+        if target.suffix == ".html":
+            found = reports.rendered_publication_findings(
+                target, event_dir, public_scores=public_scores,
+                all_teams=team_ids, display_names=display_names, totals=totals,
+            )
+        else:
+            try:
+                metadata, body = frontmatter.read(target)
+            except AtjError as exc:
+                found = [publication.Finding(
+                    "blocking", "front-matter", exc.message, str(target)
+                )]
+            else:
+                found = publication.check_artifact(
+                    target, event_dir, metadata, body,
+                    public_scores=public_scores, all_teams=team_ids,
+                    display_names=display_names, totals=totals,
+                )
+        findings.extend(found)
+        per_artifact.append({
+            "artifact": str(target),
+            "blocking": len([f for f in found if f.severity == "blocking"]),
+            "findings": [vars(f) for f in found],
+        })
+
     blocking = [f for f in findings if f.severity == "blocking"]
-    _print_findings(findings)
-    print(f"Publication check: {'BLOCKED' if blocking else 'CLEAR'} "
-          f"({len(blocking)} blocking, {len(findings) - len(blocking)} other)")
+    _emit({"artifacts": per_artifact, "findings": [vars(f) for f in findings]}, args)
+    if not args.json:
+        _print_findings(findings)
+        print(f"Publication check: {'BLOCKED' if blocking else 'CLEAR'} "
+              f"({len(targets)} artifact(s), {len(blocking)} blocking, "
+              f"{len(findings) - len(blocking)} other)")
     return FAILURE if blocking else OK
 
 
@@ -1046,6 +1259,39 @@ def check_claude_components(root: Path) -> list[str]:
     return problems
 
 
+def tracked_files(root: Path) -> list[Path] | None:
+    """Every file git tracks under *root*, or ``None`` if this is not a checkout.
+
+    A whole-tree scan must ask git what belongs to this repository, not the
+    filesystem what happens to sit inside it. D17: an agent worktree created
+    under the repository is a second full checkout, so a filesystem walk found a
+    second copy of every file — including `tests/test_canonical_model.py`, which
+    holds the official weights on purpose — and `release-check` failed on a
+    duplicate that was the same file seen twice. Gitignoring the worktree does
+    not help, because a worktree's own files are tracked in *its* index.
+
+    Returns ``None`` rather than an empty list when git is unavailable or this is
+    an export, so the caller can fall back to walking the tree. An sdist and a CI
+    export have no `.git`, and the scan must still run there.
+    """
+    import subprocess
+
+    if not (root / ".git").exists():
+        return None
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "-z", "--cached", "--others",
+             "--exclude-standard"],
+            capture_output=True, timeout=30, check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if completed.returncode != 0:
+        return None
+    names = completed.stdout.decode("utf-8", errors="replace").split("\0")
+    return sorted(root / name for name in names if name)
+
+
 def check_no_duplicate_weights(root: Path) -> list[str]:
     """No second editable copy of the official weights outside the rubric.
 
@@ -1071,7 +1317,10 @@ def check_no_duplicate_weights(root: Path) -> list[str]:
         (root / "docs" / "release-readiness-audit.md").resolve(),
     }
     problems: list[str] = []
-    for path in sorted(root.rglob("*")):
+    candidates = tracked_files(root)
+    if candidates is None:
+        candidates = sorted(root.rglob("*"))
+    for path in candidates:
         if not path.is_file() or path.suffix not in (".py", ".json", ".md", ".yaml", ".yml"):
             continue
         if skip_parts & set(path.parts):
@@ -1330,6 +1579,11 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("PASS", "PASS WITH ADVISORIES", "FAIL", "not-audited"),
     )
     unit.add_argument("--reason", help="why the unit is being invalidated")
+    unit.add_argument(
+        "--completed-at",
+        help="when the work finished, as YYYY-MM-DDTHH:MM:SSZ, or 'now' to restamp. "
+             "Omit it and a re-record over unchanged inputs keeps the original time",
+    )
     unit.set_defaults(func=cmd_event_unit)
 
     score = sub.add_parser("score", help="consolidate a judge panel")
@@ -1364,6 +1618,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="re-render a judgment already marked approved; record why in the ledger",
     )
     render_judgment.set_defaults(func=cmd_render_judgment)
+
+    render_consolidated = render_sub.add_parser(
+        "consolidated", help="generate the panel score block into a consolidated report"
+    )
+    render_consolidated.add_argument(
+        "paths", nargs="+", help="consolidated report files, or directories of them"
+    )
+    render_consolidated.add_argument(
+        "--force", action="store_true",
+        help="re-render a report already marked approved; record why in the ledger",
+    )
+    render_consolidated.set_defaults(func=cmd_render_consolidated)
 
     match = sub.add_parser("matchup", help="resolve an order-balanced head-to-head")
     match.add_argument("input", help="JSON with team_a, team_b, a_first, b_first")
@@ -1411,8 +1677,10 @@ def build_parser() -> argparse.ArgumentParser:
     report_validate.add_argument("event_dir")
     report_validate.set_defaults(func=cmd_validate_reports)
 
-    publish = validate_sub.add_parser("publication", help="gate one artifact before disclosure")
-    publish.add_argument("artifact")
+    publish = validate_sub.add_parser(
+        "publication", help="gate an artifact, or a whole event, before disclosure"
+    )
+    publish.add_argument("artifact", help="an artifact file, or a directory to scan")
     publish.add_argument("--event-dir")
     publish.set_defaults(func=cmd_check_publication)
 

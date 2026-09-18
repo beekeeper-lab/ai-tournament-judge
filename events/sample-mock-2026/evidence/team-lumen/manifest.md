@@ -20,6 +20,7 @@ visibility: private
 approval_state: approved
 validation_state: valid
 ---
+
 # Evidence Manifest — Lumen
 
 ## Scope and provenance

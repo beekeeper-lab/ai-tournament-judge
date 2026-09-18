@@ -39,6 +39,7 @@ model:
   verified: true
   note: scripted fixture input; no model was invoked
 ---
+
 # Individual Judgment — Harbor — judge-backend
 
 ## Executive assessment

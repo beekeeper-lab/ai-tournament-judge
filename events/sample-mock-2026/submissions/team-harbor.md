@@ -17,6 +17,7 @@ approval_state: approved
 validation_state: valid
 persona: prepare-submission@1.1.0
 ---
+
 # Submission Intake — Harbor
 
 ## Team statement

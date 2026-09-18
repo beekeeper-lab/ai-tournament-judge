@@ -16,25 +16,20 @@ criterion: security
 trigger: unresolved-ne
 question: Can the session cookie's protection be established from the pinned evidence?
 resolution: resolved
-resolution_detail: src/web/session.py:22 sets the cookie without a signature, and
-  no middleware adds one. The absence of deployment configuration limits confidence
-  about transport flags, but the unsigned value is directly observable in the pinned
-  source and is sufficient to score the criterion.
+resolution_detail: src/web/session.py:22 sets the cookie without a signature, and no middleware adds one. The absence of deployment configuration limits confidence about transport flags, but the unsigned value is directly observable in the pinned source and is sufficient to score the criterion.
 impact: recorded alongside the source scores; no source score was modified
 confidence: medium
 decided_by: head judging official
 score_override:
   criterion: security
   resolved_score: 2
-  rationale: src/web/session.py:22 sets the cookie without a signature, and no middleware
-    adds one. The absence of deployment configuration limits confidence about transport
-    flags, but the unsigned value is directly observable in the pinned source and
-    is sufficient to score the criterion.
+  rationale: src/web/session.py:22 sets the cookie without a signature, and no middleware adds one. The absence of deployment configuration limits confidence about transport flags, but the unsigned value is directly observable in the pinned source and is sufficient to score the criterion.
 persona: judging-auditor@1.0.0
 visibility: private
 approval_state: approved
 validation_state: valid
 ---
+
 # Adjudication Report — Lumen — security
 
 ## Question

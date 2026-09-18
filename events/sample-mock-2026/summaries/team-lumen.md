@@ -26,6 +26,7 @@ visibility: private
 approval_state: approved
 validation_state: valid
 ---
+
 # Consolidated Team Report — Lumen
 
 ## Executive summary
@@ -49,7 +50,6 @@ below was altered.
 | security | judge-backend=3.0, judge-frontend-ux=3.0, judge-product-agentic=3.0, judge-security-ops=NE | 2.75 | 10 | 5.50 | aligned |
 | innovation | judge-backend=3.0, judge-frontend-ux=3.0, judge-product-agentic=3.0, judge-security-ops=3.0 | 3.00 | 10 | 6.00 | aligned |
 | **Overall** |  |  | **100** | **73.3** |  |
-
 <!-- atj:consolidated:end -->
 
 ## Confirmed strengths

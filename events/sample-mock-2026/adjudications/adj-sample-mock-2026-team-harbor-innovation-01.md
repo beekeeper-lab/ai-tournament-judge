@@ -16,10 +16,7 @@ criterion: innovation
 trigger: severe-disagreement
 question: Is the log-correlation approach demonstrated, or only described?
 resolution: resolved
-resolution_detail: The approach is genuinely unusual, which explains the high score,
-  but ev-harbor-02 shows the demonstrating timeline is committed rather than produced
-  by the code. The panel mean stands; the disagreement is recorded as a difference
-  in what each judge treated as demonstration, not as a factual contradiction.
+resolution_detail: The approach is genuinely unusual, which explains the high score, but ev-harbor-02 shows the demonstrating timeline is committed rather than produced by the code. The panel mean stands; the disagreement is recorded as a difference in what each judge treated as demonstration, not as a factual contradiction.
 impact: recorded alongside the source scores; no source score was modified
 confidence: medium
 decided_by: head judging official
@@ -29,6 +26,7 @@ visibility: private
 approval_state: approved
 validation_state: valid
 ---
+
 # Adjudication Report — Harbor — innovation
 
 ## Question

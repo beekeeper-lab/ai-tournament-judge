@@ -20,6 +20,7 @@ visibility: private
 approval_state: approved
 validation_state: valid
 ---
+
 # Bracket Report — Sample Mock Event 2026
 
 Assignment is a reproducible constraint process, not another judgment of team

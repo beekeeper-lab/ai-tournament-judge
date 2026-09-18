@@ -47,6 +47,7 @@ visibility: private
 approval_state: approved
 validation_state: valid
 ---
+
 # Matchup Report — Lumen vs Verdant
 
 ## Eligibility and common evidence

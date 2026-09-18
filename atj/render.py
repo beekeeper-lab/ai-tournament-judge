@@ -99,8 +99,11 @@ def consolidated_table(result: dict[str, Any], root: Path | None = None) -> str:
         )
     else:
         rows.append(f"| **Overall** |  |  | **{weight}** | **not finalized** |  |")
-    rows.append("")
     if result["blocked_reasons"]:
+        # Only when there is something to say. A trailing empty row made the
+        # generated block end in a blank line that `replace_block` then strips,
+        # so a correct report was never byte-identical to its own regeneration.
+        rows.append("")
         rows.append("**Finalization blocked:**")
         for reason in result["blocked_reasons"]:
             rows.append(f"- {reason}")

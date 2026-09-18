@@ -10,6 +10,7 @@ visibility: private
 approval_state: approved
 validation_state: valid
 ---
+
 # Teams
 
 Four synthetic teams. `team-lumen` and `team-harbor` deliberately share the

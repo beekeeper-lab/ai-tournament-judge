@@ -11,6 +11,7 @@ changes, everything downstream becomes ``stale`` rather than silently wrong.
 
 from __future__ import annotations
 
+import json
 import re
 import shutil
 from dataclasses import dataclass
@@ -354,8 +355,14 @@ def validate_roster(event: Event) -> list[str]:
                 problems.append(f"{team['id']}: no immutable commit pinned; intake is incomplete")
 
     if event.config.get("bye_policy") == "performance-qualified":
-        # Scores arrive at consolidation; only enforce once the bracket is due.
-        if STAGE_INDEX.get(event.stage, 0) >= STAGE_INDEX["bracket"]:
+        # Scores arrive at consolidation; only enforce once the bracket is due,
+        # and only when the policy actually has byes to allocate. D20: this used
+        # to fire on the policy name alone. An event whose team count is an exact
+        # power of two grants zero byes, so the policy consumes no score, and a
+        # single unscored team made the event permanently invalid with no
+        # permitted repair — the only two moves available were to fabricate a
+        # total or to change the bye policy of an active event.
+        if STAGE_INDEX.get(event.stage, 0) >= STAGE_INDEX["bracket"] and bye_count(event):
             unscored = [t["id"] for t in event.eligible_teams if t.get("score") is None]
             if unscored:
                 problems.append(
@@ -363,6 +370,30 @@ def validate_roster(event: Event) -> list[str]:
                     f"team; missing for {sorted(unscored)}"
                 )
     return problems
+
+
+def bye_count(event: Event) -> int:
+    """How many byes this event's bracket grants.
+
+    The committed bracket is authoritative once it exists, because a bracket may
+    be built from a subset of the roster. Before that, derive it the way
+    `atj.bracket` will: the gap between the eligible team count and the next
+    power of two.
+    """
+    from . import bracket as bracket_module
+
+    path = event.directory / "bracket.json"
+    if path.is_file():
+        try:
+            recorded = json.loads(path.read_text(encoding="utf-8")).get("bye_count")
+        except (OSError, ValueError):
+            recorded = None
+        if isinstance(recorded, int):
+            return recorded
+    count = len(event.eligible_teams)
+    if count < 2:
+        return 0
+    return bracket_module.bracket_size(count) - count
 
 
 def validate_status(event: Event) -> list[str]:
@@ -521,8 +552,37 @@ def record_unit(
     outputs: Iterable[str],
     state: str = "complete",
     audit_result: str = "not-audited",
+    completed_at: str | None = None,
 ) -> dict[str, Any]:
+    """Write or update one ledger unit.
+
+    ``completed_at`` records when the *work* finished, not when the ledger row
+    was last touched. D15: this used to be ``versions.now()`` unconditionally, so
+    re-recording a unit to carry an audit result forward overwrote the real
+    completion time with the clock at repair time — and the ledger is what
+    `stale_units` and the audit trail read.
+
+    The rule now: if the unit already completed and its input digest is
+    unchanged, the same work is being re-recorded and the original time stands.
+    A changed digest means different inputs produced this unit, so it is stamped
+    anew. ``completed_at`` overrides both, and the caller may pass ``"now"``.
+    """
     unit = find_unit(event, unit_id)
+    if state != "complete":
+        stamp = None
+    elif completed_at and completed_at != "now":
+        stamp = completed_at
+    elif completed_at == "now":
+        stamp = versions.now()
+    elif (
+        unit is not None
+        and unit.get("state") == "complete"
+        and unit.get("completed_at")
+        and unit.get("input_digest") == input_digest
+    ):
+        stamp = str(unit["completed_at"])
+    else:
+        stamp = versions.now()
     payload = {
         "unit_id": unit_id,
         "stage": stage,
@@ -530,7 +590,7 @@ def record_unit(
         "input_digest": input_digest,
         "outputs": sorted(outputs),
         "audit_result": audit_result,
-        "completed_at": versions.now() if state == "complete" else None,
+        "completed_at": stamp,
     }
     if unit is None:
         event.status.setdefault("units", []).append(payload)

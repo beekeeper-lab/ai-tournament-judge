@@ -14,6 +14,7 @@ approval_state: approved
 approved_by: head judging official
 validation_state: valid
 ---
+
 # Matchup Summary: Lumen vs. Quill
 
 ## Winner

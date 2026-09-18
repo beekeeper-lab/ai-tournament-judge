@@ -26,6 +26,7 @@ visibility: private
 approval_state: approved
 validation_state: valid
 ---
+
 # Consolidated Team Report — Harbor
 
 ## Executive summary
@@ -49,7 +50,6 @@ below was altered.
 | security | judge-backend=3.0, judge-frontend-ux=3.0, judge-product-agentic=3.0, judge-security-ops=3.0 | 3.00 | 10 | 6.00 | aligned |
 | innovation | judge-backend=2.0, judge-frontend-ux=2.0, judge-product-agentic=5.0, judge-security-ops=2.0 | 2.75 | 10 | 5.50 | severe-disagreement ⚑outlier |
 | **Overall** |  |  | **100** | **53.3** |  |
-
 <!-- atj:consolidated:end -->
 
 ## Confirmed strengths

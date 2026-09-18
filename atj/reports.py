@@ -419,6 +419,33 @@ def _validate_rendered(
     return ArtifactReport(path, "public", findings)
 
 
+def rendered_publication_findings(
+    path: Path, event_dir: Path, *, public_scores: bool,
+    all_teams: Iterable[str] = (), display_names: dict[str, str] | None = None,
+    totals: dict[str, float] | None = None,
+) -> list[Finding]:
+    """Disclosure findings for rendered HTML, routed by where it lives.
+
+    `atj validate publication` needs the same coverage over rendered output that
+    `atj validate reports` already has, so a directory-wide disclosure gate does
+    not stop at the Markdown (D24).
+    """
+    visibility = publication.expected_visibility(path, event_dir)
+    if visibility == publication.TEAM:
+        return _validate_rendered_team(
+            path, all_teams=all_teams, display_names=display_names, totals=totals
+        ).findings
+    if visibility == publication.PUBLIC:
+        return _validate_rendered(
+            path, event_dir, public_scores=public_scores, totals=(totals or {}).values()
+        ).findings
+    try:
+        text = frontmatter.read_text(path)
+    except AtjError as exc:
+        return [_finding("blocking", "read", exc.message, path)]
+    return publication.scan_secrets(text, artifact=str(path))
+
+
 def summarize(reports: Iterable[ArtifactReport]) -> dict[str, Any]:
     reports = list(reports)
     findings = [finding for report in reports for finding in report.findings]

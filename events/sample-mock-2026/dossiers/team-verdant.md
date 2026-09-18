@@ -17,6 +17,7 @@ visibility: team
 approval_state: approved
 validation_state: valid
 ---
+
 # Team Dossier — Verdant
 
 ## Your project at a glance
