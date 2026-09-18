@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
 current_stage: dossiers
-last_updated: "2026-09-18T00:10:51Z"
+last_updated: "2026-09-18T00:23:24Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -12,7 +12,7 @@ stage_gates:
   consolidation-audited: passed
   bracket-audited: passed
   tournament-audited: passed
-  dossiers-approved: pending
+  dossiers-approved: passed
   final-audit-passed: pending
 units:
 - unit_id: evidence:team-podcast
@@ -71,6 +71,7 @@ gate_evidence:
   consolidation-audited: audits/consolidation.md
   bracket-audited: audits/bracket.md
   tournament-audited: audits/tournament.md
+  dossiers-approved: audits/dossiers.md
 ---
 # Event Status
 
