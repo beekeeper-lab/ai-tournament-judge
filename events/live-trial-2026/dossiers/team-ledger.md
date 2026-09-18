@@ -177,6 +177,10 @@ is read from the official result, not recomputed.
 | Innovation and technical ambition | 10 | 4.00 / 5 | 8.00 | aligned, range 0.0 |
 | **Overall** | **100** |  | **76.3** |  |
 
+The Points column sums to 76.25. The Overall row shows **76.3**, which is the official
+display total after the rubric's half-up rounding to one decimal place — the row is the
+official figure, not the column sum (audit DO3).
+
 No judge recorded low confidence on any criterion. Confidence was medium to high
 throughout, and it does not track score direction: on `reliability` the three
 judges at 3 recorded high confidence while the judge at 4 recorded medium, and on
@@ -454,6 +458,12 @@ should weigh them as one careful reader's finding rather than as four.
   stderr (one judge's finding).** From source; no scenario produced a failing
   invariant. He calls it "the worst failure mode in this list" because the exit
   code is the only machine-readable signal an agent or script has.
+
+Three items in the list that follows were also raised by **one judge only** and were
+neither corroborated nor contradicted: the `_infer_year` out-of-cycle date, the D1
+finding-title mislabel, and the `hooks/pre-commit` lowercase `*.csv` gap. Their
+classification as confirmed defects matches the record, but no panel consensus is
+asserted for any of them (audit DO1).
 
 For completeness, the other confirmed defects, none of them blocking: two of four
 ingest rejection paths surface as a Python traceback rather than the clean

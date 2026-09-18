@@ -42,6 +42,7 @@ version.
 | D21 | `atj event unit record` derives input digests only for `evidence:`, `judging:` and `consolidation:`, so the bracket, tournament and dossier stages cannot be recorded as ledger units and are invisible to `stale_units` and the drift check in `can_advance` | 3 |
 | D22 | `schemas/matchup.schema.json` requires both `passes/a_first/comparisons` and `passes/b_first/comparisons` to be non-empty, so a single order-balanced pass report — which by design must not know the other pass — can never validate, and the framework defines no location for a judge's own pass report | 2 |
 | D23 | `.claude/hooks/pre-advance.sh` inspects the whole command string with no sequencing, so a single command that sets a gate and then advances is blocked on the pre-command gate state. D6 fixed the heredoc/prose false positive; this is the ordering half of the same design | 3 |
+| D24 | `atj validate publication` accepts only a single artifact path and errors on a directory, so the event-wide disclosure check `CLAUDE.md` mandates cannot actually be run. Every artifact must be named individually | 1 |
 
 D3 fixed in `3a798ad` (command added, reproduces the committed sample byte for
 byte) and `4ac09ba` (refuses to rewrite an approved judgment without `--force`,

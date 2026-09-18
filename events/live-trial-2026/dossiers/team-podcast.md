@@ -11,6 +11,7 @@ source_reports:
 - summaries/team-podcast.json
 - adjudications/team-podcast-reliability-ne.md
 - matchups/mu-final-01.md
+- matchup-passes/mu-final-01-pass-a-first.md
 - evidence/team-podcast/manifest.md
 model_requested: claude-opus-5
 model_used: claude-opus-5

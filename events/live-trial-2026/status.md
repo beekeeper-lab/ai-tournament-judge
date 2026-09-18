@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
-current_stage: tournament
-last_updated: "2026-09-18T00:10:46Z"
+current_stage: dossiers
+last_updated: "2026-09-18T00:10:51Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -81,8 +81,8 @@ gate_evidence:
 - [x] All eligible evidence packages validated
 - [x] All initial judgments audited
 - [x] All consolidated reports audited
-- [ ] Bracket frozen and audited
-- [ ] Tournament complete
+- [x] Bracket frozen and audited
+- [x] Tournament complete
 - [ ] All team dossiers approved
 - [ ] Final event audit passed
 - [ ] Event marked complete
@@ -180,6 +180,10 @@ the roster.
 | 2026-09-18T00:20:00Z | OPERATOR ERROR, recorded (audit TA4): the dossier stage was started before `tournament-audited` passed, because three agents were launched concurrently to reduce context cost. No gate was falsified and `git diff 96e3f32..a8c0cf8` across every tournament input is empty, so all findings stand — but the audit's judgement is accepted as written: the only reason this cost nothing is that the result came back PASS | git log, status.md | this entry | advisory, accepted |
 | 2026-09-18T00:20:00Z | Operator claim corrected (audit T2): the statement that the provisional 58.25 appears nowhere in the tournament artifacts was too strong. It appears twice, at `matchup-passes/mu-final-01-pass-a-first.md:431` and `mu-final-01-pass-b-first.md:94`, both as explicit negations, both in private files. The resolved matchup artifacts and both dossiers are clean | audits/tournament.md T2 | this entry | advisory, accepted |
 | 2026-09-18T00:20:00Z | D22 addendum and new D23. D22: `atj validate reports` reaches only the ten `ARTIFACT_KINDS` directories so nothing validates the pass reports, but `atj validate publication` on one returns `BLOCKING [location-unknown]`, so the disclosure gate fails closed — that is why the arrangement is survivable. D23: `.claude/hooks/pre-advance.sh` blocked a single command that set the gate and then advanced, because it inspects the command string with no sequencing | audits/tournament.md, hook output | docs/framework-fix-plan.md | not-audited |
+| 2026-09-18T00:45:00Z | Dossiers stage audited by `judging-auditor@1.0.0`, FIRST pass: PASS WITH ADVISORIES, no blocking finding. Verified by search rather than reading that team-podcast's dossier carries no total, no provisional figure and not even the opponent's total; team-ledger's arithmetic re-derived three ways and every weighted point independently recomputed; the matchup re-resolved from the two pass reports rather than the committed JSON; and both corrections in team-podcast's favour independently confirmed against the pinned checkout — 42 `check()` call sites, and fourteen stage headers numbered 1-13 with an "11b" at line 305 | dossiers/*, summaries/*, matchups/*, the adjudication, both manifests | audits/dossiers.md | PASS WITH ADVISORIES |
+| 2026-09-18T00:45:00Z | Operator judgment call ruled ACCEPTABLE by the audit: team-podcast's dossier keeps per-criterion panel means. The framework nulls the total and moves the sum to `provisional_total` but marks no per-criterion mean provisional, so the six are finalized criterion-level results in an unfinalized report. Withholding them would convert an operator-caused `NE` into suppression of results not in doubt, which is the opposite of what the adjudication decided. DOA4 to carry forward: the six means times the rubric weights reconstruct 58.25 exactly, so the "not combined" sentence is load-bearing and must survive any later edit | audits/dossiers.md, framework/policies/report-publication.md | dossiers/team-podcast.md | advisory, accepted |
+| 2026-09-18T00:50:00Z | DO1-DO4 repaired: three further single-judge findings in team-ledger's dossier now carry the one-judge marker the other three already had; the 76.25-versus-76.3 column/row distinction explained; the maintenance-artifact quotation sourced and the pass report added to `source_reports`; two stage-gate checkboxes ticked | audits/dossiers.md | dossiers/*.md, status.md | operator-verified |
+| 2026-09-18T00:50:00Z | FRAMEWORK DEFECT D24: `atj validate publication` accepts only a single artifact path and fails on a directory with `Is a directory`. `CLAUDE.md` instructs running it "before anything leaves the panel", but there is no way to run it across an event — every artifact must be named individually, so the check guarding disclosure is the one most easily skipped | `atj validate publication events/live-trial-2026` | docs/framework-fix-plan.md | not-audited |
 
 One exception to the audit rule below, recorded rather than hidden: the third-pass
 judging audit's artifact carries `completed_at: 2026-09-17T22:19:00Z` while the commit
