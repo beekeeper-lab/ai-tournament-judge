@@ -572,7 +572,8 @@ it closes. That residual is recorded here rather than quietly fixed.
 
 # Addendum — `fix/framework-d7-d10-d12`
 
-Landed: D7 and D10. Added to the plan without landing: D12, D27.
+Landed on this branch: D7 and D10. Recorded here without landing: D12, D27.
+D27 has since landed in `5847cbb`; D12 is Tier 2 and still open.
 
 This branch recorded its two new defects here rather than in the table above, so
 that the merge back into the event branch stayed a concatenation. That merge has
@@ -585,7 +586,7 @@ branch existed, so the event's number stands and the branch's number moved.
 | ID | Defect | Tier | State |
 |---|---|---|---|
 | D12 | The rubric does not say how to score `agentic` when a submission correctly has no AI. Three of the criterion's four sub-questions have no subject, and four judges on identical, conclusive facts split across two anchors | 2 | proposed, not landed |
-| D27 | Two more templates invite a `persona` value the registry can never resolve, and neither is caught as a placeholder | 1 | found, not landed |
+| D27 | Two more templates invite a `persona` value the registry can never resolve, and neither is caught as a placeholder | 1 | landed in `5847cbb` |
 
 ## D7 — `atj score` prints `adjudication_required` (landed)
 
@@ -795,7 +796,10 @@ The disagreement here was benign and stayed inside the aligned band. A sharper
 one would be averaged away just as silently. That belongs with D8, which is the
 same shape one field over.
 
-## D27 — two more templates invite an unresolvable `persona` (found, not landed)
+## D27 — two more templates invite an unresolvable `persona` (landed)
+
+The analysis below is as this branch recorded it. What was decided and built
+is under "D27 — the two unrouted templates, decided", above.
 
 The same defect class as D10, found while fixing it:
 
