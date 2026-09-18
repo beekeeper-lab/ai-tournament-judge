@@ -3,7 +3,7 @@ event_id: sample-mock-2026
 team_id: team-harbor
 commit: 213a8d470271071a81322e41614345b87f67dd0c
 evidence_package_id: ev:sample-mock-2026:team-harbor:213a8d470271:85a7e2cb
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 framework_commit: uncommitted
 model_requested: not-applicable (scripted fixture)
 model_used: not-applicable (scripted fixture)
@@ -20,8 +20,9 @@ resolution_detail: The approach is genuinely unusual, which explains the high sc
 impact: recorded alongside the source scores; no source score was modified
 confidence: medium
 decided_by: head judging official
+decision_authority: human-official
 score_override: null
-persona: judging-auditor@1.0.0
+persona: judging-auditor@1.1.0
 visibility: private
 approval_state: approved
 validation_state: valid

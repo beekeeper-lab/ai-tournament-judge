@@ -2,7 +2,7 @@
 event_id: EVENT-ID
 match_id: MATCH-ID
 round_id: ROUND-ID
-rubric: head-to-head@1.0.0
+rubric: head-to-head@1.1.0
 framework_commit: FRAMEWORK-COMMIT
 source_artifacts: []
 scores_published: false

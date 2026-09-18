@@ -28,6 +28,12 @@ ARTIFACT_KINDS = {
     "judgments": ("judgment", "individual-judgment.md"),
     "summaries": ("consolidated-report", "consolidated-team-report.md"),
     "matchups": ("matchup", "matchup-report.md"),
+    # D22: one judge's single order-balanced pass. `matchups/` holds the resolved
+    # result, whose schema requires both pass blocks populated; a pass report by
+    # design has only one, so it had nowhere to live that any check could reach.
+    # live-trial-2026 parked both pass reports in an undeclared directory to get
+    # the event to validate, and nothing validated them.
+    "matchup-passes": ("matchup-pass", "matchup-pass-report.md"),
     "adjudications": ("adjudication", "adjudication-report.md"),
     "dossiers": ("dossier", "team-dossier.md"),
     "audits": ("audit", "audit-report.md"),
@@ -122,6 +128,17 @@ def validate_artifact(
             versions.require_versions(metadata, root=root, artifact=str(path))
         except AtjError as exc:
             findings.append(_finding("blocking", "version", exc.message, path))
+        # A pin the archive records as retired is valid but no longer current.
+        # Saying so is the difference between a frozen record and a stale one.
+        for retired in versions.superseded_pins(metadata, root):
+            findings.append(
+                _finding(
+                    "advisory", "superseded",
+                    f"pins a superseded contract ({retired}); valid as a historical "
+                    f"record, and not what a new artifact may pin",
+                    path,
+                )
+            )
 
     for placeholder in PLACEHOLDERS:
         if placeholder in body or placeholder in str(metadata):
@@ -163,6 +180,9 @@ def validate_artifact(
 
     if schema_name == "judgment":
         findings.extend(_check_judgment_scores(metadata, path, root))
+        findings.extend(_check_ne_confidence(metadata, path, event_dir, root))
+    if kind == "adjudications":
+        findings.extend(_check_adjudication_record(metadata, path, event_dir))
 
     if not body.strip():
         findings.append(_finding("blocking", "empty", "artifact has no content below its front matter", path))
@@ -178,9 +198,20 @@ def validate_artifact(
 
 
 def _check_judgment_scores(metadata: dict[str, Any], path: Path, root: Path) -> list[Finding]:
-    """Scores must match the canonical rubric exactly, in ids and in range."""
+    """Scores must match the rubric the artifact pins, in ids and in range.
+
+    The artifact's own pinned version, not today's: a completed event judged under
+    a superseded rubric must be checked against the criteria that were in force,
+    or every artifact it produced turns into a phantom criterion mismatch the
+    moment the rubric gains or loses a row.
+    """
     findings: list[Finding] = []
-    rubric = canon.load(root)
+    declared = str(metadata.get("rubric") or "")
+    try:
+        rubric = canon.load_reference(declared, root) if declared else canon.load(root)
+    except AtjError:
+        # The version check above already reported this as blocking.
+        rubric = canon.load(root)
     scores = metadata.get("scores")
     if not isinstance(scores, dict):
         return [_finding("blocking", "scores", "scores must be a mapping", path)]
@@ -196,6 +227,158 @@ def _check_judgment_scores(metadata: dict[str, Any], path: Path, root: Path) -> 
             rubric.validate_score(scores[criterion], criterion_id=criterion, artifact=str(path))
         except AtjError as exc:
             findings.append(_finding("blocking", "scores", exc.message, path))
+    return findings
+
+
+def _check_ne_confidence(
+    metadata: dict[str, Any], path: Path, event_dir: Path, root: Path
+) -> list[Finding]:
+    """D8: `confidence` on an `NE` criterion has one defined meaning now.
+
+    Four judges in live-trial-2026 wrote identical reasoning for the same `NE` and
+    split between `low` and `high`, because nothing said whether `confidence`
+    described the evidence or the determination. `submission-evaluation@1.1.0`
+    says it describes the evidence: an `NE` the evidence package itself records as
+    evidence-limited is `high`, because the inability to observe is established
+    fact, and an `NE` the package does not account for is `low`.
+
+    The rule is applied only to artifacts pinned to a rubric version that
+    contains it. A judgment produced under an earlier version was written against
+    a contract that did not define this, and reading a later rule back onto a
+    frozen record would report a defect nobody could have avoided.
+    """
+    declared = str(metadata.get("rubric") or "")
+    if not declared or canon.is_superseded(declared, root):
+        return []
+    scores = metadata.get("scores")
+    if not isinstance(scores, dict):
+        return []
+    unresolved = sorted(
+        criterion for criterion, value in scores.items()
+        if str(value) == canon.NOT_ENOUGH_EVIDENCE
+    )
+    if not unresolved:
+        return []
+
+    team_id = str(metadata.get("team_id") or "")
+    manifest = event_dir / "evidence" / team_id / "manifest.md"
+    limited: set[str] = set()
+    if manifest.is_file():
+        try:
+            manifest_metadata, _ = frontmatter.read(manifest)
+        except AtjError:
+            manifest_metadata = {}
+        limited = {str(c) for c in (manifest_metadata.get("evidence_limited_criteria") or [])}
+
+    confidence = metadata.get("confidence") or {}
+    findings: list[Finding] = []
+    for criterion in unresolved:
+        recorded = str(confidence.get(criterion) or "").strip().lower()
+        if not recorded:
+            continue  # the schema's problem, not this rule's
+        expected = "high" if criterion in limited else "low"
+        if recorded != expected:
+            reason = (
+                f"the evidence package records {criterion!r} as evidence-limited, so the "
+                f"inability to observe it is established"
+                if criterion in limited else
+                f"the evidence package does not record {criterion!r} as evidence-limited, so "
+                f"this NE rests on evidence the judge could not find"
+            )
+            findings.append(_finding(
+                "minor", "ne-confidence",
+                f"{criterion!r} is NE with confidence {recorded!r}; "
+                f"{canon.load(root).reference} defines it as {expected!r} here, because "
+                f"{reason}",
+                path,
+            ))
+    return findings
+
+
+def _check_adjudication_record(
+    metadata: dict[str, Any], path: Path, event_dir: Path
+) -> list[Finding]:
+    """D13 and D14: who decided, and what changed after they did.
+
+    D13: `decided_by` names a role, and nothing tied that role to the event's own
+    officials or distinguished a human deciding from an agent writing a role into
+    a required field. `atj score` refuses to move a total without
+    `decision_authority: human-official`; this says so at validation time, while
+    there is still time to fix the record.
+
+    D14: an approved adjudication corrected after the fact had nowhere to disclose
+    the correction. live-trial-2026's record ended up citing an audit that
+    post-dates its own `completed_at`, which is the observable symptom of an edit
+    that was never declared.
+    """
+    findings: list[Finding] = []
+    authority = metadata.get("decision_authority")
+    if authority is None:
+        findings.append(_finding(
+            "advisory", "decision-authority",
+            "declares no decision_authority, so nothing establishes whether a human "
+            "official or an agent decided it; `atj score` will not move an official "
+            "total on it",
+            path,
+        ))
+    elif authority == "agent-substituted":
+        findings.append(_finding(
+            "advisory", "decision-authority",
+            f"records an agent substituting for a human official "
+            f"({metadata.get('substitution_reason')!r}); disclosed, and it moves no "
+            f"official total",
+            path,
+        ))
+
+    decided_by = str(metadata.get("decided_by") or "")
+    config = event_dir / "event.md"
+    if decided_by and config.is_file():
+        try:
+            event_metadata, _ = frontmatter.read(config)
+        except AtjError:
+            event_metadata = {}
+        officials = event_metadata.get("officials") or {}
+        roles = {str(role) for role in officials.values()}
+        if roles and decided_by not in roles:
+            findings.append(_finding(
+                "major", "decided-by",
+                f"decided_by {decided_by!r} is not an official of this event "
+                f"({', '.join(sorted(roles))}); an adjudication is authorized by a role "
+                f"the event configuration names, not by one the record invents",
+                path,
+            ))
+
+    amendments = metadata.get("amendments") or []
+    completed_at = str(metadata.get("completed_at") or "")
+    previous = ""
+    for index, amendment in enumerate(amendments, start=1):
+        if not isinstance(amendment, dict):
+            continue  # the schema reports the shape
+        amended_at = str(amendment.get("amended_at") or "")
+        if completed_at and amended_at and amended_at < completed_at:
+            findings.append(_finding(
+                "major", "amendment",
+                f"amendment {index} is stamped {amended_at}, before the record it amends "
+                f"completed at {completed_at}",
+                path,
+            ))
+        if previous and amended_at and amended_at < previous:
+            findings.append(_finding(
+                "major", "amendment",
+                f"amendment {index} is stamped {amended_at}, before amendment {index - 1} "
+                f"at {previous}; the trail must read forward",
+                path,
+            ))
+        previous = amended_at or previous
+    if amendments and metadata.get("approval_state") == "approved":
+        last = amendments[-1] if isinstance(amendments[-1], dict) else {}
+        if not last.get("amended_by"):
+            findings.append(_finding(
+                "major", "amendment",
+                "the record is approved and its last amendment names no author; a "
+                "correction to an approved artifact is authorized by a person",
+                path,
+            ))
     return findings
 
 

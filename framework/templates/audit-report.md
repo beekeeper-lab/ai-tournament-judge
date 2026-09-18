@@ -6,7 +6,7 @@ team_id: null
 match_id: null
 commit: IMMUTABLE-COMMIT
 evidence_package_id: EVIDENCE-ID
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 persona: judging-auditor@VERSION
 framework_commit: FRAMEWORK-COMMIT
 model_requested: MODEL-REQUESTED

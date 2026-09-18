@@ -164,7 +164,68 @@
         }
       ],
       "$comment": "For a matchup adjudication: the team the official decided advances. Read from here, never from prose."
+    },
+    "decision_authority": {
+      "enum": [
+        "human-official",
+        "agent-substituted"
+      ],
+      "$comment": "human-official: the official named in decided_by decided, and the record may move an official total. agent-substituted: an agent stood in for a human, which is disclosed and never sufficient to move one. Absent means unknown, which is treated as insufficient: a record written before this field existed cannot retroactively claim human authority."
+    },
+    "substitution_reason": {
+      "type": "string",
+      "minLength": 1,
+      "$comment": "Required when decision_authority is agent-substituted: why no human official decided, so the substitution is reviewable rather than invisible."
+    },
+    "amendments": {
+      "type": "array",
+      "$comment": "Append-only. An approved record is never silently edited; a correction is disclosed here with its own time, reason and author.",
+      "items": {
+        "type": "object",
+        "required": [
+          "amended_at",
+          "reason",
+          "amended_by"
+        ],
+        "properties": {
+          "amended_at": {
+            "$ref": "common.schema.json#/$defs/timestamp"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amended_by": {
+            "type": "string",
+            "minLength": 1
+          },
+          "supersedes": {
+            "type": "string",
+            "$comment": "What the record said before this amendment."
+          }
+        },
+        "additionalProperties": false
+      }
     }
   },
-  "additionalProperties": true
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "decision_authority"
+        ],
+        "properties": {
+          "decision_authority": {
+            "const": "agent-substituted"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "substitution_reason"
+        ]
+      }
+    }
+  ]
 }

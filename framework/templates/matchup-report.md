@@ -8,8 +8,8 @@ commit_a: IMMUTABLE-COMMIT-A
 commit_b: IMMUTABLE-COMMIT-B
 evidence_package_a: EVIDENCE-ID-A
 evidence_package_b: EVIDENCE-ID-B
-rubric: head-to-head@1.0.0
-source_rubric: submission-evaluation@1.0.0
+rubric: head-to-head@1.1.0
+source_rubric: submission-evaluation@1.1.0
 persona: matchup-judge@VERSION
 framework_commit: FRAMEWORK-COMMIT
 model_requested: MODEL-REQUESTED

@@ -3,7 +3,7 @@ event_id: sample-mock-2026
 team_id: team-lumen
 commit: 1d46525edc7a377a802930091df18ad921262657
 evidence_package_id: ev:sample-mock-2026:team-lumen:1d46525edc7a:7c194426
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 framework_commit: uncommitted
 model_requested: not-applicable (scripted fixture)
 model_used: not-applicable (scripted fixture)
@@ -20,11 +20,12 @@ resolution_detail: src/web/session.py:22 sets the cookie without a signature, an
 impact: recorded alongside the source scores; no source score was modified
 confidence: medium
 decided_by: head judging official
+decision_authority: human-official
 score_override:
   criterion: security
   resolved_score: 2
   rationale: src/web/session.py:22 sets the cookie without a signature, and no middleware adds one. The absence of deployment configuration limits confidence about transport flags, but the unsigned value is directly observable in the pinned source and is sufficient to score the criterion.
-persona: judging-auditor@1.0.0
+persona: judging-auditor@1.1.0
 visibility: private
 approval_state: approved
 validation_state: valid

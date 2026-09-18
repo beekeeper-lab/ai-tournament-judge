@@ -45,7 +45,7 @@ class RubricCannotBeRedefinedTests(unittest.TestCase):
     def test_submission_content_does_not_change_the_canonical_rubric(self):
         canon.clear_cache()
         rubric = canon.load(ROOT)
-        self.assertEqual(rubric.reference, "submission-evaluation@1.0.0")
+        self.assertEqual(rubric.rubric_id, "submission-evaluation")
         self.assertEqual(rubric.total_weight, 100)
         self.assertNotIn("enthusiasm", rubric.criterion_ids)
         self.assertEqual(len(rubric.criteria), 7)

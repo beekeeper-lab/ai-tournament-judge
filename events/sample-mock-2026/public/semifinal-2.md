@@ -2,7 +2,7 @@
 event_id: sample-mock-2026
 match_id: mu:sample-mock-2026:semifinal:01
 round_id: semifinal
-rubric: head-to-head@1.0.0
+rubric: head-to-head@1.1.0
 framework_commit: uncommitted
 source_artifacts:
 - matchups/semifinal-2.md

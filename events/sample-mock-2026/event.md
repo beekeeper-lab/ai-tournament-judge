@@ -2,9 +2,9 @@
 event_id: sample-mock-2026
 event_name: Sample Mock Event 2026
 status: closed
-rubric: submission-evaluation@1.0.0
-consolidation_policy: panel-consolidation@1.0.0
-matchup_rubric: head-to-head@1.0.0
+rubric: submission-evaluation@1.1.0
+consolidation_policy: panel-consolidation@1.1.0
+matchup_rubric: head-to-head@1.1.0
 bracket_policy: bracket-assignment@1.0.0
 bye_policy: performance-qualified
 close_call_band: 5.0

@@ -23,6 +23,15 @@ HEAD_TO_HEAD_RUBRIC = "framework/rubrics/head-to-head.md"
 CONSOLIDATION_RUBRIC = "framework/rubrics/panel-consolidation.md"
 BRACKET_POLICY = "framework/rubrics/bracket-assignment.md"
 
+# Superseded versions of any of the four contracts above. A completed event's
+# artifacts pin the version they were judged under, and that version outlives the
+# edit that replaced it: without an archive, bumping a rubric turns every finished
+# artifact into a blocking version mismatch, and the only available repair is to
+# rewrite a frozen record. The archive is append-only and read-only. Each file is
+# named `<id>@<version>.md` and is the sole source for its own version, exactly as
+# the current file is the sole source for the current version.
+RUBRIC_ARCHIVE = "framework/rubrics/archive"
+
 # | id | Criterion name | 25 | Central question |
 _CRITERION_ROW = re.compile(
     r"^\|\s*([a-z][a-z0-9_-]*)\s*\|\s*([^|]+?)\s*\|\s*(\d+)\s*\|\s*([^|]*?)\s*\|\s*$", re.MULTILINE
@@ -348,6 +357,81 @@ def load_bracket_policy(root: Path | None = None) -> PolicyVersion:
 def load_consolidation_policy(root: Path | None = None) -> PolicyVersion:
     path = (root or repository_root()) / CONSOLIDATION_RUBRIC
     return _load_policy_cached(path, _stamp(path), "rubric_id")
+
+
+def archive_dir(root: Path | None = None) -> Path:
+    return (root or repository_root()) / RUBRIC_ARCHIVE
+
+
+def archived_path(reference: str, root: Path | None = None) -> Path | None:
+    """The archive file for ``id@version``, or None when nothing was archived."""
+    if "@" not in reference:
+        return None
+    path = archive_dir(root) / f"{reference}.md"
+    return path if path.is_file() else None
+
+
+def superseded_references(root: Path | None = None) -> dict[str, Path]:
+    """Every archived contract version, as ``id@version`` -> file.
+
+    The mapping is built from each file's own front matter rather than from its
+    name, and a disagreement between the two is fatal: a mislabelled archive file
+    would silently accept a version that never existed.
+    """
+    directory = archive_dir(root)
+    if not directory.is_dir():
+        return {}
+    found: dict[str, Path] = {}
+    for path in sorted(directory.glob("*.md")):
+        if path.name == "README.md":
+            continue  # the directory's own instructions, not an archived contract
+        if "@" not in path.stem:
+            raise CanonError(
+                f"archive holds {path.name!r}; an archived contract is named "
+                f"`<id>@<version>.md` so that nothing has to guess which version it is",
+                artifact=str(path),
+            )
+        metadata, _ = read(path)
+        identifier = metadata.get("rubric_id") or metadata.get("policy_id")
+        version = metadata.get("version")
+        if not identifier or not version:
+            raise CanonError(
+                f"archived contract declares no id/version in its front matter",
+                artifact=str(path),
+            )
+        reference = f"{identifier}@{version}"
+        if path.stem != reference:
+            raise CanonError(
+                f"archived contract is named {path.stem!r} but declares {reference!r}; "
+                f"an archive file must be named for the version it contains",
+                artifact=str(path),
+            )
+        found[reference] = path
+    return found
+
+
+def is_superseded(reference: str, root: Path | None = None) -> bool:
+    return archived_path(reference, root) is not None
+
+
+def load_reference(reference: str, root: Path | None = None) -> Rubric:
+    """The submission rubric a given artifact was judged under.
+
+    Recomputing a completed event's totals has to use the weights that were in
+    force when it was judged, not today's. Anything else silently restates an
+    official result under a contract nobody applied to it.
+    """
+    current = load(root)
+    if reference == current.reference:
+        return current
+    path = archived_path(reference, root)
+    if path is None:
+        raise VersionError(
+            f"rubric mismatch: artifact declares {reference!r}, canonical rubric is "
+            f"{current.reference!r} and no archived copy of {reference!r} exists; "
+            f"migrate or re-run rather than continuing"
+        )
+    return _load_rubric_cached(path, _stamp(path))
 
 
 def clear_cache() -> None:

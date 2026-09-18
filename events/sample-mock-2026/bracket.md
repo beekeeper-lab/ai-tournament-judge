@@ -1,8 +1,8 @@
 ---
 event_id: sample-mock-2026
 policy: bracket-assignment@1.0.0
-rubric: submission-evaluation@1.0.0
-persona: judging-auditor@1.0.0
+rubric: submission-evaluation@1.1.0
+persona: judging-auditor@1.1.0
 framework_commit: uncommitted
 roster_version: 1
 team_count: 4

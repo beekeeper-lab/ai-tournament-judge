@@ -38,6 +38,7 @@ ARTIFACT_SCHEMAS = {
     "manual-override": "manual-override.schema.json",
     "bracket": "bracket.schema.json",
     "matchup": "matchup.schema.json",
+    "matchup-pass": "matchup-pass.schema.json",
     "dossier": "dossier.schema.json",
     "public-report": "public-report.schema.json",
     "model-run": "model-run.schema.json",

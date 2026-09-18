@@ -3,7 +3,7 @@ event_id: EVENT-ID
 team_id: TEAM-ID
 repository: REPOSITORY-URL-OR-PATH
 commit: IMMUTABLE-COMMIT
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 persona: prepare-submission@VERSION
 framework_commit: FRAMEWORK-COMMIT
 submitted_at: YYYY-MM-DDTHH:MM:SSZ

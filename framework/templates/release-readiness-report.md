@@ -2,7 +2,7 @@
 event_id: not-applicable
 report_id: RELEASE-READINESS-ID
 framework_version: FRAMEWORK-VERSION
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 persona: judging-auditor@VERSION
 framework_commit: FRAMEWORK-COMMIT
 model_requested: MODEL-REQUESTED

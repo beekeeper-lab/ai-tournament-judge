@@ -15,7 +15,8 @@ class CanonicalRubricTests(unittest.TestCase):
         self.rubric = canon.load(ROOT)
 
     def test_rubric_parses_from_markdown(self):
-        self.assertEqual(self.rubric.reference, "submission-evaluation@1.0.0")
+        self.assertEqual(self.rubric.rubric_id, "submission-evaluation")
+        self.assertRegex(self.rubric.version, r"^\d+\.\d+\.\d+$")
         self.assertEqual(self.rubric.total_weight, 100)
         self.assertEqual(len(self.rubric.criteria), 7)
         self.assertEqual(self.rubric.scale_min, 0)
@@ -50,8 +51,8 @@ class CanonicalRubricTests(unittest.TestCase):
 
     def test_rubric_version_mismatch_is_fatal_not_a_warning(self):
         with self.assertRaises(VersionError):
-            self.rubric.require_reference("submission-evaluation@1.1.0")
-        self.rubric.require_reference("submission-evaluation@1.0.0")
+            self.rubric.require_reference("submission-evaluation@9.9.9")
+        self.rubric.require_reference(self.rubric.reference)
 
     def test_weight_total_disagreement_is_fatal(self):
         import tempfile
@@ -84,9 +85,11 @@ class CanonicalRubricTests(unittest.TestCase):
 
     def test_head_to_head_rubric_parses(self):
         h2h = canon.load_head_to_head(ROOT)
-        self.assertEqual(h2h.reference, "head-to-head@1.0.0")
+        self.assertEqual(h2h.rubric_id, "head-to-head")
         self.assertEqual(h2h.close_call_band, 5.0)
-        self.assertEqual(h2h.source_rubric, "submission-evaluation@1.0.0")
+        # The head-to-head rubric derives from the current submission rubric, and
+        # says so rather than naming a version this test has to be edited for.
+        self.assertEqual(h2h.source_rubric, canon.load(ROOT).reference)
         with self.assertRaises(VersionError):
             h2h.require_reference("head-to-head@2.0.0")
 
@@ -126,9 +129,9 @@ class SchemaTests(unittest.TestCase):
     def event(self, **overrides):
         base = {
             "event_id": "demo", "event_name": "Demo", "status": "draft",
-            "rubric": "submission-evaluation@1.0.0",
-            "consolidation_policy": "panel-consolidation@1.0.0",
-            "matchup_rubric": "head-to-head@1.0.0",
+            "rubric": canon.load(ROOT).reference,
+            "consolidation_policy": canon.load_consolidation_policy(ROOT).reference,
+            "matchup_rubric": canon.load_head_to_head(ROOT).reference,
             "bracket_policy": "bracket-assignment@1.0.0",
             "bye_policy": "performance-qualified",
             "expected_judges": ["judge-backend", "judge-frontend-ux",
@@ -171,7 +174,8 @@ class SchemaTests(unittest.TestCase):
         """Alpha defect X12: judgment.schema.json held a third editable copy."""
         for name in schema.ARTIFACT_SCHEMAS:
             text = str(schema.get_schema(name, ROOT))
-            self.assertNotIn("submission-evaluation@1.0.0", text, f"{name} pins a rubric version")
+            self.assertNotIn(canon.load(ROOT).reference, text, f"{name} pins a rubric version")
+            self.assertNotIn("submission-evaluation@", text, f"{name} pins a rubric version")
 
     def test_schemas_do_not_enumerate_criteria(self):
         for name in schema.ARTIFACT_SCHEMAS:
@@ -213,7 +217,7 @@ class PersonaVersionTests(unittest.TestCase):
     def test_persona_mismatch_is_fatal(self):
         with self.assertRaises(VersionError):
             versions.require_versions(
-                {"rubric": "submission-evaluation@1.0.0", "persona": "judge-backend@9.9.9"},
+                {"rubric": canon.load(ROOT).reference, "persona": "judge-backend@9.9.9"},
                 root=ROOT,
             )
 
@@ -223,7 +227,8 @@ class PersonaVersionTests(unittest.TestCase):
 
     def test_matching_versions_pass(self):
         versions.require_versions(
-            {"rubric": "submission-evaluation@1.0.0", "persona": "judge-backend@1.0.0"}, root=ROOT
+            {"rubric": canon.load(ROOT).reference,
+             "persona": versions.load_personas(ROOT)["judge-backend"].reference}, root=ROOT
         )
 
 

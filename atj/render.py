@@ -131,16 +131,50 @@ def adjudication_notice(result: dict[str, Any]) -> str:
     prompt, not part of the official record.
     """
     required = result.get("adjudication_required") or []
-    if not required:
+    accepted = result.get("accepted_ne") or []
+    withheld = result.get("withheld_authority") or []
+    if not required and not accepted and not withheld:
         return ""
-    rows = ["**Adjudication required:**"]
-    for entry in required:
-        rows.append(f"- {entry['criterion']}: {entry['trigger']}")
-    rows.append("")
-    rows.append(
-        "Recorded as `adjudication_required` in the structured result. Do not "
-        "report this panel as needing no adjudication."
-    )
+    rows: list[str] = []
+    if required:
+        rows.append("**Adjudication required:**")
+        for entry in required:
+            rows.append(f"- {entry['criterion']}: {entry['trigger']}")
+        rows.append("")
+        rows.append(
+            "Recorded as `adjudication_required` in the structured result. Do not "
+            "report this panel as needing no adjudication."
+        )
+    if accepted:
+        if rows:
+            rows.append("")
+        rows.append("**NE accepted by adjudication:**")
+        for entry in accepted:
+            rows.append(
+                f"- {entry['criterion']}: accepted by {entry['adjudication_id']} "
+                f"({entry['decided_by']})"
+            )
+        rows.append("")
+        rows.append(
+            "These are decided, not outstanding. The rubric still permits no official "
+            "total while a criterion is NE, so the panel stays unfinalized -- by "
+            "decision, not for want of one."
+        )
+    if withheld:
+        if rows:
+            rows.append("")
+        rows.append("**Adjudication recorded without authority to move a total:**")
+        for entry in withheld:
+            rows.append(
+                f"- {entry.get('criterion') or entry.get('adjudication_id')}: "
+                f"{entry['authority_withheld']}"
+            )
+        rows.append("")
+        rows.append(
+            "The record stands as disclosure. It moved nothing. Declare "
+            "`decision_authority: human-official` on a record a human official actually "
+            "decided, or leave it as it is and expect the criterion to stay unresolved."
+        )
     return "\n".join(rows)
 
 

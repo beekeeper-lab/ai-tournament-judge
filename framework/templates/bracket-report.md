@@ -1,7 +1,7 @@
 ---
 event_id: EVENT-ID
 policy: bracket-assignment@1.0.0
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 persona: build-bracket@VERSION
 framework_commit: FRAMEWORK-COMMIT
 roster_version: 1

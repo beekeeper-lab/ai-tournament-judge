@@ -15,7 +15,8 @@ import unittest
 from pathlib import Path
 
 from _support import ROOT  # noqa: F401
-from atj import demo, event as event_module, frontmatter, render, reports, scoring
+from atj import (canon, demo, event as event_module, frontmatter, render, reports,
+                 scoring, versions)
 from atj.cli import main as cli_main
 from atj.errors import AtjError
 
@@ -237,11 +238,13 @@ class PublicationGateTakesADirectory(unittest.TestCase):
 
         Nothing stored outside a declared directory can be cleared for release.
         A directory scan that quietly skipped an unrecognised directory would
-        remove the only control standing over `matchup-passes/`.
+        remove the only control standing over an invented one. `matchup-passes/`
+        was the live example until D22 declared it; the property is about any
+        directory the framework does not know.
         """
         temporary, directory = sandbox(SAMPLE)
         try:
-            stray = directory / "matchup-passes"
+            stray = directory / "working-notes"
             stray.mkdir()
             shutil.copy(directory / "matchups" / "final.md", stray / "pass-a-first.md")
             code, output = run_cli("validate", "publication", str(directory))
@@ -385,8 +388,8 @@ class AuditFindingsScopeTheGate(unittest.TestCase):
             "event_id": demo.EVENT_ID,
             "audit_scope": "initial-judging stage",
             "audit_id": "judging",
-            "rubric": "submission-evaluation@1.0.0",
-            "persona": "judging-auditor@1.0.0",
+            "rubric": canon.load(ROOT).reference,
+            "persona": versions.load_personas(ROOT)["judging-auditor"].reference,
             "framework_commit": "uncommitted",
             "started_at": "2026-05-18T09:00:00Z",
             "completed_at": "2026-05-18T10:00:00Z",
@@ -621,8 +624,8 @@ class ApprovalStateCanBeWritten(unittest.TestCase):
                 "audit_id": "bracket-fresh",
                 "commit": None,
                 "evidence_package_id": None,
-                "rubric": "submission-evaluation@1.0.0",
-                "persona": "judging-auditor@1.0.0",
+                "rubric": canon.load(ROOT).reference,
+                "persona": versions.load_personas(ROOT)["judging-auditor"].reference,
                 "framework_commit": "uncommitted",
                 "model_requested": "claude-opus-5",
                 "model_used": "claude-opus-5",
@@ -737,14 +740,20 @@ class UnroutedTemplatesAreRouted(unittest.TestCase):
                 self.assertIn(kind, publication_module.DIRECTORY_VISIBILITY)
 
     def test_the_new_directories_are_optional(self):
-        """Neither completed event may become invalid for lacking a directory."""
+        """Neither completed event may become invalid for lacking a directory.
+
+        live-trial-2026 does hold `matchup-passes/`, which D22 later declared as
+        the home for a single order-balanced pass. The property under test is that
+        an optional directory is never required, not that no event has one.
+        """
         for name in ("live-trial-2026", demo.EVENT_ID):
             with self.subTest(event=name):
                 directory = ROOT / "events" / name
-                for optional in event_module.OPTIONAL_EVENT_SUBDIRS:
-                    self.assertFalse((directory / optional).exists())
                 loaded = event_module.load(directory, root=ROOT)
                 self.assertEqual(event_module.validate_configuration(loaded), [])
+        for optional in event_module.OPTIONAL_EVENT_SUBDIRS:
+            with self.subTest(optional=optional):
+                self.assertNotIn(optional, event_module.EVENT_SUBDIRS)
 
     def test_a_new_event_gets_them(self):
         temporary = Path(tempfile.mkdtemp())
@@ -812,8 +821,8 @@ class UnroutedTemplatesAreRouted(unittest.TestCase):
             metadata.update({
                 "event_id": demo.EVENT_ID, "commit": None,
                 "evidence_package_id": None,
-                "rubric": "submission-evaluation@1.0.0",
-                "persona": "judging-auditor@1.0.0",
+                "rubric": canon.load(ROOT).reference,
+                "persona": versions.load_personas(ROOT)["judging-auditor"].reference,
                 "framework_commit": "uncommitted",
                 "started_at": "2026-05-18T09:00:00Z",
                 "completed_at": "2026-05-18T09:30:00Z",

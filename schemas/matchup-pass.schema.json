@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-tournament-judge.local/schemas/matchup-pass.schema.json",
+  "title": "One order-balanced head-to-head pass",
+  "description": "A single judge's comparison in one presentation order, written without sight of the other order. Exactly one pass block carries comparisons; the other is empty, and that emptiness is the evidence of independence. The resolved result is a separate artifact that `atj matchup` produces from both passes.",
+  "type": "object",
+  "required": ["event_id", "match_id", "round_id", "team_a", "team_b", "rubric",
+               "framework_commit", "presentation_order", "passes", "close_call_band",
+               "visibility", "approval_state", "validation_state"],
+  "properties": {
+    "event_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "match_id": {"$ref": "common.schema.json#/$defs/match_id"},
+    "round_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "team_a": {"$ref": "common.schema.json#/$defs/slug"},
+    "team_b": {"$ref": "common.schema.json#/$defs/slug"},
+    "rubric": {"$ref": "common.schema.json#/$defs/reference"},
+    "framework_commit": {"$ref": "common.schema.json#/$defs/framework_commit"},
+    "close_call_band": {"type": "number", "minimum": 0},
+    "presentation_order": {"enum": ["a-first", "b-first"]},
+    "passes": {
+      "type": "object",
+      "required": ["a_first", "b_first"],
+      "properties": {
+        "a_first": {"$ref": "#/$defs/pass"},
+        "b_first": {"$ref": "#/$defs/pass"}
+      }
+    },
+    "combined_margin": {"type": "null"},
+    "winner": {"type": "null"},
+    "order_disagreement": {"type": "boolean"},
+    "outcome": {"oneOf": [{"enum": ["confirmed", "adjudication-required", "pending"]},
+                          {"type": "null"}]},
+    "adjudication_id": {"oneOf": [{"$ref": "common.schema.json#/$defs/adjudication_id"},
+                                  {"type": "null"}]},
+    "model": {"$ref": "common.schema.json#/$defs/model_record"},
+    "visibility": {"const": "private"},
+    "approval_state": {"$ref": "common.schema.json#/$defs/approval_state"},
+    "validation_state": {"$ref": "common.schema.json#/$defs/validation_state"}
+  },
+  "allOf": [
+    {
+      "if": {"required": ["presentation_order"],
+             "properties": {"presentation_order": {"const": "a-first"}}},
+      "then": {"properties": {"passes": {"properties": {
+        "a_first": {"$ref": "#/$defs/judged"},
+        "b_first": {"$ref": "#/$defs/unseen"}
+      }}}}
+    },
+    {
+      "if": {"required": ["presentation_order"],
+             "properties": {"presentation_order": {"const": "b-first"}}},
+      "then": {"properties": {"passes": {"properties": {
+        "b_first": {"$ref": "#/$defs/judged"},
+        "a_first": {"$ref": "#/$defs/unseen"}
+      }}}}
+    }
+  ],
+  "$defs": {
+    "pass": {
+      "type": "object",
+      "required": ["presented_first", "comparisons"],
+      "properties": {
+        "presented_first": {"$ref": "common.schema.json#/$defs/slug"},
+        "comparisons": {
+          "type": "object",
+          "propertyNames": {"$ref": "common.schema.json#/$defs/slug"},
+          "additionalProperties": {"type": "integer", "minimum": -2, "maximum": 2}
+        },
+        "evidence": {
+          "type": "object",
+          "propertyNames": {"$ref": "common.schema.json#/$defs/slug"},
+          "additionalProperties": {"type": "string"}
+        }
+      }
+    },
+    "judged": {
+      "description": "The order this judge actually compared in.",
+      "properties": {"comparisons": {"minProperties": 1}}
+    },
+    "unseen": {
+      "description": "The order this judge must not have seen. An entry here would mean one judge produced both passes, which defeats order balancing.",
+      "properties": {"comparisons": {"maxProperties": 0}}
+    }
+  },
+  "additionalProperties": true
+}

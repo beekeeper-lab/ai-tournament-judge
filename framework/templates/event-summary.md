@@ -1,6 +1,6 @@
 ---
 event_id: EVENT-ID
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 framework_commit: FRAMEWORK-COMMIT
 source_artifacts: []
 scores_published: false
