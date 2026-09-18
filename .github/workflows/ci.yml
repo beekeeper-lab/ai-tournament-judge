@@ -78,6 +78,25 @@ jobs:
       - name: No unresolved placeholders
         run: python tools/check_placeholders.py
 
+      # D31: `pip install dist/*.whl` into a clean environment produced
+      # `atj unknown` and a release-check that could not find its own rubric,
+      # because nothing in the build staged `atj/data/`. The release checklist
+      # said to run the staging tool; a checklist is not a build step. This is
+      # the step, and it fails the build rather than the release.
+      - name: The wheel installs and runs outside the checkout
+        run: |
+          python -m pip install --upgrade build
+          rm -rf dist
+          python -m build --outdir dist
+          python -m venv /tmp/wheel-env
+          /tmp/wheel-env/bin/pip install --quiet dist/*.whl
+          cd /tmp
+          /tmp/wheel-env/bin/atj --version
+          test "$(/tmp/wheel-env/bin/atj --version)" = "atj $(cat "$GITHUB_WORKSPACE/VERSION")"
+          /tmp/wheel-env/bin/atj release-check
+          /tmp/wheel-env/bin/atj rubric
+          /tmp/wheel-env/bin/atj schemas
+
       - name: Ceremony output regenerates from approved artifacts only
         run: |
           python -m atj ceremony events/sample-mock-2026 --output /tmp/ceremony --no-dossiers

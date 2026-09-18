@@ -139,11 +139,22 @@ These are open, and stated rather than closed:
    code could be.
 3. **The score gate is pattern-based plus a known-totals check.** A total
    expressed in a form neither covers, for an event with no finalized summaries
-   to compare against, could pass.
+   to compare against, could pass. *Narrowed on `fix/score-gate`:* the patterns
+   now cover comma decimals, "one hundred" spelled out, and a score word within
+   sixteen characters of a number in either order; and when no total has been
+   finalized -- the case the known-totals check cannot cover -- any number shaped
+   like a total in a public artifact is a major finding, because no legitimate
+   total exists to be describing. A total written in prose with no score word
+   anywhere near it and no finalized total to match is still possible.
 4. **Execution has never run against a live container runtime.** Podman is absent
    and the Docker daemon does not respond on the release host. The sandbox
    builder and its refusal path are unit-tested; the successful path is not
-   exercised end to end.
+   exercised end to end. *No longer true, and kept as written because it was true
+   when audited:* `live-trial-2026` executed both submissions under rootless
+   podman 6.1.0 and committed 27 run records, every one with `--network none`, a
+   read-only mount, `--cap-drop ALL`, `--user 65534:65534` and a pids/memory/cpu
+   cap. The successful path, the timeout path and the refusal path have all now
+   run against a live runtime on real submissions.
 5. **A network allowlist needs an egress proxy this repository does not provide.**
    Configuring one without a proxy is refused, which is correct and means the
    allowlist path is untested end to end.

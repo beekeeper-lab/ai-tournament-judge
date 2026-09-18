@@ -5,7 +5,128 @@ policies carry their own independent versions; see `framework/rubrics/`.
 
 ## Unreleased
 
+Nothing yet.
+
+## 0.3.0-beta — 2026-09-18
+
+The release that ran a real event. `live-trial-2026` took two real applications
+through intake, containerized execution, a four-persona panel, consolidation,
+adjudication, a head-to-head and two dossiers, to `complete`, under nine audited
+stage gates. The subject under test was the framework, and it found **31
+defects** -- the last two found not by reading the code but by running the
+documentation: `atj event validate` on a completed event, and step 7 of the
+release checklist. All 31 are fixed; `docs/framework-fix-plan.md` records each
+one with what was verified rather than what was intended.
+
+Read this before running an event: a green `atj validate reports` means an
+artifact is well-formed, not that it is true. On the live event it returned zero
+findings at every stage on manifests containing nine misdirected citations, a
+scan credited to an observation that never examined the code in question, and a
+fabricated version number. The LLM audit caught all of them and was the only
+thing that did. `framework/rubrics/README.md` now says so in the framework's own
+voice.
+
 ### Added
+
+- **Version supersession** (D28), the keystone. Nothing recorded a retired
+  version, so any bump turned every artifact of every completed event into a
+  blocking mismatch whose only in-event repair was to rewrite a frozen record.
+  `framework/personas.md` gained an append-only `## Superseded versions` table;
+  `framework/rubrics/archive/` holds retired contract versions, loaded by
+  `canon.load_reference()`; `atj score` reads a panel's rubric from the panel, so
+  a completed event is recomputed under the contract it was judged under; a
+  superseded pin validates as an advisory, and a *template* pinning one fails
+  `release-check`.
+- `atj event overrides`, which lists every stage gate a human bypassed with
+  `--force-reason`, exits non-zero while one is unreviewed, and records with
+  `--review` that a person read it — never that it was justified. Six controls in
+  this framework end in a human, and this is the one that could not be reviewed
+  at all.
+- `atj render consolidated`, `atj render judgment` and `atj validate publication`
+  over a whole directory — three commands the templates and `CLAUDE.md` named
+  before they existed (D3, D18, D24).
+- A `matchup-pass` artifact kind (D22): schema, template, and a declared private
+  `matchup-passes/` directory. A single order-balanced pass must carry exactly one
+  populated block, because the other one's emptiness is the evidence of
+  independence. The live event had parked both pass reports in an undeclared
+  directory, where no check reached the only written record of the comparative
+  evidence.
+- Bidirectional citation checking (D4/T3.1). The evidence manifest's observation
+  table declares which requirements each observation supports, written
+  independently of the requirements table, and `atj validate reports` asserts the
+  two agree. A requirement citing an observation that does not claim to support it
+  is blocking.
+- An accepted `NE` (D11). `score_override.resolved_score: NE` records that an
+  official reviewed the criterion and the `NE` stands. The panel still cannot
+  finalize, because the rubric forbids it — but it is unfinalized by decision, and
+  `atj score` stops demanding the adjudication it already has.
+- `decision_authority` on an adjudication (D13). `human-official` or
+  `agent-substituted`; only the first may move an official total, a record that
+  declares nothing is treated as the second, and the withheld resolution is
+  disclosed rather than swallowed.
+- `amendments` on an adjudication (D14): append-only, must read forward from the
+  record's own `completed_at`, and an approved record's last amendment must name
+  its author.
+- `writes` in the component registry (D1/T2.2), declaring who persists each
+  component's artifact, with `release-check` failing in both directions.
+- Four release-audit advisories closed: identical score vectors across a panel are
+  now examined, `sandbox preflight` says what a rootful or unknown privilege mode
+  costs, `bracket verify --structure-only` must be asked for by name, and the
+  score gate covers comma decimals, spelled-out scales and score words near
+  numbers — plus any total-shaped number in a public artifact when no total has
+  been finalized.
+- `atj event validate` compares `status.md`'s prose to the ledger above it (D30).
+  The live event finished with its final audit recorded as passed and its own body
+  still showing it unchecked.
+- Ledger digests for every stage (D21). The bracket, tournament, dossier and
+  final-audit stages could not be recorded as units at all, and the sample event
+  recorded three kinds of unit with digests nothing could re-derive — which drift
+  detection silently skips.
+- `release-check` gained `version archive`, `write contracts`, `packaging` and
+  `template schemas`; the last one found two further defects the moment it ran.
+- An in-tree build backend that stages `atj/data/` before any wheel, sdist or
+  editable install, a `MANIFEST.in` that lets an sdist build its own wheel, and a
+  CI step that installs the wheel into a fresh virtualenv and runs it from
+  `/tmp` (D31). The staging tool existed and said to run it in the build step;
+  there was no build step that did, so a released wheel reported `atj unknown`
+  and could not find its own rubric.
+
+### Changed
+
+- `submission-evaluation` 1.0.0 -> **1.1.0**. The `agentic` central question has
+  a subject whether or not the submission contains AI, and a new section says what
+  to score when it does not: a correct, documented, verified decision not to use
+  AI meets primary expectations, never reaches the anchors that require a
+  demonstrated system, and is never scored at the bottom anchors, which describe
+  failure (D12). `confidence` is defined — it describes the evidence, and for an
+  `NE` it describes how firmly the evidence establishes that no observation was
+  possible (D8). `head-to-head` and `panel-consolidation` follow to 1.1.0, since
+  both declare `source_rubric`.
+- All seven agent personas 1.0.0 -> **1.1.0**. Each definition now names the
+  artifact it produces, the template it fills, and who persists it.
+  `judging-auditor` holds `Write`; the six components that read untrusted
+  submission content deliberately do not, and say why.
+- `model.verified` has a threshold (D9): true only when the model identity came
+  from outside the model's own statement. A self-report is a team claim one level
+  removed.
+- The stage gate reads an audit's scope and its unresolved blocking findings, not
+  its verdict alone (D16). A finding against a framework document used to block a
+  stage exactly as hard as a wrong score.
+- `.claude/hooks/pre-advance.sh` reads a command rather than a string (D6, D23).
+  It strips heredocs, requires a runner adjacent to a submission path, requires an
+  advance to start a command rather than sit inside an argument, and compares
+  positions in a chain so a command that records a gate before advancing defers to
+  `atj event advance`. 19 behavioural cases, both directions.
+- `atj event unit record` keeps the real `completed_at` (D15), the bye check gates
+  on byes rather than on a policy name (D20), whole-tree scans ask git rather than
+  the filesystem (D17), and `atj score`'s console output prints
+  `adjudication_required` instead of contradicting the JSON beside it (D7).
+- `atj event approve` writes `approval_state`, which six sites read and nothing
+  could set (D25), and audit reports have a schema at last — the artifact kind
+  that authorizes every stage transition was the least validated in the framework
+  (D26).
+
+### Added earlier in this cycle, before the live trial
 
 - `atj intake`, the front door. It materializes a submission from a git URL, a
   local repository, a directory or a `.zip` into `workspaces/<event>/<team-id>/`,
@@ -22,11 +143,27 @@ policies carry their own independent versions; see `framework/rubrics/`.
   into place, so a refused or failed ingest leaves no partial tree and does not
   destroy the checkout already there.
 
-### Changed
+#### Changed
 
 - `prepare-submission` 1.0.0 -> 1.1.0: it now runs `atj intake` rather than
   assuming a checkout exists, and completes the narrative sections of the record
   the tool leaves open.
+
+### Known limitations
+
+- A network allowlist still needs an egress proxy this repository does not
+  provide. Configuring one without a proxy is refused, and that path is untested
+  end to end.
+- The judge-independence detector is a similarity heuristic plus a score-vector
+  check. Systematic paraphrase by a contaminated judge is not caught.
+- Hooks are guard rails, not a security boundary. `atj validate`, the publication
+  gate and the audit gates are.
+- AI judgment is not deterministic, and nothing here claims otherwise. The sample
+  event's judge scores are scripted so CI can reproduce the pipeline without a
+  model call, and every artifact in it says so.
+- No event has yet decided anything real. `docs/final-audit.md` lists what a human
+  must do first.
+
 
 ## 0.2.0-beta — 2026-09-16
 

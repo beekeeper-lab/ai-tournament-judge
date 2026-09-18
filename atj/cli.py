@@ -1298,6 +1298,14 @@ def cmd_release_check(args) -> int:
     failures += [f"version-skew: {p}" for p in problems]
     print(f"version-skew      {'PASS' if not problems else 'FAIL'}")
 
+    problems = check_packaging(root)
+    failures += [f"packaging: {p}" for p in problems]
+    if (root / "pyproject.toml").is_file():
+        print(f"packaging         {'PASS' if not problems else 'FAIL'}")
+    else:
+        print(f"packaging         {'PASS' if not problems else 'FAIL'} "
+              f"(version only; an installed wheel carries no build wiring)")
+
     problems = check_version_archive(root)
     failures += [f"archive: {p}" for p in problems]
     print(f"version archive   {'PASS' if not problems else 'FAIL'} "
@@ -1325,6 +1333,58 @@ def cmd_release_check(args) -> int:
         return FAILURE
     print("\nRelease check: PASS")
     return OK
+
+
+def check_packaging(root: Path) -> list[str]:
+    """`VERSION`, `pyproject.toml` and the build backend must agree.
+
+    D31: `pip install dist/*.whl` into a clean environment produced
+    `atj unknown` and a `release-check` that could not find its own rubric,
+    because the wheel shipped no `atj/data/`. `tools/stage_package_data.py`
+    existed to stage it and its docstring said to run it in the build step; there
+    was no build step that did, only a line in the release checklist telling a
+    person to remember. The build backend is now that step, and this asserts the
+    wiring so a later edit cannot quietly unhook it.
+    """
+    problems: list[str] = []
+    version = (root / "VERSION").read_text(encoding="utf-8").strip()
+    if VERSION != version:
+        problems.append(f"atj.VERSION is {VERSION!r} and VERSION reads {version!r}")
+    if not (root / "pyproject.toml").is_file():
+        # An installed wheel is the *result* of this check, not a subject of it:
+        # it ships the framework data and none of the build wiring. Reading
+        # pyproject.toml here made `atj release-check` fail inside the very
+        # environment the check exists to protect.
+        return problems
+    pyproject = (root / "pyproject.toml").read_text(encoding="utf-8")
+
+    # PEP 440 form of the same version: 0.3.0-beta -> 0.3.0b0.
+    expected = version
+    for suffix, replacement in (("-beta", "b0"), ("-alpha", "a0"), ("-rc", "rc0")):
+        if version.endswith(suffix):
+            expected = version[: -len(suffix)] + replacement
+            break
+    if f'version = "{expected}"' not in pyproject:
+        problems.append(
+            f"pyproject.toml does not declare version {expected!r}, the PEP 440 form of "
+            f"VERSION ({version!r})"
+        )
+    if 'build-backend = "build_backend"' not in pyproject:
+        problems.append(
+            "pyproject.toml does not use the in-tree build backend, so a wheel can be "
+            "built without staging atj/data/ and will install a command that cannot start"
+        )
+    if not (root / "build_backend.py").is_file():
+        problems.append("build_backend.py is missing, and pyproject.toml names it")
+    manifest = root / "MANIFEST.in"
+    if not manifest.is_file():
+        problems.append("MANIFEST.in is missing; an sdist could not build its own wheel")
+    else:
+        listed = manifest.read_text(encoding="utf-8")
+        for needed in ("build_backend.py", "tools/stage_package_data.py", "framework"):
+            if needed not in listed:
+                problems.append(f"MANIFEST.in does not ship {needed}, which the wheel build needs")
+    return problems
 
 
 def check_version_archive(root: Path) -> list[str]:

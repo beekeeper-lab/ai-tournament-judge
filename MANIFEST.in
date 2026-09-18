@@ -1,0 +1,15 @@
+# An sdist has to be able to build a wheel from itself, and this project's wheel
+# is built by an in-tree backend that stages the framework data into atj/data/.
+# So the sdist ships the backend, the staging tool, and the canonical sources it
+# copies from. Without these, `python -m build` fails at the wheel step with
+# "Backend 'build_backend' is not available", which is how they got here.
+include build_backend.py
+include VERSION
+include tools/stage_package_data.py
+recursive-include framework *
+recursive-include schemas *.json
+recursive-include events/_template *
+# The staged copy, so a wheel built from an sdist has the data even if the
+# staging step finds nothing to copy.
+recursive-include atj/data *
+exclude atj/data/**/__pycache__/*

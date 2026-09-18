@@ -49,6 +49,8 @@ version.
 | D27 | `framework/templates/calibration-report.md` and `framework/templates/manual-override-record.md` carry the same unresolvable `persona` defect as D10, and neither artifact has a kind the validator routes at all | done |
 | D28 | Nothing records a superseded version, so any version bump turns every artifact of every completed event into a blocking mismatch whose only in-event repair is to rewrite a frozen record. Found while landing D1 | done |
 | D29 | `tools/check_placeholders.py` flags the fix plan for quoting the very placeholder its defects are about, so CI's `No unresolved placeholders` step has been failing on `main`. Found while verifying tier 3 | done |
+| D30 | `status.md` carries the ledger in its front matter and a summary in its body, and nothing compares the two. live-trial-2026 finished with `final-audit-passed: passed` recorded and its own body still showing it unchecked | done |
+| D31 | `pip install dist/*.whl` into a clean environment installs a command that cannot start: `atj unknown`, and a `release-check` that cannot find its own rubric. `tools/stage_package_data.py` exists to stage `atj/data/` and nothing in the build runs it | done |
 
 D3 fixed in `3a798ad` (command added, reproduces the committed sample byte for
 byte) and `4ac09ba` (refuses to rewrite an approved judgment without `--force`,
@@ -1124,3 +1126,57 @@ unresolved placeholder in its prose. Instead the three defect logs are held to a
 narrower rule: a placeholder may appear inside backticks, where it is a citation,
 and nowhere else. A test adds an unquoted one to the fix plan and asserts the
 checker still fails.
+
+## D30 and D31 — the two found by verifying, not by reading
+
+Both were found by doing the thing the documentation said to do.
+
+**D30** came from running `atj event validate` after writing the check for it.
+`status.md` is the one file an operator reads to answer "where is this event",
+and its body is prose about the ledger in its own front matter. Nothing compared
+them. live-trial-2026 finished with `final-audit-passed: passed`,
+`current_stage: complete` and two approved dossiers recorded, while its body
+still showed the final audit unchecked, the event not marked complete, and both
+dossiers "pending". D19's shape, one file over: an artifact asserting something
+false in its own voice.
+
+`atj event validate` now compares the body's checkboxes against the gates, with
+the labels read from `events/_template/status.md` so they keep one home. The live
+event's body was corrected to match its ledger and the correction is in its
+activity log. No ledger value, gate, score or artifact changed.
+
+**D31** came from step 7 of `docs/release-checklist.md` — "pip install
+dist/*.whl into a clean environment, then atj release-check":
+
+    $ ./env/bin/atj --version
+    atj unknown
+    $ ./env/bin/atj release-check
+    canon: framework root not found from /tmp ... (no framework/rubrics/submission-evaluation.md)
+
+`tools/stage_package_data.py` exists precisely to copy the canonical files into
+`atj/data/`, and its own docstring says "Run this in the build step, not by
+hand." There was no build step that did. The staging was a line in a checklist,
+which is the same defect class as D3 and D18: a document describing a mechanism
+nothing implements.
+
+- `build_backend.py` is now an in-tree PEP 517 backend that stages the data
+  before any wheel, sdist or editable install. It refuses to build when neither
+  the source trees nor a staged copy is present, because a wheel with no data is
+  the thing it exists to prevent.
+- `MANIFEST.in` ships the backend, the staging tool and the canonical sources, so
+  an sdist can build its own wheel. Without it, `python -m build` failed at the
+  wheel step with `Backend 'build_backend' is not available`.
+- `release-check` gained a `packaging` check: `VERSION`, its PEP 440 form in
+  `pyproject.toml`, `atj.VERSION`, the declared backend and the manifest contents
+  must all agree.
+- CI builds the wheel, installs it into a fresh virtualenv, and runs
+  `atj --version`, `atj release-check`, `atj rubric` and `atj schemas` from `/tmp`.
+  The release checklist's step 7 is now a build step that fails, rather than a
+  line someone reads.
+
+Verified after the fix, from outside the checkout:
+
+    $ /tmp/.../env/bin/atj --version
+    atj 0.3.0-beta
+    $ /tmp/.../env/bin/atj release-check
+    Release check: PASS
