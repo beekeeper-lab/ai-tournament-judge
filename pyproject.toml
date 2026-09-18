@@ -1,10 +1,14 @@
 [build-system]
 requires = ["setuptools>=68"]
-build-backend = "setuptools.build_meta"
+# An in-tree backend that stages atj/data/ first. A wheel without that data
+# installs a command that cannot start, and the staging step used to be a line
+# in the release checklist rather than part of the build.
+build-backend = "build_backend"
+backend-path = ["."]
 
 [project]
 name = "ai-tournament-judge"
-version = "0.2.0b0"
+version = "0.3.0b0"
 description = "Deterministic tooling for an AI-judged software tournament"
 readme = "README.md"
 requires-python = ">=3.11"

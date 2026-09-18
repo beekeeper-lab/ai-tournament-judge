@@ -295,6 +295,90 @@ class ExecutionHasNowRunAgainstALiveRuntime(unittest.TestCase):
                 self.assertIn("--cap-drop ALL", record["command"])
 
 
+class TheWheelCarriesItsOwnFramework(unittest.TestCase):
+    """D31: the wheel installed a command that could not start.
+
+        $ atj --version
+        atj unknown
+        $ atj release-check
+        canon: framework root not found ... (no framework/rubrics/...)
+
+    `tools/stage_package_data.py` existed to copy the canonical files into
+    `atj/data/`, and its docstring said to run it in the build step. There was no
+    build step that did -- only a line in `docs/release-checklist.md` telling a
+    person to remember. These tests cover the wiring; CI builds the wheel and
+    runs it outside the checkout, which is the only way to cover the rest.
+    """
+
+    def test_release_check_asserts_the_wiring(self):
+        from atj.cli import check_packaging
+
+        self.assertEqual(check_packaging(ROOT), [])
+
+    def test_a_pyproject_that_drops_the_backend_fails(self):
+        from atj.cli import check_packaging
+
+        holder = Path(tempfile.mkdtemp())
+        try:
+            for name in ("VERSION", "pyproject.toml", "MANIFEST.in", "build_backend.py"):
+                shutil.copy(ROOT / name, holder / name)
+            (holder / "pyproject.toml").write_text(
+                (holder / "pyproject.toml").read_text(encoding="utf-8").replace(
+                    'build-backend = "build_backend"', 'build-backend = "setuptools.build_meta"'
+                ),
+                encoding="utf-8",
+            )
+            problems = check_packaging(holder)
+            self.assertTrue(any("in-tree build backend" in p for p in problems), problems)
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    def test_a_version_pyproject_disagreement_fails(self):
+        from atj.cli import check_packaging
+
+        holder = Path(tempfile.mkdtemp())
+        try:
+            for name in ("VERSION", "pyproject.toml", "MANIFEST.in", "build_backend.py"):
+                shutil.copy(ROOT / name, holder / name)
+            (holder / "VERSION").write_text("9.9.9-beta\n", encoding="utf-8")
+            problems = check_packaging(holder)
+            self.assertTrue(any("PEP 440" in p for p in problems), problems)
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    def test_the_backend_refuses_to_build_without_data(self):
+        """Neither a source tree nor a staged copy means no wheel, not a bad one."""
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location(
+            "atj_build_backend_probe", ROOT / "build_backend.py"
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        holder = Path(tempfile.mkdtemp())
+        try:
+            module.ROOT = holder
+            with self.assertRaises(SystemExit) as raised:
+                module._stage()
+            self.assertIn("cannot start", str(raised.exception))
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    def test_the_manifest_ships_what_a_wheel_build_needs(self):
+        listed = (ROOT / "MANIFEST.in").read_text(encoding="utf-8")
+        for needed in (
+            "build_backend.py", "tools/stage_package_data.py", "framework", "schemas",
+            "events/_template", "VERSION",
+        ):
+            with self.subTest(needed):
+                self.assertIn(needed, listed)
+
+    def test_ci_verifies_the_wheel_outside_the_checkout(self):
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        self.assertIn("The wheel installs and runs outside the checkout", workflow)
+        self.assertIn("atj release-check", workflow)
+
+
 class TheStatusBodyAgreesWithItsLedger(unittest.TestCase):
     """D30: status.md's prose could contradict the front matter above it.
 
