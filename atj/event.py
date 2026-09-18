@@ -51,7 +51,10 @@ EVENT_SUBDIRS = (
 # that should be unchecked. Making them *required* would instead have made both
 # completed events retroactively invalid for lacking an empty directory, which is
 # the trade D10 and D26 both refused.
-OPTIONAL_EVENT_SUBDIRS = ("calibrations", "overrides")
+# D22 adds `matchup-passes` on the same terms: an event with no tournament round
+# never produces one, and requiring the directory would invalidate a completed
+# event for lacking something it had no occasion to write.
+OPTIONAL_EVENT_SUBDIRS = ("calibrations", "overrides", "matchup-passes")
 
 ALL_EVENT_SUBDIRS = EVENT_SUBDIRS + OPTIONAL_EVENT_SUBDIRS
 

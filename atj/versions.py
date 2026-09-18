@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from . import canon, ids
-from .errors import ValidationError, VersionError
+from .errors import AtjError, ValidationError, VersionError
 from .frontmatter import read
 
 PERSONA_REGISTRY = "framework/personas.md"
@@ -24,9 +24,25 @@ DIGEST_LENGTH = 16
 PENDING = "PENDING"
 
 _PERSONA_ROW = re.compile(
-    r"^\|\s*([a-z][a-z0-9-]*)\s*\|\s*(\d+\.\d+\.\d+)\s*\|\s*([^|]*?)\s*\|\s*([0-9a-f]{16}|PENDING)\s*\|\s*$",
+    r"^\|\s*([a-z][a-z0-9-]*)\s*\|\s*(\d+\.\d+\.\d+)\s*\|\s*([^|]*?)\s*\|\s*([^|]*?)\s*\|"
+    r"\s*([0-9a-f]{16}|PENDING)\s*\|\s*$",
     re.MULTILINE,
 )
+# | judge-backend | 1.0.0 | 2026-09-18 | 1.1.0 | 7571907d5863c02d |
+_SUPERSEDED_ROW = re.compile(
+    r"^\|\s*([a-z][a-z0-9-]*)\s*\|\s*(\d+\.\d+\.\d+)\s*\|\s*(\d{4}-\d{2}-\d{2})\s*\|"
+    r"\s*(\d+\.\d+\.\d+)\s*\|\s*([0-9a-f]{16})\s*\|\s*$",
+    re.MULTILINE,
+)
+# A component that must write its own artifact declares where. `-` means it
+# writes nothing and must hold no write capability.
+WRITES_NOTHING = "-"
+# The registry holds two tables. The current one is authoritative for what a
+# component is now; the history below it is authoritative for what it was. They
+# have the same column count, so a reader that does not split them first reads a
+# retired row as the current one -- which is how the first attempt at this table
+# reported `judge-backend@1.0.0` as current immediately after retiring it.
+SUPERSEDED_HEADING = "## Superseded versions"
 
 
 @dataclass(frozen=True)
@@ -34,6 +50,27 @@ class Persona:
     agent_id: str
     version: str
     role: str
+    writes: str
+    content_digest: str
+
+    @property
+    def reference(self) -> str:
+        return f"{self.agent_id}@{self.version}"
+
+    @property
+    def must_write(self) -> bool:
+        """Whether this component's own skill requires it to produce a file."""
+        return self.writes not in ("", WRITES_NOTHING)
+
+
+@dataclass(frozen=True)
+class SupersededPersona:
+    """A retired persona version. No new artifact may pin it; old ones stay valid."""
+
+    agent_id: str
+    version: str
+    retired_on: str
+    superseded_by: str
     content_digest: str
 
     @property
@@ -45,12 +82,43 @@ def load_personas(root: Path | None = None) -> dict[str, Persona]:
     base = root or canon.repository_root()
     path = base / PERSONA_REGISTRY
     _, body = read(path)
+    body = current_table(body)
     personas: dict[str, Persona] = {}
-    for agent_id, version, role, digest in _PERSONA_ROW.findall(body):
-        personas[agent_id] = Persona(agent_id, version, role, digest)
+    for agent_id, version, role, writes, digest in _PERSONA_ROW.findall(body):
+        personas[agent_id] = Persona(agent_id, version, role, writes, digest)
     if not personas:
         raise ValidationError("persona registry contains no rows", artifact=str(path))
     return personas
+
+
+def current_table(body: str) -> str:
+    """Just the current-version table: everything above the history heading."""
+    return body.split(SUPERSEDED_HEADING, 1)[0]
+
+
+def superseded_table(body: str) -> str:
+    parts = body.split(SUPERSEDED_HEADING, 1)
+    return parts[1] if len(parts) == 2 else ""
+
+
+def load_superseded(root: Path | None = None) -> dict[tuple[str, str], SupersededPersona]:
+    """Retired persona versions, keyed by ``(agent_id, version)``.
+
+    Without this table a persona bump invalidates every artifact a completed event
+    produced under the old version, and the only repair inside the event is to
+    rewrite a frozen record. Recording the retirement keeps the old artifacts
+    valid and still stops new work from pinning a version that no longer exists.
+    """
+    base = root or canon.repository_root()
+    _, body = read(base / PERSONA_REGISTRY)
+    retired: dict[tuple[str, str], SupersededPersona] = {}
+    for agent_id, version, retired_on, replacement, digest in _SUPERSEDED_ROW.findall(
+        superseded_table(body)
+    ):
+        retired[(agent_id, version)] = SupersededPersona(
+            agent_id, version, retired_on, replacement, digest
+        )
+    return retired
 
 
 def component_path(component_id: str, root: Path | None = None) -> Path | None:
@@ -125,19 +193,23 @@ def refresh_personas(root: Path | None = None) -> list[str]:
     base = root or canon.repository_root()
     path = base / PERSONA_REGISTRY
     text = path.read_text(encoding="utf-8")
+    # A retired row records the digest that version carried when it was retired.
+    # Recomputing it from today's file would overwrite the one fact the history
+    # exists to keep.
+    head, marker, history = text.partition(SUPERSEDED_HEADING)
     changed: list[str] = []
 
     def replace(match: re.Match[str]) -> str:
-        agent_id, version, role, old = match.groups()
+        agent_id, version, role, writes, old = match.groups()
         try:
             new = agent_digest(agent_id, base)
         except ValidationError:
             return match.group(0)
         if new != old:
             changed.append(f"{agent_id}: {old} -> {new}")
-        return f"| {agent_id} | {version} | {role} | {new} |"
+        return f"| {agent_id} | {version} | {role} | {writes} | {new} |"
 
-    path.write_text(_PERSONA_ROW.sub(replace, text), encoding="utf-8")
+    path.write_text(_PERSONA_ROW.sub(replace, head) + marker + history, encoding="utf-8")
     return changed
 
 
@@ -202,25 +274,32 @@ def require_versions(
         raise VersionError("artifact does not declare a rubric version", artifact=artifact)
 
     head_to_head = canon.load_head_to_head(base)
+
+    def require_contract(contract, value: str) -> None:
+        """Accept the current version, or one the archive records as superseded."""
+        if value == contract.reference or canon.is_superseded(value, base):
+            return
+        contract.require_reference(value, artifact=artifact)
+
     # A matchup artifact pins the head-to-head rubric in `rubric`; everything
     # else pins the submission rubric there.
     if str(declared).startswith(f"{head_to_head.rubric_id}@"):
-        head_to_head.require_reference(str(declared), artifact=artifact)
+        require_contract(head_to_head, str(declared))
     else:
-        submission.require_reference(str(declared), artifact=artifact)
+        require_contract(submission, str(declared))
 
     for field, kind in VERSIONED_CONTRACTS.items():
         if field == "rubric" or field not in metadata or metadata[field] is None:
             continue
         value = str(metadata[field])
         if kind == "submission":
-            submission.require_reference(value, artifact=artifact)
+            require_contract(submission, value)
         elif kind == "consolidation":
-            canon.load_consolidation_policy(base).require_reference(value, artifact=artifact)
+            require_contract(canon.load_consolidation_policy(base), value)
         elif kind == "head-to-head":
-            head_to_head.require_reference(value, artifact=artifact)
+            require_contract(head_to_head, value)
         elif kind == "bracket":
-            canon.load_bracket_policy(base).require_reference(value, artifact=artifact)
+            require_contract(canon.load_bracket_policy(base), value)
 
     band = metadata.get("close_call_band")
     if band is not None:
@@ -249,9 +328,33 @@ def require_versions(
         known = personas.get(name)
         if known is None:
             raise VersionError(f"unknown persona: {persona!r}", artifact=artifact)
-        if known.version != version:
+        if known.version != version and (name, version) not in load_superseded(base):
             raise VersionError(
                 f"persona mismatch: artifact declares {persona!r}, registry has "
-                f"{known.reference!r}",
+                f"{known.reference!r} and no superseded row records {persona!r}",
                 artifact=artifact,
             )
+
+
+def superseded_pins(metadata: dict, root: Path | None = None) -> list[str]:
+    """Which versioned pins in an artifact name a retired version.
+
+    Accepting a superseded pin silently would make a frozen record look current.
+    The validator reports these as advisories, so a reader of a completed event
+    can see which contracts have moved on since it was judged.
+    """
+    base = root or canon.repository_root()
+    retired: list[str] = []
+    for field in VERSIONED_CONTRACTS:
+        value = metadata.get(field)
+        if value and canon.is_superseded(str(value), base):
+            retired.append(f"{field}: {value}")
+    persona = metadata.get("persona")
+    if persona:
+        try:
+            name, version = ids.split_reference(str(persona))
+        except AtjError:
+            return retired
+        if (name, version) in load_superseded(base):
+            retired.append(f"persona: {persona}")
+    return retired

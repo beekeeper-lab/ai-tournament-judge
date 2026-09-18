@@ -28,6 +28,12 @@ ARTIFACT_KINDS = {
     "judgments": ("judgment", "individual-judgment.md"),
     "summaries": ("consolidated-report", "consolidated-team-report.md"),
     "matchups": ("matchup", "matchup-report.md"),
+    # D22: one judge's single order-balanced pass. `matchups/` holds the resolved
+    # result, whose schema requires both pass blocks populated; a pass report by
+    # design has only one, so it had nowhere to live that any check could reach.
+    # live-trial-2026 parked both pass reports in an undeclared directory to get
+    # the event to validate, and nothing validated them.
+    "matchup-passes": ("matchup-pass", "matchup-pass-report.md"),
     "adjudications": ("adjudication", "adjudication-report.md"),
     "dossiers": ("dossier", "team-dossier.md"),
     "audits": ("audit", "audit-report.md"),
@@ -122,6 +128,17 @@ def validate_artifact(
             versions.require_versions(metadata, root=root, artifact=str(path))
         except AtjError as exc:
             findings.append(_finding("blocking", "version", exc.message, path))
+        # A pin the archive records as retired is valid but no longer current.
+        # Saying so is the difference between a frozen record and a stale one.
+        for retired in versions.superseded_pins(metadata, root):
+            findings.append(
+                _finding(
+                    "advisory", "superseded",
+                    f"pins a superseded contract ({retired}); valid as a historical "
+                    f"record, and not what a new artifact may pin",
+                    path,
+                )
+            )
 
     for placeholder in PLACEHOLDERS:
         if placeholder in body or placeholder in str(metadata):
@@ -178,9 +195,20 @@ def validate_artifact(
 
 
 def _check_judgment_scores(metadata: dict[str, Any], path: Path, root: Path) -> list[Finding]:
-    """Scores must match the canonical rubric exactly, in ids and in range."""
+    """Scores must match the rubric the artifact pins, in ids and in range.
+
+    The artifact's own pinned version, not today's: a completed event judged under
+    a superseded rubric must be checked against the criteria that were in force,
+    or every artifact it produced turns into a phantom criterion mismatch the
+    moment the rubric gains or loses a row.
+    """
     findings: list[Finding] = []
-    rubric = canon.load(root)
+    declared = str(metadata.get("rubric") or "")
+    try:
+        rubric = canon.load_reference(declared, root) if declared else canon.load(root)
+    except AtjError:
+        # The version check above already reported this as blocking.
+        rubric = canon.load(root)
     scores = metadata.get("scores")
     if not isinstance(scores, dict):
         return [_finding("blocking", "scores", "scores must be a mapping", path)]

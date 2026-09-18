@@ -127,7 +127,13 @@ class AdjudicationPersonaTests(unittest.TestCase):
             with self.subTest(path.name):
                 name, version = str(metadata["persona"]).split("@")
                 self.assertIn(name, personas)
-                self.assertEqual(personas[name].version, version)
+                # D28: a frozen artifact may pin a version the registry has since
+                # retired. What it may never pin is a version no row records.
+                retired = versions.load_superseded(ROOT)
+                self.assertTrue(
+                    personas[name].version == version or (name, version) in retired,
+                    f"{name}@{version} is neither current nor recorded as superseded",
+                )
                 self.assertTrue(str(metadata["decided_by"]).strip(),
                                 "the deciding human belongs in decided_by")
 

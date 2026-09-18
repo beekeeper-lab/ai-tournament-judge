@@ -30,6 +30,7 @@ DIRECTORY_VISIBILITY = {
     "judgments": PRIVATE,
     "summaries": PRIVATE,
     "matchups": PRIVATE,
+    "matchup-passes": PRIVATE,
     "audits": PRIVATE,
     "adjudications": PRIVATE,
     "evidence": PRIVATE,

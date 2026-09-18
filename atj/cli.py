@@ -1223,6 +1223,18 @@ def cmd_release_check(args) -> int:
     failures += [f"version-skew: {p}" for p in problems]
     print(f"version-skew      {'PASS' if not problems else 'FAIL'}")
 
+    problems = check_version_archive(root)
+    failures += [f"archive: {p}" for p in problems]
+    print(f"version archive   {'PASS' if not problems else 'FAIL'} "
+          f"({len(canon.superseded_references(root))} superseded)")
+
+    if versions.components_available(root):
+        problems = check_write_contracts(root)
+        failures += [f"write-contract: {p}" for p in problems]
+        print(f"write contracts   {'PASS' if not problems else 'FAIL'}")
+    else:
+        print("write contracts   SKIPPED (no .claude/ components; not a working copy)")
+
     if (root / "events" / "sample-mock-2026").is_dir():
         problems = check_sample_event(root)
         failures += [f"sample-event: {p}" for p in problems]
@@ -1238,6 +1250,95 @@ def cmd_release_check(args) -> int:
         return FAILURE
     print("\nRelease check: PASS")
     return OK
+
+
+def check_version_archive(root: Path) -> list[str]:
+    """The archive of superseded contract versions must stay honest.
+
+    An archive file is the sole source for one retired version. It may not
+    restate the current version -- that would be the second editable copy the
+    single-source rule forbids -- and it must parse as the contract it claims to
+    be, because a completed event's totals are recomputed from it.
+    """
+    problems: list[str] = []
+    try:
+        archived = canon.superseded_references(root)
+    except AtjError as exc:
+        return [exc.message]
+    current = {
+        canon.load(root).reference,
+        canon.load_head_to_head(root).reference,
+        canon.load_bracket_policy(root).reference,
+        canon.load_consolidation_policy(root).reference,
+    }
+    submission_id = canon.load(root).rubric_id
+    for reference, path in sorted(archived.items()):
+        if reference in current:
+            problems.append(
+                f"{path.relative_to(root)}: archives {reference!r}, which is the current "
+                f"version; an archive holds retired versions only"
+            )
+            continue
+        if reference.startswith(f"{submission_id}@"):
+            try:
+                canon.load_reference(reference, root)
+            except AtjError as exc:
+                problems.append(f"{path.relative_to(root)}: {exc.message}")
+    for (agent_id, version), retired in sorted(versions.load_superseded(root).items()):
+        personas = versions.load_personas(root)
+        if agent_id not in personas:
+            problems.append(
+                f"personas.md: superseded row {retired.reference} names a component that "
+                f"is no longer registered"
+            )
+        elif personas[agent_id].version == version:
+            problems.append(
+                f"personas.md: {retired.reference} is listed as superseded and is also the "
+                f"current version"
+            )
+    return problems
+
+
+def check_write_contracts(root: Path) -> list[str]:
+    """A component must hold the tool the artifact it owes requires.
+
+    live-trial-2026 ran four judges whose skill requires each to produce a
+    judgment document and whose definitions granted `Read, Grep, Glob`. Nothing
+    compared the two, so the contract violation surfaced as four agents returning
+    prose the orchestrator had to write out for them. The registry's `writes`
+    column is the declaration; this is the check.
+    """
+    problems: list[str] = []
+    for agent_id, persona in sorted(versions.load_personas(root).items()):
+        path = versions.component_path(agent_id, root)
+        if path is None:
+            continue  # reported by check_personas
+        try:
+            metadata, _ = frontmatter.read(path)
+        except AtjError as exc:
+            problems.append(f"{agent_id}: {exc.message}")
+            continue
+        declared = metadata.get("tools")
+        if declared is None:
+            # Skills run in the orchestrator's own session and declare no tool
+            # surface; there is nothing to compare a contract against.
+            if persona.must_write and path.name != "SKILL.md":
+                problems.append(
+                    f"{agent_id}: owes an artifact in {persona.writes} but declares no tools"
+                )
+            continue
+        tools = {tool.strip() for tool in str(declared).split(",")}
+        if persona.must_write and "Write" not in tools:
+            problems.append(
+                f"{agent_id}: framework/personas.md says it writes {persona.writes} but "
+                f"{path.relative_to(root)} declares tools {sorted(tools)} with no Write"
+            )
+        if not persona.must_write and "Write" in tools:
+            problems.append(
+                f"{agent_id}: holds the Write tool while the registry declares it writes "
+                f"nothing; either give it a path in personas.md or take the tool away"
+            )
+    return problems
 
 
 def check_template_schemas(root: Path) -> list[str]:
@@ -1444,6 +1545,10 @@ def check_no_duplicate_weights(root: Path) -> list[str]:
         rubric_path,
         (root / "tests").resolve(),
         (root / "docs" / "release-readiness-audit.md").resolve(),
+        # The archive holds retired rubric versions. Each is the sole source for
+        # its own version and is never edited, so it is not a second copy of the
+        # current weights even when the numbers happen to match.
+        canon.archive_dir(root).resolve(),
     }
     problems: list[str] = []
     candidates = tracked_files(root)
