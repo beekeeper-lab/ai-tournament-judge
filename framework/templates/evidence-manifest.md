@@ -27,13 +27,24 @@ Record source location, commit verification, preparer, rubric version, and envir
 
 ## Requirements and team claims
 
+Give every row an ID (`R1`, `R2`, …) and cite the observations it rests on as
+`[[evidence:ID]]`. A citation is checked from both ends: each observation below
+must independently claim to support the requirement that cites it.
+
 | ID | Claim or requirement | Source | Evidence status |
 |---|---|---|---|
 
 ## Direct observations
 
-| Evidence ID | Observation | Artifact or source reference | Reproduction | Confidence |
-|---|---|---|---|---|
+`Supports` lists the requirement IDs this observation establishes, or `-` when it
+deliberately supports none. It is not a restatement of the requirements table: the
+two are written independently and `atj validate reports` asserts they agree.
+Evidence audit round 1 of live-trial-2026 found nine requirement rows citing an
+observation that said nothing about them, and validation reported no findings at
+all, because every id resolved. Resolving is all a schema can see.
+
+| Evidence ID | Observation | Supports | Artifact or source reference | Reproduction | Confidence |
+|---|---|---|---|---|---|
 
 ## Tests and execution
 

@@ -771,6 +771,68 @@ def derive_digests(event: Event) -> dict[str, str]:
             digests[f"consolidation:{team_id}"] = unit_digest(
                 package, ids.file_digest(summary, length=16)
             )
+
+        dossier = event.directory / "dossiers" / f"{team_id}.md"
+        if dossier.is_file():
+            # A dossier is derived from the team's own consolidated report and
+            # from the matchups it took part in; both are in its digest, so
+            # re-consolidating or re-judging a matchup makes the dossier stale.
+            parts = [package, ids.file_digest(dossier, length=16)]
+            if summary.is_file():
+                parts.append(ids.file_digest(summary, length=16))
+            for matchup in sorted((event.directory / "matchups").glob("*.md")):
+                if team_id in matchup.read_text(encoding="utf-8", errors="replace"):
+                    parts.append(f"{matchup.name}:{ids.file_digest(matchup, length=16)}")
+            digests[f"dossier:{team_id}"] = unit_digest(*parts)
+
+    # D21: the bracket, tournament and dossier stages could not be recorded as
+    # ledger units at all, because no digest was derived for them. They were
+    # invisible to `stale_units` and to the drift check in `can_advance`, so an
+    # edited bracket or matchup report left every later stage looking current.
+    drawn = event.directory / "bracket.json"
+    if drawn.is_file():
+        roster = event.directory / "teams.md"
+        parts = [ids.file_digest(drawn, length=16)]
+        if roster.is_file():
+            parts.append(ids.file_digest(roster, length=16))
+        # The draw is a function of the eligible roster and of the consolidated
+        # scores that seed it, so a summary that moves after the draw is drift.
+        # The summaries are digested from disk rather than read off the enriched
+        # roster: `Event.load` fills scores in from those same files, and a digest
+        # that depended on how the Event was constructed would differ between the
+        # process that recorded the unit and the one that re-derives it.
+        for team in event.eligible_teams:
+            summary_path = event.directory / "summaries" / f"{team['id']}.md"
+            if summary_path.is_file():
+                parts.append(f"{team['id']}:{ids.file_digest(summary_path, length=16)}")
+        digests["bracket:draw"] = unit_digest(*parts)
+
+    matchups = event.directory / "matchups"
+    if matchups.is_dir():
+        for report in sorted(matchups.glob("*.md")):
+            match_id = report.stem
+            parts = [f"{report.name}:{ids.file_digest(report, length=16)}"]
+            resolved = matchups / f"{match_id}.json"
+            if resolved.is_file():
+                parts.append(f"{resolved.name}:{ids.file_digest(resolved, length=16)}")
+            for pass_report in sorted(
+                (event.directory / "matchup-passes").glob(f"{match_id}-pass-*.md")
+            ):
+                parts.append(f"{pass_report.name}:{ids.file_digest(pass_report, length=16)}")
+            digests[f"matchup:{match_id}"] = unit_digest(*parts)
+
+    # The final-audit stage is a unit too, and its inputs are the audit it rests
+    # on plus the public summary it authorizes. Recorded with an invented digest,
+    # it was the last unit in the sample ledger that drift detection skipped.
+    final_audit = event.directory / "audits" / "final-event.md"
+    if not final_audit.is_file():
+        final_audit = event.directory / "audits" / "final.md"
+    if final_audit.is_file():
+        parts = [ids.file_digest(final_audit, length=16)]
+        summary = event.directory / "public" / "event-summary.md"
+        if summary.is_file():
+            parts.append(ids.file_digest(summary, length=16))
+        digests["final:audit"] = unit_digest(*parts)
     return digests
 
 

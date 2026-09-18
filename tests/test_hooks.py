@@ -19,7 +19,15 @@ GUARD_TESTS = ROOT / "tests" / "hooks" / "test_pre_advance_guard.sh"
 
 class PreAdvanceHookTests(unittest.TestCase):
     @unittest.skipUnless(shutil.which("bash"), "bash is not available")
-    def test_the_run_on_host_guard_blocks_execution_and_allows_prose(self):
+    def test_the_guard_blocks_real_invocations_and_allows_prose(self):
+        """Covers both halves: running submission code, and advancing a stage.
+
+        D23 is the second half of D6. The execution guard learned to read a
+        command rather than a string; the gate check kept matching the raw text,
+        so a heredoc or a commit message that merely described an advance was
+        blocked, and a chain that recorded a gate *before* advancing was blocked
+        on a state its own first half was about to change.
+        """
         self.assertTrue(GUARD_TESTS.is_file(), f"missing {GUARD_TESTS}")
         completed = subprocess.run(
             ["bash", str(GUARD_TESTS)],

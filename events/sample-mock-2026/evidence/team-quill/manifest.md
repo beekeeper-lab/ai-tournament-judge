@@ -32,18 +32,18 @@ skill against the frozen rubric. All content below is invented for this fixture.
 
 | ID | Claim or requirement | Source | Evidence status |
 |---|---|---|---|
-| req-01 | A reading-list assistant that summarizes and tags saved articles. | team statement | partially demonstrated |
-| req-02 | Keyboard-first interface with visible loading, empty and failure states. | team statement | demonstrated |
-| req-03 | No known blocking defect | team statement | contradicted |
+| req-01 | A reading-list assistant that summarizes and tags saved articles. | team statement | partially demonstrated — [[evidence:ev-quill-01]] |
+| req-02 | Keyboard-first interface with visible loading, empty and failure states. | team statement | demonstrated — [[evidence:ev-quill-02]] |
+| req-03 | No known blocking defect | team statement | contradicted — [[evidence:ev-quill-03]] |
 
 ## Direct observations
 
-| Evidence ID | Class | Observation |
-|---|---|---|
-| ev-quill-01 | direct-observation | Empty, loading and error states captured for the save flow. |
-| ev-quill-02 | artifact | src/summarize.ts calls the model once with no retry or fallback. |
-| ev-quill-03 | direct-observation | Keyboard traversal reaches every interactive control. |
-| ev-quill-04 | inference | No evaluation harness is present in the repository. |
+| Evidence ID | Observation | Supports | Class |
+|---|---|---|---|
+| ev-quill-01 | Empty, loading and error states captured for the save flow. | req-01 | direct-observation |
+| ev-quill-02 | src/summarize.ts calls the model once with no retry or fallback. | req-02 | artifact |
+| ev-quill-03 | Keyboard traversal reaches every interactive control. | req-03 | direct-observation |
+| ev-quill-04 | No evaluation harness is present in the repository. | - | inference |
 
 ## Tests and execution
 

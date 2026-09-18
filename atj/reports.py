@@ -183,6 +183,8 @@ def validate_artifact(
         findings.extend(_check_ne_confidence(metadata, path, event_dir, root))
     if kind == "adjudications":
         findings.extend(_check_adjudication_record(metadata, path, event_dir))
+    if kind == "evidence":
+        findings.extend(_check_citation_symmetry(metadata, body, path, root))
 
     if not body.strip():
         findings.append(_finding("blocking", "empty", "artifact has no content below its front matter", path))
@@ -292,6 +294,134 @@ def _check_ne_confidence(
                 f"{reason}",
                 path,
             ))
+    return findings
+
+
+REQUIREMENTS_SECTION = "Requirements and team claims"
+OBSERVATIONS_SECTION = "Direct observations"
+SUPPORTS_COLUMN = "supports"
+SUPPORTS_NOTHING = "-"
+_REQUIREMENT_ID = re.compile(r"^(?:R\d+|req-[0-9a-z-]+)$", re.IGNORECASE)
+
+
+def _section(body: str, heading: str) -> str:
+    """The text under one `##` heading, up to the next one."""
+    pattern = re.compile(
+        rf"^##\s+{re.escape(heading)}\s*$(.*?)(?=^##\s|\Z)", re.MULTILINE | re.DOTALL
+    )
+    found = pattern.search(body)
+    return found.group(1) if found else ""
+
+
+def _table(section: str) -> list[list[str]]:
+    """Rows of one Markdown table as trimmed cells, separator rows dropped."""
+    rows: list[list[str]] = []
+    for line in section.splitlines():
+        line = line.strip()
+        if not line.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if all(set(cell) <= {"-", ":", " "} and cell for cell in cells):
+            continue  # the |---|---| separator
+        rows.append(cells)
+    return rows
+
+
+def _check_citation_symmetry(
+    metadata: dict[str, Any], body: str, path: Path, root: Path
+) -> list[Finding]:
+    """D4/T3.1: a citation must be claimed from both ends.
+
+    Semantic truth is not checkable. This specific failure is: evidence audit
+    round 1 of live-trial-2026 found nine requirement rows citing an observation
+    that says nothing about them, and `atj validate reports` returned zero
+    findings at every stage, because the ids resolved. Resolution is all a schema
+    can see.
+
+    Bidirectional linking makes it deterministic. A requirement names the
+    observations it rests on, each observation names the requirements it supports,
+    and the two must agree. One author's slip stops passing silently, because the
+    other author has to make the same slip independently.
+
+    What this still cannot catch: an observation that is itself wrong, or a
+    fabricated number inside one. That remains the audit's job, and
+    `framework/rubrics/README.md` says so.
+    """
+    findings: list[Finding] = []
+    requirements = _table(_section(body, REQUIREMENTS_SECTION))
+    observations = _table(_section(body, OBSERVATIONS_SECTION))
+    if not requirements or not observations:
+        return findings
+
+    header = [cell.lower() for cell in observations[0]]
+    if SUPPORTS_COLUMN not in header:
+        detail = (
+            f"the {OBSERVATIONS_SECTION!r} table has no {SUPPORTS_COLUMN!r} column, so a "
+            f"citation can only be checked for resolving, never for being about what it "
+            f"cites. Add the column from framework/templates/evidence-manifest.md"
+        )
+        declared = str(metadata.get("rubric") or "")
+        # A manifest frozen under an earlier contract is a historical record, not
+        # a defect to repair. A current one has no excuse.
+        severity = "advisory" if declared and canon.is_superseded(declared, root) else "blocking"
+        return [_finding(severity, "citation-symmetry", detail, path)]
+
+    supports_at = header.index(SUPPORTS_COLUMN)
+    declared_support: dict[str, set[str]] = {}
+    for row in observations[1:]:
+        if len(row) <= supports_at or not row[0]:
+            continue
+        evidence_id = row[0].strip("`")
+        cell = row[supports_at]
+        if not cell:
+            findings.append(_finding(
+                "minor", "citation-symmetry",
+                f"observation {evidence_id!r} leaves {SUPPORTS_COLUMN!r} empty; write "
+                f"{SUPPORTS_NOTHING!r} if it deliberately supports no requirement",
+                path,
+            ))
+            continue
+        if cell.strip() == SUPPORTS_NOTHING:
+            declared_support[evidence_id] = set()
+            continue
+        declared_support[evidence_id] = {
+            token.strip().strip("`").rstrip(",")
+            for token in re.split(r"[,\s]+", cell)
+            if _REQUIREMENT_ID.match(token.strip().strip("`").rstrip(","))
+        }
+
+    cited: dict[str, set[str]] = {}
+    for row in requirements[1:]:
+        if not row or not row[0]:
+            continue
+        requirement_id = row[0].strip("`")
+        if not _REQUIREMENT_ID.match(requirement_id):
+            continue
+        for evidence_id in _EVIDENCE_REF.findall(" | ".join(row)):
+            cited.setdefault(evidence_id, set()).add(requirement_id)
+
+    for evidence_id, requirement_ids in sorted(cited.items()):
+        if evidence_id not in declared_support:
+            continue  # an unknown id is already a missing-reference finding
+        for requirement_id in sorted(requirement_ids):
+            if requirement_id not in declared_support[evidence_id]:
+                findings.append(_finding(
+                    "blocking", "citation-symmetry",
+                    f"{requirement_id} cites {evidence_id}, and {evidence_id} does not claim "
+                    f"to support it (it supports "
+                    f"{sorted(declared_support[evidence_id]) or 'nothing'}). One of the two "
+                    f"is wrong, and a resolving id cannot tell you which",
+                    path,
+                ))
+    for evidence_id, requirement_ids in sorted(declared_support.items()):
+        for requirement_id in sorted(requirement_ids):
+            if requirement_id not in cited.get(evidence_id, set()):
+                findings.append(_finding(
+                    "major", "citation-symmetry",
+                    f"{evidence_id} claims to support {requirement_id}, which does not cite it. "
+                    f"A requirement rests on the evidence its own row names",
+                    path,
+                ))
     return findings
 
 

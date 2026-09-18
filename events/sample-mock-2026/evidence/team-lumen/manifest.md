@@ -32,18 +32,18 @@ skill against the frozen rubric. All content below is invented for this fixture.
 
 | ID | Claim or requirement | Source | Evidence status |
 |---|---|---|---|
-| req-01 | A shift-handover tool for small clinics. Server-rendered, no framework. | team statement | partially demonstrated |
-| req-02 | Explicit state machine for handover status with exhaustive transition tests. | team statement | demonstrated |
-| req-03 | No known blocking defect | team statement | contradicted |
+| req-01 | A shift-handover tool for small clinics. Server-rendered, no framework. | team statement | partially demonstrated — [[evidence:ev-lumen-01]] |
+| req-02 | Explicit state machine for handover status with exhaustive transition tests. | team statement | demonstrated — [[evidence:ev-lumen-02]] |
+| req-03 | No known blocking defect | team statement | contradicted — [[evidence:ev-lumen-03]] |
 
 ## Direct observations
 
-| Evidence ID | Class | Observation |
-|---|---|---|
-| ev-lumen-01 | direct-observation | Handover transition tests pass: 41 of 41. |
-| ev-lumen-02 | artifact | src/handover/state.py defines the transition table. |
-| ev-lumen-03 | artifact | src/web/session.py:22 sets an unsigned `uid` cookie. |
-| ev-lumen-04 | team-claim | README claims audit logging; no log sink is configured. |
+| Evidence ID | Observation | Supports | Class |
+|---|---|---|---|
+| ev-lumen-01 | Handover transition tests pass: 41 of 41. | req-01 | direct-observation |
+| ev-lumen-02 | src/handover/state.py defines the transition table. | req-02 | artifact |
+| ev-lumen-03 | src/web/session.py:22 sets an unsigned `uid` cookie. | req-03 | artifact |
+| ev-lumen-04 | README claims audit logging; no log sink is configured. | - | team-claim |
 
 ## Tests and execution
 
