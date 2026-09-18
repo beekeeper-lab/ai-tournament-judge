@@ -16,7 +16,7 @@ from pathlib import Path
 
 from atj.cli import main as cli_main
 from _support import ROOT  # noqa: F401
-from atj import (demo, event as event_module, frontmatter, publication, reports,
+from atj import (canon, demo, event as event_module, frontmatter, publication, reports,
                  sandbox)
 from atj.errors import StateError
 
@@ -432,6 +432,142 @@ class AnApprovalHasAName(unittest.TestCase):
         self.assertEqual(problems, [])
         self.assertTrue(historical, "the live event has unsigned approvals to report")
         self.assertTrue(all("live-trial-2026" in entry for entry in historical), historical)
+
+
+class EveryScoreCitesSomething(unittest.TestCase):
+    """`CLAUDE.md` requires it, the template's checklist claims it, nothing read it.
+
+    Validation checked a score's range, its criterion id, its rubric version and
+    its persona, and never whether the judge pointed at anything. This is a shape
+    check: it cannot tell whether a citation supports the score, which is D4's
+    territory one artifact over.
+    """
+
+    def citations(self, path: Path, event: Path) -> list[str]:
+        report = reports.validate_artifact(path, event, root=ROOT)
+        return [f.detail for f in report.findings if f.rule == "criterion-citation"]
+
+    def test_all_twenty_four_committed_judgments_cite_every_criterion(self):
+        for event in (LIVE, SAMPLE):
+            for judgment in sorted((event / "judgments").glob("*/*.md")):
+                with self.subTest(f"{event.name}/{judgment.parent.name}/{judgment.name}"):
+                    self.assertEqual(self.citations(judgment, event), [])
+
+    def test_both_committed_conventions_are_recognised(self):
+        """`### functional — 4` and `**functional** — 4.` both anchor a block.
+
+        Splitting on every mention of a criterion name instead cut two live
+        blocks off before their evidence, and reported a false finding against a
+        frozen artifact.
+        """
+        from atj.reports import _criterion_blocks, _section
+
+        for event, name in ((LIVE, "heading"), (SAMPLE, "bold")):
+            judgment = sorted((event / "judgments").glob("*/*.md"))[0]
+            _, body = frontmatter.read(judgment)
+            blocks = _criterion_blocks(
+                _section(body, "Criterion findings"), canon.load(ROOT).criterion_ids
+            )
+            with self.subTest(name):
+                self.assertEqual(
+                    sorted(blocks), sorted(canon.load(ROOT).criterion_ids),
+                    f"{judgment} did not split into one block per criterion",
+                )
+
+    def test_a_criterion_with_no_citation_is_reported(self):
+        import re
+
+        holder, event = event_copy(LIVE)
+        try:
+            path = event / "judgments" / "team-ledger" / "judge-backend.md"
+            metadata, body = frontmatter.read(path)
+            section_start = body.index("## Criterion findings")
+            head, tail = body[:section_start], body[section_start:]
+            # Strip every citation form from the discussion, leaving the prose.
+            stripped = re.sub(r"`[^`\n]*`", "the implementation", tail)
+            stripped = re.sub(r"\[\[(?:evidence|ev):[^\]]+\]\]", "the package", stripped)
+            stripped = re.sub(r"\[(?:DO|TC|INF|AE)(?:,\s*(?:DO|TC|INF|AE))*\]", "", stripped)
+            stripped = re.sub(r"\bev-[a-z0-9-]+\b", "the package", stripped)
+            path.write_text(frontmatter.dump(metadata, head + stripped), encoding="utf-8")
+            found = self.citations(path, event)
+            self.assertTrue(found, "a judgment citing nothing was not reported")
+            self.assertTrue(any("is an assertion" in detail for detail in found), found)
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    def test_a_criterion_nobody_discussed_is_reported(self):
+        holder, event = event_copy(LIVE)
+        try:
+            path = event / "judgments" / "team-ledger" / "judge-backend.md"
+            metadata, body = frontmatter.read(path)
+            body = body.replace("### innovation", "### something-else", 1)
+            path.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+            found = self.citations(path, event)
+            self.assertTrue(
+                any("never discussed" in detail and "innovation" in detail for detail in found),
+                found,
+            )
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+
+class AnUnreviewedBypassBlocksCompletion(unittest.TestCase):
+    """The one place the framework can insist on the review it cannot perform.
+
+    An event may be *run* past a bypassed gate -- that is what `--force-reason`
+    is for, and stopping the event dead would teach an operator to edit the
+    ledger by hand instead. It may not be *called complete* while nobody has read
+    the bypass.
+    """
+
+    def forced(self, event: Path) -> None:
+        loaded = event_module.load(event, root=ROOT)
+        event_module.set_stage(loaded, "dossiers")
+        loaded.status["stage_gates"]["dossiers-approved"] = "pending"
+        event_module.save_status(loaded)
+        loaded = event_module.load(event, root=ROOT)
+        event_module.advance(
+            loaded, force_reason="the audit is scheduled after the ceremony",
+            force_approver="event-director",
+        )
+        event_module.save_status(loaded)
+
+    def test_an_unreviewed_bypass_blocks_the_last_transition(self):
+        holder, event = event_copy(LIVE)
+        try:
+            self.forced(event)
+            loaded = event_module.load(event, root=ROOT)
+            self.assertEqual(loaded.stage, "final-audit")
+            allowed, reasons = event_module.can_advance(loaded)
+            self.assertFalse(allowed)
+            self.assertTrue(any("not been reviewed" in reason for reason in reasons), reasons)
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    def test_recording_the_review_clears_it(self):
+        holder, event = event_copy(LIVE)
+        try:
+            self.forced(event)
+            loaded = event_module.load(event, root=ROOT)
+            event_module.review_override(loaded, 0, official="event-director")
+            event_module.save_status(loaded)
+            loaded = event_module.load(event, root=ROOT)
+            allowed, reasons = event_module.can_advance(loaded)
+            self.assertTrue(allowed, reasons)
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    def test_an_event_with_no_bypass_is_unaffected(self):
+        holder, event = event_copy(LIVE)
+        try:
+            loaded = event_module.load(event, root=ROOT)
+            event_module.set_stage(loaded, "final-audit")
+            event_module.save_status(loaded)
+            loaded = event_module.load(event, root=ROOT)
+            allowed, reasons = event_module.can_advance(loaded)
+            self.assertTrue(allowed, reasons)
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
 
 
 class TheStatusBodyAgreesWithItsLedger(unittest.TestCase):
