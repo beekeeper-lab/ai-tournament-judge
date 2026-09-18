@@ -38,6 +38,8 @@ model:
   completed_at: "2026-05-18T17:30:00Z"
   verified: true
   note: scripted fixture input; no model was invoked
+approved_by: head judging official
+approved_at: "2026-05-18T17:30:00Z"
 ---
 
 # Individual Judgment — Verdant — judge-frontend-ux

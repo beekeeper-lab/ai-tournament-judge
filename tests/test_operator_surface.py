@@ -379,6 +379,61 @@ class TheWheelCarriesItsOwnFramework(unittest.TestCase):
         self.assertIn("atj release-check", workflow)
 
 
+class AnApprovalHasAName(unittest.TestCase):
+    """The last of D25: the fixture asserted approvals nobody made.
+
+    `atj event approve` writes `approved_by` and `approved_at`. The sample
+    generator wrote `approval_state: approved` directly, so 47 committed
+    artifacts recorded the state with no name against it -- in the one fixture
+    whose job is to demonstrate that an approval is a human act.
+    """
+
+    def unsigned(self, event: Path) -> list[str]:
+        found = []
+        for path in sorted(event.rglob("*.md")):
+            try:
+                metadata, _ = frontmatter.read(path)
+            except Exception:  # noqa: BLE001 - malformed files are another check's problem
+                continue
+            if metadata.get("approval_state") == "approved" and not metadata.get("approved_by"):
+                found.append(str(path.relative_to(event)))
+        return found
+
+    def test_the_sample_event_signs_every_approval(self):
+        self.assertEqual(self.unsigned(SAMPLE), [])
+
+    def test_release_check_would_catch_an_unsigned_one(self):
+        from atj.cli import _unsigned_approvals
+
+        holder = Path(tempfile.mkdtemp())
+        try:
+            events = holder / "events"
+            shutil.copytree(SAMPLE, events / demo.EVENT_ID)
+            path = next((events / demo.EVENT_ID / "summaries").glob("*.md"))
+            metadata, body = frontmatter.read(path)
+            del metadata["approved_by"]
+            path.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+            problems, historical = _unsigned_approvals(holder)
+            self.assertTrue(any(path.name in p for p in problems), problems)
+            self.assertEqual(historical, [])
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    def test_a_completed_event_reports_history_not_failure(self):
+        """live-trial-2026 approved five artifacts before the command existed.
+
+        A completed event's artifacts are frozen, so the only repair available
+        inside one is to rewrite a frozen record -- D28's trap, which this
+        framework has now walked into three times. Reported as history instead.
+        """
+        from atj.cli import _unsigned_approvals
+
+        problems, historical = _unsigned_approvals(ROOT)
+        self.assertEqual(problems, [])
+        self.assertTrue(historical, "the live event has unsigned approvals to report")
+        self.assertTrue(all("live-trial-2026" in entry for entry in historical), historical)
+
+
 class TheStatusBodyAgreesWithItsLedger(unittest.TestCase):
     """D30: status.md's prose could contradict the front matter above it.
 

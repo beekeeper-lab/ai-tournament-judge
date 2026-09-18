@@ -147,6 +147,17 @@ _SUPPORTS = {0: "req-01", 1: "req-02", 2: "req-03"}
 
 
 def _write(path: Path, metadata: dict[str, Any], body: str) -> None:
+    """Write one fixture artifact.
+
+    An artifact this generator marks `approved` gets an approver, the way
+    `atj event approve` writes one. D25's residual was here: the generator wrote
+    `approval_state: approved` directly, so 47 committed artifacts asserted an
+    approval with nobody's name on it, and the one fixture that should have
+    caught "an approval is a human act" demonstrated the opposite.
+    """
+    if metadata.get("approval_state") == "approved":
+        metadata.setdefault("approved_by", OFFICIAL)
+        metadata.setdefault("approved_at", FINISH)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(frontmatter.dump(metadata, body.rstrip() + "\n"), encoding="utf-8")
 

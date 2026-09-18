@@ -19,6 +19,8 @@ evidence_limited_criteria:
 visibility: private
 approval_state: approved
 validation_state: valid
+approved_by: head judging official
+approved_at: "2026-05-18T17:30:00Z"
 ---
 
 # Evidence Manifest — Quill

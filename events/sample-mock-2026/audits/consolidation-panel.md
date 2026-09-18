@@ -17,6 +17,8 @@ visibility: private
 approval_state: approved
 validation_state: valid
 result: PASS WITH ADVISORIES
+approved_by: head judging official
+approved_at: "2026-05-18T17:30:00Z"
 ---
 
 # Judging Audit — consolidation of all four teams

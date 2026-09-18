@@ -28,7 +28,7 @@ units:
 - unit_id: evidence:team-lumen
   stage: evidence
   state: complete
-  input_digest: fe1084534ecacef9
+  input_digest: f37104cb4c5e1676
   outputs:
   - evidence/team-lumen/manifest.md
   audit_result: PASS
@@ -36,7 +36,7 @@ units:
 - unit_id: judging:team-lumen
   stage: initial-judging
   state: complete
-  input_digest: 06d43f0bdb465217
+  input_digest: d75f17354c66bb62
   outputs:
   - judgments/team-lumen/judge-backend.md
   - judgments/team-lumen/judge-frontend-ux.md
@@ -47,7 +47,7 @@ units:
 - unit_id: consolidation:team-lumen
   stage: consolidation
   state: complete
-  input_digest: f1e22a013593857a
+  input_digest: b00512fd150f9155
   outputs:
   - summaries/team-lumen.md
   audit_result: PASS WITH ADVISORIES
@@ -55,7 +55,7 @@ units:
 - unit_id: dossier:team-lumen
   stage: dossiers
   state: complete
-  input_digest: 0054972513c31e44
+  input_digest: 23495d98da9b8e1b
   outputs:
   - dossiers/team-lumen.md
   audit_result: PASS
@@ -63,7 +63,7 @@ units:
 - unit_id: evidence:team-quill
   stage: evidence
   state: complete
-  input_digest: 7d435963d0ee20e8
+  input_digest: 7f9c5d05a023f942
   outputs:
   - evidence/team-quill/manifest.md
   audit_result: PASS
@@ -71,7 +71,7 @@ units:
 - unit_id: judging:team-quill
   stage: initial-judging
   state: complete
-  input_digest: 36a08d16b6dbb33f
+  input_digest: 867c090687b9726b
   outputs:
   - judgments/team-quill/judge-backend.md
   - judgments/team-quill/judge-frontend-ux.md
@@ -82,7 +82,7 @@ units:
 - unit_id: consolidation:team-quill
   stage: consolidation
   state: complete
-  input_digest: cf2197c5c98e8394
+  input_digest: 234ea44f0f2ac34d
   outputs:
   - summaries/team-quill.md
   audit_result: PASS
@@ -90,7 +90,7 @@ units:
 - unit_id: dossier:team-quill
   stage: dossiers
   state: complete
-  input_digest: e41bf6a5f6854d54
+  input_digest: 6077e0e04a847c98
   outputs:
   - dossiers/team-quill.md
   audit_result: PASS
@@ -98,7 +98,7 @@ units:
 - unit_id: evidence:team-harbor
   stage: evidence
   state: complete
-  input_digest: 8a52c219d87885a9
+  input_digest: 4ac163562b16e924
   outputs:
   - evidence/team-harbor/manifest.md
   audit_result: PASS
@@ -106,7 +106,7 @@ units:
 - unit_id: judging:team-harbor
   stage: initial-judging
   state: complete
-  input_digest: 1486d9d108d64e7f
+  input_digest: e6136e8f9972995a
   outputs:
   - judgments/team-harbor/judge-backend.md
   - judgments/team-harbor/judge-frontend-ux.md
@@ -117,7 +117,7 @@ units:
 - unit_id: consolidation:team-harbor
   stage: consolidation
   state: complete
-  input_digest: faf9097d66a51e3f
+  input_digest: 43417dd82487ce04
   outputs:
   - summaries/team-harbor.md
   audit_result: PASS
@@ -125,7 +125,7 @@ units:
 - unit_id: dossier:team-harbor
   stage: dossiers
   state: complete
-  input_digest: 2e449c9dadc830d5
+  input_digest: 9f208c0402a3d192
   outputs:
   - dossiers/team-harbor.md
   audit_result: PASS
@@ -133,7 +133,7 @@ units:
 - unit_id: evidence:team-verdant
   stage: evidence
   state: complete
-  input_digest: 28f8b3538d250eeb
+  input_digest: d29c343c3f229b5e
   outputs:
   - evidence/team-verdant/manifest.md
   audit_result: PASS
@@ -141,7 +141,7 @@ units:
 - unit_id: judging:team-verdant
   stage: initial-judging
   state: complete
-  input_digest: c3eb5a7d18fa45ee
+  input_digest: 53bff7e8cb29a1bf
   outputs:
   - judgments/team-verdant/judge-backend.md
   - judgments/team-verdant/judge-frontend-ux.md
@@ -152,7 +152,7 @@ units:
 - unit_id: consolidation:team-verdant
   stage: consolidation
   state: complete
-  input_digest: ffc8a2959d4afea8
+  input_digest: ae596da9f836a746
   outputs:
   - summaries/team-verdant.md
   audit_result: PASS
@@ -160,7 +160,7 @@ units:
 - unit_id: dossier:team-verdant
   stage: dossiers
   state: complete
-  input_digest: 7e0ca6d0d51980d3
+  input_digest: f01a1f306d54b171
   outputs:
   - dossiers/team-verdant.md
   audit_result: PASS
@@ -168,7 +168,7 @@ units:
 - unit_id: bracket:draw
   stage: bracket
   state: complete
-  input_digest: e62d5d119f909354
+  input_digest: 1ac51f175c002dd7
   outputs:
   - bracket.md
   - bracket.json
@@ -177,7 +177,7 @@ units:
 - unit_id: matchup:semifinal-1
   stage: tournament
   state: complete
-  input_digest: 2494e263586474a1
+  input_digest: a62497dbd541f381
   outputs:
   - matchups/semifinal-1.md
   - public/semifinal-1.md
@@ -186,7 +186,7 @@ units:
 - unit_id: matchup:semifinal-2
   stage: tournament
   state: complete
-  input_digest: db8f752424cc6ff4
+  input_digest: 00a7dbbcbea1c0d5
   outputs:
   - matchups/semifinal-2.md
   - public/semifinal-2.md
@@ -195,7 +195,7 @@ units:
 - unit_id: matchup:final
   stage: tournament
   state: complete
-  input_digest: ed4cd6c5026ae58d
+  input_digest: 4c12884640acdc41
   outputs:
   - matchups/final.md
   - public/final.md
@@ -204,7 +204,7 @@ units:
 - unit_id: final:audit
   stage: final-audit
   state: complete
-  input_digest: 0671b8d491c243e9
+  input_digest: 183bf5f40fbc9648
   outputs:
   - audits/final-event.md
   - public/event-summary.md

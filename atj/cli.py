@@ -1318,6 +1318,16 @@ def cmd_release_check(args) -> int:
     else:
         print("write contracts   SKIPPED (no .claude/ components; not a working copy)")
 
+    if (root / "events").is_dir():
+        problems, historical = _unsigned_approvals(root)
+        failures += [f"approval: {p}" for p in problems]
+        note = (
+            f" ({len(historical)} in completed events, frozen)" if historical else ""
+        )
+        print(f"signed approvals  {'PASS' if not problems else 'FAIL'}{note}")
+    else:
+        print("signed approvals  SKIPPED (not a working copy)")
+
     if (root / "events" / "sample-mock-2026").is_dir():
         problems = check_sample_event(root)
         failures += [f"sample-event: {p}" for p in problems]
@@ -1586,6 +1596,64 @@ def check_declared_versions(root: Path) -> list[str]:
                 f"template must instruct the current version"
             )
     return problems
+
+
+def check_approvals_are_signed(root: Path) -> list[str]:
+    """No committed artifact may be `approved` with nobody's name on it.
+
+    The last of D25. `atj event approve` writes `approved_by` and `approved_at`,
+    and the sample generator used to write `approval_state: approved` directly --
+    so 47 committed artifacts asserted an approval no person was recorded as
+    making, in the one fixture whose job is to demonstrate the gate chain.
+    """
+    problems, historical = _unsigned_approvals(root)
+    return problems
+
+
+def _unsigned_approvals(root: Path) -> tuple[list[str], list[str]]:
+    """Unsigned approvals, split into the ones that can still be fixed and the rest.
+
+    A completed event's artifacts are frozen. Five of live-trial-2026's were
+    approved by hand before `atj event approve` existed, so they record the state
+    without the name, and the only repair inside a completed event is to rewrite
+    a frozen record -- which is D28's trap, and the third time this framework has
+    walked into it. Those are reported as history; anything in an event still
+    running has to be fixed.
+    """
+    from . import demo as demo_module
+
+    problems: list[str] = []
+    historical: list[str] = []
+    for event_dir in sorted((root / "events").glob("*")):
+        if not event_dir.is_dir() or event_dir.name == "_template":
+            continue
+        stage = ""
+        status = event_dir / "status.md"
+        if status.is_file():
+            try:
+                metadata, _ = frontmatter.read(status)
+                stage = str(metadata.get("current_stage") or "")
+            except AtjError:
+                stage = ""
+        for path in sorted(event_dir.rglob("*.md")):
+            try:
+                metadata, _ = frontmatter.read(path)
+            except AtjError:
+                continue  # reported by report validation
+            if metadata.get("approval_state") != "approved":
+                continue
+            if metadata.get("approved_by"):
+                continue
+            detail = (
+                f"{path.relative_to(root)}: approval_state is 'approved' and "
+                f"approved_by is empty; an approval is a human act and has a name"
+            )
+            # The sample event is generated, not frozen: `atj demo build` rewrites
+            # it wholesale, so an unsigned approval there is a live defect in the
+            # generator whatever stage the fixture claims to be at.
+            frozen = stage == "complete" and event_dir.name != demo_module.EVENT_ID
+            (historical if frozen else problems).append(detail)
+    return problems, historical
 
 
 def check_sample_event(root: Path) -> list[str]:

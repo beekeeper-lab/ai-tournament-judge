@@ -16,6 +16,8 @@ visibility: private
 approval_state: approved
 validation_state: valid
 persona: prepare-submission@1.1.0
+approved_by: head judging official
+approved_at: "2026-05-18T17:30:00Z"
 ---
 
 # Submission Intake — Verdant

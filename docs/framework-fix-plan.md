@@ -1180,3 +1180,25 @@ Verified after the fix, from outside the checkout:
     atj 0.3.0-beta
     $ /tmp/.../env/bin/atj release-check
     Release check: PASS
+
+## D25's residual, closed
+
+The D25 section above records that fourteen artifacts in live-trial-2026 were
+left `approved` with no approver and that the sample event "cannot surface this
+because `demo_writer.py` writes `approved` directly".
+
+That second half was still true after D25 landed. 47 committed artifacts in the
+sample event asserted an approval with nobody's name on it — in the one fixture
+whose job is to demonstrate that an approval is a human act. `demo_writer._write`
+now records `approved_by` and `approved_at` wherever it marks an artifact
+approved, the way `atj event approve` does, and `release-check` gained a
+`signed approvals` check.
+
+The check holds the generated fixture strictly and reports a completed event's
+unsigned approvals as history: live-trial-2026 has 15, approved by hand before
+the command existed, and the only repair available inside a completed event is to
+rewrite a frozen record. That is D28's trap, and this is the third rule that has
+had to be written around it — after D8's `confidence` rule and D4's `Supports`
+column. The pattern is now explicit: a rule introduced after an event completes
+applies to artifacts produced under it, and reports the older state as history
+rather than as a defect nobody could have avoided.
