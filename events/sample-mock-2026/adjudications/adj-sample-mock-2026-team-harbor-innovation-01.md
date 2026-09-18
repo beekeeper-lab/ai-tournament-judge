@@ -20,6 +20,7 @@ resolution_detail: The approach is genuinely unusual, which explains the high sc
 impact: recorded alongside the source scores; no source score was modified
 confidence: medium
 decided_by: head judging official
+decision_authority: human-official
 score_override: null
 persona: judging-auditor@1.1.0
 visibility: private

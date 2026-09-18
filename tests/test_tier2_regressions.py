@@ -12,7 +12,7 @@ import unittest
 from pathlib import Path
 
 from _support import ROOT  # noqa: F401
-from atj import canon, frontmatter, reports, schema, versions
+from atj import canon, frontmatter, reports, schema, scoring, versions
 from atj.cli import check_version_archive, check_write_contracts
 from atj.errors import AtjError, VersionError
 
@@ -347,6 +347,231 @@ class LiveTrialStaysValidAcrossTheBump(unittest.TestCase):
             with self.subTest(judgment.name):
                 metadata, _ = frontmatter.read(judgment)
                 versions.require_versions(metadata, root=ROOT, artifact=str(judgment))
+
+
+class AnAcceptedNeIsExpressible(unittest.TestCase):
+    """D11: an adjudication could clear an `NE` and had no way to accept one.
+
+    `atj score` re-reported an adjudicated `NE` as unresolved and kept listing
+    `adjudication_required`, so a decision that had been made looked exactly like
+    one nobody had made. live-trial-2026 accepted an `NE` in prose and the tool
+    kept demanding the adjudication that prose described.
+    """
+
+    def panel(self, **adjudication) -> tuple[Path, Path]:
+        temporary = Path(tempfile.mkdtemp())
+        event = temporary / "event"
+        shutil.copytree(ROOT / "events" / "live-trial-2026", event)
+        path = next((event / "adjudications").glob("*.md"))
+        metadata, body = frontmatter.read(path)
+        metadata.update(adjudication)
+        path.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+        return temporary, event
+
+    def score(self, event: Path) -> dict:
+        panel = scoring.load_panel(event / "judgments" / "team-podcast", root=ROOT)
+        resolutions = scoring.load_resolutions(
+            event / "adjudications", team_id="team-podcast", root=ROOT
+        )
+        return scoring.consolidate(panel, resolutions=resolutions, root=ROOT)
+
+    def test_an_accepted_ne_is_decided_not_outstanding(self):
+        temporary, event = self.panel(
+            decision_authority=scoring.HUMAN_OFFICIAL,
+            score_override={
+                "criterion": "reliability", "resolved_score": "NE",
+                "rationale": "the evidence cannot settle it and the NE stands",
+            },
+        )
+        try:
+            result = self.score(event)
+            self.assertEqual(
+                [entry["criterion"] for entry in result["accepted_ne"]], ["reliability"]
+            )
+            self.assertEqual(result["adjudication_required"], [])
+            self.assertFalse(result["finalized"], "the rubric permits no total while NE stands")
+            self.assertIsNone(result["total"])
+            self.assertTrue(
+                any("NE accepted by adjudication" in reason
+                    for reason in result["blocked_reasons"]),
+                result["blocked_reasons"],
+            )
+            self.assertEqual(
+                result["criteria"]["reliability"]["ne_disposition"], scoring.NE_ACCEPTED
+            )
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_a_cleared_ne_still_finalizes(self):
+        temporary, event = self.panel(
+            decision_authority=scoring.HUMAN_OFFICIAL,
+            score_override={
+                "criterion": "reliability", "resolved_score": 2,
+                "rationale": "the official scored it from the static evidence",
+            },
+        )
+        try:
+            result = self.score(event)
+            self.assertEqual(result["accepted_ne"], [])
+            self.assertTrue(result["finalized"], result["blocked_reasons"])
+            self.assertEqual(
+                result["criteria"]["reliability"]["ne_disposition"], scoring.NE_CLEARED
+            )
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_an_unadjudicated_ne_is_still_outstanding(self):
+        found = scoring.consolidate(
+            scoring.load_panel(LIVE / "judgments" / "team-podcast", root=ROOT), root=ROOT
+        )
+        self.assertEqual(
+            [entry["criterion"] for entry in found["adjudication_required"]], ["reliability"]
+        )
+        self.assertEqual(found["accepted_ne"], [])
+
+
+class OnlyAHumanOfficialMovesATotal(unittest.TestCase):
+    """D13: `decided_by` is a string, and an agent can write a role into it.
+
+    The judging audit's ruling on live-trial-2026 was that substituting
+    `run-judging-event@1.0.0` for a human adjudicator was honest in form,
+    unverifiable in substance, and acceptable once but not as a precedent. The
+    framework cannot verify that a person decided. It can require the record to
+    say which it was, and refuse to move an official total on the answer it
+    cannot rely on.
+    """
+
+    def resolutions(self, **adjudication):
+        temporary = Path(tempfile.mkdtemp())
+        event = temporary / "event"
+        shutil.copytree(ROOT / "events" / "live-trial-2026", event)
+        path = next((event / "adjudications").glob("*.md"))
+        metadata, body = frontmatter.read(path)
+        metadata.update(adjudication)
+        path.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+        withheld: list = []
+        found = scoring.load_resolutions(
+            event / "adjudications", team_id="team-podcast", root=ROOT, withheld=withheld
+        )
+        return temporary, found, withheld
+
+    def test_a_record_with_no_declared_authority_moves_nothing(self):
+        temporary, found, withheld = self.resolutions(
+            score_override={"criterion": "reliability", "resolved_score": 4,
+                            "rationale": "an agent decided"},
+        )
+        try:
+            self.assertTrue(withheld)
+            self.assertIn("no decision_authority", withheld[0]["reason"])
+            self.assertIsNotNone(found["reliability"]["authority_withheld"])
+            panel = scoring.load_panel(LIVE / "judgments" / "team-podcast", root=ROOT)
+            result = scoring.consolidate(panel, resolutions=found, root=ROOT)
+            self.assertFalse(result["finalized"])
+            self.assertIsNone(result["criteria"]["reliability"].get("resolved_score"))
+            self.assertIsNone(result["criteria"]["reliability"]["ne_disposition"])
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_an_agent_substitution_is_disclosed_and_powerless(self):
+        temporary, found, withheld = self.resolutions(
+            decision_authority=scoring.AGENT_SUBSTITUTED,
+            substitution_reason="no human official was available during the trial",
+            score_override={"criterion": "reliability", "resolved_score": 4,
+                            "rationale": "an agent decided"},
+        )
+        try:
+            self.assertTrue(withheld)
+            self.assertIn("agent-substituted", withheld[0]["reason"])
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_a_human_official_moves_it(self):
+        temporary, found, withheld = self.resolutions(
+            decision_authority=scoring.HUMAN_OFFICIAL,
+            score_override={"criterion": "reliability", "resolved_score": 4,
+                            "rationale": "the official scored it"},
+        )
+        try:
+            self.assertEqual(withheld, [])
+            panel = scoring.load_panel(LIVE / "judgments" / "team-podcast", root=ROOT)
+            result = scoring.consolidate(panel, resolutions=found, root=ROOT)
+            self.assertTrue(result["finalized"], result["blocked_reasons"])
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_a_substitution_must_say_why(self):
+        from atj import schema as schema_module
+        metadata, _ = frontmatter.read(next((LIVE / "adjudications").glob("*.md")))
+        metadata["decision_authority"] = scoring.AGENT_SUBSTITUTED
+        problems = schema_module.validate("adjudication", metadata, root=ROOT)
+        self.assertTrue(any("substitution_reason" in p for p in problems), problems)
+
+
+class AnApprovedRecordDisclosesItsCorrections(unittest.TestCase):
+    """D14: no amendment field, so a correction to an approved record was invisible.
+
+    live-trial-2026's one adjudication was corrected after approval and ended up
+    citing an audit that post-dates its own `completed_at` -- the observable
+    symptom of an edit nobody declared.
+    """
+
+    def record(self, **overrides) -> tuple[Path, Path]:
+        temporary = Path(tempfile.mkdtemp())
+        event = temporary / "event"
+        shutil.copytree(ROOT / "events" / "live-trial-2026", event)
+        path = next((event / "adjudications").glob("*.md"))
+        metadata, body = frontmatter.read(path)
+        metadata.update(overrides)
+        path.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+        return temporary, path
+
+    def findings(self, path: Path, event: Path, rule: str) -> list[str]:
+        report = reports.validate_artifact(path, event, root=ROOT)
+        return [f.detail for f in report.findings if f.rule == rule]
+
+    def test_a_well_formed_amendment_passes(self):
+        temporary, path = self.record(amendments=[{
+            "amended_at": "2026-09-18T01:00:00Z",
+            "reason": "corrected the audit citation",
+            "amended_by": "event-director",
+        }])
+        try:
+            self.assertEqual(self.findings(path, temporary / "event", "amendment"), [])
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_an_amendment_may_not_predate_the_record(self):
+        temporary, path = self.record(amendments=[{
+            "amended_at": "2026-01-01T00:00:00Z",
+            "reason": "backdated",
+            "amended_by": "event-director",
+        }])
+        try:
+            detail = self.findings(path, temporary / "event", "amendment")
+            self.assertTrue(detail, "a backdated amendment was not flagged")
+            self.assertIn("before the record it amends", detail[0])
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_the_trail_must_read_forward(self):
+        temporary, path = self.record(amendments=[
+            {"amended_at": "2026-09-19T00:00:00Z", "reason": "second", "amended_by": "x"},
+            {"amended_at": "2026-09-18T00:00:00Z", "reason": "first", "amended_by": "x"},
+        ])
+        try:
+            detail = self.findings(path, temporary / "event", "amendment")
+            self.assertTrue(any("must read forward" in d for d in detail), detail)
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_decided_by_must_name_an_official_of_this_event(self):
+        temporary, path = self.record(decided_by="a passing stranger")
+        try:
+            detail = self.findings(path, temporary / "event", "decided-by")
+            self.assertTrue(detail, "an invented official was not flagged")
+            self.assertIn("not an official of this event", detail[0])
+        finally:
+            shutil.rmtree(temporary)
 
 
 if __name__ == "__main__":

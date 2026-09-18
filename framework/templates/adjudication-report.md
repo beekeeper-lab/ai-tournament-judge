@@ -22,9 +22,32 @@ approval_state: draft
 validation_state: unvalidated
 resolution: unresolved
 decided_by: HUMAN-OFFICIAL-ROLE
+decision_authority: human-official
+substitution_reason: null
+amendments: []
 ---
 
 # Adjudication Report
+
+`decided_by` is the event official's role, and it must be one the event
+configuration names. `decision_authority` says which kind of decision this was:
+`human-official` when that official decided, and `agent-substituted` when an agent
+stood in, which requires `substitution_reason` and can never move an official
+total. Leaving the field out means the same thing as substituting, and is treated
+the same way.
+
+`resolution_detail` plus `score_override` carry the outcome. An `NE` may be
+*cleared* by supplying `score_override.resolved_score`, or **accepted** by
+setting it to `NE`, which records that the official reviewed the criterion and
+the `NE` stands. An accepted `NE` still leaves the panel unfinalized, because the
+rubric permits no official total while a criterion is `NE` — but it is
+unfinalized by decision, and `atj score` stops asking for an adjudication that
+has already happened.
+
+`amendments` is append-only. An approved record is never silently edited: a
+correction is disclosed as an entry with its own `amended_at`, `reason` and
+`amended_by`, and the trail must read forward from the record's own
+`completed_at`.
 
 Adjudication resolves a specific disputed question. It is **not** a rescore of the
 project and it never edits an original report. Original judgments are immutable;

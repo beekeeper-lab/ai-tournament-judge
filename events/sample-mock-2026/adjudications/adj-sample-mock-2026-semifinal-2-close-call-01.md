@@ -13,6 +13,7 @@ resolution_detail: 'Tie-break order applied. Functional correctness and complete
 impact: team-quill advances
 confidence: medium
 decided_by: head judging official
+decision_authority: human-official
 score_override: null
 commit: 1ff35a656b351b0529a7bc2d6b169aec650e1e71
 evidence_package_id: ev:sample-mock-2026:team-quill:1ff35a656b35:f815c851

@@ -281,6 +281,7 @@ def consolidate(
     total = Decimal("0")
     blocked: list[str] = []
     adjudication_required: list[dict[str, str]] = []
+    accepted_ne: list[dict[str, Any]] = []
 
     for criterion in rubric.criteria:
         judge_ids: list[str] = []
@@ -302,13 +303,26 @@ def consolidate(
 
         resolution = resolutions.get(criterion.id)
         resolved_score = None
+        ne_disposition = None
+        # D11: an adjudication could *clear* an NE by supplying a score, and had
+        # no way to *accept* one. `atj score` then re-reported the accepted NE as
+        # unresolved and kept demanding adjudication, so a decision that had been
+        # made was indistinguishable from one nobody had made.
+        # `resolved_score: NE` is that decision, stated explicitly: the official
+        # reviewed the criterion and the NE stands.
         if resolution is not None and resolution.get("resolved_score") is not None:
-            resolved_score = rubric.validate_score(
+            candidate = rubric.validate_score(
                 resolution["resolved_score"], criterion_id=criterion.id,
                 artifact=str(resolution.get("adjudication_id") or "adjudication"),
             )
-            if resolved_score == NOT_ENOUGH_EVIDENCE:
-                resolved_score = None
+            if resolution.get("authority_withheld"):
+                # The record exists and carries no authority to move a total.
+                pass
+            elif candidate == NOT_ENOUGH_EVIDENCE:
+                ne_disposition = NE_ACCEPTED
+            else:
+                resolved_score = candidate
+                ne_disposition = NE_CLEARED
 
         # An adjudicated score stands in for each judge who recorded NE. The
         # judge's own NE is preserved in source_scores; the resolution is
@@ -333,17 +347,39 @@ def consolidate(
             "agreement": NOT_SCORED,
             "possible_outliers": _outliers(judge_ids, values, thresholds),
             "resolution": resolution,
+            "ne_disposition": ne_disposition,
         }
 
         if ne_judges and resolved_score is None:
-            # An NE is not a zero and is not averaged away. It blocks the total
-            # until an adjudication supplies a resolved score.
-            blocked.append(
-                f"{criterion.id}: unresolved NE from {', '.join(sorted(ne_judges))}"
-            )
-            adjudication_required.append(
-                {"criterion": criterion.id, "trigger": "unresolved-ne"}
-            )
+            # An NE is not a zero and is not averaged away. The rubric forbids an
+            # official total while a criterion is NE, so an accepted NE still
+            # blocks finalization -- but it blocks it as a decision that was made,
+            # not as one that is outstanding.
+            if ne_disposition == NE_ACCEPTED:
+                accepted_ne.append({
+                    "criterion": criterion.id,
+                    "adjudication_id": resolution.get("adjudication_id"),
+                    "decided_by": resolution.get("decided_by"),
+                })
+                blocked.append(
+                    f"{criterion.id}: NE accepted by adjudication "
+                    f"{resolution.get('adjudication_id')} "
+                    f"({resolution.get('decided_by')}); the rubric permits no official total "
+                    f"while a criterion is NE"
+                )
+            else:
+                blocked.append(
+                    f"{criterion.id}: unresolved NE from {', '.join(sorted(ne_judges))}"
+                    + (
+                        f"; adjudication {resolution.get('adjudication_id')} carries no "
+                        f"authority ({resolution.get('authority_withheld')})"
+                        if resolution is not None and resolution.get("authority_withheld")
+                        else ""
+                    )
+                )
+                adjudication_required.append(
+                    {"criterion": criterion.id, "trigger": "unresolved-ne"}
+                )
         if mean_values:
             mean = statistics.fmean(mean_values)
             points = rubric.weighted_points(mean, criterion.id)
@@ -402,6 +438,16 @@ def consolidate(
         "blocked_reasons": blocked + integrity,
         "integrity_problems": integrity,
         "adjudication_required": adjudication_required,
+        # D11: a decision that was made, reported as such. An accepted NE still
+        # blocks an official total; it does not keep asking for the adjudication
+        # it already has.
+        "accepted_ne": accepted_ne,
+        "withheld_authority": [
+            dict(entry) for entry in (
+                resolution for resolution in resolutions.values()
+                if resolution.get("authority_withheld")
+            )
+        ],
     }
     return result
 
@@ -416,8 +462,15 @@ def load_judgment_file(path: Path, *, root: Path | None = None) -> Judgment:
     return Judgment.from_metadata(metadata, source=str(path))
 
 
+HUMAN_OFFICIAL = "human-official"
+AGENT_SUBSTITUTED = "agent-substituted"
+NE_ACCEPTED = "accepted"
+NE_CLEARED = "cleared"
+
+
 def load_resolutions(directory: Path, *, team_id: str | None = None,
-                     root: Path | None = None) -> dict[str, Any]:
+                     root: Path | None = None,
+                     withheld: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     """Read adjudicated per-criterion resolutions for one team.
 
     Every condition here closes a way an adjudication could move a total it had
@@ -431,6 +484,7 @@ def load_resolutions(directory: Path, *, team_id: str | None = None,
     from .frontmatter import read
 
     resolutions: dict[str, Any] = {}
+    withheld = withheld if withheld is not None else []
     if not directory.is_dir():
         return resolutions
     if not team_id:
@@ -452,6 +506,30 @@ def load_resolutions(directory: Path, *, team_id: str | None = None,
             continue
         if not metadata.get("decided_by"):
             continue
+        # D13: `decided_by` names a role, and an agent can write a role into a
+        # required field as easily as a human can. The framework cannot verify
+        # that a person decided; it can require the record to say which it was,
+        # and refuse to move an official total on an answer it cannot rely on.
+        # A record written before the field existed says nothing, and silence is
+        # treated as insufficient rather than as consent.
+        authority = metadata.get("decision_authority")
+        authority_withheld = None
+        if authority != HUMAN_OFFICIAL:
+            authority_withheld = (
+                f"decision_authority is {authority!r}; only {HUMAN_OFFICIAL!r} may move an "
+                f"official total"
+                if authority else
+                "the record declares no decision_authority, so nothing establishes that a "
+                "human official decided it"
+            )
+            withheld.append({
+                "adjudication_id": metadata.get("adjudication_id"),
+                "criterion": str(criterion),
+                "decided_by": metadata.get("decided_by"),
+                "decision_authority": authority,
+                "source": str(path),
+                "reason": authority_withheld,
+            })
         # A criterion resolution belongs to exactly one team and to no matchup.
         if metadata.get("team_id") != team_id:
             continue
@@ -474,10 +552,14 @@ def load_resolutions(directory: Path, *, team_id: str | None = None,
             )
         override = metadata.get("score_override")
         resolutions[key] = {
+            "criterion": key,
             "adjudication_id": metadata.get("adjudication_id"),
             "resolved_score": (override or {}).get("resolved_score"),
             "rationale": (override or {}).get("rationale") or metadata.get("resolution_detail"),
             "decided_by": metadata.get("decided_by"),
+            "decision_authority": authority,
+            "authority_withheld": authority_withheld,
+            "amendments": list(metadata.get("amendments") or []),
             "source": str(path),
         }
     return resolutions

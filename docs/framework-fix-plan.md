@@ -30,10 +30,10 @@ version.
 | D8 | `confidence` is undefined for an `NE` criterion; four judges on identical reasoning split between `low` and `high` because one described the evidence and one described the determination | done |
 | D9 | `model.verified` has no defined threshold; on the same basis `judge-backend` recorded `false` and three judges recorded `true` | done |
 | D10 | `framework/templates/adjudication-report.md` invites `persona: ADJUDICATOR-AGENT-OR-HUMAN@VERSION`, but `atj validate` requires a persona registered in `framework/personas.md` as `name@x.y.z`. There is no adjudicator persona and no way to name a human decision-maker | done |
-| D11 | An adjudication can *clear* an `NE` through `score_override`, but nothing can express one that *accepts* it. `atj score` re-reports an adjudicated `NE` as `unresolved` and keeps listing `adjudication_required`, so a completed adjudication is indistinguishable from a missing one | 2 |
+| D11 | An adjudication can *clear* an `NE` through `score_override`, but nothing can express one that *accepts* it. `atj score` re-reports an adjudicated `NE` as `unresolved` and keeps listing `adjudication_required`, so a completed adjudication is indistinguishable from a missing one | done |
 | D12 | The `agentic` criterion does not say how to score a submission that correctly has no AI. Three of its four sub-questions have no subject, and four judges on identical, conclusive facts split across two anchors | done |
-| D13 | `atj/scoring.py:431` treats a non-empty `decided_by` as one of the gates that lets an adjudication move an official total, and nothing distinguishes a human deciding from an agent writing a role into a required field | 2 |
-| D14 | Neither `schemas/adjudication.schema.json` nor `framework/templates/adjudication-report.md` has an amendment field, so an approved adjudication corrected after the fact cannot disclose the correction structurally and ends up citing an audit that post-dates its own `completed_at` | 2 |
+| D13 | `atj/scoring.py:431` treats a non-empty `decided_by` as one of the gates that lets an adjudication move an official total, and nothing distinguishes a human deciding from an agent writing a role into a required field | done |
+| D14 | Neither `schemas/adjudication.schema.json` nor `framework/templates/adjudication-report.md` has an amendment field, so an approved adjudication corrected after the fact cannot disclose the correction structurally and ends up citing an audit that post-dates its own `completed_at` | done |
 | D15 | `atj event unit record` restamps `completed_at` with the current clock and offers no override, so re-recording a unit to change only `audit_result` destroys the real completion time | done |
 | D16 | The stage completion gate has no scope filter: a finding against a framework document, an ignored path, or activity-log prose blocks a stage gate exactly as hard as a wrong score | done |
 | D17 | An agent worktree inside the repository makes `release-check` FAIL and breaks four validators, because they walk the filesystem rather than git. Gitignoring the directory does not help | done |
@@ -989,3 +989,46 @@ every one of them naming a contract that has moved on since it was judged.
 Both completed events keep the same criterion set, ids, weights and scale. That
 is what makes an archive sufficient here; a version that moved a weight would
 need a migration path this does not provide, and a test pins the fact.
+
+## D11, D13 and D14 — the adjudication record says what it does
+
+Three defects in one artifact kind, all three about the gap between what an
+adjudication decided and what the record could express.
+
+**D11 — an accepted `NE`.** `score_override.resolved_score: NE` now means the
+official reviewed the criterion and the `NE` stands. The panel still does not
+finalize, because the rubric permits no official total while a criterion is `NE`
+— but it is unfinalized *by decision*. `atj score` reports it under
+`accepted_ne`, stops listing the criterion in `adjudication_required`, and says
+"NE accepted by adjudication adj:… (event-director)" where it used to say
+"unresolved NE from judge-backend, judge-frontend-ux, …". A criterion now carries
+an `ne_disposition` of `accepted`, `cleared` or nothing at all.
+
+**D13 — who decided.** `decided_by` is a role in a string field, and an agent can
+write a role as easily as a human can. The framework cannot verify that a person
+decided, so it requires the record to say which it was:
+`decision_authority: human-official` or `agent-substituted`, the latter requiring
+a `substitution_reason`. Only `human-official` moves an official total. A record
+that declares nothing — which is every record written before the field existed —
+is treated as substituted, because silence cannot establish authority after the
+fact. The withheld resolution is not swallowed: `atj score` prints
+`Adjudication recorded without authority to move a total` and names the record,
+and `atj validate reports` raises it as an advisory while there is still time to
+fix it. `decided_by` is also now checked against the event's own `officials`
+block; an invented official is a major finding.
+
+live-trial-2026's one adjudication declares no authority and moved no total, so
+nothing official changes — but the console now says why, which is what the
+judging audit asked for when it ruled that the substitution was "acceptable once
+but not as a precedent".
+
+**D14 — what changed after approval.** `amendments` is an append-only array of
+`{amended_at, reason, amended_by, supersedes?}`. The trail must read forward from
+the record's own `completed_at`, and an approved record's last amendment must
+name its author. Backdating is a major finding, and so is an out-of-order trail.
+
+The fields are optional in the schema on purpose. Making any of them required
+would have turned both completed events' adjudications into blocking schema
+failures, which is the trap D28 exists to keep the framework out of. The
+template ships all three filled in, so new records carry them; old ones are
+read as unverified rather than invalid.

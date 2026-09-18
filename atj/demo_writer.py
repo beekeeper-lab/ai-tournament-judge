@@ -546,6 +546,10 @@ def _write_adjudication(
         "resolution_detail": spec["rationale"],
         "impact": "recorded alongside the source scores; no source score was modified",
         "confidence": "medium", "decided_by": spec["decided_by"],
+        # D13: the fixture asserts what it means -- a named human official
+        # decided. Without the field, `atj score` withholds the resolution, which
+        # is the correct treatment of a record that cannot establish who decided.
+        "decision_authority": scoring.HUMAN_OFFICIAL,
         "score_override": override,
         "persona": _persona('judging-auditor', root),
         "visibility": "private", "approval_state": "approved", "validation_state": "valid",
@@ -821,6 +825,7 @@ def _write_close_call_adjudication(
         "impact": f"{CLOSE_CALL_RESOLUTION['winner']} advances",
         "confidence": "medium",
         "decided_by": CLOSE_CALL_RESOLUTION["decided_by"],
+        "decision_authority": scoring.HUMAN_OFFICIAL,
         "score_override": None,
         "commit": team_a.commit,
         "evidence_package_id": demo.evidence_package_id(team_a),

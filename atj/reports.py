@@ -181,6 +181,8 @@ def validate_artifact(
     if schema_name == "judgment":
         findings.extend(_check_judgment_scores(metadata, path, root))
         findings.extend(_check_ne_confidence(metadata, path, event_dir, root))
+    if kind == "adjudications":
+        findings.extend(_check_adjudication_record(metadata, path, event_dir))
 
     if not body.strip():
         findings.append(_finding("blocking", "empty", "artifact has no content below its front matter", path))
@@ -288,6 +290,93 @@ def _check_ne_confidence(
                 f"{criterion!r} is NE with confidence {recorded!r}; "
                 f"{canon.load(root).reference} defines it as {expected!r} here, because "
                 f"{reason}",
+                path,
+            ))
+    return findings
+
+
+def _check_adjudication_record(
+    metadata: dict[str, Any], path: Path, event_dir: Path
+) -> list[Finding]:
+    """D13 and D14: who decided, and what changed after they did.
+
+    D13: `decided_by` names a role, and nothing tied that role to the event's own
+    officials or distinguished a human deciding from an agent writing a role into
+    a required field. `atj score` refuses to move a total without
+    `decision_authority: human-official`; this says so at validation time, while
+    there is still time to fix the record.
+
+    D14: an approved adjudication corrected after the fact had nowhere to disclose
+    the correction. live-trial-2026's record ended up citing an audit that
+    post-dates its own `completed_at`, which is the observable symptom of an edit
+    that was never declared.
+    """
+    findings: list[Finding] = []
+    authority = metadata.get("decision_authority")
+    if authority is None:
+        findings.append(_finding(
+            "advisory", "decision-authority",
+            "declares no decision_authority, so nothing establishes whether a human "
+            "official or an agent decided it; `atj score` will not move an official "
+            "total on it",
+            path,
+        ))
+    elif authority == "agent-substituted":
+        findings.append(_finding(
+            "advisory", "decision-authority",
+            f"records an agent substituting for a human official "
+            f"({metadata.get('substitution_reason')!r}); disclosed, and it moves no "
+            f"official total",
+            path,
+        ))
+
+    decided_by = str(metadata.get("decided_by") or "")
+    config = event_dir / "event.md"
+    if decided_by and config.is_file():
+        try:
+            event_metadata, _ = frontmatter.read(config)
+        except AtjError:
+            event_metadata = {}
+        officials = event_metadata.get("officials") or {}
+        roles = {str(role) for role in officials.values()}
+        if roles and decided_by not in roles:
+            findings.append(_finding(
+                "major", "decided-by",
+                f"decided_by {decided_by!r} is not an official of this event "
+                f"({', '.join(sorted(roles))}); an adjudication is authorized by a role "
+                f"the event configuration names, not by one the record invents",
+                path,
+            ))
+
+    amendments = metadata.get("amendments") or []
+    completed_at = str(metadata.get("completed_at") or "")
+    previous = ""
+    for index, amendment in enumerate(amendments, start=1):
+        if not isinstance(amendment, dict):
+            continue  # the schema reports the shape
+        amended_at = str(amendment.get("amended_at") or "")
+        if completed_at and amended_at and amended_at < completed_at:
+            findings.append(_finding(
+                "major", "amendment",
+                f"amendment {index} is stamped {amended_at}, before the record it amends "
+                f"completed at {completed_at}",
+                path,
+            ))
+        if previous and amended_at and amended_at < previous:
+            findings.append(_finding(
+                "major", "amendment",
+                f"amendment {index} is stamped {amended_at}, before amendment {index - 1} "
+                f"at {previous}; the trail must read forward",
+                path,
+            ))
+        previous = amended_at or previous
+    if amendments and metadata.get("approval_state") == "approved":
+        last = amendments[-1] if isinstance(amendments[-1], dict) else {}
+        if not last.get("amended_by"):
+            findings.append(_finding(
+                "major", "amendment",
+                "the record is approved and its last amendment names no author; a "
+                "correction to an approved artifact is authorized by a person",
                 path,
             ))
     return findings
