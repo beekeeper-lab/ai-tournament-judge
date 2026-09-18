@@ -1,0 +1,144 @@
+{
+  "teams": [
+    {
+      "affiliation_group": "north-academy",
+      "display_name": "Synthetic Team 01",
+      "id": "team-01",
+      "previous_result": "champion",
+      "score": 92.5
+    },
+    {
+      "affiliation_group": "south-institute",
+      "display_name": "Synthetic Team 02",
+      "id": "team-02",
+      "previous_result": "runner-up",
+      "score": 90.4
+    },
+    {
+      "affiliation_group": "east-college",
+      "display_name": "Synthetic Team 03",
+      "id": "team-03",
+      "previous_result": "none",
+      "score": 88.3
+    },
+    {
+      "affiliation_group": "west-polytechnic",
+      "display_name": "Synthetic Team 04",
+      "id": "team-04",
+      "previous_result": "none",
+      "score": 86.2
+    },
+    {
+      "affiliation_group": "central-lab",
+      "display_name": "Synthetic Team 05",
+      "id": "team-05",
+      "previous_result": "none",
+      "score": 84.1
+    },
+    {
+      "affiliation_group": "north-academy",
+      "display_name": "Synthetic Team 06",
+      "id": "team-06",
+      "previous_result": "none",
+      "score": 82.0
+    },
+    {
+      "affiliation_group": "south-institute",
+      "display_name": "Synthetic Team 07",
+      "id": "team-07",
+      "previous_result": "none",
+      "score": 79.9
+    },
+    {
+      "affiliation_group": "east-college",
+      "display_name": "Synthetic Team 08",
+      "id": "team-08",
+      "previous_result": "none",
+      "score": 77.8
+    },
+    {
+      "affiliation_group": "west-polytechnic",
+      "display_name": "Synthetic Team 09",
+      "id": "team-09",
+      "previous_result": "none",
+      "score": 75.7
+    },
+    {
+      "affiliation_group": "central-lab",
+      "display_name": "Synthetic Team 10",
+      "id": "team-10",
+      "previous_result": "none",
+      "score": 73.6
+    },
+    {
+      "affiliation_group": "north-academy",
+      "display_name": "Synthetic Team 11",
+      "id": "team-11",
+      "previous_result": "none",
+      "score": 71.5
+    },
+    {
+      "affiliation_group": "south-institute",
+      "display_name": "Synthetic Team 12",
+      "id": "team-12",
+      "previous_result": "none",
+      "score": 69.4
+    },
+    {
+      "affiliation_group": "east-college",
+      "display_name": "Synthetic Team 13",
+      "id": "team-13",
+      "previous_result": "none",
+      "score": 67.3
+    },
+    {
+      "affiliation_group": "west-polytechnic",
+      "display_name": "Synthetic Team 14",
+      "id": "team-14",
+      "previous_result": "none",
+      "score": 65.2
+    },
+    {
+      "affiliation_group": "central-lab",
+      "display_name": "Synthetic Team 15",
+      "id": "team-15",
+      "previous_result": "none",
+      "score": 63.1
+    },
+    {
+      "affiliation_group": "north-academy",
+      "display_name": "Synthetic Team 16",
+      "id": "team-16",
+      "previous_result": "none",
+      "score": 61.0
+    },
+    {
+      "affiliation_group": "south-institute",
+      "display_name": "Synthetic Team 17",
+      "id": "team-17",
+      "previous_result": "none",
+      "score": 58.9
+    },
+    {
+      "affiliation_group": "east-college",
+      "display_name": "Synthetic Team 18",
+      "id": "team-18",
+      "previous_result": "none",
+      "score": 56.8
+    },
+    {
+      "affiliation_group": "west-polytechnic",
+      "display_name": "Synthetic Team 19",
+      "id": "team-19",
+      "previous_result": "none",
+      "score": 54.7
+    },
+    {
+      "affiliation_group": "central-lab",
+      "display_name": "Synthetic Team 20",
+      "id": "team-20",
+      "previous_result": "none",
+      "score": 52.6
+    }
+  ]
+}

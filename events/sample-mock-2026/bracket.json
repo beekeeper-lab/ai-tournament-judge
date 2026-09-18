@@ -1,0 +1,110 @@
+{
+  "bracket_size": 4,
+  "bye_count": 0,
+  "bye_policy": "performance-qualified",
+  "bye_teams": [],
+  "constraint_audit": [
+    {
+      "constraint": "Every eligible team appears exactly once",
+      "detail": "4 of 4 teams placed",
+      "exceptions": [],
+      "kind": "hard",
+      "status": "satisfied"
+    },
+    {
+      "constraint": "Bye count and match count match the bracket size",
+      "detail": "0 byes, 2 first-round matches, 2 first-round slots",
+      "exceptions": [],
+      "kind": "hard",
+      "status": "satisfied"
+    },
+    {
+      "constraint": "Bye policy 'performance-qualified' applied consistently",
+      "detail": "no byes: the team count is an exact power of two",
+      "exceptions": [],
+      "kind": "hard",
+      "status": "satisfied"
+    },
+    {
+      "constraint": "Previous champion and runner-up in opposite halves",
+      "detail": "team-lumen in slot 1, team-quill in slot 0; earliest meeting is round 2 of 2",
+      "exceptions": [],
+      "kind": "hard",
+      "status": "satisfied"
+    },
+    {
+      "constraint": "No avoidable same-affiliation or previous-finalist first-round match",
+      "detail": "a conflict-free play-in pairing was available and used",
+      "exceptions": [],
+      "kind": "hard",
+      "status": "satisfied"
+    },
+    {
+      "constraint": "Affiliation separation maximized",
+      "detail": "north-academy (2 teams): earliest meeting round 2",
+      "exceptions": [],
+      "kind": "soft",
+      "status": "maximized"
+    }
+  ],
+  "event_id": "sample-mock-2026",
+  "feasible": true,
+  "format": "single-elimination",
+  "framework_commit": "uncommitted",
+  "input_digest": "a4e6804ddfc43d34",
+  "policy": "bracket-assignment@1.0.0",
+  "roster_version": 1,
+  "rounds": [
+    {
+      "matches": [
+        {
+          "bye": false,
+          "entrants": [
+            "team-harbor",
+            "team-quill"
+          ],
+          "match_id": "mu:sample-mock-2026:semifinal:01",
+          "slot": 1,
+          "source_matches": [],
+          "winner": "team-quill"
+        },
+        {
+          "bye": false,
+          "entrants": [
+            "team-verdant",
+            "team-lumen"
+          ],
+          "match_id": "mu:sample-mock-2026:semifinal:02",
+          "slot": 2,
+          "source_matches": [],
+          "winner": "team-lumen"
+        }
+      ],
+      "round_id": "semifinal",
+      "round_index": 1
+    },
+    {
+      "matches": [
+        {
+          "bye": false,
+          "entrants": [
+            "team-quill",
+            "team-lumen"
+          ],
+          "match_id": "mu:sample-mock-2026:final:01",
+          "slot": 1,
+          "source_matches": [
+            "mu:sample-mock-2026:semifinal:01",
+            "mu:sample-mock-2026:semifinal:02"
+          ],
+          "winner": "team-lumen"
+        }
+      ],
+      "round_id": "final",
+      "round_index": 2
+    }
+  ],
+  "seed": "sample-mock-2026-draw",
+  "team_count": 4,
+  "unsatisfied_hard_constraints": []
+}

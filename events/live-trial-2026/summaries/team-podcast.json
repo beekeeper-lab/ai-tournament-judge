@@ -1,0 +1,486 @@
+{
+  "adjudication_required": [
+    {
+      "criterion": "reliability",
+      "trigger": "unresolved-ne"
+    }
+  ],
+  "blocked_reasons": [
+    "reliability: unresolved NE from judge-backend, judge-frontend-ux, judge-product-agentic, judge-security-ops"
+  ],
+  "criteria": {
+    "agentic": {
+      "agreement": "aligned",
+      "criterion": "agentic",
+      "maximum": 3.0,
+      "mean": 2.75,
+      "mean_inputs": [
+        2.0,
+        3.0,
+        3.0,
+        3.0
+      ],
+      "minimum": 2.0,
+      "name": "Agentic and AI system design",
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 1.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        2.0,
+        3.0,
+        3.0,
+        3.0
+      ],
+      "source_scores": {
+        "judge-backend": 2.0,
+        "judge-frontend-ux": 3.0,
+        "judge-product-agentic": 3.0,
+        "judge-security-ops": 3.0
+      },
+      "weight": 15,
+      "weighted_points": 8.25
+    },
+    "engineering": {
+      "agreement": "aligned",
+      "criterion": "engineering",
+      "maximum": 4.0,
+      "mean": 3.75,
+      "mean_inputs": [
+        4.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "minimum": 3.0,
+      "name": "Engineering and maintainability",
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 1.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        4.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "source_scores": {
+        "judge-backend": 4.0,
+        "judge-frontend-ux": 4.0,
+        "judge-product-agentic": 4.0,
+        "judge-security-ops": 3.0
+      },
+      "weight": 15,
+      "weighted_points": 11.25
+    },
+    "functional": {
+      "agreement": "aligned",
+      "criterion": "functional",
+      "maximum": 3.0,
+      "mean": 3.0,
+      "mean_inputs": [
+        3.0,
+        3.0,
+        3.0,
+        3.0
+      ],
+      "minimum": 3.0,
+      "name": "Functional correctness and completeness",
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        3.0,
+        3.0,
+        3.0,
+        3.0
+      ],
+      "source_scores": {
+        "judge-backend": 3.0,
+        "judge-frontend-ux": 3.0,
+        "judge-product-agentic": 3.0,
+        "judge-security-ops": 3.0
+      },
+      "weight": 25,
+      "weighted_points": 15.0
+    },
+    "innovation": {
+      "agreement": "aligned",
+      "criterion": "innovation",
+      "maximum": 4.0,
+      "mean": 3.25,
+      "mean_inputs": [
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "minimum": 3.0,
+      "name": "Innovation and technical ambition",
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 1.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        3.0,
+        4.0,
+        3.0,
+        3.0
+      ],
+      "source_scores": {
+        "judge-backend": 3.0,
+        "judge-frontend-ux": 4.0,
+        "judge-product-agentic": 3.0,
+        "judge-security-ops": 3.0
+      },
+      "weight": 10,
+      "weighted_points": 6.5
+    },
+    "product": {
+      "agreement": "aligned",
+      "criterion": "product",
+      "maximum": 4.0,
+      "mean": 3.75,
+      "mean_inputs": [
+        4.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "minimum": 3.0,
+      "name": "Product value and usability",
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 1.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        4.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "source_scores": {
+        "judge-backend": 4.0,
+        "judge-frontend-ux": 4.0,
+        "judge-product-agentic": 4.0,
+        "judge-security-ops": 3.0
+      },
+      "weight": 15,
+      "weighted_points": 11.25
+    },
+    "reliability": {
+      "agreement": "not-scored",
+      "criterion": "reliability",
+      "maximum": null,
+      "mean": null,
+      "mean_inputs": [],
+      "minimum": null,
+      "name": "Reliability, testing, and observability",
+      "ne_judges": [
+        "judge-backend",
+        "judge-frontend-ux",
+        "judge-product-agentic",
+        "judge-security-ops"
+      ],
+      "possible_outliers": [],
+      "range": null,
+      "resolution": {
+        "adjudication_id": "adj:live-trial-2026:team-podcast:01",
+        "decided_by": "event-director",
+        "rationale": null,
+        "resolved_score": null,
+        "source": "events/live-trial-2026/adjudications/team-podcast-reliability-ne.md"
+      },
+      "resolution_note": "adjudicated resolution recorded alongside the source scores; no source score was modified",
+      "scores": [],
+      "source_scores": {
+        "judge-backend": "NE",
+        "judge-frontend-ux": "NE",
+        "judge-product-agentic": "NE",
+        "judge-security-ops": "NE"
+      },
+      "weight": 10,
+      "weighted_points": null
+    },
+    "security": {
+      "agreement": "aligned",
+      "criterion": "security",
+      "maximum": 3.0,
+      "mean": 3.0,
+      "mean_inputs": [
+        3.0,
+        3.0,
+        3.0,
+        3.0
+      ],
+      "minimum": 3.0,
+      "name": "Security, privacy, and responsible AI",
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        3.0,
+        3.0,
+        3.0,
+        3.0
+      ],
+      "source_scores": {
+        "judge-backend": 3.0,
+        "judge-frontend-ux": 3.0,
+        "judge-product-agentic": 3.0,
+        "judge-security-ops": 3.0
+      },
+      "weight": 10,
+      "weighted_points": 6.0
+    }
+  },
+  "display_total": null,
+  "finalized": false,
+  "individuals": [
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "high",
+          "raw": 2.0,
+          "weight": 15,
+          "weighted_points": 6.0
+        },
+        "engineering": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "functional": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 25,
+          "weighted_points": 15.0
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        },
+        "product": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "reliability": {
+          "confidence": "low",
+          "raw": "NE",
+          "weight": 10,
+          "weighted_points": null
+        },
+        "security": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        }
+      },
+      "display_total": null,
+      "judge_id": "judge-backend",
+      "judge_run_id": "jr:live-trial-2026:team-podcast:judge-backend:d06f90cc:01",
+      "partial_total": 57.0,
+      "persona": "judge-backend@1.0.0",
+      "total": null,
+      "unresolved_ne": [
+        "reliability"
+      ]
+    },
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "engineering": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "functional": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 25,
+          "weighted_points": 15.0
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        },
+        "product": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "reliability": {
+          "confidence": "low",
+          "raw": "NE",
+          "weight": 10,
+          "weighted_points": null
+        },
+        "security": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        }
+      },
+      "display_total": null,
+      "judge_id": "judge-frontend-ux",
+      "judge_run_id": "jr:live-trial-2026:team-podcast:judge-frontend-ux:d06f90cc:01",
+      "partial_total": 62.0,
+      "persona": "judge-frontend-ux@1.0.0",
+      "total": null,
+      "unresolved_ne": [
+        "reliability"
+      ]
+    },
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "engineering": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "functional": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 25,
+          "weighted_points": 15.0
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        },
+        "product": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "reliability": {
+          "confidence": "low",
+          "raw": "NE",
+          "weight": 10,
+          "weighted_points": null
+        },
+        "security": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        }
+      },
+      "display_total": null,
+      "judge_id": "judge-product-agentic",
+      "judge_run_id": "jr:live-trial-2026:team-podcast:judge-product-agentic:d06f90cc:01",
+      "partial_total": 60.0,
+      "persona": "judge-product-agentic@1.0.0",
+      "total": null,
+      "unresolved_ne": [
+        "reliability"
+      ]
+    },
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "engineering": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "functional": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 25,
+          "weighted_points": 15.0
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        },
+        "product": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "reliability": {
+          "confidence": "high",
+          "raw": "NE",
+          "weight": 10,
+          "weighted_points": null
+        },
+        "security": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        }
+      },
+      "display_total": null,
+      "judge_id": "judge-security-ops",
+      "judge_run_id": "jr:live-trial-2026:team-podcast:judge-security-ops:d06f90cc:01",
+      "partial_total": 54.0,
+      "persona": "judge-security-ops@1.0.0",
+      "total": null,
+      "unresolved_ne": [
+        "reliability"
+      ]
+    }
+  ],
+  "integrity_problems": [],
+  "judge_count": 4,
+  "judge_ids": [
+    "judge-backend",
+    "judge-frontend-ux",
+    "judge-product-agentic",
+    "judge-security-ops"
+  ],
+  "judge_run_ids": [
+    "jr:live-trial-2026:team-podcast:judge-backend:d06f90cc:01",
+    "jr:live-trial-2026:team-podcast:judge-frontend-ux:d06f90cc:01",
+    "jr:live-trial-2026:team-podcast:judge-product-agentic:d06f90cc:01",
+    "jr:live-trial-2026:team-podcast:judge-security-ops:d06f90cc:01"
+  ],
+  "provisional_total": 58.25,
+  "rubric": "submission-evaluation@1.0.0",
+  "total": null
+}

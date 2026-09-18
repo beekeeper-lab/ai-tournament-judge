@@ -1,17 +1,68 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "team.schema.json",
-  "title": "Tournament Team",
+  "$id": "https://ai-tournament-judge.local/schemas/team.schema.json",
+  "title": "Team intake record",
   "type": "object",
-  "required": ["id", "display_name", "repository", "commit"],
+  "required": [
+    "id",
+    "display_name",
+    "eligible"
+  ],
   "properties": {
-    "id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
-    "display_name": {"type": "string", "minLength": 1},
-    "affiliation_group": {"type": ["string", "null"]},
-    "previous_result": {"enum": ["champion", "runner-up", "none", null]},
-    "repository": {"type": "string", "minLength": 1},
-    "commit": {"type": "string", "minLength": 7},
-    "score": {"type": "number", "minimum": 0, "maximum": 100}
+    "id": {
+      "$ref": "common.schema.json#/$defs/slug"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "affiliation_group": {
+      "oneOf": [
+        {
+          "$ref": "common.schema.json#/$defs/slug"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "previous_result": {
+      "$ref": "common.schema.json#/$defs/previous_result"
+    },
+    "repository": {
+      "type": "string"
+    },
+    "commit": {
+      "oneOf": [
+        {
+          "$ref": "common.schema.json#/$defs/commit"
+        },
+        {
+          "const": ""
+        }
+      ]
+    },
+    "submitted_at": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    },
+    "eligible": {
+      "type": "boolean"
+    },
+    "band": {
+      "type": "string"
+    },
+    "score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "withdrawn": {
+      "type": "boolean"
+    },
+    "withdrawal_reason": {
+      "type": "string"
+    }
   },
-  "additionalProperties": true
+  "additionalProperties": true,
+  "$comment": "repository and commit are optional until intake pins them; atj.event.validate_roster requires them from the evidence stage onward."
 }

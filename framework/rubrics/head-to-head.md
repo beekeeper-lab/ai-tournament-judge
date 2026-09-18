@@ -4,6 +4,7 @@ version: 1.0.0
 source_rubric: submission-evaluation@1.0.0
 close_call_band: 5
 order_balancing: required
+tie_break_order: [functional, reliability, product]
 ---
 
 # Head-to-Head Comparison Rubric
@@ -29,6 +30,10 @@ Run two fresh comparisons: A then B, and B then A. Do not expose one pass to the
 When passes disagree, evidence is contradictory, or the result is inside the close-call band, use neutral human adjudication or the event's declared tie-break procedure.
 
 ## Tie-break order
+
+Steps 1-3 are declared in this file's `tie_break_order` front matter and read
+from there by `atj matchup`. Steps 4 and 5 need evidence or a decision the
+tooling does not hold, and are referred to a human official.
 
 1. Functional correctness and completeness
 2. Reliability, testing, and observability

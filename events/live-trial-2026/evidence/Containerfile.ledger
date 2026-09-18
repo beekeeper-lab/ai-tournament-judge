@@ -1,0 +1,15 @@
+# Evidence image for team-ledger (hive-ledger).
+# Debian slim, not alpine: duckdb ships manylinux wheels but no musl wheel, so
+# alpine tries to compile it from source and fails.
+# Built with network so the container can RUN with --network none.
+#
+# poppler-utils supplies pdftotext, which src/fin/adapters/citi_pdf.py:198
+# shells out to.
+# Without it the PDF statement adapter cannot run at all, which is the exact
+# condition the intake audit (A9) said would force NE on a criterion. Same
+# reasoning as ffmpeg in the podcast image: a declared prerequisite of the
+# submission belongs in the image, not in the findings.
+FROM docker.io/library/python:3.12-slim
+RUN apt-get update && apt-get install -y --no-install-recommends poppler-utils \
+ && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir "pyyaml>=6.0" "duckdb>=1.0" "pytest>=8.0"

@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/live-trial-2026/team-ledger:/submission:ro,Z localhost/atj-live-trial/ledger:2 sh -c 'which fin; echo ---; pip show hive-ledger 2>&1 | head -5; echo ---; PYTHONPATH=/submission/src python3 -m fin.cli --help 2>&1 | head -20; echo ---; env | grep -i python'",
+  "completed_at": "2026-09-17T00:01:47Z",
+  "duration_seconds": 0.624,
+  "exit_status": 0,
+  "image": "localhost/atj-live-trial/ledger:2",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 60,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-17T00:01:46Z",
+  "stderr": "",
+  "stdout": "---\nWARNING: Package(s) not found: hive-ledger\n---\nusage: fin [-h] [--data-dir DATA_DIR] [--config-dir CONFIG_DIR]\n           {ingest,ingest-amazon,match,detect,validate,render,analyze,dispute,status,sql}\n           ...\n\n`fin` \u2014 the deterministic core. Every skill in `.claude/skills/` drives this\nCLI rather than reading files and doing arithmetic itself. That split is the\npoint: parsing, matching, and money are code with tests, and the model's job\nis to decide *what to run* and to explain what came back.\n\npositional arguments:\n  {ingest,ingest-amazon,match,detect,validate,render,analyze,dispute,status,sql}\n    ingest              load a card statement or export\n    ingest-amazon       load an Amazon order or transaction export\n    match               reconcile card charges to merchant records\n    detect              run anomaly detectors\n    validate            assert ledger invariants\n    render              regenerate markdown reports\n    analyze             spending analytics\n    dispute             build a dispute packet\n    status              ledger summary\n---\nPYTHON_SHA256=5c8462af5790baf43a321a1559dbe0db06d1be4300fb85fb53c40060668e548a\nPYTHON_VERSION=3.12.14\n",
+  "timed_out": false
+}

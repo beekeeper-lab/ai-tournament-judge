@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/live-trial-2026/team-ledger:/submission:ro,Z localhost/atj-live-trial/ledger:2 sh -c 'mkdir -p /tmp/data\nexport PYTHONPATH=/submission/src\nexport FIN_DATA_DIR=/tmp/data\n\ncat > /tmp/statement.csv <<CSV\nStatus,Date,Description,Debit,Credit,Member Name\nCleared,08/06/2026,AMAZON MKTPL*A1B2C3D4E Amzn.com/billWA,20.68,,CARDHOLDER NAME\nCleared,08/10/2026,AMAZON RETA*ZZZZ99999 Amzn.com/billWA,45.12,,CARDHOLDER NAME\nCleared,08/14/2026,AMAZON MKTPL*Q1W2E3R4T5 Amzn.com/billWA,99.99,,CARDHOLDER NAME\nCSV\npython3 -m fin.cli ingest /tmp/statement.csv --account citi-costco-4021\n\ncat > /tmp/amazon_tx.csv <<CSV\ndate,amount,payment_method,order_id,merchant,external_ref\n2026-08-06,20.68,Visa ending in 4021,ORDER-0001,Amazon.com,A1B2C3D4E\n2026-08-11,45.12,Visa ending in 4021,ORDER-0002,Amazon.com,\nCSV\npython3 -m fin.cli ingest-amazon /tmp/amazon_tx.csv\n\necho \"=== match ===\"\npython3 -m fin.cli match\n\necho \"=== sql: matches ===\"\npython3 -m fin.cli sql \"select method, outcome, confidence from matches order by outcome\"\n\necho \"=== detect ===\"\npython3 -m fin.cli detect\n\necho \"=== validate ===\"\npython3 -m fin.cli validate'",
+  "completed_at": "2026-09-17T00:03:25Z",
+  "duration_seconds": 1.28,
+  "exit_status": 0,
+  "image": "localhost/atj-live-trial/ledger:2",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 120,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-17T00:03:23Z",
+  "stderr": "",
+  "stdout": "statement.csv: 3 rows -> 3 new, 0 merged, 0 already known [UNVERIFIED (no control totals)]\namazon_tx.csv: merchant_charges_added=2, duplicates=0\n=== match ===\ncommitted=2, unmatched=1\n=== sql: matches ===\nmethod | outcome | confidence\nREFERENCE | COMMITTED | 1.0\nAMOUNT_DATE_UNIQUE | COMMITTED | 0.95\nAMOUNT_DATE_UNIQUE | UNMATCHED | 0.0\n(3 rows)\n=== detect ===\n[critical] D0  3 AMAZON charges on citi-costco-4021, which is not a permitted card for this merchant  ($165.79)\n[ warning] D1  1 of 3 merchant-feed charges on citi-costco-4021 are unexplained  ($99.99)\n=== validate ===\nOK: conservation, exclusivity, and idempotence all hold.\n",
+  "timed_out": false
+}

@@ -3,6 +3,10 @@ rubric_id: panel-consolidation
 version: 1.0.0
 source_rubric: submission-evaluation@1.0.0
 judge_weighting: equal
+minimum_panel: 2
+aligned_max_range: 1
+material_max_range: 2
+outlier_distance: 2
 ---
 
 # Panel Consolidation Policy
@@ -21,10 +25,13 @@ The consolidator may not replace or adjust an individual score. An adjudicator m
 
 ## Agreement levels
 
-- **Aligned:** maximum minus minimum is 0 or 1.
-- **Material disagreement:** range is 2.
-- **Severe disagreement:** range is 3 or more.
-- **Possible outlier:** one judge is at least 2 points from the median.
+These thresholds are declared in this file's front matter and read from there by
+`atj.scoring`. The prose below restates them; the front matter defines them.
+
+- **Aligned:** maximum minus minimum is at most `aligned_max_range`.
+- **Material disagreement:** range is at most `material_max_range`.
+- **Severe disagreement:** range exceeds `material_max_range`.
+- **Possible outlier:** one judge is at least `outlier_distance` points from the median.
 
 Material disagreement requires explanation. Severe disagreement, contradictory factual findings, or a possible outlier with result-changing impact requires adjudication.
 

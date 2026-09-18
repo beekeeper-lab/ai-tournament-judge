@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/live-trial-2026/team-podcast:/submission:ro,Z localhost/atj-live-trial/podcast:2 sh -c 'cd /submission && bash run.sh; echo EXIT:$?'",
+  "completed_at": "2026-09-17T00:06:11Z",
+  "duration_seconds": 0.331,
+  "exit_status": 0,
+  "image": "localhost/atj-live-trial/podcast:2",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 60,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-17T00:06:10Z",
+  "stderr": "Error: [Errno 30] Read-only file system: '/submission/.venv'\n",
+  "stdout": "==> No venv found, creating one\nEXIT:1\n",
+  "timed_out": false
+}

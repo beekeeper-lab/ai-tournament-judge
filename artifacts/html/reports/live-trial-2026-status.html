@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>live-trial-2026 — Evaluation Results and Framework Findings</title>
+<style>
+:root{
+  --bg:#f7f8fa;--panel:#ffffff;--ink:#1f2937;--muted:#6b7280;--border:#d1d5db;
+  --border-strong:#9ca3af;--accent:#2563eb;--accent-soft:#dbeafe;--accent-ink:#1e3a8a;
+  --success:#166534;--success-soft:#dcfce7;--warning:#92400e;--warning-soft:#fef3c7;
+  --danger:#991b1b;--danger-soft:#fee2e2;--code-bg:#111827;--code-ink:#e5e7eb;
+  --th-bg:#f1f5f9;--row-hover:#fafbfc;--chip-bg:#f1f5f9;--chip-ink:#0f172a;
+  --chip-border:#e5e7eb;--radius:8px;--radius-sm:4px;
+  --shadow:0 1px 2px rgba(0,0,0,.04),0 1px 3px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+a:hover{text-decoration-thickness:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+.page{max-width:64rem;margin:0 auto;padding:2rem 1.25rem 4rem}
+@media(min-width:56rem){.page{padding:3rem 2rem 5rem}}
+.hero{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.75rem;margin-bottom:1.5rem;box-shadow:var(--shadow)}
+.hero h1{margin:0 0 .4rem;font-size:1.75rem;line-height:1.25;letter-spacing:-.01em}
+.hero .sub{color:var(--muted);margin:0 0 1rem;font-size:1.02rem}
+.meta{display:flex;flex-wrap:wrap;gap:.5rem .75rem;font-size:.85rem;color:var(--muted);
+  border-top:1px solid var(--border);padding-top:.9rem;margin-top:.2rem}
+.meta b{color:var(--ink);font-weight:600}
+.subjects{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:.75rem;margin:0 0 1rem}
+.subj{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:.7rem .8rem}
+.subj-hd{font-weight:650;font-size:.98rem;margin-bottom:.15rem}
+.subj-src{color:var(--muted);font-size:.8rem;margin-bottom:.4rem;word-break:break-all}
+.subj-state{font-size:.86rem;line-height:1.45;border-left:3px solid var(--border);padding-left:.55rem}
+.subj-state.done{border-left-color:#2e7d52}
+.subj-state.todo{border-left-color:#b4842c}
+.chip{display:inline-block;background:var(--chip-bg);color:var(--chip-ink);
+  border:1px solid var(--chip-border);border-radius:999px;padding:.12rem .6rem;
+  font-size:.78rem;font-weight:600;white-space:nowrap}
+.chip.ok{background:var(--success-soft);color:var(--success);border-color:#bbf7d0}
+.chip.warn{background:var(--warning-soft);color:var(--warning);border-color:#fde68a}
+.chip.bad{background:var(--danger-soft);color:var(--danger);border-color:#fecaca}
+.chip.info{background:var(--accent-soft);color:var(--accent-ink);border-color:#bfdbfe}
+nav.toc{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1rem 1.25rem;margin-bottom:1.5rem;box-shadow:var(--shadow)}
+nav.toc h2{margin:0 0 .5rem;font-size:.8rem;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--muted)}
+nav.toc ol{margin:0;padding-left:1.2rem;columns:2;column-gap:2rem}
+@media(max-width:46rem){nav.toc ol{columns:1}}
+nav.toc li{margin:.18rem 0}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+  padding:1.5rem;margin-bottom:1.5rem;box-shadow:var(--shadow)}
+.card>h2{margin:0 0 .25rem;font-size:1.3rem;letter-spacing:-.005em;scroll-margin-top:1rem}
+.card>h2+.lede{color:var(--muted);margin:0 0 1.1rem}
+h3{font-size:1.05rem;margin:1.6rem 0 .5rem}
+h3:first-of-type{margin-top:1rem}
+p{margin:.7rem 0}
+ul,ol{margin:.7rem 0;padding-left:1.35rem}
+li{margin:.3rem 0}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.92rem}
+th,td{text-align:left;padding:.55rem .7rem;border-bottom:1px solid var(--border);
+  vertical-align:top}
+th{background:var(--th-bg);font-weight:600;font-size:.82rem;text-transform:uppercase;
+  letter-spacing:.04em;color:var(--muted)}
+tbody tr:hover{background:var(--row-hover)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tfoot td{font-weight:700;border-top:2px solid var(--border-strong);border-bottom:none}
+code{background:var(--chip-bg);border:1px solid var(--chip-border);border-radius:3px;
+  padding:.06em .32em;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.88em}
+pre{background:var(--code-bg);color:var(--code-ink);padding:1rem;border-radius:var(--radius-sm);
+  overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.84rem;line-height:1.55}
+pre code{background:none;border:none;padding:0;color:inherit;font-size:inherit}
+.callout{border-left:4px solid var(--accent);background:var(--accent-soft);
+  padding:.9rem 1.1rem;border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin:1.1rem 0}
+.callout.warn{border-color:#d97706;background:var(--warning-soft)}
+.callout.bad{border-color:#dc2626;background:var(--danger-soft)}
+.callout.ok{border-color:#16a34a;background:var(--success-soft)}
+.callout p:first-child{margin-top:0}.callout p:last-child{margin-bottom:0}
+.callout .label{font-weight:700;font-size:.78rem;text-transform:uppercase;
+  letter-spacing:.05em;display:block;margin-bottom:.3rem}
+.grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));margin:1rem 0}
+.stat{border:1px solid var(--border);border-radius:var(--radius-sm);padding:.9rem 1rem;
+  background:var(--bg)}
+.stat .v{font-size:1.6rem;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat .k{font-size:.78rem;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.05em;margin-top:.25rem}
+.scope{border:1px solid var(--border-strong);border-radius:var(--radius);
+  background:var(--warning-soft);padding:1.1rem 1.3rem;margin-bottom:1.5rem}
+.scope h2{margin:0 0 .4rem;font-size:1rem;color:var(--warning)}
+.scope p{margin:.4rem 0}
+footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);
+  padding-top:1rem;margin-top:2rem}
+.bar{height:.5rem;background:var(--chip-bg);border-radius:999px;overflow:hidden;
+  min-width:5rem;border:1px solid var(--chip-border)}
+.bar>span{display:block;height:100%;background:var(--accent)}
+@media print{
+  body{background:#fff;font-size:11pt}
+  .page{max-width:none;padding:0}
+  nav.toc{display:none}
+  .card,.hero,.scope{box-shadow:none;border:1px solid #999;page-break-inside:avoid;
+    margin-bottom:1rem}
+  pre{white-space:pre-wrap;word-wrap:break-word;border:1px solid #999}
+  a{text-decoration:none;color:#000}
+  a[href^="http"]::after{content:" (" attr(href) ")";font-size:9pt;color:#555}
+  h2,h3{page-break-after:avoid}
+  table{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="hero">
+  <h1>live-trial-2026 — Evaluation Results and Framework Findings</h1>
+  <p class="sub">First live run of the AI Tournament Judge framework against real
+  applications, real container isolation, and real model judgment. The subject under
+  test is the framework itself.</p>
+
+  <div class="subjects">
+    <div class="subj">
+      <div class="subj-hd"><code>team-ledger</code> — Hive Ledger</div>
+      <div class="subj-src">github.com/beekeeper-lab/hive-ledger @ <code>9d21b770</code></div>
+      <div class="subj-state done">Judged — <b>76.3 / 100</b>, finalized, all 7 criteria aligned,
+      no NE. <b>Won the final</b>, combined margin +35.00 across both presentation orders.</div>
+    </div>
+    <div class="subj">
+      <div class="subj-hd"><code>team-podcast</code> — Podcast Listener</div>
+      <div class="subj-src">github.com/beekeeper-lab/podcast-listener @ <code>f3fdd342</code></div>
+      <div class="subj-state todo">Judged — 4 of 4 judges, six criteria aligned. <b>No official total</b>:
+      <code>reliability</code> is NE from all four judges, adjudicated and <b>accepted</b>. The record
+      states the cause is the framework's and the operator's sandbox limits, not the team's work.</div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <span><b>Status</b> <b>Complete</b> — all 9 stage gates passed</span>
+    <span><b>Winner</b> team-ledger, combined margin +35.00, confirmed</span>
+    <span><b>Evaluated</b> 2 of 2 teams, both judged</span>
+    <span><b>Rubric</b> 7 criteria, 4 independent judges per team</span>
+    <span><b>Sandboxed runs</b> 27 · <b>Framework defects found</b> 26</span>
+    <span><b>Date</b> 2026-09-16 to 2026-09-18</span>
+    <span><b>Branch</b> <code>feature/first-live-event</code></span>
+    <span><b>Head</b> <code>event complete</code></span>
+    <span><b>Owner</b> event-director</span>
+  </div>
+</header>
+
+<section class="scope">
+  <h2>Read this first — what has and has not been evaluated</h2>
+  <p><b>Both teams were judged and the event is complete.</b> All nine stage gates
+  passed. <code>team-ledger</code> finished at <b>76.3</b>, finalized, and won the final.
+  <code>team-podcast</code> finished with <b>no official total</b>, because
+  <code>reliability</code> was <code>NE</code> from all four judges and the adjudication
+  accepted rather than cleared it.</p>
+
+  <p><b>The missing total is the framework's fault, not the team's.</b> Three runs of
+  team-podcast's own test suite produced three different outcomes and none could be
+  classified. Every traced failure points away from their code — the server had already
+  returned <code>200 OK</code> before both stage-3 failures. The cause was this framework's
+  own sandbox: a 64&nbsp;MB tmpfs that could not hold a 2.2&nbsp;GB library, a 64&nbsp;MB
+  <code>/dev/shm</code>, and no <code>--shm-size</code>. One re-run would likely have made the
+  criterion scorable; the event declined, because re-running evidence after judging began
+  would have invalidated all four judgments citing it.</p>
+
+  <p>The missing total blocked nothing: two teams is an exact power of two so no bye policy
+  read a score, and the head-to-head rubric forbids selecting on initial totals. Both matchup
+  judges independently returned comparison value <code>0</code> on <code>reliability</code> and
+  explicitly refused to treat the <code>NE</code> as a deficiency.</p>
+
+  <p><b>The real product of this trial is 26 framework defects</b>, every one found by running
+  the event rather than by reading the code. They are tracked as D1–D26 in
+  <code>docs/framework-fix-plan.md</code>.</p>
+</section>
+
+<nav class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#stands">Where the event stands</a></li>
+    <li><a href="#ledger">team-ledger panel result</a></li>
+    <li><a href="#convergence">What the judges converged on</a></li>
+    <li><a href="#podcast">team-podcast — evidence only</a></li>
+    <li><a href="#audits">The evidence audit: three rounds</a></li>
+    <li><a href="#headline">The headline finding</a></li>
+    <li><a href="#defects">Framework defects found</a></li>
+    <li><a href="#plan">Remediation plan</a></li>
+    <li><a href="#remaining">What remains</a></li>
+  </ol>
+</nav>
+
+<section class="card" id="stands">
+  <h2>Where the event stands</h2>
+  <p class="lede">Nine stage gates. Three passed.</p>
+
+  <table>
+    <thead><tr><th>Stage gate</th><th>State</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td>configuration-audited</td><td><span class="chip ok">passed</span></td><td><code>audits/configuration.md</code> — pass with advisories</td></tr>
+      <tr><td>roster-frozen</td><td><span class="chip ok">passed</span></td><td><code>audits/intake.md</code> — pass with advisories</td></tr>
+      <tr><td>evidence-validated</td><td><span class="chip ok">passed</span></td><td><code>audits/evidence.md</code> — pass with advisories, third pass</td></tr>
+      <tr><td>judgments-audited</td><td><span class="chip warn">pending</span></td><td>team-ledger panel done; team-podcast not started</td></tr>
+      <tr><td>consolidation-audited</td><td><span class="chip">pending</span></td><td>—</td></tr>
+      <tr><td>bracket-audited</td><td><span class="chip">pending</span></td><td>—</td></tr>
+      <tr><td>tournament-audited</td><td><span class="chip">pending</span></td><td>—</td></tr>
+      <tr><td>dossiers-approved</td><td><span class="chip">pending</span></td><td>—</td></tr>
+      <tr><td>final-audit-passed</td><td><span class="chip">pending</span></td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <div class="grid">
+    <div class="stat"><div class="v">2</div><div class="k">teams, both eligible</div></div>
+    <div class="stat"><div class="v">27</div><div class="k">sandboxed run records</div></div>
+    <div class="stat"><div class="v">4</div><div class="k">judgments written</div></div>
+    <div class="stat"><div class="v">3</div><div class="k">evidence audit rounds</div></div>
+    <div class="stat"><div class="v">6</div><div class="k">framework defects</div></div>
+    <div class="stat"><div class="v">354</div><div class="k">framework tests passing</div></div>
+  </div>
+
+  <p>Every execution ran through <code>atj sandbox run</code> under rootless podman
+  6.1.0, with <code>--network none</code>, a read-only source mount, dropped
+  capabilities and a 64&nbsp;MB tmpfs. Nothing from either submission executed on the
+  host.</p>
+</section>
+
+<section class="card" id="ledger">
+  <h2>team-ledger panel result</h2>
+  <p class="lede">Hive Ledger — a local-first personal finance reconciliation CLI,
+  pinned at <code>9d21b770</code>. Four independent judges, consolidated by
+  <code>atj score</code>.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Criterion</th>
+        <th>backend</th><th>frontend-ux</th><th>product-agentic</th><th>security-ops</th>
+        <th class="num">Mean</th><th class="num">Weight</th><th class="num">Points</th>
+        <th>Agreement</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>functional</td><td>4</td><td>4</td><td>4</td><td>4</td><td class="num">4.00</td><td class="num">25</td><td class="num">20.00</td><td><span class="chip ok">aligned</span></td></tr>
+      <tr><td>product</td><td>4</td><td>3</td><td>4</td><td>4</td><td class="num">3.75</td><td class="num">15</td><td class="num">11.25</td><td><span class="chip ok">aligned</span></td></tr>
+      <tr><td>agentic</td><td>3</td><td>3</td><td>4</td><td>4</td><td class="num">3.50</td><td class="num">15</td><td class="num">10.50</td><td><span class="chip ok">aligned</span></td></tr>
+      <tr><td>engineering</td><td>4</td><td>4</td><td>4</td><td>4</td><td class="num">4.00</td><td class="num">15</td><td class="num">12.00</td><td><span class="chip ok">aligned</span></td></tr>
+      <tr><td>reliability</td><td>3</td><td>3</td><td>3</td><td>4</td><td class="num">3.25</td><td class="num">10</td><td class="num">6.50</td><td><span class="chip ok">aligned</span></td></tr>
+      <tr><td>security</td><td>4</td><td>4</td><td>4</td><td>4</td><td class="num">4.00</td><td class="num">10</td><td class="num">8.00</td><td><span class="chip ok">aligned</span></td></tr>
+      <tr><td>innovation</td><td>4</td><td>4</td><td>4</td><td>4</td><td class="num">4.00</td><td class="num">10</td><td class="num">8.00</td><td><span class="chip ok">aligned</span></td></tr>
+    </tbody>
+    <tfoot>
+      <tr><td colspan="5">Consolidated total</td><td class="num">100</td><td class="num">76.3</td><td></td></tr>
+    </tfoot>
+  </table>
+
+  <p>No <code>NE</code>, no outlier, no severe disagreement, no adjudication required.
+  Maximum spread on any criterion is 1 point, inside the policy's
+  <code>aligned_max_range</code>. The consolidator was not invoked as a fifth judge and
+  changed no source score.</p>
+
+  <div class="callout">
+    <span class="label">On the uniformity</span>
+    <p>Four judges independently landing this close is worth a second look, not
+    applause. Two readings are available and the panel report should say which it
+    believes: either the submission genuinely has a consistent character — competent
+    throughout, one step short of demonstrated in every area — or four instances of the
+    same base model reading the same evidence package produce correlated output, and
+    the panel's apparent agreement is less independent than its structure implies. The
+    framework enforces independence structurally through staging, but staging cannot
+    make one model into four people. <code>atj validate reports</code> checks for
+    near-duplicate wording and found none; that is a contamination detector, not a
+    correlation detector.</p>
+  </div>
+</section>
+
+<section class="card" id="convergence">
+  <h2>What the judges converged on</h2>
+  <p class="lede">Findings that more than one judge reached independently, with no
+  access to each other's reports.</p>
+
+  <h3>Strengths, agreed</h3>
+  <ul>
+    <li><b>Refusal is implemented, not advertised.</b> All four traced the stated
+    principle — refuse rather than guess — into executed behavior: the CSV adapter
+    refusing to infer a credit sign, the control-total gate rejecting a statement for a
+    genuine $500 discrepancy, the matcher declining to be a global optimizer, and the
+    D1 detector refusing to report a 0% match rate against a feed that was never
+    loaded.</li>
+    <li><b>The AI boundary is structural.</b> An exhaustive grep across all 22 files of
+    <code>src/fin/</code> found no network, HTTP or model import or call site. Money and
+    parsing cannot silently become model output, because no model is reachable from
+    them.</li>
+    <li><b>Privacy controls are enforced in code and were executed.</b> Vault root
+    <code>0700</code>, archived source <code>0600</code>, dispute CSV <code>0600</code>,
+    a card-number guard that raises at config load with tests behind it, and a shipped
+    pre-commit hook that blocks ledger data and Luhn-valid card numbers.</li>
+  </ul>
+
+  <h3>Defects, agreed</h3>
+  <table>
+    <thead><tr><th>Finding</th><th>Judges</th><th>Class</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>src/fin/dispute.py</code> computes a statutory deadline and a dollar
+        figure, has zero unit tests, and never executed outside its
+        <code>NO_STATEMENT</code> branch in any run.</td>
+        <td>all four</td><td><span class="chip warn">untested, high stakes</span></td>
+      </tr>
+      <tr>
+        <td><code>fin sql</code> executes agent-composed SQL on a default DuckDB
+        connection — no read-only mode, no <code>enable_external_access=false</code>, no
+        statement-kind check — in a product whose thesis is that the model never touches
+        I/O. Reachable from untrusted merchant descriptors.</td>
+        <td>security-ops, product-agentic</td><td><span class="chip bad">credible risk</span></td>
+      </tr>
+      <tr>
+        <td>Documentation attributes tier-0 matching to <code>order_id</code>; the code
+        keys on <code>external_ref</code>. A user following the documented column list
+        silently loses the highest-confidence match tier.</td>
+        <td>backend, frontend-ux, product-agentic</td><td><span class="chip bad">confirmed defect</span></td>
+      </tr>
+      <tr>
+        <td>Two of four ingest rejection paths emit a Python traceback instead of the
+        clean <code>REJECTED</code> line. Nothing is written either way, so it is safe
+        but inconsistent.</td>
+        <td>all four</td><td><span class="chip warn">confirmed defect</span></td>
+      </tr>
+      <tr>
+        <td>Tier-3 subset-sum edges bypass <code>resolve()</code> and can only ever
+        surface as <code>AMBIGUOUS</code>, never as a committed match — contradicting
+        the engine docstring, the README tier table and the skill text.</td>
+        <td>backend, product-agentic</td><td><span class="chip warn">docs vs code</span></td>
+      </tr>
+      <tr>
+        <td>The dispute clock defaults to the ledger's latest post date rather than
+        today, so a stale ledger shows an expired billing-error window as open.</td>
+        <td>product-agentic</td><td><span class="chip bad">silent, on by default</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>No submission content attempted to direct an evaluator. Three judges ran their own
+  independent injection scans across the checkout and all three came back clean,
+  corroborating the evidence package's scan rather than relying on it.</p>
+</section>
+
+<section class="card" id="podcast">
+  <h2>team-podcast — evidence only, no panel yet</h2>
+  <p class="lede">Podcast Listener, pinned at <code>f3fdd342</code>. Evidence package
+  audited and gated; judging not started.</p>
+
+  <p>One criterion is already marked <code>evidence_limited_criteria: [reliability]</code>,
+  which means the panel will carry an <code>NE</code> and this team will have
+  <b>no finalizable total</b>. That is the correct outcome, not a failure, and it will
+  propagate into the head-to-head.</p>
+
+  <div class="callout warn">
+    <span class="label">Why reliability is NE</span>
+    <p>The submission's reliability story is its end-to-end browser suite. Three
+    executions against the same commit and the same image produced three different
+    outcomes: one reached stage 7 of 11 and stalled; one stopped at stage 3 with a 90-second
+    download timeout while a second container shared the host; one, re-run in isolation
+    specifically to settle that question, ended with a Chromium renderer crash at stage 3
+    after roughly seven seconds of suite time. None of the three was classified. The
+    submission's own pass claim is internally inconsistent — the README states both
+    "34/34" and "42/42" against 43 check sites. A judge could defend a low score or a
+    high one from this package, which is exactly what <code>NE</code> is for.</p>
+    <p>This is a statement about the evidence, not a finding against the submission.
+    Nothing observed shows the suite failing for a reason traced to the team's code.</p>
+  </div>
+
+  <p>Two environmental limitations were handled differently, on purpose. A missing
+  declared prerequisite — <code>poppler-utils</code> for one team, <code>ffmpeg</code>
+  for the other — is an operator error that penalises a submission for something outside
+  it, so both were fixed by amending the approved image. The sandbox's 64&nbsp;MB tmpfs
+  is not: it is a framework-wide cap applied identically to everyone, and moving it
+  mid-event for the one team it constrains would be the unfair act. The consequence is
+  recorded rather than removed.</p>
+</section>
+
+<section class="card" id="audits">
+  <h2>The evidence audit: three rounds</h2>
+  <p class="lede">The evidence stage took three full audit passes to clear. Each pass
+  found real errors the previous pass missed.</p>
+
+  <table>
+    <thead><tr><th>Round</th><th>Verdict</th><th>Raised</th><th>Representative finding</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>1</td><td><span class="chip bad">FAIL</span></td>
+        <td>4 major, 5 minor, 7 advisory</td>
+        <td><code>Containerfile.ledger</code> never contained <code>poppler-utils</code>
+        in any commit, so the committed recipe did not build the approved image.
+        Rebuilding from it would produce an image where the PDF adapter cannot run at
+        all.</td>
+      </tr>
+      <tr>
+        <td>2</td><td><span class="chip bad">FAIL</span></td>
+        <td>2 major, 1 minor, 2 advisory</td>
+        <td>Nine ledger requirement rows had been repointed, but the walk stopped at the
+        nine the first audit named. R12's claim that the package makes no network or LLM
+        call cited an observation that greps the <em>skill files</em> and never examines
+        <code>src/fin/</code> at all.</td>
+      </tr>
+      <tr>
+        <td>3</td><td><span class="chip ok">PASS WITH ADVISORIES</span></td>
+        <td>5 minor, 4 advisory</td>
+        <td>Residual citation and timestamp defects, none changing a conclusion, an
+        evidence class, a confidence rating, or any number a judge scores against.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout bad">
+    <span class="label">Three of the errors were introduced by the repairs</span>
+    <p>Round 2 found that a row written during the round-1 repair asserted
+    <code>playwright 1.56.0</code> as a high-confidence direct observation. No run record
+    contains that number: the probe that was supposed to measure it raised
+    <code>AttributeError</code> and returned nothing, and the only measured version
+    anywhere in the event is <code>1.63.0</code>. The value was fabricated, inside a row
+    whose entire purpose was to assure judges the runtime had been measured rather than
+    assumed.</p>
+    <p>Round 3 found the same class again one line over: the corrected row still
+    attributed <code>starlette 1.6.0</code> to a measurement that was never taken. It
+    also found that the round-1 repair to <code>Containerfile.ledger</code> cited
+    <code>src/fin/ingest/pdf.py</code>, a path that does not exist at the pinned
+    commit.</p>
+    <p>Repair is a source of defects, not just a sink. An audit cycle that stops at the
+    first PASS stops one round too early.</p>
+  </div>
+</section>
+
+<section class="card" id="headline">
+  <h2>The headline finding</h2>
+  <p class="lede">The deterministic tooling cannot detect a false claim. It never
+  could, and nothing in the event surfaced that until a model looked.</p>
+
+  <div class="callout bad">
+    <p><b><code>atj validate reports</code> returned zero findings at every single
+    stage</b> — before audit 1, between every repair round, and after audit 3. It
+    returned zero findings on manifests that contained nine citations pointing at the
+    wrong observation, a scan credited to an observation that never examined the code in
+    question, and a fabricated version number.</p>
+  </div>
+
+  <p>The reason is structural, not a bug. <code>validate reports</code> checks that an
+  evidence identifier <em>resolves</em> — that the id exists in the document. It cannot
+  check that the target <em>contains the claim made of it</em>. Both properties look
+  identical to a schema.</p>
+
+  <p>The practical consequence for anyone running this framework:</p>
+  <ul>
+    <li>A green <code>validate reports</code> is necessary and nowhere near sufficient.
+    It means the artifact is well-formed, not that it is true.</li>
+    <li>The LLM audit is doing load-bearing work. It is not ceremony layered on top of
+    real checks; on this event it was the <em>only</em> thing that caught any of the
+    substantive errors.</li>
+    <li>One audit pass is not enough when the same pass also specifies repairs. Three
+    passes found a decreasing but non-zero number of real defects each time.</li>
+  </ul>
+
+  <p>This is the most valuable result the live trial has produced, and it is a finding
+  about the framework, which is exactly what the event exists to test.</p>
+</section>
+
+<section class="card" id="defects">
+  <h2>Framework defects found</h2>
+  <p class="lede">Six. Two were repaired during the event because they touched nothing
+  the event depends on; the rest cannot be repaired while an event is judging.</p>
+
+  <table>
+    <thead><tr><th>#</th><th>Defect</th><th>Why the sample event never caught it</th><th>State</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>D1</td>
+        <td><b>Judge personas cannot write their own artifact.</b>
+        <code>.claude/agents/judge-*.md</code> declares
+        <code>tools: Read, Grep, Glob</code>, but <code>judge-submission</code> requires
+        each judge to produce a file. All four returned their document as chat text.</td>
+        <td><code>demo_writer.py</code> generates the sample judgments directly. No
+        persona ever ran.</td>
+        <td><span class="chip warn">frozen — needs new persona version</span></td>
+      </tr>
+      <tr>
+        <td>D2</td>
+        <td><b>Schema and template disagree.</b>
+        <code>schemas/judgment.schema.json</code> requires a <code>model</code> block
+        that <code>framework/templates/individual-judgment.md</code> never shows. All
+        four judgments failed validation blocking on it.</td>
+        <td>The sample's front matter is generated from a fixture that happens to include
+        the block.</td>
+        <td><span class="chip info">safe to fix now</span></td>
+      </tr>
+      <tr>
+        <td>D3</td>
+        <td><b><code>atj render judgment</code> did not exist</b> although the judgment
+        template cites it by name as the thing that generates official numbers.</td>
+        <td>Only <code>demo_writer.py</code> could render the scores table, and only for
+        the synthetic sample.</td>
+        <td><span class="chip ok">fixed — <code>3a798ad</code>, <code>4ac09ba</code></span></td>
+      </tr>
+      <tr>
+        <td>D4</td>
+        <td><b>Validation cannot check that a citation supports its claim.</b> See the
+        headline finding above.</td>
+        <td>Fixture manifests are generated with correct citations by construction.</td>
+        <td><span class="chip warn">needs design — next version</span></td>
+      </tr>
+      <tr>
+        <td>D5</td>
+        <td><b><code>atj/event.py:745</code> writes <code>status.md.bak</code></b> on
+        every ledger update. It was committed twice before anyone noticed.</td>
+        <td>The sample is regenerated wholesale rather than edited incrementally.</td>
+        <td><span class="chip ok">fixed — gitignored</span></td>
+      </tr>
+      <tr>
+        <td>D6</td>
+        <td><b>A guard-rail hook false-positives on prose.</b>
+        <code>.claude/hooks/pre-advance.sh</code> blocked a <code>git commit</code> whose
+        message merely <em>named</em> a submission's test file, reading it as an attempt
+        to run submission code on the host.</td>
+        <td>The sample event never writes prose about a submission's internals.</td>
+        <td><span class="chip info">safe to fix now</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <span class="label">Why most of these were not fixed during the event</span>
+    <p>The repository rule is that an active event's rubric, weights, personas, bracket
+    policy and evidence are frozen once judging begins. D1 is the clearest case: giving
+    the judges a <code>Write</code> tool changes the persona definition, which bumps
+    <code>judge-*@1.0.0</code> to <code>@1.1.0</code> in
+    <code>framework/personas.md</code>. team-ledger's four judgments already record
+    <code>@1.0.0</code>. If team-podcast's recorded <code>@1.1.0</code>, the two panels
+    would have been produced by different personas and the head-to-head that compares
+    them would be comparing unlike things.</p>
+    <p>The workaround — the orchestrator persisting each returned document verbatim — is
+    explicitly sanctioned by the skill's own step 4, which permits holding a report in
+    the orchestrator's context rather than in staging.</p>
+  </div>
+</section>
+
+<section class="card" id="plan">
+  <h2>Remediation plan</h2>
+  <p class="lede">Three tiers, ordered by what the live event permits. The source of
+  truth for this plan is <code>docs/framework-fix-plan.md</code>; this section is the
+  review surface.</p>
+
+  <h3>Tier 1 — land now, during the event</h3>
+  <p>Changes that touch no rubric, no persona, no policy, no evidence, and no number.</p>
+  <ul>
+    <li><b>T1.1 (D2)</b> — add the <code>model</code> block to
+    <code>framework/templates/individual-judgment.md</code>, documenting what
+    <code>schemas/judgment.schema.json</code> already enforces. Add a
+    <code>release-check</code> assertion that every template satisfies its own schema, so
+    this class cannot recur silently.</li>
+    <li><b>T1.2 (D6)</b> — narrow <code>.claude/hooks/pre-advance.sh</code> so it
+    inspects the command being executed rather than the whole command string including
+    commit-message bodies and heredoc content. The guard stays blunt about actual
+    execution; it stops firing on documentation.</li>
+  </ul>
+
+  <h3>Tier 2 — after live-trial-2026 reaches <code>complete</code></h3>
+  <ul>
+    <li><b>T2.1 (D1)</b> — give the four judge personas a <code>Write</code> tool scoped
+    to <code>workspaces/&lt;event&gt;/staging/&lt;team&gt;/</code>, bump each to
+    <code>@1.1.0</code> in <code>framework/personas.md</code>, and add an end-to-end test
+    that spawns a persona and asserts it can produce its own artifact. A persona that
+    cannot write the file its skill demands is a contract violation the test suite should
+    catch.</li>
+    <li><b>T2.2</b> — extend <code>atj release-check</code> to cross-check every agent
+    definition's declared tools against the artifacts its skill requires it to produce.
+    D1 existed because nothing compared the two.</li>
+  </ul>
+
+  <h3>Tier 3 — next framework version, needs design</h3>
+  <p><b>T3.1 (D4)</b> — make a misdirected citation structurally detectable. Semantic
+  truth is not checkable, but this specific failure is, through bidirectional linking:</p>
+  <pre><code>Requirements table              Direct observations table
+  R2 → cites ev-ledger-06         ev-ledger-06 → supports [R2, R3, R4, R9]
+
+atj validate reports then asserts the two agree.</code></pre>
+  <p>A row citing an observation that does not claim to support it becomes a blocking
+  finding. This catches the exact nine-row failure from audit 1 deterministically,
+  because the observation's author has to independently assert the same link — one
+  person's slip no longer passes silently. It requires a schema change and a migration
+  for existing manifests, which is why it is not a mid-event fix.</p>
+
+  <p><b>T3.2</b> — record in <code>framework/rubrics/README.md</code> that a single
+  audit pass is insufficient when that pass also specifies repairs, and that the repair
+  round must itself be audited. Three rounds on this event; each found defects the last
+  one missed, and three of those defects were created by the repairs.</p>
+</section>
+
+<section class="card" id="remaining">
+  <h2>What remains</h2>
+  <ol>
+    <li><b>team-podcast panel</b> — four independent judgments, staged then promoted
+    together. <code>reliability</code> is expected to come back <code>NE</code>.</li>
+    <li><b>Judging audit and gate</b> for both teams, which must state the
+    <code>framework_commit</code> difference between the judgments and the evidence
+    packages.</li>
+    <li><b>Two consolidated panel reports</b> via <code>panel-consolidator</code> into
+    <code>summaries/</code>, then the consolidation gate.</li>
+    <li><b>Bracket</b> — two teams, different affiliation groups, one matchup, no byes.</li>
+    <li><b>Head-to-head</b> judged in both presentation orders, close-call band 5.
+    One team will have no finalizable total, which the matchup rubric must handle
+    explicitly rather than by accident.</li>
+    <li><b>Two dossiers</b>, publication validation, final event audit, mark complete.</li>
+  </ol>
+  <p>Operator notes with the exact judge brief, the gotchas and the stage order live at
+  <code>events/live-trial-2026/OPERATOR-NOTES.md</code>. The official ledger is
+  <code>events/live-trial-2026/status.md</code>.</p>
+</section>
+
+<footer>
+  <p>Generated 2026-09-17 for <code>live-trial-2026</code> on branch
+  <code>feature/first-live-event</code>. Scores produced by <code>atj score</code>;
+  no arithmetic in this document was performed by hand. Private artifact — contains
+  pre-publication judging material and has not passed
+  <code>atj validate publication</code>.</p>
+</footer>
+
+</div>
+</body>
+</html>

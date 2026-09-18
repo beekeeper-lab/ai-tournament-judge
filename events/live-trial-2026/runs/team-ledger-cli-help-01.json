@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/live-trial-2026/team-ledger:/submission:ro,Z localhost/atj-live-trial/ledger:2 sh -c 'export PYTHONPATH=/submission/src\nfor sub in ingest ingest-amazon match detect validate render analyze dispute status sql; do\n  echo \"=== fin $sub --help ===\"\n  python3 -m fin.cli $sub --help\ndone\necho \"=== fin --help ===\"\npython3 -m fin.cli --help'",
+  "completed_at": "2026-09-17T00:03:48Z",
+  "duration_seconds": 1.282,
+  "exit_status": 0,
+  "image": "localhost/atj-live-trial/ledger:2",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 60,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-17T00:03:47Z",
+  "stderr": "",
+  "stdout": "=== fin ingest --help ===\nusage: fin ingest [-h] --account ACCOUNT [--dry-run] paths [paths ...]\n\npositional arguments:\n  paths\n\noptions:\n  -h, --help         show this help message and exit\n  --account ACCOUNT\n  --dry-run          parse and gate, write nothing\n=== fin ingest-amazon --help ===\nusage: fin ingest-amazon [-h] [--synthesize-charges] paths [paths ...]\n\npositional arguments:\n  paths\n\noptions:\n  -h, --help            show this help message and exit\n  --synthesize-charges  treat order totals as charges when no transaction feed\n                        exists\n=== fin match --help ===\nusage: fin match [-h]\n\noptions:\n  -h, --help  show this help message and exit\n=== fin detect --help ===\nusage: fin detect [-h]\n\noptions:\n  -h, --help  show this help message and exit\n=== fin validate --help ===\nusage: fin validate [-h]\n\noptions:\n  -h, --help  show this help message and exit\n=== fin render --help ===\nusage: fin render [-h]\n\noptions:\n  -h, --help  show this help message and exit\n=== fin analyze --help ===\nusage: fin analyze [-h] [--limit LIMIT]\n                   {variance,merchants,recurring,cost-of-credit}\n\npositional arguments:\n  {variance,merchants,recurring,cost-of-credit}\n\noptions:\n  -h, --help            show this help message and exit\n  --limit LIMIT\n=== fin dispute --help ===\nusage: fin dispute [-h] [--detector DETECTOR] [--account ACCOUNT]\n                   [--merchant MERCHANT] [--out OUT] [--as-of AS_OF]\n\noptions:\n  -h, --help           show this help message and exit\n  --detector DETECTOR  select transactions flagged by this detector, e.g. D0\n  --account ACCOUNT\n  --merchant MERCHANT\n  --out OUT\n  --as-of AS_OF\n=== fin status --help ===\nusage: fin status [-h]\n\noptions:\n  -h, --help  show this help message and exit\n=== fin sql --help ===\nusage: fin sql [-h] query\n\npositional arguments:\n  query\n\noptions:\n  -h, --help  show this help message and exit\n=== fin --help ===\nusage: fin [-h] [--data-dir DATA_DIR] [--config-dir CONFIG_DIR]\n           {ingest,ingest-amazon,match,detect,validate,render,analyze,dispute,status,sql}\n           ...\n\n`fin` \u2014 the deterministic core. Every skill in `.claude/skills/` drives this\nCLI rather than reading files and doing arithmetic itself. That split is the\npoint: parsing, matching, and money are code with tests, and the model's job\nis to decide *what to run* and to explain what came back.\n\npositional arguments:\n  {ingest,ingest-amazon,match,detect,validate,render,analyze,dispute,status,sql}\n    ingest              load a card statement or export\n    ingest-amazon       load an Amazon order or transaction export\n    match               reconcile card charges to merchant records\n    detect              run anomaly detectors\n    validate            assert ledger invariants\n    render              regenerate markdown reports\n    analyze             spending analytics\n    dispute             build a dispute packet\n    status              ledger summary\n    sql                 ad-hoc DuckDB query over the ledger\n\noptions:\n  -h, --help            show this help message and exit\n  --data-dir DATA_DIR   ledger vault (default: FIN_DATA_DIR)\n  --config-dir CONFIG_DIR\n",
+  "timed_out": false
+}

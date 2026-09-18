@@ -3,7 +3,10 @@ policy_id: bracket-assignment
 version: 1.0.0
 format: single-elimination
 seeding_mode: constrained-random
+bye_policies: [performance-qualified, random-lottery, banded-lottery]
 default_bye_policy: performance-qualified
+min_teams: 2
+max_teams: 32
 record_random_seed: true
 ---
 
@@ -28,7 +31,9 @@ Bracket assignment is a reproducible constraint process, not another judgment of
 
 ## Byes
 
-The event must select one policy before drawing:
+The event must select one of the policies declared in this file's `bye_policies`
+front matter before drawing. That list and `default_bye_policy` are what the
+tooling reads; the descriptions below explain them.
 
 - `performance-qualified`: highest consolidated scores receive byes; cutoff ties use seeded randomness.
 - `random-lottery`: all eligible teams have equal seeded-random bye probability.

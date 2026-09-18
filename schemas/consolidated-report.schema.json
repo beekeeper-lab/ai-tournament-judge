@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-tournament-judge.local/schemas/consolidated-report.schema.json",
+  "title": "Consolidated team report",
+  "type": "object",
+  "required": ["event_id", "team_id", "commit", "evidence_package_id", "rubric",
+               "consolidation_policy", "framework_commit", "judge_run_ids",
+               "visibility", "approval_state", "validation_state", "finalized"],
+  "properties": {
+    "event_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "team_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "commit": {"$ref": "common.schema.json#/$defs/commit"},
+    "evidence_package_id": {"$ref": "common.schema.json#/$defs/evidence_package_id"},
+    "rubric": {"$ref": "common.schema.json#/$defs/reference"},
+    "consolidation_policy": {"$ref": "common.schema.json#/$defs/reference"},
+    "framework_commit": {"$ref": "common.schema.json#/$defs/framework_commit"},
+    "judge_run_ids": {
+      "type": "array", "minItems": 2, "uniqueItems": true,
+      "items": {"$ref": "common.schema.json#/$defs/judge_run_id"}
+    },
+    "total": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+    "display_total": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+    "finalized": {"type": "boolean"},
+    "blocked_reasons": {"type": "array", "items": {"type": "string"}},
+    "adjudication_ids": {
+      "type": "array", "items": {"$ref": "common.schema.json#/$defs/adjudication_id"}
+    },
+    "visibility": {"const": "private"},
+    "approval_state": {"$ref": "common.schema.json#/$defs/approval_state"},
+    "validation_state": {"$ref": "common.schema.json#/$defs/validation_state"}
+  },
+  "additionalProperties": true
+}

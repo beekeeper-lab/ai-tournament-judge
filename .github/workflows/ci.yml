@@ -1,0 +1,105 @@
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      # Unit and integration tests, including the end-to-end sample event,
+      # interrupt-and-resume behaviour, and the prompt-injection fixture.
+      - name: Tests
+        run: python -m pytest tests/ -q
+
+      # Rubric weights total 100, schemas self-check, component registry matches
+      # the agent and skill files, templates carry full identity metadata, Claude
+      # components parse, no second editable copy of an official number, no
+      # version skew, and the sample event still demonstrates every required case.
+      - name: Release check
+        run: python -m atj release-check
+
+      - name: Schemas and structured metadata
+        run: python -m atj schemas
+
+      - name: Component registry
+        run: python -m atj personas
+
+      # Deterministic bracket reproduction from the recorded seed.
+      - name: Twenty-team bracket reproduces
+        run: |
+          python -m atj bracket verify tests/fixtures/bracket-20-team/bracket.json \
+            --reproduce tests/fixtures/bracket-20-team/roster.json
+
+      - name: Sample event bracket reproduces
+        run: |
+          python -m atj bracket verify events/sample-mock-2026/bracket.json \
+            --event-dir events/sample-mock-2026
+
+      # Event state, roster, required sections, identifiers, score ranges,
+      # version compatibility and publication boundaries.
+      - name: Sample event validates
+        run: |
+          python -m atj event validate events/sample-mock-2026
+          python -m atj validate reports events/sample-mock-2026
+
+      - name: Public artifacts pass the publication gate
+        run: |
+          for artifact in events/sample-mock-2026/public/*.md; do
+            python -m atj validate publication "$artifact" \
+              --event-dir events/sample-mock-2026
+          done
+
+      # The committed sample event must match what the generator produces, so a
+      # behaviour change cannot land without its artifacts being regenerated.
+      - name: Sample event is current
+        run: |
+          python -m atj demo build
+          git diff --exit-code -- events/sample-mock-2026 tests/fixtures/bracket-20-team
+
+      # No unresolved placeholder outside template and fixture locations.
+      - name: No unresolved placeholders
+        run: python tools/check_placeholders.py
+
+      - name: Ceremony output regenerates from approved artifacts only
+        run: |
+          python -m atj ceremony events/sample-mock-2026 --output /tmp/ceremony --no-dossiers
+          test -f /tmp/ceremony/index.html
+
+      - name: Bracket advancement agrees with the matchup reports
+        run: |
+          python -m atj bracket verify events/sample-mock-2026/bracket.json \
+            --event-dir events/sample-mock-2026
+
+      - name: Unit ledger has no stale entries
+        run: python -m atj event unit events/sample-mock-2026 list
+
+      - name: Package and exercise the wheel
+        run: |
+          pip install build
+          python tools/stage_package_data.py
+          python -m build
+          ls -l dist/
+          # A wheel that installs but cannot start is not a release artifact.
+          python -m venv /tmp/wheelenv
+          /tmp/wheelenv/bin/pip install dist/*.whl
+          cd /tmp && /tmp/wheelenv/bin/atj --version
+          cd /tmp && /tmp/wheelenv/bin/atj rubric
+          cd /tmp && /tmp/wheelenv/bin/atj release-check

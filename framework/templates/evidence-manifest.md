@@ -3,9 +3,20 @@ event_id: EVENT-ID
 team_id: TEAM-ID
 commit: IMMUTABLE-COMMIT
 evidence_package_id: EVIDENCE-ID
+rubric: submission-evaluation@1.0.0
+persona: prepare-submission@VERSION
+framework_commit: FRAMEWORK-COMMIT
+model_requested: MODEL-REQUESTED
+model_used: MODEL-USED
+started_at: YYYY-MM-DDTHH:MM:SSZ
+completed_at: YYYY-MM-DDTHH:MM:SSZ
 prepared_at: YYYY-MM-DDTHH:MM:SSZ
 execution_status: not-run
-validated: false
+execution_record: null
+evidence_limited_criteria: []
+visibility: private
+approval_state: draft
+validation_state: unvalidated
 ---
 
 # Evidence Manifest

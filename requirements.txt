@@ -1,0 +1,8 @@
+# Runtime dependencies for the deterministic tooling (`atj`).
+# Both are used for safety-relevant parsing and validation, not convenience:
+#   PyYAML      - yaml.safe_load for untrusted Markdown front matter
+#   jsonschema  - structured metadata validation against schemas/
+PyYAML>=6.0
+jsonschema>=4.18
+#   referencing - offline $ref resolution across schemas/ (direct import)
+referencing>=0.30

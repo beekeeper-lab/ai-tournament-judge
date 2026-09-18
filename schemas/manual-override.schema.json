@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-tournament-judge.local/schemas/manual-override.schema.json",
+  "title": "Manual override record",
+  "description": "A human official overriding a framework result. Overrides are legitimate for the decisions reserved to humans and are never silent, which is why the artifact recording one was the last that should have gone unvalidated (D27). `persona` is what produced the document; `authorized_by` is the human who decided.",
+  "type": "object",
+  "required": ["event_id", "override_id", "scope", "rubric", "persona",
+               "framework_commit", "started_at", "completed_at", "visibility",
+               "approval_state", "validation_state", "authorized_by"],
+  "properties": {
+    "event_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "override_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "scope": {"enum": ["team", "match", "stage", "event"]},
+    "team_id": {
+      "oneOf": [{"$ref": "common.schema.json#/$defs/slug"}, {"type": "null"}]
+    },
+    "match_id": {
+      "oneOf": [{"$ref": "common.schema.json#/$defs/match_id"}, {"type": "null"}]
+    },
+    "commit": {
+      "oneOf": [{"$ref": "common.schema.json#/$defs/commit"}, {"type": "null"}]
+    },
+    "evidence_package_id": {
+      "oneOf": [
+        {"$ref": "common.schema.json#/$defs/evidence_package_id"},
+        {"type": "null"}
+      ]
+    },
+    "rubric": {"$ref": "common.schema.json#/$defs/reference"},
+    "persona": {"$ref": "common.schema.json#/$defs/reference"},
+    "framework_commit": {"$ref": "common.schema.json#/$defs/framework_commit"},
+    "model_requested": {"type": "string", "minLength": 1},
+    "model_used": {"type": "string", "minLength": 1},
+    "started_at": {"$ref": "common.schema.json#/$defs/timestamp"},
+    "completed_at": {"$ref": "common.schema.json#/$defs/timestamp"},
+    "visibility": {"const": "private"},
+    "approval_state": {"$ref": "common.schema.json#/$defs/approval_state"},
+    "validation_state": {"$ref": "common.schema.json#/$defs/validation_state"},
+    "authorized_by": {
+      "description": "The human official's role, as named in the event's `officials`. A component reference here is a category error: a persona has a file digest and a human does not.",
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": true
+}

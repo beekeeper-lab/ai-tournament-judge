@@ -3,6 +3,18 @@ event_id: replace-me
 current_stage: configuration
 last_updated: YYYY-MM-DDTHH:MM:SSZ
 blocked: false
+blocked_reason: null
+stage_gates:
+  configuration-audited: pending
+  roster-frozen: pending
+  evidence-validated: pending
+  judgments-audited: pending
+  consolidation-audited: pending
+  bracket-audited: pending
+  tournament-audited: pending
+  dossiers-approved: pending
+  final-audit-passed: pending
+units: []
 ---
 
 # Event Status

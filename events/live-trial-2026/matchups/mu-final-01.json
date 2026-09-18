@@ -1,0 +1,130 @@
+{
+  "adjudication_reasons": [],
+  "close_call_band": 5.0,
+  "combined_margin": 35.0,
+  "criteria": {
+    "agentic": {
+      "a_first_value": 1,
+      "b_first_normalized_value": 1,
+      "combined_margin": 7.5,
+      "order_disagreement": false,
+      "weight": 15
+    },
+    "engineering": {
+      "a_first_value": 1,
+      "b_first_normalized_value": 1,
+      "combined_margin": 7.5,
+      "order_disagreement": false,
+      "weight": 15
+    },
+    "functional": {
+      "a_first_value": 1,
+      "b_first_normalized_value": 1,
+      "combined_margin": 12.5,
+      "order_disagreement": false,
+      "weight": 25
+    },
+    "innovation": {
+      "a_first_value": 0,
+      "b_first_normalized_value": 1,
+      "combined_margin": 2.5,
+      "order_disagreement": false,
+      "weight": 10
+    },
+    "product": {
+      "a_first_value": 0,
+      "b_first_normalized_value": 0,
+      "combined_margin": 0.0,
+      "order_disagreement": false,
+      "weight": 15
+    },
+    "reliability": {
+      "a_first_value": 0,
+      "b_first_normalized_value": 0,
+      "combined_margin": 0.0,
+      "order_disagreement": false,
+      "weight": 10
+    },
+    "security": {
+      "a_first_value": 1,
+      "b_first_normalized_value": 1,
+      "combined_margin": 5.0,
+      "order_disagreement": false,
+      "weight": 10
+    }
+  },
+  "criterion_order_disagreements": [],
+  "order_disagreement": false,
+  "outcome": "confirmed",
+  "passes": {
+    "a_first": {
+      "criterion_margins": {
+        "agentic": 7.5,
+        "engineering": 7.5,
+        "functional": 12.5,
+        "innovation": 0.0,
+        "product": 0.0,
+        "reliability": 0.0,
+        "security": 5.0
+      },
+      "margin": 32.5,
+      "normalized_comparisons": {
+        "agentic": 1,
+        "engineering": 1,
+        "functional": 1,
+        "innovation": 0,
+        "product": 0,
+        "reliability": 0,
+        "security": 1
+      },
+      "picks": "team-ledger",
+      "presented_first": "team-ledger",
+      "raw_comparisons": {
+        "agentic": 1,
+        "engineering": 1,
+        "functional": 1,
+        "innovation": 0,
+        "product": 0,
+        "reliability": 0,
+        "security": 1
+      }
+    },
+    "b_first": {
+      "criterion_margins": {
+        "agentic": 7.5,
+        "engineering": 7.5,
+        "functional": 12.5,
+        "innovation": 5.0,
+        "product": 0.0,
+        "reliability": 0.0,
+        "security": 5.0
+      },
+      "margin": 37.5,
+      "normalized_comparisons": {
+        "agentic": 1,
+        "engineering": 1,
+        "functional": 1,
+        "innovation": 1,
+        "product": 0,
+        "reliability": 0,
+        "security": 1
+      },
+      "picks": "team-ledger",
+      "presented_first": "team-podcast",
+      "raw_comparisons": {
+        "agentic": -1,
+        "engineering": -1,
+        "functional": -1,
+        "innovation": -1,
+        "product": 0,
+        "reliability": 0,
+        "security": -1
+      }
+    }
+  },
+  "rubric": "head-to-head@1.0.0",
+  "source_rubric": "submission-evaluation@1.0.0",
+  "team_a": "team-ledger",
+  "team_b": "team-podcast",
+  "winner": "team-ledger"
+}

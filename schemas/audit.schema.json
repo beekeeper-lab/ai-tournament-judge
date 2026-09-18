@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-tournament-judge.local/schemas/audit.schema.json",
+  "title": "Audit report",
+  "description": "An audit report authorizes a stage transition. Until D26 it was the only artifact kind in the framework with no schema, which made the artifact that gates every other artifact the least checked one.",
+  "type": "object",
+  "required": ["event_id", "audit_scope", "audit_id", "rubric", "persona",
+               "framework_commit", "started_at", "completed_at", "visibility",
+               "approval_state", "validation_state", "result"],
+  "properties": {
+    "event_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "audit_scope": {"type": "string", "minLength": 1},
+    "audit_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "team_id": {
+      "oneOf": [{"$ref": "common.schema.json#/$defs/slug"}, {"type": "null"}]
+    },
+    "match_id": {
+      "oneOf": [{"$ref": "common.schema.json#/$defs/match_id"}, {"type": "null"}]
+    },
+    "commit": {
+      "oneOf": [{"$ref": "common.schema.json#/$defs/commit"}, {"type": "null"}]
+    },
+    "evidence_package_id": {
+      "oneOf": [
+        {"$ref": "common.schema.json#/$defs/evidence_package_id"},
+        {"type": "null"}
+      ]
+    },
+    "rubric": {"$ref": "common.schema.json#/$defs/reference"},
+    "persona": {"$ref": "common.schema.json#/$defs/reference"},
+    "framework_commit": {"$ref": "common.schema.json#/$defs/framework_commit"},
+    "model_requested": {"type": "string", "minLength": 1},
+    "model_used": {"type": "string", "minLength": 1},
+    "started_at": {"$ref": "common.schema.json#/$defs/timestamp"},
+    "completed_at": {"$ref": "common.schema.json#/$defs/timestamp"},
+    "visibility": {"const": "private"},
+    "approval_state": {"$ref": "common.schema.json#/$defs/approval_state"},
+    "validation_state": {"$ref": "common.schema.json#/$defs/validation_state"},
+    "result": {"enum": ["PASS", "PASS WITH ADVISORIES", "FAIL"]},
+    "findings": {
+      "description": "Optional structured findings. When present, the stage gate is decided by these rather than by `result` alone (D16): a finding outside the audited event, or one the auditor did not mark blocking, is recorded without holding the gate. Absent, the gate falls back to requiring a passing `result`.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "scope", "blocking", "summary"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "severity": {"enum": ["blocking", "major", "minor", "advisory"]},
+          "scope": {
+            "description": "`event` means the finding is against this event's own artifacts. `framework` means it is against the framework, the tooling, the docs, or any path outside `events/<event>/`.",
+            "enum": ["event", "framework"]
+          },
+          "blocking": {
+            "description": "Whether this finding must hold the stage gate. The auditor sets it deliberately; severity alone does not decide it.",
+            "type": "boolean"
+          },
+          "summary": {"type": "string", "minLength": 1},
+          "artifact": {"type": "string"},
+          "repair": {"type": "string"},
+          "state": {"enum": ["open", "repaired", "accepted", "deferred"]}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

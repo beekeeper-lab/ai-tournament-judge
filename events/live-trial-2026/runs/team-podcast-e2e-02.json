@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/live-trial-2026/team-podcast:/submission:ro,Z localhost/atj-live-trial/podcast:3 sh -c 'mkdir -p /tmp/src /tmp/media /tmp/run && ln -s /submission/source/AI_code_reviews_need_the_prompt.m4a /tmp/src/ && export PODCAST_SOURCE_DIR=/tmp/src PODCAST_MEDIA_DIR=/tmp/media HOME=/tmp/run && cd /tmp/run && (python3 -m uvicorn server.app:app --host 127.0.0.1 --port 8000 --app-dir /submission > /tmp/run/server.log 2>&1 &) && for i in $(seq 1 90); do python3 -c \"import socket,sys;s=socket.socket();sys.exit(0 if s.connect_ex((\\\"127.0.0.1\\\",8000))==0 else 1)\" 2>/dev/null && break; sleep 2; done; echo \"--- library ---\"; python3 -c \"import urllib.request,json;print(urllib.request.urlopen(\\\"http://127.0.0.1:8000/api/library\\\").read()[:300])\" 2>&1 | head -3; echo \"--- e2e ---\"; python3 /submission/tests/e2e.py http://127.0.0.1:8000 2>&1 | tail -25; echo \"--- server log ---\"; tail -5 /tmp/run/server.log'",
+  "completed_at": "2026-09-17T00:19:19Z",
+  "duration_seconds": 183.483,
+  "exit_status": 0,
+  "image": "localhost/atj-live-trial/podcast:3",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 780,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-17T00:16:15Z",
+  "stderr": "",
+  "stdout": "--- library ---\nTraceback (most recent call last):\n  File \"/usr/local/lib/python3.12/urllib/request.py\", line 1344, in do_open\n    h.request(req.get_method(), req.selector, req.data, headers,\n--- e2e ---\nTraceback (most recent call last):\n  File \"/submission/tests/e2e.py\", line 397, in <module>\n    sys.exit(main())\n             ^^^^^^\n  File \"/submission/tests/e2e.py\", line 55, in main\n    page.goto(BASE, wait_until=\"networkidle\")\n  File \"/usr/local/lib/python3.12/site-packages/playwright/sync_api/_generated.py\", line 9903, in goto\n    self._sync(\n  File \"/usr/local/lib/python3.12/site-packages/playwright/_impl/_sync_base.py\", line 115, in _sync\n    return task.result()\n           ^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/playwright/_impl/_page.py\", line 562, in goto\n    return await self._main_frame.goto(**locals_to_params(locals()))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/playwright/_impl/_frame.py\", line 157, in goto\n    await self._channel.send(\n  File \"/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py\", line 76, in send\n    return await self._connection.wrap_api_call(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/playwright/_impl/_connection.py\", line 632, in wrap_api_call\n    raise rewrite_error(error, f\"{parsed_st['apiName']}: {error}\") from None\nplaywright._impl._errors.Error: Page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:8000/\nCall log:\n  - navigating to \"http://127.0.0.1:8000/\", waiting until \"networkidle\"\n\n--- server log ---\n  File \"/submission/server/db.py\", line 34, in connect\n    path.parent.mkdir(parents=True, exist_ok=True)\n  File \"/usr/local/lib/python3.12/pathlib.py\", line 1311, in mkdir\n    os.mkdir(self, mode)\nOSError: [Errno 30] Read-only file system: '/submission/data'\n",
+  "timed_out": false
+}

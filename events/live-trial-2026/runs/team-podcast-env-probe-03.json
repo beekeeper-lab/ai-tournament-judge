@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/live-trial-2026/team-podcast:/submission:ro,Z localhost/atj-live-trial/podcast:3 sh -c 'echo FFMPEG:; which ffmpeg || echo NONE; echo FFPROBE:; which ffprobe || echo NONE; echo CHROMIUM:; /usr/bin/chromium --version 2>&1 || echo NONE; echo PY:; python3 --version; echo OS:; cat /etc/os-release | head -2; echo PKGS:; python3 -c '\"'\"'import fastapi, pydantic, uvicorn, playwright, starlette; print(\"fastapi\", fastapi.__version__); print(\"pydantic\", pydantic.__version__); print(\"uvicorn\", uvicorn.__version__); print(\"starlette\", starlette.__version__); print(\"playwright\", playwright.__version__)'\"'\"'; echo TMPFS:; df -h /tmp'",
+  "completed_at": "2026-09-17T18:35:34Z",
+  "duration_seconds": 0.757,
+  "exit_status": 0,
+  "image": "localhost/atj-live-trial/podcast:3",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 60,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-17T18:35:33Z",
+  "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nAttributeError: module 'playwright' has no attribute '__version__'\n",
+  "stdout": "FFMPEG:\n/usr/bin/ffmpeg\nFFPROBE:\n/usr/bin/ffprobe\nCHROMIUM:\nChromium 152.0.7977.82 built on Debian GNU/Linux 13 (trixie)\nPY:\nPython 3.12.14\nOS:\nPRETTY_NAME=\"Debian GNU/Linux 13 (trixie)\"\nNAME=\"Debian GNU/Linux\"\nPKGS:\nfastapi 0.141.1\npydantic 2.13.5\nuvicorn 0.53.0\nstarlette 1.6.0\nTMPFS:\nFilesystem      Size  Used Avail Use% Mounted on\ntmpfs            64M     0   64M   0% /tmp\n",
+  "timed_out": false
+}

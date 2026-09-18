@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/live-trial-2026/team-podcast:/submission:ro,Z localhost/atj-live-trial/podcast:2 sh -c 'export PODCAST_MEDIA_DIR=/tmp/data/media PODCAST_DB_PATH=/tmp/data/app.db; mkdir -p /tmp/data/media; cd /submission; python3 -m uvicorn server.app:app --host 127.0.0.1 --port 8000 >/tmp/server.log 2>&1 & PID=$!; sleep 2; python3 -c \"\nimport urllib.request as u\nfor path in ['\"'\"'/healthz'\"'\"','\"'\"'/api/library'\"'\"','\"'\"'/'\"'\"','\"'\"'/sw.js'\"'\"']:\n    try:\n        r = u.urlopen('\"'\"'http://127.0.0.1:8000'\"'\"'+path, timeout=5)\n        body = r.read(300)\n        print(path, r.status, body[:200])\n    except Exception as e:\n        print(path, '\"'\"'ERROR'\"'\"', e)\n\"\nkill $PID 2>/dev/null; wait $PID 2>/dev/null; echo SERVERLOG:; cat /tmp/server.log'",
+  "completed_at": "2026-09-17T00:01:50Z",
+  "duration_seconds": 2.571,
+  "exit_status": 0,
+  "image": "localhost/atj-live-trial/podcast:2",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 60,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-17T00:01:48Z",
+  "stderr": "",
+  "stdout": "/healthz 200 b'{\"ok\":true,\"episodes\":0}'\n/api/library 200 b'{\"episodes\":[],\"server_time\":\"2026-09-17T00:01:50.333675+00:00\"}'\n/ 200 b'<!doctype html>\\n<html lang=\"en\">\\n<head>\\n<meta charset=\"utf-8\">\\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\\n<meta name=\"apple-mobile-web-app-capable\" conten'\n/sw.js 200 b'// App-shell cache only.\\n//\\n// Audio deliberately never passes through here: <audio> issues Range requests\\n// and the Cache API answers 200 where Safari expects 206, which breaks seeking.\\n// Episode b'\nSERVERLOG:\nINFO:     Started server process [8]\nINFO:     Waiting for application startup.\nINFO:     Application startup complete.\nINFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)\n[app] indexed 0 episodes, 0 with a release date\nINFO:     127.0.0.1:46260 - \"GET /healthz HTTP/1.1\" 200 OK\nINFO:     127.0.0.1:46268 - \"GET /api/library HTTP/1.1\" 200 OK\nINFO:     127.0.0.1:46276 - \"GET / HTTP/1.1\" 200 OK\nINFO:     127.0.0.1:46288 - \"GET /sw.js HTTP/1.1\" 200 OK\nINFO:     Shutting down\nINFO:     Waiting for application shutdown.\nINFO:     Application shutdown complete.\nINFO:     Finished server process [8]\n",
+  "timed_out": false
+}
