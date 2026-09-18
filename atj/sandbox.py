@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from . import versions
+from . import egress
 from .errors import SafetyError
 
 # Execution status values recorded on an evidence manifest.
@@ -204,7 +205,10 @@ def build_command(
 
     argv = [
         runtime, "run", "--rm",
-        "--network", "none" if not egress_proxy else "sandbox-egress",
+        # The allowlist case joins the internal network the proxy sits on. That
+        # network has no route off the host, so the proxy is the only way out;
+        # `atj/egress.py` creates it and asserts that property.
+        "--network", "none" if not egress_proxy else egress.SANDBOX_NETWORK,
         "--read-only",
         "--tmpfs", f"/tmp:rw,noexec,nosuid,size={limits['tmpfs_size']}",
         "--cap-drop", "ALL",
@@ -220,8 +224,14 @@ def build_command(
     if egress_proxy:
         # The proxy is the only destination the container can reach; it enforces
         # the allowlist, not the container runtime.
-        argv += ["--env", f"HTTPS_PROXY={egress_proxy}", "--env", f"HTTP_PROXY={egress_proxy}",
-                 "--env", "NO_PROXY="]
+        # Both cases of each variable: curl reads the lowercase ones, most
+        # language runtimes read the uppercase ones, and a submission that read
+        # neither would fail closed rather than reach anything.
+        argv += [
+            "--env", f"HTTPS_PROXY={egress_proxy}", "--env", f"HTTP_PROXY={egress_proxy}",
+            "--env", f"https_proxy={egress_proxy}", "--env", f"http_proxy={egress_proxy}",
+            "--env", "NO_PROXY=", "--env", "no_proxy=",
+        ]
     argv += [image, *command]
 
     for banned in ("--privileged", "/var/run/docker.sock", "--cap-add", "--pid=host",

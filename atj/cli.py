@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from . import (
-    VERSION, bracket, canon, event as event_module, frontmatter, ids, intake,
+    egress, VERSION, bracket, canon, event as event_module, frontmatter, ids, intake,
     matchup, publication, render, reports, sandbox, schema, scoring, versions,
 )
 from .errors import AtjError
@@ -1818,6 +1818,57 @@ def cmd_sandbox_preflight(args) -> int:
     return OK if capability.available else FAILURE
 
 
+def cmd_sandbox_proxy(args) -> int:
+    """Bring up, tear down or report the egress proxy an allowlist needs.
+
+    Advisory 5 of the release audit: a network allowlist needs an egress proxy
+    the repository did not provide, so `atj sandbox run` refused every event that
+    configured one and the path was never exercised. `atj/egress.py` provides it;
+    this is the operator surface.
+    """
+    root = _root(args)
+    allowlist: list[str] = list(args.allow or [])
+    if args.event_dir:
+        config = event_module.load(Path(args.event_dir), root=root).config
+        allowlist += [str(entry) for entry in config.get("network_allowlist") or []]
+
+    if args.action == "status":
+        current = egress.state(args.runtime)
+        _emit(current.to_dict(), args)
+        if not args.json:
+            if not current.running:
+                print("Egress proxy: not running")
+                print("  Start one with `atj sandbox proxy up --event-dir <event>`.")
+            else:
+                print(f"Egress proxy: RUNNING at {current.url}")
+                print(f"  allowlist: {', '.join(current.allowlist) or '(none)'}")
+                print("  Everything not on that list is refused by the proxy, and the "
+                      "submission network has no other way out.")
+        return OK if current.running else FAILURE
+
+    if args.action == "down":
+        removed = egress.stop(args.runtime)
+        _emit({"removed": removed}, args)
+        if not args.json:
+            print("Egress proxy removed" if removed else "No egress proxy was running")
+        return OK
+
+    if not allowlist:
+        print("usage: `up` needs an allowlist: pass --event-dir <event> whose "
+              "network_allowlist names the hosts, or --allow <host> per host",
+              file=sys.stderr)
+        return USAGE
+    current = egress.start(allowlist, args.runtime)
+    _emit(current.to_dict(), args)
+    if not args.json:
+        print(f"Egress proxy: RUNNING at {current.url}")
+        print(f"  allowlist: {', '.join(current.allowlist)}")
+        print(f"  submissions join {egress.SANDBOX_NETWORK}, which has no route off the "
+              f"host; the proxy is the only way out and it refuses everything else.")
+        print("  Run with `atj sandbox run ... --event-dir <event> --egress-proxy auto`.")
+    return OK
+
+
 def cmd_sandbox_run(args) -> int:
     root = _root(args)
     capability = sandbox.preflight(args.runtime)
@@ -1831,10 +1882,25 @@ def cmd_sandbox_run(args) -> int:
                 f"{config.get('execution_mode')!r}. An event official must set it to "
                 f"'sandboxed' before any submission is executed."
             )
+    proxy = args.egress_proxy
+    if proxy == "auto" and not allowlist:
+        print(
+            "usage: --egress-proxy auto takes the allowlist from the event, so it needs "
+            "--event-dir <event> whose network_allowlist names the hosts. The allowlist "
+            "is an official's decision recorded in event.md; a command-line flag that "
+            "could widen it would not be that decision.",
+            file=sys.stderr,
+        )
+        return USAGE
+    if proxy == "auto":
+        # `auto` means "the proxy this event's allowlist authorizes". Resolving it
+        # here rather than trusting a URL on the command line is the point: a
+        # proxy enforcing another event's allowlist is refused by name.
+        proxy = egress.require_for(allowlist, args.runtime)
     record = sandbox.run_in_sandbox(
         source=Path(args.source), command=args.command, image=args.image,
         limits={"timeout_seconds": args.timeout} if args.timeout else None,
-        network_allowlist=allowlist, egress_proxy=args.egress_proxy,
+        network_allowlist=allowlist, egress_proxy=proxy,
         capability=capability,
     )
     _emit(record.to_dict(), args)
@@ -2188,11 +2254,27 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run.add_argument(
         "--egress-proxy",
-        help="authorized proxy enforcing the allowlist; without it, a configured "
-             "allowlist is refused rather than silently granting full network access",
+        help="authorized proxy enforcing the allowlist; 'auto' uses the one "
+             "`atj sandbox proxy up` started, and refuses if it enforces a different "
+             "allowlist than this event's. Without a proxy, a configured allowlist is "
+             "refused rather than silently granting full network access",
     )
     run.add_argument("--output", help="write the execution record here")
     run.set_defaults(func=cmd_sandbox_run)
+
+    proxy_parser = sandbox_sub.add_parser(
+        "proxy", help="the egress proxy that makes a network allowlist enforceable"
+    )
+    proxy_parser.add_argument("action", choices=("up", "down", "status"))
+    proxy_parser.add_argument(
+        "--event-dir", help="read network_allowlist from this event's configuration"
+    )
+    proxy_parser.add_argument(
+        "--allow", action="append", default=[],
+        help="a hostname to allow, repeatable; `*.example.org` matches subdomains",
+    )
+    proxy_parser.add_argument("--runtime", choices=(sandbox.PODMAN, sandbox.DOCKER))
+    proxy_parser.set_defaults(func=cmd_sandbox_proxy)
 
     ceremony_parser = sub.add_parser(
         "ceremony", help="render the static ceremony view from approved public artifacts"

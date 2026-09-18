@@ -157,7 +157,14 @@ These are open, and stated rather than closed:
    run against a live runtime on real submissions.
 5. **A network allowlist needs an egress proxy this repository does not provide.**
    Configuring one without a proxy is refused, which is correct and means the
-   allowlist path is untested end to end.
+   allowlist path is untested end to end. *Closed on `feature/egress-proxy`:*
+   `atj sandbox proxy` provides one — an internal network with no route out and
+   no resolver, and tinyproxy denying by default with one anchored rule per
+   allowed host. Verified against a live runtime: an allowed host returns 200, an
+   allowed subdomain rule matches, a denied host gets 403 from the proxy, a
+   bypass by name cannot resolve, and a bypass by raw address cannot connect.
+   `--egress-proxy auto` refuses a proxy whose allowlist differs from the
+   event's. The refusal for the no-proxy case stands unchanged.
 6. **Several controls end in a human and cannot be verified further.** The
    framework refuses to pass a gate without a matching audit, to advance a winner
    without a confirmed result or a recorded decision, or to publish without a
@@ -181,6 +188,10 @@ These are open, and stated rather than closed:
 - Read every artifact approved for publication before approving it.
 - Provide a container runtime, or accept that executable evidence is unavailable
   and that affected criteria will be `NE`.
+- If the event authorizes network access, start the egress proxy on the event
+  host and run `ATJ_LIVE_SANDBOX=1 python3 -m pytest tests/test_egress.py` there.
+  The filter is only as good as the host's own networking, and that is the one
+  thing this repository cannot check for you.
 - Decide whether the independence controls are sufficient for the stakes.
 - Read `atj event overrides <event>` before calling an event complete, and record
   the review. The command lists every gate the framework was told to skip; it
