@@ -484,8 +484,14 @@ what `atj render consolidated` should do, and it should be built from it.
 
 ## D12 — status on this branch
 
-D12 (the `agentic`-with-no-AI rubric gap) is **proposed, not landed**, and lives on
-branch `fix/framework-d7-d10-d12` with its full analysis and recommendation. It is
+**Superseded by the tier-2 addendum: D12 landed in `submission-evaluation@1.1.0`.**
+Both halves of the recommendation below were adopted, O2 was rejected, and the
+rubric now answers the question in one reading. What follows is the analysis as
+it stood when D12 was still open; it is kept because event artifacts cite it.
+
+D12 (the `agentic`-with-no-AI rubric gap) was **proposed, not landed** at the time
+this section was written, and lived on branch `fix/framework-d7-d10-d12` with its
+full analysis and recommendation. It is
 recorded here so that citations to D12 from event artifacts resolve on this branch
 (consolidation audit CA1). The recommendation: reword the criterion's central question
 so non-use has a subject, and define an anchor for a verified, documented, correctly
@@ -589,7 +595,7 @@ branch existed, so the event's number stands and the branch's number moved.
 
 | ID | Defect | Tier | State |
 |---|---|---|---|
-| D12 | The rubric does not say how to score `agentic` when a submission correctly has no AI. Three of the criterion's four sub-questions have no subject, and four judges on identical, conclusive facts split across two anchors | 2 | proposed, not landed |
+| D12 | The rubric does not say how to score `agentic` when a submission correctly has no AI. Three of the criterion's four sub-questions have no subject, and four judges on identical, conclusive facts split across two anchors | 2 | landed in `submission-evaluation@1.1.0` |
 | D27 | Two more templates invite a `persona` value the registry can never resolve, and neither is caught as a placeholder | 1 | landed in `5847cbb` |
 
 ## D7 — `atj score` prints `adjudication_required` (landed)
