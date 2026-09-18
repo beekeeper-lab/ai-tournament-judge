@@ -71,6 +71,12 @@ pip install build && python3 -m build
 
 - [ ] `dist/` contains a wheel and an sdist
 - [ ] `pip install dist/*.whl` into a clean environment, then `atj release-check`
+
+CI does this too, as *The wheel installs and runs outside the checkout*, because
+this box was ticked by hand for two releases and the wheel shipped anyway with no
+framework data in it (D31). The build stages `atj/data/` through
+`build_backend.py`; if that wiring is removed, `release-check`'s `packaging` step
+fails before a wheel is ever built.
       from outside the repository
 
 ## 9. Tag
