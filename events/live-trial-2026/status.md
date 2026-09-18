@@ -1,7 +1,7 @@
 ---
 event_id: live-trial-2026
-current_stage: dossiers
-last_updated: "2026-09-18T00:23:24Z"
+current_stage: final-audit
+last_updated: "2026-09-18T00:23:31Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -84,7 +84,7 @@ gate_evidence:
 - [x] All consolidated reports audited
 - [x] Bracket frozen and audited
 - [x] Tournament complete
-- [ ] All team dossiers approved
+- [x] All team dossiers approved
 - [ ] Final event audit passed
 - [ ] Event marked complete
 
@@ -185,6 +185,10 @@ the roster.
 | 2026-09-18T00:45:00Z | Operator judgment call ruled ACCEPTABLE by the audit: team-podcast's dossier keeps per-criterion panel means. The framework nulls the total and moves the sum to `provisional_total` but marks no per-criterion mean provisional, so the six are finalized criterion-level results in an unfinalized report. Withholding them would convert an operator-caused `NE` into suppression of results not in doubt, which is the opposite of what the adjudication decided. DOA4 to carry forward: the six means times the rubric weights reconstruct 58.25 exactly, so the "not combined" sentence is load-bearing and must survive any later edit | audits/dossiers.md, framework/policies/report-publication.md | dossiers/team-podcast.md | advisory, accepted |
 | 2026-09-18T00:50:00Z | DO1-DO4 repaired: three further single-judge findings in team-ledger's dossier now carry the one-judge marker the other three already had; the 76.25-versus-76.3 column/row distinction explained; the maintenance-artifact quotation sourced and the pass report added to `source_reports`; two stage-gate checkboxes ticked | audits/dossiers.md | dossiers/*.md, status.md | operator-verified |
 | 2026-09-18T00:50:00Z | FRAMEWORK DEFECT D24: `atj validate publication` accepts only a single artifact path and fails on a directory with `Is a directory`. `CLAUDE.md` instructs running it "before anything leaves the panel", but there is no way to run it across an event — every artifact must be named individually, so the check guarding disclosure is the one most easily skipped | `atj validate publication events/live-trial-2026` | docs/framework-fix-plan.md | not-audited |
+| 2026-09-18T01:00:00Z | FINAL event audit by `judging-auditor@1.0.0`, first pass: PASS WITH ADVISORIES, no blocking finding. Everything re-derived from source with nothing taken from a prior audit: 76.3 hand-recomputed and `atj score` diffed at 0 differing keys; team-podcast's `reliability` confirmed `mean: null` rather than 0; the matchup rebuilt from each judge's own comparison block at 0 differing keys. Gate integrity checked by checking out each audit file AS IT STOOD at the commit that set its gate, and by replaying `audit_supports_gate` against all three historical versions of `audits/judgments.md` — the two FAIL versions were correctly refused and only the third opened the gate. Each of the eight judgments has exactly one commit in its entire history | the complete event record, all eight prior audits, 27 run records | audits/final.md | PASS WITH ADVISORIES |
+| 2026-09-18T01:00:00Z | FA1 repaired, and it was a real pre-delivery blocker: sixteen artifacts including both dossiers were still `approval_state: draft` while their gates read `passed`, and `atj/ceremony.py:372` refuses to render an unapproved dossier — so neither team could have received its dossier under a gate named `dossiers-approved`. Both dossiers approved by the `publication_approval` official named in `event.md:30`. The other fourteen are internal panel records and were deliberately left as they stand, because hand-editing fourteen approval flags after their audits had passed would create more risk than the gap it closes. Recorded as a residual against D25 rather than quietly fixed | audits/final.md FA1, atj/ceremony.py:372 | dossiers/*.md, docs/framework-fix-plan.md | operator-verified |
+| 2026-09-18T01:00:00Z | FRAMEWORK DEFECTS D25 and D26. D25: nothing in `atj` ever writes `approval_state` — six sites read it, none can set it, and `demo_writer.py` writes `approved` directly so the sample event cannot catch it. D26: `framework/templates/audit-report.md` ships `approval_state: draft` which `atj/event.py:119` then refuses as gate authorization, and `atj/reports.py:32` gives `audits` no schema at all — the artifact kind that authorizes every stage transition is the least validated in the framework | audits/final.md | docs/framework-fix-plan.md | not-audited |
+| 2026-09-18T01:00:00Z | FA2-FA5 repaired: the dossiers checkbox ticked; operator notes brought current and no longer read as instructions; D2 and D6 marked done in the fix plan, having landed in `25624c7`; and the C1/D19 repair corrected again — it had replaced a false provenance claim with an unsatisfiable one, telling the reader to run `atj render consolidated`, which D18 records does not exist | audits/final.md | OPERATOR-NOTES.md, status.md, docs/framework-fix-plan.md, summaries/*.md | operator-verified |
 
 One exception to the audit rule below, recorded rather than hidden: the third-pass
 judging audit's artifact carries `completed_at: 2026-09-17T22:19:00Z` while the commit

@@ -21,11 +21,11 @@ version.
 | ID | Defect | Tier |
 |---|---|---|
 | D1 | Judge personas declare `tools: Read, Grep, Glob` and cannot write the artifact `judge-submission` requires of them | 2 |
-| D2 | `schemas/judgment.schema.json` requires a `model` block that `framework/templates/individual-judgment.md` does not show | 1 |
+| D2 | `schemas/judgment.schema.json` requires a `model` block that `framework/templates/individual-judgment.md` does not show | done |
 | D3 | `atj render judgment` did not exist though the template cited it by name | done |
 | D4 | `atj validate reports` verifies that a citation resolves, not that its target contains the claim | 3 |
 | D5 | `atj/event.py:745` writes `status.md.bak` on every ledger update; it was committed twice | done |
-| D6 | `.claude/hooks/pre-advance.sh` inspects the whole command string, so prose naming a submission path trips the run-on-host guard | 1 |
+| D6 | `.claude/hooks/pre-advance.sh` inspects the whole command string, so prose naming a submission path trips the run-on-host guard | done |
 | D7 | `atj score`'s text output prints `blocked_reasons` but never `adjudication_required`, so an operator reading the console can state the opposite of the committed JSON | 1 |
 | D8 | `confidence` is undefined for an `NE` criterion; four judges on identical reasoning split between `low` and `high` because one described the evidence and one described the determination | 2 |
 | D9 | `model.verified` has no defined threshold; on the same basis `judge-backend` recorded `false` and three judges recorded `true` | 2 |
@@ -43,6 +43,8 @@ version.
 | D22 | `schemas/matchup.schema.json` requires both `passes/a_first/comparisons` and `passes/b_first/comparisons` to be non-empty, so a single order-balanced pass report — which by design must not know the other pass — can never validate, and the framework defines no location for a judge's own pass report | 2 |
 | D23 | `.claude/hooks/pre-advance.sh` inspects the whole command string with no sequencing, so a single command that sets a gate and then advances is blocked on the pre-command gate state. D6 fixed the heredoc/prose false positive; this is the ordering half of the same design | 3 |
 | D24 | `atj validate publication` accepts only a single artifact path and errors on a directory, so the event-wide disclosure check `CLAUDE.md` mandates cannot actually be run. Every artifact must be named individually | 1 |
+| D25 | Nothing in `atj` ever writes `approval_state`. Six sites read it and none can set it, so every artifact stays `draft` through every gate; `demo_writer.py` writes `approved` directly, so the sample event cannot catch it | 1 |
+| D26 | `framework/templates/audit-report.md` ships `approval_state: draft`, which `atj/event.py:119` then refuses as gate authorization, and `atj/reports.py:32` gives `audits` no schema. The artifact kind that authorizes every stage transition is the least validated in the framework | 1 |
 
 D3 fixed in `3a798ad` (command added, reproduces the committed sample byte for
 byte) and `4ac09ba` (refuses to rewrite an approved judgment without `--force`,
@@ -314,3 +316,27 @@ the resolved artifact as output. That is defensible, but it discards the judges'
 reasoning, which is the only place the comparative evidence is written down. Fix:
 either add a `matchup-pass` artifact kind whose schema requires exactly one populated
 pass, or declare a subdirectory the matchup validator skips.
+
+## D25 and D26 — the approval field nothing can set
+
+Found by the final audit of live-trial-2026. Sixteen artifacts reached the final gate
+still marked `approval_state: draft` / `validation_state: unvalidated` while their stage
+gates read `passed`, including both team dossiers. The consequences are real and were
+verified in code: `atj/ceremony.py:372` refuses to render a dossier that is not approved,
+so neither deliverable could be released under a gate literally named
+`dossiers-approved`; and `atj/cli.py:457`'s guard against silently rewriting an approved
+judgment's scores table never armed for the entire event.
+
+The cause is D25: six sites read `approval_state` and no code path writes it. The sample
+event cannot surface this because `demo_writer.py` writes `approved` directly, so the
+one fixture that would catch it bypasses the gap.
+
+D26 is the sharper one. Audit reports authorize every stage transition in the framework,
+and they are the only artifact kind with no schema at all. The template also ships
+`approval_state: draft`, which `atj/event.py:119` refuses as gate authorization.
+
+In live-trial-2026 the two dossiers were approved by hand by the `publication_approval`
+official named in `event.md:30`. The other fourteen artifacts were deliberately left as
+they stand: they are internal panel records, not deliverables, and hand-editing fourteen
+approval flags after their audits had already passed would create more risk than the gap
+it closes. That residual is recorded here rather than quietly fixed.

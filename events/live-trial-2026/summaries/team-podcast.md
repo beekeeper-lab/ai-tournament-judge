@@ -84,8 +84,9 @@ immutable and were not edited.
 
 Every value in the block below is transcribed from
 `events/live-trial-2026/summaries/team-podcast.json`, which `atj score` produced.
-No arithmetic was performed by the consolidator. **The block must be regenerated
-by `atj render consolidated` before `atj validate` runs against this file.**
+No arithmetic was performed by the consolidator. The block cannot be regenerated: `atj render consolidated` does not exist (D18). It was
+instead verified cell by cell against the canonical JSON by a deterministic script, and
+re-derived independently by the consolidation and final audits (audit FA5).
 
 <!-- atj:consolidated:begin -->
 | Criterion | Judge scores | Mean | Weight | Points | Agreement |
@@ -818,6 +819,6 @@ Open items, in order of what they block.
 
 Consequences of the unchecked box: `finalized: false`, `total: null`,
 `display_total: null`, and `blocked_reasons` carries the `reliability` entry. This
-report is `private` and `draft`. Run `atj render consolidated` to regenerate the
-score block, then `atj validate` and `atj validate publication` before any
+report is `private` and `draft`. `atj render consolidated` does not exist (D18), so the score block was verified against
+the canonical JSON rather than regenerated. Run `atj validate` and `atj validate publication` before any
 derivative artifact leaves the panel.

@@ -16,8 +16,10 @@ model_used: claude-opus-5
 started_at: "2026-09-18T00:00:00Z"
 completed_at: "2026-09-18T00:00:00Z"
 visibility: team
-approval_state: draft
-validation_state: unvalidated
+approval_state: approved
+validation_state: valid
+approved_by: event-director
+approved_at: "2026-09-18T01:00:00Z"
 ---
 
 # Team Dossier — Hive Ledger

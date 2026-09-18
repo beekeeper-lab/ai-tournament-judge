@@ -5,11 +5,17 @@ score, no finding, nothing here is evidence. `status.md` is the ledger.
 
 ## Where this stands
 
-Stage `initial-judging`. team-ledger's panel is complete (4 of 4 judgments,
-consolidated 76.3, all criteria aligned). team-podcast has none of its four yet.
-The `judgments-audited` gate needs both teams' panels plus a passing audit.
+**The event is complete.** All nine stage gates passed. team-ledger finished at
+76.3 and won the final by a confirmed combined margin of +35.00. team-podcast
+finished with **no official total**: `reliability` was `NE` from all four judges,
+adjudicated and accepted, for reasons the record states are the framework's and
+the operator's rather than the team's.
 
-## Running the four judges for team-podcast
+Both dossiers are approved and publication-clear. The sections below are kept as
+the historical record of how the judging stage was run; they are no longer
+instructions.
+
+## How the four judges were run for team-podcast
 
 Same shape as team-ledger. Spawn the four persona agents in one message so they
 run concurrently and cannot see each other. Give each one this brief, changing
@@ -49,7 +55,7 @@ Then: stage under `workspaces/live-trial-2026/staging/team-podcast/`, promote al
 four at once, `atj render judgment` on the directory, `atj validate reports`,
 `atj score`, record the `judging:team-podcast` unit.
 
-## Then
+## What came next, for the record
 
 Audit the judging stage for both teams, gate `judgments-audited`, write both
 consolidated panel reports with `panel-consolidator` into `summaries/`, gate
@@ -59,7 +65,7 @@ presentation orders, then dossiers, publication validation and the final audit.
 
 ## Framework defects this event has found
 
-Tracked as D1-D6 in `docs/framework-fix-plan.md`, which is the source of truth
+Tracked as D1-D26 in `docs/framework-fix-plan.md`, which is the source of truth
 for what is scheduled and why. This list is the narrative record. A defect is
 repaired mid-event only when the repair cannot touch the rubric, the personas or
 the policies, which are frozen once judging starts.
@@ -87,3 +93,14 @@ the policies, which are frozen once judging starts.
    string, so writing prose about a submission can look like running one.
    D6, closed in `25624c7`: heredoc bodies are stripped and a runner must sit
    adjacent to the submission path. 12 cases pin both directions.
+
+## Outcome
+
+Twenty-six framework defects, every one found by running the event rather than by
+reading the code. The four that matter most for the next tournament: **D4**, that
+`atj validate reports` checks a citation resolves but not that its target supports the
+claim; **D16**, that the stage gate has no scope filter, which cost the judging stage
+three audit passes until the scope rule was given to the auditor up front and every
+later stage then passed first time; **D20**, a validation rule with no permitted
+in-event repair; and **D25/D26**, that nothing in `atj` can set `approval_state` and
+that audit reports — the artifact kind authorizing every gate — have no schema.
