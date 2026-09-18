@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-tournament-judge.local/schemas/calibration.schema.json",
+  "title": "Calibration report",
+  "description": "Calibration runs the panel against sample submissions before official judging, to find ambiguous rubric language. `docs/operator-guide.md` prescribes it and nothing validated it (D27). A calibration sample is not a roster team, so it carries `sample_id` rather than `team_id`.",
+  "type": "object",
+  "required": ["event_id", "calibration_id", "scope", "sample_id", "rubric",
+               "persona", "framework_commit", "started_at", "completed_at",
+               "visibility", "approval_state", "validation_state"],
+  "properties": {
+    "event_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "calibration_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "scope": {"type": "string", "minLength": 1},
+    "sample_id": {"$ref": "common.schema.json#/$defs/slug"},
+    "team_id": {
+      "description": "A calibration sample is not a roster team. Present only as null, so a calibration can never be mistaken for a judgment of an entrant.",
+      "type": "null"
+    },
+    "commit": {
+      "oneOf": [{"$ref": "common.schema.json#/$defs/commit"}, {"type": "null"}]
+    },
+    "evidence_package_id": {
+      "oneOf": [
+        {"$ref": "common.schema.json#/$defs/evidence_package_id"},
+        {"type": "null"}
+      ]
+    },
+    "rubric": {"$ref": "common.schema.json#/$defs/reference"},
+    "persona": {"$ref": "common.schema.json#/$defs/reference"},
+    "framework_commit": {"$ref": "common.schema.json#/$defs/framework_commit"},
+    "model_requested": {"type": "string", "minLength": 1},
+    "model_used": {"type": "string", "minLength": 1},
+    "started_at": {"$ref": "common.schema.json#/$defs/timestamp"},
+    "completed_at": {"$ref": "common.schema.json#/$defs/timestamp"},
+    "visibility": {"const": "private"},
+    "approval_state": {"$ref": "common.schema.json#/$defs/approval_state"},
+    "validation_state": {"$ref": "common.schema.json#/$defs/validation_state"}
+  },
+  "additionalProperties": true
+}

@@ -44,6 +44,17 @@ EVENT_SUBDIRS = (
     "adjudications", "dossiers", "public", "audits", "runs",
 )
 
+# Directories a new event gets and a validator routes, but that an event is not
+# required to have. D27: `calibration-report.md` and `manual-override-record.md`
+# described artifacts with no kind, no schema and nowhere to live, so anything
+# written from them was unvalidated — and a manual override is the last artifact
+# that should be unchecked. Making them *required* would instead have made both
+# completed events retroactively invalid for lacking an empty directory, which is
+# the trade D10 and D26 both refused.
+OPTIONAL_EVENT_SUBDIRS = ("calibrations", "overrides")
+
+ALL_EVENT_SUBDIRS = EVENT_SUBDIRS + OPTIONAL_EVENT_SUBDIRS
+
 REQUIRED_FILES = ("event.md", "teams.md", "status.md", "bracket.md")
 TEMPLATE_DIR = "events/_template"
 
@@ -360,7 +371,7 @@ def initialize(
         for needle, value in replacements.items():
             text = text.replace(needle, value)
         path.write_text(text, encoding="utf-8")
-    for subdir in EVENT_SUBDIRS:
+    for subdir in ALL_EVENT_SUBDIRS:
         directory = target / subdir
         directory.mkdir(exist_ok=True)
         keep = directory / ".gitkeep"

@@ -7,7 +7,7 @@ match_id: null
 commit: IMMUTABLE-COMMIT
 evidence_package_id: EVIDENCE-ID
 rubric: submission-evaluation@1.0.0
-persona: HUMAN-OFFICIAL
+persona: PERSONA@VERSION
 framework_commit: FRAMEWORK-COMMIT
 model_requested: not-applicable
 model_used: not-applicable
@@ -20,6 +20,13 @@ authorized_by: HUMAN-OFFICIAL-ROLE
 ---
 
 # Manual Override Record
+
+`persona` is what produced this document and must resolve in
+`framework/personas.md` as `name@x.y.z`. `authorized_by` is who decided, and
+carries the human official's role. The registry pins a file digest, which a human
+does not have, so a human's name never goes in `persona` — the same distinction
+D10 settled for adjudications, one artifact over. `HUMAN-OFFICIAL` was one
+hyphenated word short of the real placeholder and so was never caught.
 
 A human official has overridden a framework result. Overrides are legitimate and
 expected for the decisions reserved to humans. They are never silent.

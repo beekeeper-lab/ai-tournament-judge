@@ -46,7 +46,7 @@ version.
 | D24 | `atj validate publication` accepts only a single artifact path and errors on a directory, so the event-wide disclosure check `CLAUDE.md` mandates cannot actually be run. Every artifact must be named individually | done |
 | D25 | Nothing in `atj` ever writes `approval_state`. Six sites read it and none can set it, so every artifact stays `draft` through every gate; `demo_writer.py` writes `approved` directly, so the sample event cannot catch it | done |
 | D26 | `framework/templates/audit-report.md` ships `approval_state: draft`, which `atj/event.py:119` then refuses as gate authorization, and `atj/reports.py:32` gives `audits` no schema. The artifact kind that authorizes every stage transition is the least validated in the framework | done |
-| D27 | `framework/templates/calibration-report.md` and `framework/templates/manual-override-record.md` carry the same unresolvable `persona` defect as D10, and neither artifact has a kind the validator routes at all | 1 |
+| D27 | `framework/templates/calibration-report.md` and `framework/templates/manual-override-record.md` carry the same unresolvable `persona` defect as D10, and neither artifact has a kind the validator routes at all | done |
 
 D3 fixed in `3a798ad` (command added, reproduces the committed sample byte for
 byte) and `4ac09ba` (refuses to rewrite an approved judgment without `--force`,
@@ -227,6 +227,52 @@ The template still ships `approval_state: draft`, which is correct — a freshly
 written audit has not been reviewed. It now says how to move it, and the
 regression walks the whole path: template body, gate refuses the draft, approve,
 gate opens.
+
+
+### D27 — the two unrouted templates, decided
+
+The branch left the decision open: register both kinds, or delete the templates
+for artifacts the framework does not produce. **Registered.** Both describe real
+prescribed steps. `docs/operator-guide.md:7` tells the operator to conduct a
+calibration exercise, and `atj event advance --force` already writes a structured
+override into `status.overrides` — the manual-override record is the
+human-readable half of a mechanism that exists.
+
+Landed:
+
+- Both templates now carry `persona: PERSONA@VERSION`, which `PLACEHOLDERS`
+  recognises, and state the D10 distinction in prose. `manual-override-record.md`
+  already had `authorized_by` for the human, exactly as the adjudication template
+  had `decided_by`; only `persona` dissented. `HUMAN-OFFICIAL` was one hyphenated
+  word short of the real placeholder `HUMAN-OFFICIAL-ROLE`, which is why nothing
+  caught it.
+- `calibration-report.md` no longer puts `CALIBRATION-SAMPLE-ID` in `team_id`. A
+  calibration sample is not a roster entrant, so it has `sample_id`, and the
+  schema pins `team_id` to `null` so a calibration can never be mistaken for a
+  judgment of an entrant.
+- `schemas/calibration.schema.json` and `schemas/manual-override.schema.json`
+  exist, and `reports.ARTIFACT_KINDS` routes `calibrations/` and `overrides/` to
+  them. `publication.DIRECTORY_VISIBILITY` marks both private, so the D24
+  event-wide gate routes them instead of blocking them as `location-unknown`.
+
+**The directories are optional, and that is the whole design.**
+`event.OPTIONAL_EVENT_SUBDIRS` holds them: `atj event init` creates them, every
+validator routes them, and `validate_configuration` does not require them.
+Adding them to `EVENT_SUBDIRS` would have made both completed events invalid for
+lacking an empty directory — the same retroactive-invalidation trade D10 refused
+for a heading and D26 refused for a schema.
+
+**A ninth template found by generalising the test.** Nine templates invite
+`persona: <component>@VERSION`, which is more useful to an author than a bare
+`PERSONA@VERSION` because it names the component that should have produced the
+artifact — but left unreplaced it was caught only as `persona mismatch` after the
+work was done, which is exactly the weakness D10 settled. `validate_artifact` now
+raises a blocking placeholder finding on a `persona` field ending in `@VERSION`.
+
+Matched on the field, deliberately, not as a substring: the frozen
+`events/live-trial-2026/adjudications/team-podcast-reliability-ne.md` quotes the
+old placeholder in its own prose, and a substring rule would have invalidated the
+artifact that records the defect.
 
 
 ### Known staleness this creates in a frozen record

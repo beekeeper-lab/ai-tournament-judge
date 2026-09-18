@@ -15,7 +15,7 @@ import unittest
 from pathlib import Path
 
 from _support import ROOT  # noqa: F401
-from atj import demo, event as event_module, frontmatter, render, scoring
+from atj import demo, event as event_module, frontmatter, render, reports, scoring
 from atj.cli import main as cli_main
 from atj.errors import AtjError
 
@@ -653,3 +653,174 @@ class ApprovalStateCanBeWritten(unittest.TestCase):
             )
         finally:
             shutil.rmtree(temporary)
+
+
+class UnroutedTemplatesAreRouted(unittest.TestCase):
+    """D27: two templates described artifacts the validator had no kind for.
+
+    `calibration-report.md` invited `persona: PANEL-VERSIONS` and
+    `manual-override-record.md` invited `persona: HUMAN-OFFICIAL` — neither can
+    resolve in the registry and neither contained a string from
+    `reports.PLACEHOLDERS`, so an author who left either in place got no finding
+    at all. The larger half was that neither artifact had a kind in
+    `ARTIFACT_KINDS` or a directory in `EVENT_SUBDIRS`, so nothing written from
+    them was validated by anything. `manual-override-record.md` is the artifact
+    for a human overriding a tool result, which is the last one that should be
+    unchecked.
+    """
+
+    TEMPLATES = ("calibration-report.md", "manual-override-record.md")
+
+    def test_the_old_persona_values_are_gone(self):
+        for name in self.TEMPLATES:
+            with self.subTest(template=name):
+                text = (ROOT / "framework" / "templates" / name).read_text(encoding="utf-8")
+                self.assertNotIn("persona: PANEL-VERSIONS", text)
+                self.assertNotIn("persona: HUMAN-OFFICIAL\n", text)
+                self.assertIn("persona: PERSONA@VERSION", text)
+
+    def test_every_template_persona_is_caught_as_a_placeholder(self):
+        """The class, not the two known cases.
+
+        An unreplaced persona must be caught as a placeholder before the work is
+        done, not as `unknown persona` after it — the ruling D10 made for the
+        adjudication template, applied to every template that invites one.
+        """
+        from atj import reports as reports_module
+
+        for template in sorted((ROOT / "framework" / "templates").glob("*.md")):
+            metadata, _ = frontmatter.read(template)
+            persona = str(metadata.get("persona") or "")
+            if not persona:
+                continue
+            with self.subTest(template=template.name):
+                recognised = any(
+                    holder in persona for holder in reports_module.PLACEHOLDERS
+                ) or persona.endswith("@VERSION")
+                self.assertTrue(
+                    recognised,
+                    f"{template.name} invites persona {persona!r}, which no "
+                    f"placeholder rule recognises",
+                )
+
+    def test_an_unreplaced_persona_is_a_placeholder_finding(self):
+        temporary, directory = sandbox(SAMPLE)
+        try:
+            target = directory / "audits" / "bracket.md"
+            metadata, body = frontmatter.read(target)
+            metadata["persona"] = "judging-auditor@VERSION"
+            target.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+            findings = reports.validate_artifact(target, directory, root=ROOT).blocking
+            self.assertIn("placeholder", [f.rule for f in findings])
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_both_kinds_are_routed_with_a_schema(self):
+        from atj import reports as reports_module
+
+        for kind, schema_name, template in (
+            ("calibrations", "calibration", "calibration-report.md"),
+            ("overrides", "manual-override", "manual-override-record.md"),
+        ):
+            with self.subTest(kind=kind):
+                self.assertEqual(
+                    reports_module.ARTIFACT_KINDS[kind], (schema_name, template)
+                )
+
+    def test_every_routed_kind_has_somewhere_to_live(self):
+        from atj import publication as publication_module
+        from atj import reports as reports_module
+
+        for kind in reports_module.ARTIFACT_KINDS:
+            with self.subTest(kind=kind):
+                self.assertIn(kind, event_module.ALL_EVENT_SUBDIRS)
+                self.assertIn(kind, publication_module.DIRECTORY_VISIBILITY)
+
+    def test_the_new_directories_are_optional(self):
+        """Neither completed event may become invalid for lacking a directory."""
+        for name in ("live-trial-2026", demo.EVENT_ID):
+            with self.subTest(event=name):
+                directory = ROOT / "events" / name
+                for optional in event_module.OPTIONAL_EVENT_SUBDIRS:
+                    self.assertFalse((directory / optional).exists())
+                loaded = event_module.load(directory, root=ROOT)
+                self.assertEqual(event_module.validate_configuration(loaded), [])
+
+    def test_a_new_event_gets_them(self):
+        temporary = Path(tempfile.mkdtemp())
+        try:
+            created = event_module.initialize(
+                "probe-2027", event_name="Probe", destination=temporary, root=ROOT
+            )
+            for subdir in event_module.ALL_EVENT_SUBDIRS:
+                self.assertTrue((created / subdir).is_dir(), subdir)
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_an_artifact_written_from_each_template_is_validated(self):
+        temporary, directory = sandbox(SAMPLE)
+        try:
+            written = self.write_both(directory)
+            for path in written:
+                with self.subTest(artifact=path.name):
+                    report = reports.validate_artifact(path, directory, root=ROOT)
+                    self.assertIsNotNone(report.kind)
+                    self.assertEqual(report.findings, [])
+
+            # And the old placeholder now fails, blocking, on shape.
+            override = directory / "overrides" / "record-01.md"
+            metadata, body = frontmatter.read(override)
+            metadata["persona"] = "HUMAN-OFFICIAL"
+            override.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+            findings = reports.validate_artifact(override, directory, root=ROOT).blocking
+            self.assertTrue(findings)
+            self.assertIn("schema", [f.rule for f in findings])
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_the_disclosure_gate_reaches_them(self):
+        """Before this they were `location-unknown`, which fails closed but says
+        nothing useful. A private artifact kind should be routed, not blocked."""
+        temporary, directory = sandbox(SAMPLE)
+        try:
+            self.write_both(directory)
+            code, output = run_cli("validate", "publication", str(directory))
+            self.assertEqual(code, 0, output)
+            self.assertNotIn("location-unknown", output)
+        finally:
+            shutil.rmtree(temporary)
+
+    def write_both(self, directory: Path) -> list[Path]:
+        """One artifact of each kind, built from its own template."""
+        written = []
+        for subdir, template, overrides in (
+            ("overrides", "manual-override-record.md", {
+                "override_id": "ovr-01", "scope": "team", "team_id": "team-lumen",
+                "match_id": None, "authorized_by": "event-director",
+                "model_requested": "not-applicable", "model_used": "not-applicable",
+            }),
+            ("calibrations", "calibration-report.md", {
+                "calibration_id": "cal-01", "scope": "pre-event-calibration",
+                "sample_id": "sample-a", "team_id": None,
+                "model_requested": "claude-opus-5", "model_used": "claude-opus-5",
+            }),
+        ):
+            metadata, body = frontmatter.read(
+                ROOT / "framework" / "templates" / template
+            )
+            metadata.update(overrides)
+            metadata.update({
+                "event_id": demo.EVENT_ID, "commit": None,
+                "evidence_package_id": None,
+                "rubric": "submission-evaluation@1.0.0",
+                "persona": "judging-auditor@1.0.0",
+                "framework_commit": "uncommitted",
+                "started_at": "2026-05-18T09:00:00Z",
+                "completed_at": "2026-05-18T09:30:00Z",
+            })
+            target = directory / subdir
+            target.mkdir(exist_ok=True)
+            path = target / "record-01.md"
+            path.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+            written.append(path)
+        return written

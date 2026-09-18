@@ -35,6 +35,8 @@ DIRECTORY_VISIBILITY = {
     "evidence": PRIVATE,
     "submissions": PRIVATE,
     "runs": PRIVATE,
+    "calibrations": PRIVATE,
+    "overrides": PRIVATE,
     "dossiers": TEAM,
     "public": PUBLIC,
 }

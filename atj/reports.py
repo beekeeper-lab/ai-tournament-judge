@@ -34,6 +34,8 @@ ARTIFACT_KINDS = {
     "submissions": ("submission-intake", "submission-intake.md"),
     "runs": ("model-run", "model-run-record.md"),
     "public": ("public-report", None),
+    "calibrations": ("calibration", "calibration-report.md"),
+    "overrides": ("manual-override", "manual-override-record.md"),
 }
 
 TEMPLATE_DIR = "framework/templates"
@@ -42,7 +44,7 @@ PLACEHOLDERS = (
     "EVENT-ID", "TEAM-ID", "TEAM-A", "TEAM-B", "JUDGE-ID", "MATCH-ID", "ROUND-ID",
     "IMMUTABLE-COMMIT", "EVIDENCE-ID", "FRAMEWORK-COMMIT", "MODEL-REQUESTED",
     "MODEL-USED", "PERSONA@VERSION", "ADJUDICATION-ID", "AUDIT-ID", "RUN-ID",
-    "OVERRIDE-ID", "CALIBRATION-ID", "SEED", "INPUT-DIGEST", "SCOPE",
+    "OVERRIDE-ID", "CALIBRATION-ID", "SAMPLE-ID", "SEED", "INPUT-DIGEST", "SCOPE",
     "HUMAN-OFFICIAL-ROLE", "REPOSITORY-URL-OR-PATH", "YYYY-MM-DDTHH:MM:SSZ",
     "replace-me", "REPLACE-ME", "TBD",
 )
@@ -127,6 +129,21 @@ def validate_artifact(
                 _finding("blocking", "placeholder", f"unresolved placeholder {placeholder!r}", path)
             )
             break
+
+    # Nine templates invite `persona: <component>@VERSION`, which is more useful
+    # to an author than a bare `PERSONA@VERSION` because it names the component
+    # that should have produced the artifact. Left unreplaced it was caught only
+    # as `persona mismatch` after the work was done — the same weakness D10
+    # settled for the adjudication template. Matched on the field rather than as
+    # a substring, because live-trial-2026's adjudication quotes the old
+    # placeholder in its own prose and is frozen.
+    if str(metadata.get("persona", "")).endswith("@VERSION"):
+        findings.append(_finding(
+            "blocking", "placeholder",
+            f"persona {metadata['persona']!r} still carries the template's @VERSION. "
+            f"Replace it with the registered version from framework/personas.md",
+            path,
+        ))
 
     if require_sections and template:
         present = {heading.lower() for heading in _HEADING.findall(body)}

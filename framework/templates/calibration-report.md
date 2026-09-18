@@ -2,11 +2,11 @@
 event_id: EVENT-ID
 calibration_id: CALIBRATION-ID
 scope: pre-event-calibration
-team_id: CALIBRATION-SAMPLE-ID
+sample_id: SAMPLE-ID
 commit: IMMUTABLE-COMMIT
 evidence_package_id: EVIDENCE-ID
 rubric: submission-evaluation@1.0.0
-persona: PANEL-VERSIONS
+persona: PERSONA@VERSION
 framework_commit: FRAMEWORK-COMMIT
 model_requested: MODEL-REQUESTED
 model_used: MODEL-USED
@@ -18,6 +18,12 @@ validation_state: unvalidated
 ---
 
 # Calibration Report
+
+`persona` is what produced this document and must resolve in
+`framework/personas.md` as `name@x.y.z`. A calibration exercises the whole panel,
+so name the component that ran it — the orchestrating skill — and list the judge
+personas under `## Samples used`. A calibration sample is not a roster team:
+`sample_id` names it, and it carries no `team_id`.
 
 Calibration runs the panel against sample submissions before official judging to
 find ambiguous rubric language. It may clarify wording. It may **not** teach the

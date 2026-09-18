@@ -34,6 +34,8 @@ ARTIFACT_SCHEMAS = {
     "consolidated-report": "consolidated-report.schema.json",
     "adjudication": "adjudication.schema.json",
     "audit": "audit.schema.json",
+    "calibration": "calibration.schema.json",
+    "manual-override": "manual-override.schema.json",
     "bracket": "bracket.schema.json",
     "matchup": "matchup.schema.json",
     "dossier": "dossier.schema.json",
