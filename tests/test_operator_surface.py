@@ -8,6 +8,7 @@ it never looked at, and a weaker check that exited zero. Each test names the
 advisory it closes.
 """
 
+import json
 import shutil
 import tempfile
 import unittest
@@ -15,7 +16,8 @@ from pathlib import Path
 
 from atj.cli import main as cli_main
 from _support import ROOT  # noqa: F401
-from atj import demo, event as event_module, frontmatter, reports, sandbox
+from atj import (demo, event as event_module, frontmatter, publication, reports,
+                 sandbox)
 from atj.errors import StateError
 
 SAMPLE = ROOT / "events" / demo.EVENT_ID
@@ -220,6 +222,77 @@ class TheWeakerBracketCheckIsAskedForByName(unittest.TestCase):
                             ("--event-dir", "--reproduce", "--structure-only")),
                         stripped,
                     )
+
+
+class TheScoreGateCoversMoreThanItsPatterns(unittest.TestCase):
+    """Advisory 3: a total in a shape the patterns miss, with nothing to compare.
+
+    `known_totals` closes the gap the patterns cannot -- and it is empty exactly
+    when no total has been finalized, which is the case the advisory named.
+    """
+
+    def scan(self, text: str, *, known=()):
+        return publication.scan_unapproved_scores(text, artifact="x", known_totals=known)
+
+    def test_the_phrasings_the_patterns_used_to_miss(self):
+        for text in (
+            "The panel put them at 76.3 after review.",
+            "Final tally: 76,3 of one hundred.",
+            "They finished with 76.3 overall.",
+            "Their score, as recorded, 76.3",
+        ):
+            with self.subTest(text):
+                self.assertTrue(self.scan(text, known=[76.3]), text)
+                self.assertTrue(self.scan(text), text)
+
+    def test_a_suspected_total_with_no_finalized_total_is_major(self):
+        findings = self.scan("The panel put them at 76.3 after review.")
+        self.assertEqual(findings[0].severity, "major")
+        self.assertIn("no finalized total", findings[0].detail)
+
+    def test_the_same_number_with_a_finalized_total_is_blocking(self):
+        findings = self.scan("The panel put them at 76.3 after review.", known=[76.3])
+        self.assertTrue(any(f.severity == "blocking" for f in findings))
+
+    def test_it_does_not_fire_on_versions_counts_or_rounds(self):
+        for text in (
+            "Built under submission-evaluation@1.1.0 at commit 9d21b770.",
+            "The bracket has 4 teams and 0 byes.",
+            "Round 1 of 2 complete.",
+            "team-ledger advances to the final.",
+            "Judged by judge-backend@1.1.0 and three others.",
+        ):
+            with self.subTest(text):
+                self.assertEqual(self.scan(text), [], text)
+
+    def test_the_committed_public_artifacts_stay_clean(self):
+        for event in (SAMPLE, LIVE):
+            for path in sorted((event / "public").glob("*.md")):
+                with self.subTest(f"{event.name}/{path.name}"):
+                    self.assertEqual(
+                        publication.scan_unapproved_scores(
+                            path.read_text(encoding="utf-8"), artifact=str(path)
+                        ), [],
+                    )
+
+
+class ExecutionHasNowRunAgainstALiveRuntime(unittest.TestCase):
+    """Advisory 4 was true when audited and is not now.
+
+    The doc keeps the original sentence and records what changed. This pins the
+    evidence, so the claim cannot rot in either direction.
+    """
+
+    def test_the_live_event_committed_real_run_records(self):
+        records = sorted((LIVE / "runs").glob("*.json"))
+        self.assertGreaterEqual(len(records), 27)
+        for path in records:
+            with self.subTest(path.name):
+                record = json.loads(path.read_text(encoding="utf-8"))
+                self.assertEqual(record["runtime"], "podman")
+                self.assertIn("--network none", record["command"])
+                self.assertIn(":ro", record["command"])
+                self.assertIn("--cap-drop ALL", record["command"])
 
 
 class TheStatusBodyAgreesWithItsLedger(unittest.TestCase):

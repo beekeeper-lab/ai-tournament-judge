@@ -91,13 +91,23 @@ _PRIVATE_ID_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
 # Scores get published in prose, not only as "73.3/100". Every form below was
 # found publishing an official total past a gate that reported CLEAR.
 _SCORE_PATTERN = re.compile(
-    r"\b\d{1,3}(?:\.\d+)?\s*(?:/|out of|of)\s*100\b"
-    r"|\b\d{1,3}\.\d+\s*(?:points|pts)\b"
-    r"|\bscored?\s+\d{1,3}\.\d+\b"
-    r"|\bfinished\s+(?:on|with)\s+\d{1,3}\.\d+\b"
-    r"|\btotal\s+(?:of\s+)?\d{1,3}\.\d+\b",
+    # Written as a fraction of the scale, in either decimal convention.
+    r"\b\d{1,3}(?:[.,]\d+)?\s*(?:/|out of|of)\s*(?:100|one hundred|a hundred)\b"
+    r"|\b\d{1,3}[.,]\d+\s*(?:points|pts)\b"
+    r"|\bscored?\s+\d{1,3}[.,]\d+\b"
+    r"|\bfinished\s+(?:on|with)\s+\d{1,3}[.,]\d+\b"
+    r"|\btotal\s+(?:of\s+)?\d{1,3}[.,]\d+\b"
+    # A score word within a few characters of a number, either order. Advisory 3
+    # of the release audit: the patterns covered the shapes a score is *usually*
+    # written in, and "the panel put them at 76.3" is not one of them.
+    r"|\b(?:score|scores|total|totals|points|rating|result|tally)\b[^\n\d]{0,16}\d{1,3}[.,]\d+"
+    r"|\d{1,3}[.,]\d+[^\n\d]{0,16}\b(?:points|pts|overall|out of a hundred)\b",
     re.IGNORECASE,
 )
+
+# A number that could be a total, with version references (`rubric@1.1.0`) and
+# multi-part version strings excluded by the guards on either side.
+_SUSPECT_TOTAL = re.compile(r"(?<![\w.@])(\d{1,3}\.\d{1,2})(?![\d.])")
 
 # Personal data has no place in any artifact this framework produces. Teams are
 # identified by team id; people are not identified at all.
@@ -266,6 +276,7 @@ def scan_unapproved_scores(
     score is the point of the artifact; only another team's total is a leak.
     """
     findings: list[Finding] = []
+    known = list(known_totals)
     match = _SCORE_PATTERN.search(text) if pattern_scan else None
     if match:
         findings.append(Finding(
@@ -273,7 +284,24 @@ def scan_unapproved_scores(
             f"numeric score {match.group(0)!r} present while the event has public_scores "
             f"disabled", artifact,
         ))
-    for total in known_totals:
+    if pattern_scan and not known and not match:
+        # Advisory 3's actual hole. `known_totals` is what closes the gap the
+        # patterns cannot, and it is empty exactly when no total has been
+        # finalized -- which is also when no legitimate total exists to be
+        # discussing. A number shaped like a total, in a public artifact, for an
+        # event with no total at all, is either a leak or a fabrication.
+        suspect = _SUSPECT_TOTAL.search(text)
+        if suspect:
+            findings.append(Finding(
+                "major", "unapproved-score",
+                f"{suspect.group(1)!r} is shaped like a total, in an artifact whose event "
+                f"has public scores disabled and no finalized total to be describing. "
+                f"Either it is a score that may not be here, or it is a number nothing "
+                f"official backs",
+                artifact,
+            ))
+
+    for total in known:
         if re.search(rf"(?<![\d.]){re.escape(f'{total:g}')}(?![\d])", text):
             findings.append(Finding(
                 "blocking", "unapproved-score",
