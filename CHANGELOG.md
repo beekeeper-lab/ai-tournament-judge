@@ -5,6 +5,13 @@ policies carry their own independent versions; see `framework/rubrics/`.
 
 ## Unreleased
 
+Nothing yet.
+
+## 0.4.0-beta — 2026-09-18
+
+Two of the release audit's open advisories closed, and the two controls the
+framework asserted in prose and never checked.
+
 ### Added
 
 - `atj sandbox proxy up|down|status`, the egress proxy an event's
