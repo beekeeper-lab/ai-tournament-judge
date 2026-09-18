@@ -127,38 +127,56 @@ footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);
     <div class="subj">
       <div class="subj-hd"><code>team-ledger</code> — Hive Ledger</div>
       <div class="subj-src">github.com/beekeeper-lab/hive-ledger @ <code>9d21b770</code></div>
-      <div class="subj-state done">Judged — 4 of 4 judges, consolidated <b>76.3 / 100</b>,
-      all 7 criteria aligned, no NE. Panel report and stage audit still pending.</div>
+      <div class="subj-state done">Judged — <b>76.3 / 100</b>, finalized, all 7 criteria aligned,
+      no NE. <b>Won the final</b>, combined margin +35.00 across both presentation orders.</div>
     </div>
     <div class="subj">
       <div class="subj-hd"><code>team-podcast</code> — Podcast Listener</div>
       <div class="subj-src">github.com/beekeeper-lab/podcast-listener @ <code>f3fdd342</code></div>
-      <div class="subj-state todo">Not judged — evidence package audited
-      (<code>reliability</code> evidence-limited); <b>0 of 4</b> judgments written.</div>
+      <div class="subj-state todo">Judged — 4 of 4 judges, six criteria aligned. <b>No official total</b>:
+      <code>reliability</code> is NE from all four judges, adjudicated and <b>accepted</b>. The record
+      states the cause is the framework's and the operator's sandbox limits, not the team's work.</div>
     </div>
   </div>
 
   <div class="meta">
-    <span><b>Status</b> In progress — stage 4 of 11 (<code>initial-judging</code>)</span>
-    <span><b>Blocked on</b> gate <code>judgments-audited</code></span>
-    <span><b>Evaluated</b> 1 of 2 teams</span>
+    <span><b>Status</b> <b>Complete</b> — all 9 stage gates passed</span>
+    <span><b>Winner</b> team-ledger, combined margin +35.00, confirmed</span>
+    <span><b>Evaluated</b> 2 of 2 teams, both judged</span>
     <span><b>Rubric</b> 7 criteria, 4 independent judges per team</span>
-    <span><b>Sandboxed runs</b> 27 (429s container time)</span>
-    <span><b>Date</b> 2026-09-17</span>
+    <span><b>Sandboxed runs</b> 27 · <b>Framework defects found</b> 26</span>
+    <span><b>Date</b> 2026-09-16 to 2026-09-18</span>
     <span><b>Branch</b> <code>feature/first-live-event</code></span>
-    <span><b>Head</b> <code>25624c7</code></span>
+    <span><b>Head</b> <code>event complete</code></span>
     <span><b>Owner</b> event-director</span>
   </div>
 </header>
 
 <section class="scope">
   <h2>Read this first — what has and has not been evaluated</h2>
-  <p><b>One of the two teams has been judged.</b> <code>team-ledger</code> has a
-  complete four-judge panel and a consolidated score. <code>team-podcast</code> has an
-  audited evidence package and <b>zero judgments</b>.</p>
-  <p>There is no winner, no bracket, no head-to-head and no dossier. Nothing in this
-  document is a tournament result. The consolidated score below is one team's panel
-  total, not a placing.</p>
+  <p><b>Both teams were judged and the event is complete.</b> All nine stage gates
+  passed. <code>team-ledger</code> finished at <b>76.3</b>, finalized, and won the final.
+  <code>team-podcast</code> finished with <b>no official total</b>, because
+  <code>reliability</code> was <code>NE</code> from all four judges and the adjudication
+  accepted rather than cleared it.</p>
+
+  <p><b>The missing total is the framework's fault, not the team's.</b> Three runs of
+  team-podcast's own test suite produced three different outcomes and none could be
+  classified. Every traced failure points away from their code — the server had already
+  returned <code>200 OK</code> before both stage-3 failures. The cause was this framework's
+  own sandbox: a 64&nbsp;MB tmpfs that could not hold a 2.2&nbsp;GB library, a 64&nbsp;MB
+  <code>/dev/shm</code>, and no <code>--shm-size</code>. One re-run would likely have made the
+  criterion scorable; the event declined, because re-running evidence after judging began
+  would have invalidated all four judgments citing it.</p>
+
+  <p>The missing total blocked nothing: two teams is an exact power of two so no bye policy
+  read a score, and the head-to-head rubric forbids selecting on initial totals. Both matchup
+  judges independently returned comparison value <code>0</code> on <code>reliability</code> and
+  explicitly refused to treat the <code>NE</code> as a deficiency.</p>
+
+  <p><b>The real product of this trial is 26 framework defects</b>, every one found by running
+  the event rather than by reading the code. They are tracked as D1–D26 in
+  <code>docs/framework-fix-plan.md</code>.</p>
 </section>
 
 <nav class="toc">
