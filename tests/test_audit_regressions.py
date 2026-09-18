@@ -300,8 +300,11 @@ class VersionSkewTests(unittest.TestCase):
             for item in ("framework", "schemas", "events", ".claude"):
                 shutil.copytree(ROOT / item, copy_root / item)
             rubric = copy_root / canon.SUBMISSION_RUBRIC
+            current = canon.load(ROOT).version
             rubric.write_text(
-                rubric.read_text(encoding="utf-8").replace("version: 1.0.0", "version: 1.1.0", 1),
+                rubric.read_text(encoding="utf-8").replace(
+                    f"version: {current}", "version: 9.9.9", 1
+                ),
                 encoding="utf-8",
             )
             canon.clear_cache()

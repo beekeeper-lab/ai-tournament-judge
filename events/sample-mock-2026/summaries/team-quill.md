@@ -3,14 +3,14 @@ event_id: sample-mock-2026
 team_id: team-quill
 commit: 1ff35a656b351b0529a7bc2d6b169aec650e1e71
 evidence_package_id: ev:sample-mock-2026:team-quill:1ff35a656b35:f815c851
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 framework_commit: uncommitted
 model_requested: not-applicable (scripted fixture)
 model_used: not-applicable (scripted fixture)
 started_at: "2026-05-18T09:00:00Z"
 completed_at: "2026-05-18T17:30:00Z"
-consolidation_policy: panel-consolidation@1.0.0
-persona: panel-consolidator@1.0.0
+consolidation_policy: panel-consolidation@1.1.0
+persona: panel-consolidator@1.1.0
 judge_run_ids:
 - jr:sample-mock-2026:team-quill:judge-backend:f815c851:01
 - jr:sample-mock-2026:team-quill:judge-frontend-ux:f815c851:01

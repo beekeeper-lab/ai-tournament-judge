@@ -8,9 +8,9 @@ commit_a: 1d46525edc7a377a802930091df18ad921262657
 commit_b: 57435ce0f24aacf5d49e41d78225d67882eccf91
 evidence_package_a: ev:sample-mock-2026:team-lumen:1d46525edc7a:7c194426
 evidence_package_b: ev:sample-mock-2026:team-verdant:57435ce0f24a:e015944d
-rubric: head-to-head@1.0.0
-source_rubric: submission-evaluation@1.0.0
-persona: matchup-judge@1.0.0
+rubric: head-to-head@1.1.0
+source_rubric: submission-evaluation@1.1.0
+persona: matchup-judge@1.1.0
 framework_commit: uncommitted
 model_requested: not-applicable (scripted fixture)
 model_used: not-applicable (scripted fixture)
@@ -52,7 +52,7 @@ validation_state: valid
 
 ## Eligibility and common evidence
 
-Both teams carry a valid consolidated report at rubric `submission-evaluation@1.0.0`
+Both teams carry a valid consolidated report at rubric `submission-evaluation@1.1.0`
 and a pinned evidence package. Neither presentation order, bracket position,
 affiliation nor previous placement was treated as evidence.
 

@@ -115,10 +115,12 @@
           "$ref": "#/$defs/timestamp"
         },
         "verified": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "True only when the model identity was established outside the model's own statement: an orchestrator run record, a harness-reported identifier, or a recorded API response. A model's self-report is false. framework/policies/evidence-and-citation.md defines the threshold."
         },
         "note": {
-          "type": "string"
+          "type": "string",
+          "description": "Which source established the model identity, or why none was available."
         }
       },
       "additionalProperties": true

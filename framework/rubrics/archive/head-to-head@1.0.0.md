@@ -1,7 +1,7 @@
 ---
 rubric_id: head-to-head
-version: 1.1.0
-source_rubric: submission-evaluation@1.1.0
+version: 1.0.0
+source_rubric: submission-evaluation@1.0.0
 close_call_band: 5
 order_balancing: required
 tie_break_order: [functional, reliability, product]

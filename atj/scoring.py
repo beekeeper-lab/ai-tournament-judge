@@ -48,9 +48,31 @@ def _thresholds(root: Path | None = None) -> dict[str, int]:
 _ROUNDING = {"half-up": ROUND_HALF_UP, "half-even": ROUND_HALF_EVEN}
 
 
-def _rounding_mode(root: Path | None = None) -> str:
+def panel_rubric(judgments: Iterable["Judgment"], *, root: Path | None = None) -> Rubric:
+    """The rubric a panel was judged under, read from the panel itself.
+
+    Recomputing a completed event under today's rubric restates an official
+    result under a contract nobody applied to it. Every judgment in a panel pins
+    the same version -- panel integrity requires it -- so the panel names its own
+    rubric, and a retired version is loaded from the archive. A panel that
+    disagrees with itself is an error, not something to average over.
+    """
+    references = {judgment.rubric for judgment in judgments}
+    if not references:
+        return canon.load(root)
+    if len(references) > 1:
+        raise ValidationError(
+            "this panel does not agree on one rubric version: "
+            + ", ".join(sorted(references))
+            + ". Judgments produced under different rubric versions are not "
+              "comparable and cannot be consolidated"
+        )
+    return canon.load_reference(references.pop(), root)
+
+
+def _rounding_mode(root: Path | None = None, rubric: Rubric | None = None) -> str:
     """The rounding rule, declared in the rubric's front matter."""
-    declared = str(canon.load(root).rounding)
+    declared = str((rubric or canon.load(root)).rounding)
     if declared not in _ROUNDING:
         raise ValidationError(
             f"rubric declares an unknown rounding rule {declared!r}; "
@@ -104,7 +126,7 @@ def individual_score(
     partial total is reported for transparency but `total` stays ``None`` so it
     can never be mistaken for a score.
     """
-    rubric = rubric or canon.load(root)
+    rubric = rubric or canon.load_reference(judgment.rubric, root)
     rubric.require_reference(judgment.rubric, artifact=judgment.source)
 
     supplied = set(judgment.scores)
@@ -154,7 +176,7 @@ def individual_score(
         "criteria": criteria,
         "unresolved_ne": unresolved,
         "total": None if unresolved else _round(partial, 4),
-        "display_total": None if unresolved else _round(partial, canon.load(root).display_decimals, root),
+        "display_total": None if unresolved else _round(partial, rubric.display_decimals, root),
         "partial_total": _round(partial, 4),
     }
 
@@ -245,7 +267,7 @@ def consolidate(
     scores, exactly as the consolidation policy requires.
     """
     judgments = sorted(judgments, key=lambda j: j.judge_id)
-    rubric = rubric or canon.load(root)
+    rubric = rubric or panel_rubric(judgments, root=root)
     resolutions = resolutions or {}
 
     thresholds = _thresholds(root)

@@ -3,7 +3,7 @@ event_id: sample-mock-2026
 team_id: team-harbor
 commit: 213a8d470271071a81322e41614345b87f67dd0c
 evidence_package_id: ev:sample-mock-2026:team-harbor:213a8d470271:85a7e2cb
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 framework_commit: uncommitted
 model_requested: not-applicable (scripted fixture)
 model_used: not-applicable (scripted fixture)

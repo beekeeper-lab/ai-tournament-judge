@@ -3,7 +3,7 @@ event_id: sample-mock-2026
 team_id: team-lumen
 commit: 1d46525edc7a377a802930091df18ad921262657
 evidence_package_id: ev:sample-mock-2026:team-lumen:1d46525edc7a:7c194426
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 framework_commit: uncommitted
 model_requested: not-applicable (scripted fixture)
 model_used: not-applicable (scripted fixture)

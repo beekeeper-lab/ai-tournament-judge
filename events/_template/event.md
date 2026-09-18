@@ -2,9 +2,9 @@
 event_id: replace-me
 event_name: REPLACE-ME
 status: draft
-rubric: submission-evaluation@1.0.0
-consolidation_policy: panel-consolidation@1.0.0
-matchup_rubric: head-to-head@1.0.0
+rubric: submission-evaluation@1.1.0
+consolidation_policy: panel-consolidation@1.1.0
+matchup_rubric: head-to-head@1.1.0
 bracket_policy: bracket-assignment@1.0.0
 bye_policy: performance-qualified
 close_call_band: 5

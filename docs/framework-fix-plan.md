@@ -27,11 +27,11 @@ version.
 | D5 | `atj/event.py:745` writes `status.md.bak` on every ledger update; it was committed twice | done |
 | D6 | `.claude/hooks/pre-advance.sh` inspects the whole command string, so prose naming a submission path trips the run-on-host guard | done |
 | D7 | `atj score`'s text output prints `blocked_reasons` but never `adjudication_required`, so an operator reading the console can state the opposite of the committed JSON | done |
-| D8 | `confidence` is undefined for an `NE` criterion; four judges on identical reasoning split between `low` and `high` because one described the evidence and one described the determination | 2 |
-| D9 | `model.verified` has no defined threshold; on the same basis `judge-backend` recorded `false` and three judges recorded `true` | 2 |
+| D8 | `confidence` is undefined for an `NE` criterion; four judges on identical reasoning split between `low` and `high` because one described the evidence and one described the determination | done |
+| D9 | `model.verified` has no defined threshold; on the same basis `judge-backend` recorded `false` and three judges recorded `true` | done |
 | D10 | `framework/templates/adjudication-report.md` invites `persona: ADJUDICATOR-AGENT-OR-HUMAN@VERSION`, but `atj validate` requires a persona registered in `framework/personas.md` as `name@x.y.z`. There is no adjudicator persona and no way to name a human decision-maker | done |
 | D11 | An adjudication can *clear* an `NE` through `score_override`, but nothing can express one that *accepts* it. `atj score` re-reports an adjudicated `NE` as `unresolved` and keeps listing `adjudication_required`, so a completed adjudication is indistinguishable from a missing one | 2 |
-| D12 | The `agentic` criterion does not say how to score a submission that correctly has no AI. Three of its four sub-questions have no subject, and four judges on identical, conclusive facts split across two anchors | 2 |
+| D12 | The `agentic` criterion does not say how to score a submission that correctly has no AI. Three of its four sub-questions have no subject, and four judges on identical, conclusive facts split across two anchors | done |
 | D13 | `atj/scoring.py:431` treats a non-empty `decided_by` as one of the gates that lets an adjudication move an official total, and nothing distinguishes a human deciding from an agent writing a role into a required field | 2 |
 | D14 | Neither `schemas/adjudication.schema.json` nor `framework/templates/adjudication-report.md` has an amendment field, so an approved adjudication corrected after the fact cannot disclose the correction structurally and ends up citing an audit that post-dates its own `completed_at` | 2 |
 | D15 | `atj event unit record` restamps `completed_at` with the current clock and offers no override, so re-recording a unit to change only `audit_result` destroys the real completion time | done |
@@ -935,3 +935,57 @@ of the comparative evidence. They now validate in place, against a schema, with
 no change to their content. The disclosure gate still fails closed on them; it
 does so because the directory is declared private rather than because it is
 unknown.
+
+## D12, D8 and D9 — `submission-evaluation@1.1.0`
+
+All three were places where the rubric asked a judge to invent a rule, and all
+three produced a split in live-trial-2026 on facts the judges agreed about. They
+land together because they are one rubric version, and that version is what D28
+was built to make possible.
+
+**D12**, as the plan recommended: O3 and O1 together, O2 rejected. The `agentic`
+central question now reads *"Is the decision about whether to use AI correct for
+this problem, and where AI is used, is it appropriate, controlled, observable,
+and effective?"*, so it has a subject either way. A new section says what to
+score when the submission contains no AI: the criterion is scored on the
+correctness and verifiability of the decision alone, a correct, documented,
+verified abstention meets primary expectations, it does not reach the anchors
+that require a demonstrated system, and it is never scored at the bottom anchors,
+which describe failure. `NE` is ruled out explicitly, because a verified absence
+is evidence. The converse of the existing "do not reward model names" boundary
+now sits next to it.
+
+**D8**: `confidence` describes the evidence, not the determination and not the
+judge's feelings. For an `NE`, it describes how firmly the evidence establishes
+that no observation was possible — so an `NE` the evidence package records as
+evidence-limited is `high`, and one the package does not account for is `low`.
+The rule is enforced, not just written: `atj validate reports` reads the team's
+manifest and reports a `minor` `ne-confidence` finding when a judgment
+disagrees with it.
+
+That check applies only to artifacts pinned to a rubric version that contains the
+rule. Reading a later rule back onto a frozen record would report a defect nobody
+could have avoided, which is the same mistake D28 fixed one layer down.
+
+**D9**: `model.verified` is `true` only when the identity came from outside the
+model's own statement — a run record, a harness-reported identifier, a recorded
+API response. A self-report is `false`, and `note` says which source was
+available. It lives in `framework/policies/evidence-and-citation.md`, beside the
+evidence classes it is an instance of, with the threshold repeated in the
+schema's own description of the field.
+
+**What the bump cost, in full.** `head-to-head` and `panel-consolidation` both
+declare `source_rubric`, so both moved to `@1.1.0` and both `@1.0.0` versions are
+archived. Eighteen templates and `events/_template/event.md` migrated.
+`check_declared_versions` now refuses a *template* that pins a superseded
+contract — an artifact may pin a retired version, but a template is the
+instruction for work that has not happened yet. `atj score` learned to read a
+panel's rubric from the panel (`scoring.panel_rubric`), so a completed event is
+recomputed under the contract it was judged under and a panel that disagrees with
+itself is an error rather than something to average over. The sample event
+regenerated clean. live-trial-2026 validates with 0 blocking and 58 advisories,
+every one of them naming a contract that has moved on since it was judged.
+
+Both completed events keep the same criterion set, ids, weights and scale. That
+is what makes an archive sufficient here; a version that moved a weight would
+need a migration path this does not provide, and a test pins the fact.

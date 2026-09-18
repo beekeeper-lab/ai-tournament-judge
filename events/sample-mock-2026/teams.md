@@ -2,7 +2,7 @@
 event_id: sample-mock-2026
 roster_version: 1
 frozen: true
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 framework_commit: uncommitted
 started_at: "2026-05-18T09:00:00Z"
 completed_at: "2026-05-18T17:30:00Z"

@@ -3,14 +3,14 @@ event_id: sample-mock-2026
 team_id: team-lumen
 commit: 1d46525edc7a377a802930091df18ad921262657
 evidence_package_id: ev:sample-mock-2026:team-lumen:1d46525edc7a:7c194426
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 framework_commit: uncommitted
 model_requested: not-applicable (scripted fixture)
 model_used: not-applicable (scripted fixture)
 started_at: "2026-05-18T09:00:00Z"
 completed_at: "2026-05-18T17:30:00Z"
-consolidation_policy: panel-consolidation@1.0.0
-persona: panel-consolidator@1.0.0
+consolidation_policy: panel-consolidation@1.1.0
+persona: panel-consolidator@1.1.0
 judge_run_ids:
 - jr:sample-mock-2026:team-lumen:judge-backend:7c194426:01
 - jr:sample-mock-2026:team-lumen:judge-frontend-ux:7c194426:01

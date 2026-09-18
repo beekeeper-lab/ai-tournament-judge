@@ -1442,6 +1442,14 @@ def check_declared_versions(root: Path) -> list[str]:
             versions.require_versions(payload, root=root, artifact=str(path))
         except AtjError as exc:
             problems.append(f"{path.relative_to(root)}: {exc.message}")
+        # An artifact may pin a retired version; a template may not. A template is
+        # the instruction for work that has not happened yet, so a superseded pin
+        # there starts every new artifact out of date.
+        for retired in versions.superseded_pins(payload, root=root):
+            problems.append(
+                f"{path.relative_to(root)}: pins a superseded contract ({retired}); a "
+                f"template must instruct the current version"
+            )
     return problems
 
 

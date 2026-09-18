@@ -12,7 +12,7 @@ import unittest
 from pathlib import Path
 
 from _support import ROOT  # noqa: F401
-from atj import canon, frontmatter, reports, versions
+from atj import canon, frontmatter, reports, schema, versions
 from atj.cli import check_version_archive, check_write_contracts
 from atj.errors import AtjError, VersionError
 
@@ -132,7 +132,7 @@ class ArchivedRubricsOutliveTheirReplacement(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             copy = framework_copy(directory)
             before = canon.load(copy).reference
-            self.archive(copy, "1.1.0")
+            self.archive(copy, "9.9.9")
             self.assertNotEqual(canon.load(copy).reference, before)
             self.assertIn(before, canon.superseded_references(copy))
             self.assertEqual(canon.load_reference(before, copy).reference, before)
@@ -228,6 +228,109 @@ class WriteContractsAreChecked(unittest.TestCase):
         metadata, body = frontmatter.read(versions.component_path("judging-auditor", ROOT))
         self.assertIn("Write", str(metadata["tools"]))
         self.assertIn("events/<event-id>/audits/", body)
+
+
+class TheRubricAnswersItsOwnQuestions(unittest.TestCase):
+    """D12, D8 and D9: three places where the rubric left a judge to invent a rule.
+
+    Each caused a real split in live-trial-2026 on facts the judges agreed about.
+    """
+
+    def setUp(self):
+        self.rubric = canon.load(ROOT)
+        self.text = (ROOT / canon.SUBMISSION_RUBRIC).read_text(encoding="utf-8")
+
+    def test_the_agentic_question_has_a_subject_either_way(self):
+        """D12: three of four sub-questions presupposed that AI exists."""
+        question = self.rubric.criterion("agentic").question
+        self.assertIn("decision about whether to use AI", question)
+        self.assertIn("where AI is used", question)
+
+    def test_the_rubric_says_what_to_score_when_there_is_no_ai(self):
+        self.assertIn("## A criterion whose subject the submission does not contain", self.text)
+        self.assertIn("meets primary expectations", self.text)
+        self.assertIn("never scored at the bottom anchors", self.text)
+        self.assertIn("`NE` does not apply to an absent subject", self.text)
+        self.assertIn("Do not score `agentic` down because a submission contains no AI", self.text)
+
+    def test_the_weights_and_criteria_did_not_move(self):
+        """A rubric version that changed the numbers would need a migration.
+
+        This one changes wording and adds rules. Both completed events keep the
+        same criterion set, which is what makes the archive sufficient.
+        """
+        archived = canon.load_reference("submission-evaluation@1.0.0", ROOT)
+        self.assertEqual(archived.criterion_ids, self.rubric.criterion_ids)
+        self.assertEqual(archived.weights, self.rubric.weights)
+        self.assertEqual(
+            (archived.scale_min, archived.scale_max),
+            (self.rubric.scale_min, self.rubric.scale_max),
+        )
+        self.assertNotEqual(archived.version, self.rubric.version)
+
+    def test_confidence_on_an_ne_has_one_meaning(self):
+        self.assertIn("`confidence` describes the evidence", self.text)
+        self.assertIn("evidence-limited is a `high`-confidence `NE`", self.text)
+
+    def test_model_verified_has_a_threshold(self):
+        policy = (ROOT / "framework" / "policies" / "evidence-and-citation.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("## Model identity", policy)
+        self.assertIn("A model's self-report is a team claim", policy)
+        verified = schema.get_schema("judgment", ROOT)
+        self.assertIn("model", verified.get("properties", {}))
+
+
+class NeConfidenceIsChecked(unittest.TestCase):
+    """D8, enforced: the definition is only worth as much as the check."""
+
+    def judgment(self, criterion: str, confidence: str) -> tuple[Path, Path]:
+        temporary = Path(tempfile.mkdtemp())
+        event = temporary / "event"
+        shutil.copytree(ROOT / "events" / "live-trial-2026", event)
+        path = next((event / "judgments" / "team-podcast").glob("*.md"))
+        metadata, body = frontmatter.read(path)
+        # A new artifact, pinned to the rubric that defines the rule.
+        metadata["rubric"] = canon.load(ROOT).reference
+        metadata["persona"] = versions.load_personas(ROOT)[str(metadata["judge_id"])].reference
+        metadata["scores"][criterion] = "NE"
+        metadata["confidence"][criterion] = confidence
+        path.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+        return temporary, path
+
+    def findings(self, path: Path, event: Path, criterion: str) -> list[str]:
+        report = reports.validate_artifact(path, event, root=ROOT)
+        return [
+            f.detail for f in report.findings
+            if f.rule == "ne-confidence" and repr(criterion) in f.detail
+        ]
+
+    def test_an_evidence_limited_ne_must_be_high_confidence(self):
+        temporary, path = self.judgment("reliability", "low")
+        try:
+            detail = self.findings(path, temporary / "event", "reliability")
+            self.assertTrue(detail, "an evidence-limited NE at low confidence was not flagged")
+            self.assertIn("evidence-limited", detail[0])
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_an_unaccounted_ne_must_be_low_confidence(self):
+        temporary, path = self.judgment("security", "high")
+        try:
+            detail = self.findings(path, temporary / "event", "security")
+            self.assertTrue(detail, "an unaccounted NE at high confidence was not flagged")
+            self.assertIn("does not record", detail[0])
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_the_rule_is_not_read_back_onto_an_earlier_rubric(self):
+        """live-trial-2026 was judged before the rule existed; it stays clean."""
+        found = reports.validate_event_reports(LIVE, root=ROOT)
+        flagged = [
+            f.render() for report in found for f in report.findings if f.rule == "ne-confidence"
+        ]
+        self.assertEqual(flagged, [])
 
 
 class LiveTrialStaysValidAcrossTheBump(unittest.TestCase):

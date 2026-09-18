@@ -1,6 +1,6 @@
 ---
 event_id: sample-mock-2026
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 framework_commit: uncommitted
 source_artifacts:
 - public/semifinal-1.md

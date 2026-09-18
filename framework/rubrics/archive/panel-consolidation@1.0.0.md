@@ -1,7 +1,7 @@
 ---
 rubric_id: panel-consolidation
-version: 1.1.0
-source_rubric: submission-evaluation@1.1.0
+version: 1.0.0
+source_rubric: submission-evaluation@1.0.0
 judge_weighting: equal
 minimum_panel: 2
 aligned_max_range: 1

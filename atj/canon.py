@@ -383,6 +383,14 @@ def superseded_references(root: Path | None = None) -> dict[str, Path]:
         return {}
     found: dict[str, Path] = {}
     for path in sorted(directory.glob("*.md")):
+        if path.name == "README.md":
+            continue  # the directory's own instructions, not an archived contract
+        if "@" not in path.stem:
+            raise CanonError(
+                f"archive holds {path.name!r}; an archived contract is named "
+                f"`<id>@<version>.md` so that nothing has to guess which version it is",
+                artifact=str(path),
+            )
         metadata, _ = read(path)
         identifier = metadata.get("rubric_id") or metadata.get("policy_id")
         version = metadata.get("version")

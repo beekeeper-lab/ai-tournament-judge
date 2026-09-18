@@ -5,7 +5,7 @@ judge_id: JUDGE-ID
 judge_run_id: JUDGE-RUN-ID
 commit: IMMUTABLE-COMMIT
 evidence_package_id: EVIDENCE-ID
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 persona: JUDGE-ID@VERSION
 scores:
   # every criterion id in framework/rubrics/submission-evaluation.md,
@@ -27,7 +27,7 @@ model:
   started_at: YYYY-MM-DDTHH:MM:SSZ
   completed_at: YYYY-MM-DDTHH:MM:SSZ
   verified: true
-  note: how the model identity was established, or why it could not be
+  note: which source established the model identity, or why none was available
 ---
 
 # Individual Judgment

@@ -3,7 +3,7 @@ event_id: EVENT-ID
 team_id: TEAM-ID
 commit: IMMUTABLE-COMMIT
 evidence_package_id: EVIDENCE-ID
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 persona: build-team-dossier@VERSION
 framework_commit: FRAMEWORK-COMMIT
 source_reports: []

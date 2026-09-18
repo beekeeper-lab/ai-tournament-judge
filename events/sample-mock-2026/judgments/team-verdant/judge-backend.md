@@ -3,7 +3,7 @@ event_id: sample-mock-2026
 team_id: team-verdant
 commit: 57435ce0f24aacf5d49e41d78225d67882eccf91
 evidence_package_id: ev:sample-mock-2026:team-verdant:57435ce0f24a:e015944d
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 framework_commit: uncommitted
 model_requested: not-applicable (scripted fixture)
 model_used: not-applicable (scripted fixture)

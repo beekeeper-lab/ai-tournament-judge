@@ -180,6 +180,7 @@ def validate_artifact(
 
     if schema_name == "judgment":
         findings.extend(_check_judgment_scores(metadata, path, root))
+        findings.extend(_check_ne_confidence(metadata, path, event_dir, root))
 
     if not body.strip():
         findings.append(_finding("blocking", "empty", "artifact has no content below its front matter", path))
@@ -224,6 +225,71 @@ def _check_judgment_scores(metadata: dict[str, Any], path: Path, root: Path) -> 
             rubric.validate_score(scores[criterion], criterion_id=criterion, artifact=str(path))
         except AtjError as exc:
             findings.append(_finding("blocking", "scores", exc.message, path))
+    return findings
+
+
+def _check_ne_confidence(
+    metadata: dict[str, Any], path: Path, event_dir: Path, root: Path
+) -> list[Finding]:
+    """D8: `confidence` on an `NE` criterion has one defined meaning now.
+
+    Four judges in live-trial-2026 wrote identical reasoning for the same `NE` and
+    split between `low` and `high`, because nothing said whether `confidence`
+    described the evidence or the determination. `submission-evaluation@1.1.0`
+    says it describes the evidence: an `NE` the evidence package itself records as
+    evidence-limited is `high`, because the inability to observe is established
+    fact, and an `NE` the package does not account for is `low`.
+
+    The rule is applied only to artifacts pinned to a rubric version that
+    contains it. A judgment produced under an earlier version was written against
+    a contract that did not define this, and reading a later rule back onto a
+    frozen record would report a defect nobody could have avoided.
+    """
+    declared = str(metadata.get("rubric") or "")
+    if not declared or canon.is_superseded(declared, root):
+        return []
+    scores = metadata.get("scores")
+    if not isinstance(scores, dict):
+        return []
+    unresolved = sorted(
+        criterion for criterion, value in scores.items()
+        if str(value) == canon.NOT_ENOUGH_EVIDENCE
+    )
+    if not unresolved:
+        return []
+
+    team_id = str(metadata.get("team_id") or "")
+    manifest = event_dir / "evidence" / team_id / "manifest.md"
+    limited: set[str] = set()
+    if manifest.is_file():
+        try:
+            manifest_metadata, _ = frontmatter.read(manifest)
+        except AtjError:
+            manifest_metadata = {}
+        limited = {str(c) for c in (manifest_metadata.get("evidence_limited_criteria") or [])}
+
+    confidence = metadata.get("confidence") or {}
+    findings: list[Finding] = []
+    for criterion in unresolved:
+        recorded = str(confidence.get(criterion) or "").strip().lower()
+        if not recorded:
+            continue  # the schema's problem, not this rule's
+        expected = "high" if criterion in limited else "low"
+        if recorded != expected:
+            reason = (
+                f"the evidence package records {criterion!r} as evidence-limited, so the "
+                f"inability to observe it is established"
+                if criterion in limited else
+                f"the evidence package does not record {criterion!r} as evidence-limited, so "
+                f"this NE rests on evidence the judge could not find"
+            )
+            findings.append(_finding(
+                "minor", "ne-confidence",
+                f"{criterion!r} is NE with confidence {recorded!r}; "
+                f"{canon.load(root).reference} defines it as {expected!r} here, because "
+                f"{reason}",
+                path,
+            ))
     return findings
 
 

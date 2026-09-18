@@ -1,6 +1,6 @@
 ---
 rubric_id: submission-evaluation
-version: 1.1.0
+version: 1.0.0
 scale_min: 0
 scale_max: 5
 total_weight: 100
@@ -16,7 +16,7 @@ All four judges use these criteria and weights.
 |---|---|---:|---|
 | functional | Functional correctness and completeness | 25 | Does the application accomplish its promised primary workflows? |
 | product | Product value and usability | 15 | Does it solve a meaningful problem in an understandable, usable way? |
-| agentic | Agentic and AI system design | 15 | Is the decision about whether to use AI correct for this problem, and where AI is used, is it appropriate, controlled, observable, and effective? |
+| agentic | Agentic and AI system design | 15 | Is AI appropriate, controlled, observable, and effective? |
 | engineering | Engineering and maintainability | 15 | Is the implementation coherent, proportionate, and maintainable? |
 | reliability | Reliability, testing, and observability | 10 | Can failures be prevented, detected, understood, and recovered from? |
 | security | Security, privacy, and responsible AI | 10 | Are access, data, tools, model risks, and user safety handled responsibly? |
@@ -34,31 +34,6 @@ All four judges use these criteria and weights.
 | 5 | Exceptional; unusually complete, effective, and well-supported |
 
 `NE` means not enough evidence and is not a numeric zero. An official total cannot be finalized while a criterion is `NE`.
-
-`NE` does not apply to an absent subject. It means the evidence needed to judge
-is missing; a verified absence is evidence, and it is scored.
-
-## A criterion whose subject the submission does not contain
-
-Where a submission has no AI surface at all, `agentic` is scored on the
-correctness and verifiability of that decision alone, not on the absence.
-
-A decision that is right for the problem, documented by the team, and verified in
-the pinned evidence — no model call, no model credential, no third-party
-inference egress — meets primary expectations and is scored at the anchor that
-says so. It does not reach the anchors above that, which require a demonstrated
-system there is none of. It is never scored at the bottom anchors, which describe
-failure: a correct decision is not a failure.
-
-An undocumented or unverifiable absence is a different finding. Score what the
-evidence supports and say which of the three — the decision, the documentation,
-the verification — is missing.
-
-Four judges in `live-trial-2026` had identical, conclusive facts about a
-submission with no AI and split across two anchors, because three of this
-criterion's four sub-questions had no subject and the anchors pointed two ways at
-once. The rewording above removes the presupposition; this section settles the
-number.
 
 ## Calculation
 
@@ -79,29 +54,10 @@ structured result alongside the displayed one.
 
 For each criterion provide the raw score, weighted points, evidence references, what worked, what was deficient, reasoning connecting evidence to score, confidence, and highest-value improvement. Separate observation from inference. A team claim is not proof without supporting behavior or artifacts.
 
-`confidence` describes the evidence, not the judge's feelings and not the
-firmness of the determination. Record `high` when the evidence you cite is
-direct observation or artifact evidence that settles the question, `medium` when
-it is partial or indirect and a reasonable judge could land one anchor either
-way, and `low` when you are extrapolating from little.
-
-For an `NE` criterion, `confidence` describes how firmly the evidence establishes
-that no observation was possible. A criterion the evidence package itself records
-as evidence-limited is a `high`-confidence `NE`: the inability to observe is
-established fact. An `NE` you reached because you could not find the evidence,
-where the package does not say it is absent, is `low`. Nothing about an `NE` is
-`high` because you are certain you could not tell.
-
-This rule exists because four judges in `live-trial-2026` wrote identical
-reasoning for the same `NE` and split between `low` and `high` — one describing
-the evidence, one describing the determination — with nothing in the rubric to
-say which they meant.
-
 ## Interpretation boundaries
 
 - Judge what was submitted at the pinned commit, not what the team might add later.
 - Do not reward model names, framework choice, agent count, or code volume by themselves.
-- Do not score `agentic` down because a submission contains no AI. Score whether the choice was right for the problem and whether the boundary is verifiable rather than asserted. This is the converse of the line above it, and the two belong together.
 - Do not penalize an appropriate prototype merely for lacking unrelated production infrastructure.
 - Confirmed inability to complete the primary advertised workflow must materially affect `functional` and any dependent criteria.
 - Suspected rule violations or malicious behavior are flagged for human review; judges do not disqualify teams.

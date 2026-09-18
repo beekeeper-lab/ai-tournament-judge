@@ -2,7 +2,7 @@
 event_id: EVENT-ID
 roster_version: 1
 frozen: false
-rubric: submission-evaluation@1.0.0
+rubric: submission-evaluation@1.1.0
 framework_commit: FRAMEWORK-COMMIT
 started_at: YYYY-MM-DDTHH:MM:SSZ
 completed_at: YYYY-MM-DDTHH:MM:SSZ
