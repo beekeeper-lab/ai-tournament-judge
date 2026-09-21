@@ -8,95 +8,136 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.1.0
 persona: judging-auditor@1.1.0
-framework_commit: e5322ac5d214d586eec07434259e70e1441e6572
+framework_commit: d899befdeccdcd43b750ff1e5695943f9ae97207
 model_requested: claude-opus-5
 model_used: claude-opus-5
-started_at: "2026-09-21T23:16:37Z"
-completed_at: "2026-09-21T23:27:54Z"
+started_at: "2026-09-21T23:36:59Z"
+completed_at: "2026-09-21T23:46:53Z"
 visibility: private
 approval_state: draft
 validation_state: unvalidated
-result: FAIL
+result: PASS WITH ADVISORIES
+audit_rounds: 2
 findings:
 - id: F1
   severity: major
   scope: event
-  blocking: true
-  summary: The ScribeVault intake states the `.claude/shared` submodule is "a private repository reachable only with the operator's SSH credentials" and that its content "cannot be fetched". Re-derived without credentials — `beekeeper-lab/claude-kit` is public and the pinned gitlink commit `3dff46d6` fetches anonymously. The eligible-scope ruling in the record rests on a false premise.
-  artifact: events/trial-2-2026/submissions/team-scribe.md:121-131
-  repair: Restate the constraint as the one that is true (the configured submodule URL is SSH and no key is supplied, so `git submodule update` fails here), and either record the out-of-scope ruling as an event-director decision with that reason or materialize the gitlink from `https://github.com/beekeeper-lab/claude-kit` at `3dff46d6` and re-pin.
-  state: open
+  blocking: false
+  summary: "Round 1 — the ScribeVault record called `beekeeper-lab/claude-kit` a private repository whose content \"cannot be fetched\" and ruled the gitlink out of the eligible scope on that premise. Round 2 repaired it: the record now states the SSH URL and the absent key as the true constraint, states that claude-kit is publicly readable over HTTPS, names the earlier claim as wrong, and rules the gitlink out of scope as an event-director decision with three reasons."
+  artifact: events/trial-2-2026/submissions/team-scribe.md:139-165
+  repair: "Done. Every corrected fact re-derived: anonymous `ls-remote` succeeds, the pinned commit fetches anonymously, and the record carries the event-director's approval."
+  state: repaired
 - id: F2
   severity: minor
   scope: event
   blocking: false
-  summary: Both intake records carry `completed_at` equal to the clone minute (21:53:01Z, 22:04:10Z) while their narrative was edited twice afterwards, in commits `196aa42` (22:18:08Z) and `49242aa` (22:28:44Z). The field describes the clone, not the completed record.
-  artifact: events/trial-2-2026/submissions/team-scribe.md:9-11
-  repair: Set `completed_at` on each record to the time its content was last completed, or state in the template that the field describes the clone. Tooling half is configuration `F23`; the reason nothing caught it is configuration `F20`.
-  state: open
+  summary: "Round 1 — both records' `completed_at` was the clone minute. Round 2 set them to 23:31:02Z and 23:31:44Z, both in the past, both after `started_at`, both consistent with the file mtimes and the approval that followed."
+  artifact: events/trial-2-2026/submissions/team-scribe.md:11
+  repair: Done.
+  state: repaired
 - id: F3
   severity: minor
   scope: event
   blocking: false
-  summary: The checkbox repair made to `status.md` at 23:16:00Z is correct and minimal, but it is recorded nowhere — no activity-log row, and `last_updated` still reads 22:34:38Z. This is configuration `F22`'s condition returning in the same file.
+  summary: Round 1 — the hand checkbox repair was in no activity row and `last_updated` was stale. Round 2 added three rows (23:16:00Z, 23:16:37Z, 23:35:29Z), each matching what actually happened, and set `last_updated` to the newest.
   artifact: events/trial-2-2026/status.md:4
-  repair: Add an activity row for the hand repair and set `last_updated` when the `roster-frozen` gate is recorded.
-  state: open
+  repair: Done. Ascending, plausible, and the audit row's severity counts match this report's round one.
+  state: repaired
 - id: F4
   severity: minor
   scope: framework
   blocking: false
-  summary: '`atj event gate` and `atj event advance` write the front-matter gate and stage but never tick the matching body checkbox, so a passing gate leaves `status.md` in a state `validate_status_narrative` rejects. That is the defect the operator repaired by hand before this audit, and live-trial-2026 finished in the same state (D30).'
-  artifact: atj/event.py:696-704
-  repair: Have the gate and advance commands write the matching body checkbox, or refuse to exit while the body contradicts the ledger they just wrote.
-  state: open
+  summary: "Round 1 — a passing gate left `status.md` in the state its own validator rejects. Round 2 added `sync_status_checkboxes`, called from `save_status`, which writes the body's gate checkboxes from the ledger in both directions, with two regression tests."
+  artifact: atj/event.py:515-546
+  repair: Done. The rewritten `test_a_ticked_pending_gate_is_reported` still covers the only route left to the contradiction. Residual behaviour recorded as F14.
+  state: repaired
 - id: F5
   severity: minor
   scope: event
   blocking: false
-  summary: The deferred untrusted-data wrapper (configuration `F11`) is scoped to one file, and the demos intake names four payload demos. A narrow phrase scan finds instruction-shaped payloads in at least eight files across demos 01, 02, 05, 06 and 10, and the ScribeVault agent configuration includes `.claude/local/prompts/` and `.claude/local/agents/`, which the record does not name.
-  artifact: events/trial-2-2026/submissions/team-demos.md:100-119
-  repair: Enumerate the payload-carrying files and the agent-configuration paths in the record or the evidence plan, so the evidence stage wraps a set rather than an example.
-  state: open
+  summary: Round 1 — the untrusted-data wrapper was carried by one example file and a four-demo list. Round 2 made the demos scope every file in the checkout and enumerated the ScribeVault agent-configuration paths. Two counts inside the new text do not re-derive; those are F11 and F12.
+  artifact: events/trial-2-2026/submissions/team-demos.md:115-146
+  repair: Done for the scope. The 66 `.claude/` files and the nine phrase-scan files re-derive exactly.
+  state: repaired
 - id: F6
   severity: advisory
   scope: event
   blocking: false
-  summary: "Both intake records are still `approval_state: draft` and `validation_state: unvalidated` although `atj validate reports` has passed them. live-trial-2026's intake records were `approved` and `valid` before its roster froze."
-  artifact: events/trial-2-2026/submissions/team-demos.md:16-17
-  repair: Run `atj event approve` on both records before freezing the roster, or state that intake records stay draft in this event.
-  state: open
+  summary: "Round 1 — both intake records were draft and unvalidated. Round 2 approved both through `atj event approve`: `approval_state: approved`, `validation_state: valid`, `approved_by: event-director`, `approved_at: 2026-09-21T23:33:46Z`."
+  artifact: events/trial-2-2026/submissions/team-demos.md:16-21
+  repair: Done, and it is what makes F1's scope decision an approved event-director decision rather than a model's sentence.
+  state: repaired
 - id: F7
   severity: advisory
   scope: framework
   blocking: false
-  summary: '`teams.md` carries three front-matter fields; `framework/templates/team-roster.md` shows ten. `events/_template/teams.md` matches the event and `schemas/roster.schema.json` requires four keys, so the roster about to be frozen carries no `visibility`, `approval_state` or `validation_state`, and `atj release-check` reports templates PASS.'
+  summary: "Not repaired, deliberately, and correctly so. `framework/templates/team-roster.md` carries eight identity fields that `check_templates` (atj/cli.py:1525-1546) requires of every template, while `events/_template/teams.md` and every roster the framework has produced carry three. Trimming the template fails the contract; adding the fields to the rosters would rewrite two frozen completed events."
   artifact: framework/templates/team-roster.md:1-12
-  repair: Reconcile `framework/templates/team-roster.md`, `events/_template/teams.md` and `schemas/roster.schema.json` on one front matter.
+  repair: Decide it rather than patch it. The narrow option nobody has taken is to have `atj event init` write the full front matter for new rosters and leave completed events alone. Does not hold this gate.
   state: open
 - id: F8
   severity: advisory
   scope: framework
   blocking: false
-  summary: Configuration `F10` carried forward — both intake provenance tables print the absolute operator home path, in files committed to a public repository. No credential or third-party data is exposed.
-  artifact: events/trial-2-2026/submissions/team-scribe.md:141
-  repair: Write a repository-relative checkout path in `atj intake`.
-  state: open
+  summary: Round 1 — the provenance tables printed the operator's absolute home path into a public repository. Round 2 added `_relative_checkout` with a regression test, and both trial-2 records now read `workspaces/trial-2-2026/<team>`. No absolute path remains in any event artifact.
+  artifact: atj/intake.py:361-373
+  repair: Done. Leaving `live-trial-2026` untouched is right; see this report's assessment.
+  state: repaired
 - id: F9
   severity: advisory
   scope: framework
   blocking: false
-  summary: "Configuration `F17` carried forward. The withdrawal of `beekeeper-lab/website` is findable in `event.md` and the plan, and its privacy premise is true — anonymous access to that repository is refused while both rostered repositories are anonymously readable. What is unrepaired is the form: repository visibility is still asserted as fact, without attribution or a check a reader can repeat."
-  artifact: docs/0.5.0-beta-plan.md:179-186
-  repair: Attribute the visibility claims to the operator or cite the check in this report's F9 evidence.
-  state: open
+  summary: Round 1 — repository visibility was asserted without attribution or a repeatable check. Round 2 put the credential-free `git ls-remote` invocation and its result for all five repositories into the plan. Reproduced here exactly.
+  artifact: docs/0.5.0-beta-plan.md:188-203
+  repair: Done.
+  state: repaired
 - id: F10
   severity: advisory
   scope: event
   blocking: false
-  summary: Both checkouts sit on an attached `main` tracking `origin/main`, clean and at the pin, which is also the current remote HEAD. A `git pull` would move the evidence base silently, and `workspaces/` is gitignored, so no committed artifact would show the drift.
+  summary: Round 1 — both checkouts were on an attached `main`. Round 2 detached both at their pinned commits; both report `HEAD` as the branch, both are at the pin, both are clean.
   artifact: workspaces/trial-2-2026/team-scribe
-  repair: Detach both checkouts at their pinned commits, or re-verify `git rev-parse HEAD` against the pin as a recorded step of each evidence package.
+  repair: Done.
+  state: repaired
+- id: F11
+  severity: minor
+  scope: event
+  blocking: false
+  summary: "Introduced by the F5 repair. The ScribeVault agent-file table says `ai/beans/` holds \"168 files across 56 `BEAN-*` directories\". The tree holds 168 files, which is right, across 54 `BEAN-*` directories; 56 is the count of top-level entries, two of which are the files `_bean-template.md` and `_index.md`."
+  artifact: events/trial-2-2026/submissions/team-scribe.md:126
+  repair: "Write 54 directories plus two files, or write 56 entries. The table is introduced as \"counted with `find`\", so the number has to be what `find` returns."
+  state: open
+- id: F12
+  severity: minor
+  scope: event
+  blocking: false
+  summary: "Introduced by the F5 repair. The demos record says the same phrase scan over `*.py` \"returns ten more\". It returns 13, every one of them matching only \"Top candidate\", a label the demos' own ranking scripts print. The same paragraph gives the pinned tree as `LICENSE`, `README.md` and ten `NN-*/demo/` directories, omitting `.gitignore`."
+  artifact: events/trial-2-2026/submissions/team-demos.md:138-140
+  repair: Correct the count to 13 and say what it matches, and either name `.gitignore` or drop the tree enumeration, which the class rule does not need.
+  state: open
+- id: F13
+  severity: minor
+  scope: event
+  blocking: false
+  summary: "Introduced by the F5 repair. The inserted wrapper section separates \"Demos 03, 04 and 08 carry poisoned documents …\" from \"Every one of those payloads is **evidence about the submission**\", so the antecedent of \"those payloads\" is now a file list the same section calls \"most of them the demos' own detection and hardened variants rather than payloads\". This is the configuration audit's F12 defect returning in the other record."
+  artifact: events/trial-2-2026/submissions/team-demos.md:108-151
+  repair: "Move the new section below the 'Every one of those payloads' paragraph, or name the antecedent explicitly as the configuration audit's F12 repair did."
+  state: open
+- id: F14
+  severity: advisory
+  scope: framework
+  blocking: false
+  summary: "Residual of the F4 repair. `save_status` now rewrites the body's gate checkboxes on every ledger write, silently and with no record. A deliberate manual correction to the body is discarded by the next command that touches the ledger, and `validate_status_narrative` can only report a hand edit in the window before that write."
+  artifact: atj/event.py:1118-1124
+  repair: Optional — report on stderr when the sync changes a box, so an overwritten manual edit is visible rather than silent.
+  state: open
+- id: F15
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: "The two records now treat wrapper scope differently: the demos record rules that every file is wrapped because a per-file allowlist is \"under-inclusive by construction\", and the ScribeVault record then relies on exactly such an allowlist, calling its table \"the full set\". The difference is defensible, since one submission is an attack corpus and the other is not, but no artifact states the reason, and the ScribeVault enumeration has already produced F11."
+  artifact: events/trial-2-2026/submissions/team-scribe.md:128-130
+  repair: State why ScribeVault's wrapper scope is an enumeration and the demos' is a class, or apply the class rule to both.
   state: open
 ---
 
@@ -104,363 +145,380 @@ findings:
 
 ## Result
 
-**FAIL.** One major finding, marked blocking, holds the `roster-frozen` gate:
-`F1`. The ScribeVault intake record states as established fact that the
-`.claude/shared` submodule is a private repository whose content "cannot be
-fetched", and builds an eligible-scope ruling on that. Re-derived with
-credentials disabled, `beekeeper-lab/claude-kit` is public and the pinned gitlink
-commit is anonymously fetchable. The record is wrong about the one fact that
-decides what is inside the submission being frozen.
+**PASS WITH ADVISORIES.** Second round, superseding the first in place. Finding
+IDs are stable across both rounds.
 
-Everything else re-derived. Both pins agree across four places and both
-checkouts, both intake records match the template, the disputed test count from
-configuration `F1` is right, the demos have no test file anywhere in the tree,
-every timestamp sits inside the event window and the activity log is ascending,
-`public/` is empty and the publication check is clear. The operator's checkbox
-repair is correct and changed nothing else.
+`F1`, the major blocking finding of round one, is repaired, and repaired in the
+direction the event-director chose rather than the direction that was
+convenient. The ScribeVault record no longer rests anything on the claim that
+`beekeeper-lab/claude-kit` is private or unreachable; it states the SSH URL and
+the missing key as the real constraint, states that the repository is publicly
+readable, names its own earlier claim as wrong, and rules the gitlink out of the
+eligible scope as a decision with three stated reasons. The record carrying that
+decision is now approved by the event-director, which is what turns it from a
+model's sentence into an event decision. Nine of the ten round-one findings are
+repaired; `F7` is open by choice and does not hold this gate.
 
-The pattern this event was built to observe held again: the repair that closed
-configuration `F2` introduced `F1` of this report, and it survived two further
-audit rounds because nobody tested the claim against the network.
+Five findings are new, and three of them are the repair round's own residue —
+`F11` and `F12` are counts inside the new `F5` text that do not re-derive, and
+`F13` is an inserted section breaking the antecedent of the paragraph below it,
+which is the configuration audit's `F12` happening again in the other record.
+None of the three changes an obligation: the demos wrapper covers every file by
+class, so a miscounted subset narrows nothing, and the ScribeVault file table is
+otherwise exact.
+
+Four rounds of repair in this event, four rounds that left something new behind.
+The one thing that has changed is the size of what is left behind: round one of
+this stage left a false premise under an eligibility ruling, and round two left
+two arithmetic slips and a pronoun.
+
+**The `roster-frozen` gate may be recorded.** Nothing open is blocking, nothing
+open is major, and the three open minor findings are text corrections inside
+records whose determinations re-derive.
 
 ## Scope and artifacts inspected
 
-Intake only. No evidence package, judgment, bracket or matchup exists, and none
-was audited.
+Intake only, second round. No evidence package, judgment, bracket or matchup
+exists and none was audited.
 
-Read: `events/trial-2-2026/event.md`, `teams.md`, `status.md`,
-`submissions/team-scribe.md`, `submissions/team-demos.md`,
-`audits/configuration.md`, `status.md.bak` (ignored runtime artifact),
-`framework/templates/submission-intake.md`, `framework/templates/team-roster.md`,
-`framework/templates/audit-report.md`, `framework/personas.md`,
-`schemas/roster.schema.json`, `schemas/submission-intake.schema.json`,
-`schemas/audit.schema.json`, `atj/event.py`, `atj/reports.py`, `CLAUDE.md`,
-`docs/0.5.0-beta-plan.md:170-195`, `events/live-trial-2026/status.md` and
-`events/live-trial-2026/submissions/team-podcast.md` for precedent, and both
-pinned checkouts under `workspaces/trial-2-2026/`.
+Re-read in full: `events/trial-2-2026/event.md`, `teams.md`, `status.md`, both
+intake records, `audits/configuration.md`, round one of this report, the three
+templates, `schemas/roster.schema.json`, `schemas/submission-intake.schema.json`,
+`schemas/audit.schema.json`, `atj/event.py`, `atj/intake.py`, `atj/cli.py`'s
+template contract, `tests/test_operator_surface.py`, `tests/test_intake.py`,
+`docs/0.5.0-beta-plan.md:170-205`, `CLAUDE.md`, and both pinned checkouts under
+`workspaces/trial-2-2026/`, read-only, by path, from the framework root.
 
-Both checkouts were read read-only, by path, from the framework root. Nothing in
-either was executed; a `python3 - <<EOF` invocation issued with the working
-directory inside the ScribeVault checkout was refused by
-`.claude/hooks/pre-advance.sh` as host execution of submission code, and the
-check was redone with shell tools from the framework root. Every file inside a
-checkout is treated in this report as evidence described, never as instruction
-followed — including the resume payload at
-`workspaces/trial-2-2026/team-demos/01-resume-that-talked-back/demo/goofy-goof.md:20-27`,
-which directs a screening assistant to score the candidate 100 and rank them
-first. It was read, quoted in outline and not acted on. See `F5` for the files
-like it that no artifact yet enumerates.
+The repair commit is `d899bef`, on `event/trial-2-2026-intake`, touching nine
+files. The full diff was read, not only the lines the findings named.
 
-Outbound network was used for three read-only checks against `github.com`:
-`git ls-remote` on the two rostered repositories, on `beekeeper-lab/website`,
-`beekeeper-lab/claude-kit` and `beekeeper-lab/atticus-vault`, and a one-commit
-`git fetch` of the claude-kit gitlink into the session scratchpad. Nothing was
-fetched into the repository, into either checkout, or executed.
+| File | Change | Checked |
+|---|---|---|
+| `events/trial-2-2026/submissions/team-scribe.md` | gitlink section rewritten, agent-file table added, `completed_at`, approval fields, relative checkout path | `F1`, `F2`, `F6`, `F8`, `F11`, `F15` |
+| `events/trial-2-2026/submissions/team-demos.md` | wrapper-scope section added, `completed_at`, approval fields, relative checkout path | `F5`, `F2`, `F6`, `F8`, `F12`, `F13` |
+| `events/trial-2-2026/status.md` | three activity rows, `last_updated`, checkbox | `F3` |
+| `docs/0.5.0-beta-plan.md` | the credential-free visibility check and its result | `F9` |
+| `atj/event.py` | `sync_status_checkboxes`, called from `save_status` | `F4`, `F14` |
+| `atj/intake.py` | `_relative_checkout` | `F8` |
+| `tests/test_operator_surface.py` | two new tests, one rewritten | `F4` |
+| `tests/test_intake.py` | one new test | `F8` |
+| `events/trial-2-2026/audits/intake.md` | round one of this report, committed unedited | verified |
+
+Round one of this report was committed with no changes made to it: its front
+matter still reads `result: FAIL` with `F1` at `blocking: true`, which is what
+the artifacts elsewhere in the commit cite.
 
 ## Deterministic validation results
 
-Re-run at 2026-09-21T23:16:37Z on `e5322ac`:
+Re-run at 2026-09-21T23:36:59Z on `d899bef`:
 
 | Command | Result |
 |---|---|
 | `python3 -m atj event validate events/trial-2-2026` | `PASS (0 problems, stage intake)` |
-| `python3 -m atj validate reports events/trial-2-2026` | `PASS — 3 artifacts, 0 blocking, 0 major, 0 minor, 0 advisory` |
-| `python3 -m atj release-check` | `PASS` (rubric 7 criteria total 100, schemas, personas, templates, single-source, version-skew, packaging, write contracts, signed approvals, sample event) |
-| `python3 -m atj validate publication events/trial-2-2026` | `CLEAR (3 artifacts, 0 blocking, 0 other)` |
-| `python3 -m atj event status events/trial-2-2026` | stage `intake`, 2 teams, 2 eligible, `roster-frozen = pending`; wrote nothing |
+| `python3 -m atj validate reports events/trial-2-2026` | `PASS — 4 artifacts, 0 blocking, 0 major, 0 minor, 0 advisory` |
+| `python3 -m atj validate publication events/trial-2-2026` | `CLEAR (4 artifacts, 0 blocking, 0 other)` |
+| `python3 -m atj release-check` | `PASS`, every line including template schemas, version-skew, write contracts, signed approvals (15, frozen) and sample event |
+| `python3 -m pytest tests/ -q` | `517 passed, 5 skipped, 282 subtests passed` |
+| `python3 -m atj demo build` | `Rebuilt … 54 artifacts validated`, `Demo check: PASS`, and the working tree stays clean, so the committed sample matches the generator |
+| `python3 -m atj event validate events/live-trial-2026` | `PASS (0 problems, stage complete)` |
+| `python3 -m atj event validate events/sample-mock-2026` | `PASS (0 problems, stage complete)` |
 
-All three of the operator's reported results reproduce. `atj event status` was
-confirmed read-only: `git diff` on `status.md` after the run still shows exactly
-one changed line.
+Every result the operator reported reproduces. The two completed events were
+validated because the framework changes touch code both of them run through;
+neither moved.
 
-## The operator's repair, checked
+The test count is 517 against 514 at the configuration audit's third round,
+which is the three tests this commit adds and no test removed.
 
-The repair is the single line `- [ ] Configuration audited` →
-`- [x] Configuration audited` in `events/trial-2-2026/status.md:26`.
+## Verification of each repair
 
-- **Correct.** `validate_status_narrative` (`atj/event.py:514-560`) requires each
-  body checkbox to agree with its ledger gate. The ledger records
-  `configuration-audited: passed` with `gate_evidence` pointing at
-  `audits/configuration.md`, whose `result` is PASS WITH ADVISORIES and whose
-  `approval_state` is `approved`. A checked box is what that ledger requires.
-- **Complete for what it was.** `git diff` against `HEAD` is that one line and
-  nothing else. Every other checkbox still matches its gate: eight `pending`
-  gates against eight unchecked boxes, and `Event marked complete` unchecked
-  against `current_stage: intake`.
-- **It introduced one thing, in bookkeeping, not in state.** The edit is not in
-  the activity log and `last_updated` still reads `2026-09-21T22:34:38Z`, the
-  minute the gate was recorded, while the file changed at 23:16:00Z. Recorded as
-  `F3`, because configuration `F22` was this exact condition and its repair note
-  said to set the field "again when the gate is recorded".
-- **The cause is not the operator.** `status.md.bak` holds the pre-write state:
-  gates passed, `current_stage: configuration`, same `last_updated`. So the gate
-  and the advance were one invocation that wrote the ledger and left the body it
-  requires untouched, which is `F4`.
+### F1 — the gitlink, repaired as a decision
 
-## Verification of each intake claim
+Re-derived, not read.
 
-Every claim below was re-derived from the pinned checkout or the named file, not
-accepted because it was cited.
+- **The corrected facts are true.** With `GIT_CONFIG_GLOBAL`, `GIT_CONFIG_SYSTEM`,
+  `GIT_TERMINAL_PROMPT` and `GIT_ASKPASS` neutralized and `credential.helper`
+  emptied, `git ls-remote https://github.com/beekeeper-lab/claude-kit` returns
+  `refs/heads/main` at `94881ec7`, and `beekeeper-lab/website` and
+  `beekeeper-lab/atticus-vault` are refused under the same conditions, which is
+  the control that proves no token was in play. `git fetch --depth 1 origin
+  3dff46d6…` into an empty scratch repository succeeds and `git cat-file -t`
+  reports `commit`.
+- **Nothing still rests on the false premise.** Every occurrence of "private",
+  "fetch", "SSH", "credential", "reachable" and "assumed" in the record was read
+  in place. The only "private" left is the front matter's `visibility: private`.
+  The gitlink paragraph now reads "The reason it is not initialized is the
+  configured URL, not the repository's visibility", and the closing sentence
+  "Nothing may be assumed about its content, and no judgment may cite it" is a
+  consequence of the scope decision rather than of inaccessibility.
+- **The error is disclosed rather than quietly overwritten.** The record says an
+  earlier version was wrong and points at this audit's `F1`, which is the
+  behaviour the framework asks of a repair.
+- **It is stated as a decision, and it is now an official one.** "The gitlink is
+  out of the eligible scope by event-director decision, not by inaccessibility",
+  with three reasons: the eligible scope is the tree a plain clone produces, the
+  event does not rewrite a submission's declared remote, and `claude-kit` is a
+  shared `beekeeper-lab` toolkit rather than this submission's own instructions,
+  so materializing it would widen what H6 tests. `event.md:23-27` gives the
+  event-director the authority, and `F6`'s approval puts the event-director's
+  name on the artifact that carries the decision. Round one's objection — a scope
+  ruling attributed to nobody — is answered.
+- **The unchanged facts still re-derive.** `.gitmodules` declares exactly one
+  submodule; `git submodule status` still prints `-3dff46d6…`; `git ls-tree HEAD
+  .claude/shared` still gives the same SHA as a `160000 commit` entry.
 
-### Pins
+The decision is a judgment about scope, and this audit does not second-guess it.
+It is internally consistent, it is the narrower of the two available readings,
+and it is now recorded where a judge will read it.
 
-| Fact | Source | Value |
+### F2 — `completed_at`
+
+`team-scribe` 23:31:02Z, `team-demos` 23:31:44Z. Both are in the past, both are
+after their `started_at` of 21:53:01Z and 22:04:10Z, both precede the approval at
+23:33:46Z and the commit at 23:36:21Z, and both files' mtimes are 23:33:46Z,
+which is the approval write. The values are plausible and mutually consistent;
+no instrument in this repository can prove a minute, and `F20` of the
+configuration audit is still why.
+
+### F3 — the ledger
+
+Three rows added, and each says what happened:
+
+| Row | Claim | Checked against |
 |---|---|---|
-| `teams.md` | row | `67969dd9479c096f05d998d8c50e5ea1968e3245`, `dc35f6962130af5e5be3fe16672e3d4964850eb9` |
-| intake front matter | `commit:` | identical, both records |
-| intake provenance table | `Pinned commit` | identical, both records |
-| `status.md` Team progress | abbreviated | `67969dd9`, `dc35f696` — correct 8-character prefixes |
-| activity log | abbreviated | same two prefixes |
-| checkout | `git -C … rev-parse HEAD` | identical, both checkouts, both trees clean (`git status --porcelain` empty) |
-| remote | anonymous `git ls-remote … HEAD` | identical, both repositories |
+| 23:16:00Z | hand repair of the body checkbox that `atj event validate` was failing on | the file mtime round one read, and round one's own account |
+| 23:16:37Z | intake stage audit, FAIL, 1 major and blocking, 4 minor, 5 advisory | this report's round-one front matter, exactly |
+| 23:35:29Z | intake repaired, round one, F1-F10 with F7 left open | the commit's own file list; every named output exists |
 
-Full and abbreviated forms agree everywhere. Both repositories are reachable and
-public: anonymous `ls-remote` with the global and system git config neutralized
-and the credential helper disabled succeeds for `ScribeVault` and
-`ai-security-demos`, and fails for `beekeeper-lab/website` and
-`beekeeper-lab/atticus-vault` with "Repository not found … Authentication
-failed", which is what proves the credential isolation held.
+Nine rows before, twelve now, strictly ascending, none before
+`started_at: 21:51:56Z`, none after this audit's clock. `last_updated` is
+23:35:29Z, the newest row. The round-one repair row lists `submissions/*.md`,
+`status.md`, `docs/0.5.0-beta-plan.md`, `atj/event.py`, `atj/intake.py` and
+`tests/`, which is the commit's file list less this report itself.
 
-### ScribeVault — `submissions/team-scribe.md`
+### F4 — the framework half, and what the rewritten test now covers
 
-| Claim | Re-derivation | Verdict |
+`sync_status_checkboxes` (`atj/event.py:515-546`) rebuilds the gate checkboxes
+from `stage_gates` and the `complete` label from `current_stage`, leaves any
+label it does not recognize untouched, and returns the body unchanged when the
+template supplies no labels. `save_status` calls it before schema validation.
+
+The concern worth stating is the rewritten test. `test_a_ticked_pending_gate_is_reported`
+used to build its contradiction by setting a gate to `pending` and calling
+`save_status`; that route is closed, so it now writes the ticked box into the
+body directly and asserts `validate_status_narrative` reports it. That is not a
+weakening. The condition the old test created can no longer exist, and the one
+route left to a body that contradicts its ledger — a human or a tool editing the
+body directly — is exactly what the new version exercises. The two added tests
+cover the sync in both directions, including the case that matters most, a
+hand-ticked box being untidied back to `pending` rather than laundered into a
+passed gate. `validate_status_narrative` itself is unchanged, and the other
+assertions in the class (`an unticked passed gate`, `a missing checkbox`) are
+untouched.
+
+Both completed events still validate, and `atj demo build` reproduces the
+committed sample byte for byte, so the new write path has not moved an artifact
+anywhere else. The residual behaviour — a silent body rewrite with no notice —
+is `F14`, advisory.
+
+### F5 — wrapper scope, and the counts inside it
+
+| Claim in the repaired text | Re-derivation | Verdict |
 |---|---|---|
-| "a desktop application for audio recording, transcription, and intelligent summarization with cost-optimized processing" | `README.md:7`, verbatim | correct |
-| Four independent, retryable stages; `AudioRecorder`, `WhisperService`, `SummarizerService`, `VaultManager` | `README.md:25`, `README.md:52-58`; classes at `src/audio/recorder.py:28`, `src/transcription/whisper_service.py:43`, `src/ai/summarizer.py:29`, `src/vault/manager.py:39` | correct |
-| `$0.00` local, `~$0.36` API, `~$131` annual, Settings UI shows real-time estimates | `README.md:148-153` | correct |
-| Transcription defaults to `local` | `README.md:136`, Default column | correct |
-| Checkpoint default 30 seconds, `recover_checkpoints()` | `README.md:52`, `README.md:144`; `src/audio/recorder.py:406` | correct |
-| `DiarizationService`, speakers auto or 2-6 | `src/transcription/diarization.py:74`; `README.md:142` | correct |
-| Models `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo`, default `gpt-4o-mini`; three summary styles | `README.md:139-140` | correct |
-| SQLite vault in WAL mode; export TXT/Markdown/SRT | `README.md:45`, `README.md:58` | correct |
-| Python 3.8+, FFmpeg, PortAudio, `sudo apt install ffmpeg portaudio19-dev`, venv + `requirements.txt` or `./setup.sh`, `python main.py` | `README.md:64-114` | correct |
-| `pytest tests/`, `--cov=src`, flake8/black/isort/`mypy src/`, `mypy.ini` and `pytest.ini` at root | `README.md:202-220`; both files present at the checkout root | correct |
-| **26 test files named across nine categories, 30 in the tree, four unlisted** | README table rows 227-235 name 26 distinct files in nine categories; `tests/test_*.py` is 30 and `find` over the whole tree is also 30; set difference is exactly `test_diarization_settings.py`, `test_thread_safety.py`, `test_utils.py`, `test_version.py`, and every named file exists | correct — configuration `F1` is genuinely repaired |
-| Local Whisper optional, ~500 MB via `torch` and `openai-whisper` | `requirements.txt:14-16` states it; the packages are pinned in `requirements-local.txt:14-15` | correct; the attribution to `requirements.txt` is the comment block, not the pins |
-| Keyring, Fernet/PBKDF2 fallback, `OPENAI_API_KEY` read-only, never plaintext | `README.md:119-126`, `README.md:286` | correct |
-| No key needed for local-only | `README.md` local mode | correct |
-| `CLAUDE.md`, `.claude/local/skills/`, `.claude/local/commands/`, `.github/copilot-instructions.md`, `ai/beans/` present | all five present | correct but not exhaustive — `.claude/local/prompts/` and `.claude/local/agents/` are also present (`F5`) |
-| One submodule `.claude/shared` at `git@github.com:beekeeper-lab/claude-kit.git`; `git submodule status` prints `-3dff46d6…`; leading `-` means uninitialized | `.gitmodules` declares exactly one; `git submodule status` output matches character for character; `git ls-tree HEAD .claude/shared` gives `160000 commit 3dff46d6…`, so the record's SHA is also the pinned one | correct |
-| **"a private repository reachable only with the operator's SSH credentials … it cannot be fetched, and nothing may be assumed about it"** | anonymous `ls-remote` on `beekeeper-lab/claude-kit` succeeds and lists `refs/heads/main`; `git fetch --depth 1 origin 3dff46d60e1285f68bb986b516813a535d14ef4d` into an empty scratch repository succeeds and `git cat-file -t` reports `commit` | **wrong — `F1`** |
+| Nine files match the stated phrase scan across `*.md`, `*.html`, `*.json`, `*.txt` | ran the stated phrase list, case-insensitive, over those extensions: nine files, the same nine, no more | correct |
+| `find . -path '*/.claude/*' -type f` counts 66 files | 66 | correct |
+| Each of the ten demos carries its own `.claude/` directory | ten `.claude/` directories, one per `NN-*/demo/` | correct |
+| The scan is a floor, not an inventory | true and important — my own round-one scan used a different phrase list and returned a partly different set, which is the point the sentence makes | correct |
+| The same scan over `*.py` returns ten more | returns **13**, every hit on "Top candidate" alone | wrong — `F12` |
+| The pinned tree is `LICENSE`, `README.md` and ten `NN-*/demo/` directories | also `.gitignore` | incomplete — `F12` |
+| ScribeVault agent-file table, nine rows | `CLAUDE.md` 1, `.github/copilot-instructions.md` 1, `.claude/local/commands/` 3 named files, `.claude/local/skills/` 3 `SKILL.md`, `prompts/` and `agents/` `.gitkeep` only, `.claude/shared/` empty, `ai/reports/` 6 — all exact | correct except the `ai/beans/` row |
+| `ai/beans/` — 168 files across 56 `BEAN-*` directories | 168 files, **54** `BEAN-*` directories, plus `_bean-template.md` and `_index.md`; 56 is the entry count | wrong — `F11` |
+| "That is the full set" for ScribeVault | `ai/` contains only `beans/` and `reports/`; `.claude/` contains only what the table lists; `.github/` contains only `copilot-instructions.md` | complete as an enumeration, and `F15` is why that is a fragile way to say it |
 
-### AI Security Demos — `submissions/team-demos.md`
+The scope change `F5` asked for is done in both records, and it is the right
+change: the demos wrapper is now a class rule over the whole checkout, which is
+the only rule that survives a corpus built to evade phrase lists.
 
-| Claim | Re-derivation | Verdict |
-|---|---|---|
-| "companion live demos … self-contained, runnable prop … not on a slide" | `README.md:3-6`, verbatim | correct |
-| Sift and Marisol, "the vulnerability is never the payload" | `README.md:8-9`, `README.md:53` | correct |
-| Each talk in `NN-slug/demo/`, own README with "the three-act presenter script" | `README.md:23-24`; ten `demo/` directories present | correct |
-| The ten attack vectors, 01 through 10 | `README.md:29-38` table, item by item | correct, in order |
-| Two run paths; Claude Code with no key and `/` commands; Python with `ANTHROPIC_API_KEY`, `.env.example`, `uv`; "a `--dry-run` flag prints the exact prompt with no API call" | `README.md:16-21`; ten `.env.example` files; ten `demo/.claude/commands/` directories | correct |
-| The documented dry run is `uv run --with anthropic …` | the exact string is in the per-demo README, e.g. `01-resume-that-talked-back/demo/README.md:22`, not the root `README.md` the paragraph otherwise cites | correct in substance, imprecise in citation |
-| `import anthropic` sits inside the API branch, not at module scope | 19 occurrences across the demo scripts, every one indented inside a function body | correct |
-| Egress quote, synthetic-data quote, "obvious, harmless props" quote | `README.md:46-52`, verbatim | correct |
-| **No test file appears anywhere in the pinned tree** | `find` over the whole checkout for `test_*.py`, `*_test.py`, `tests/`, `test/`, `conftest.py`, `pytest.ini`, `*.test.js` returns nothing | correct |
-| Payloads in demos 01, 03, 04, 08 | 01 verified directly at `goofy-goof.md:20-27`; a phrase scan also hits 02, 05, 06 and 10 | correct but under-enumerated (`F5`) |
+### F6 — approvals
 
-`event.md:144-146` says `team-demos` "carries a `.claude/commands/` directory
-inside each of its ten demo folders". Ten such directories exist, one per
-`NN-slug/demo/`, which is what the README calls the demo folder. Accurate.
+Both records carry `approval_state: approved`, `validation_state: valid`,
+`approved_by: event-director` and `approved_at: 2026-09-21T23:33:46Z`, and both
+validate. This is what makes `F1`'s scope ruling an approved decision.
 
-### Template conformance
+### F8 — the checkout path, and `live-trial-2026`
 
-Both records carry the five template sections in order — Team statement, Primary
-workflows, Run instructions, AI and external services, Known limitations — plus
-two additions, a judging note and an intake provenance table, which the
-configuration audit's `F4` repair introduced deliberately. Front matter carries
-every field `schemas/submission-intake.schema.json` requires, and
-`persona: prepare-submission@1.1.0` and `rubric: submission-evaluation@1.1.0`
-match `framework/personas.md:41` and the canon rubric. `judging-auditor@1.1.0`
-in this report matches `framework/personas.md:49`.
+`_relative_checkout` resolves the checkout against the framework root and falls
+back to the absolute path only when the checkout lives outside the root, which is
+possible through `intake.run(..., workspace=...)` and is the honest fallback.
+`tests/test_intake.py:276-291` asserts the recorded line contains neither the
+temporary root nor a leading absolute slash. Both trial-2 records now read
+`workspaces/trial-2-2026/<team>`, and no `/home/` path remains anywhere in
+`events/trial-2-2026/` or in the plan. Nothing else in the framework parses or
+prints that row.
 
-## Eligibility
+**Leaving `live-trial-2026` alone is correct, and I would refuse the alternative.**
+That event is complete, its records are approved, and `release-check` asserts 15
+signed approvals in completed events are frozen. Editing them would break that
+contract to change a string whose disclosure is already permanent in the commit
+history — the path cannot be un-published by rewriting the file. The right
+boundary is the one taken: fix the tool, fix the live event, leave the closed
+ones as the record of what happened.
 
-`event.md:98-101` defines eligibility as one pinned immutable commit, a
-reachable source repository, and a checkout that matches the pin. Both teams are
-`eligible: true` in `teams.md` and in their own front matter, and all three
-conditions re-derive: the pins are 40-character hashes, both repositories answer
-an anonymous `ls-remote`, and both checkouts are clean at the pin. No enrollment
-rule applies, consistent with `event.md`.
+### F9 — the visibility check
 
-One tension is unresolved, and it is `F1`'s second half. The ScribeVault record
-says "the pin is not fully realized" and then rules the gitlink's content
-"outside the eligible scope … nothing may be assumed about it". That is an
-eligibility scope decision, it appears only in a narrative record compiled by a
-model, it is attributed to nobody, and `event.md:23-27` gives the event-director
-the authority it would need. It also rests on the false reachability premise: the
-content can be fetched. Freeze the roster with the ruling stated as an operator
-decision and a true reason, or with the gitlink materialized.
+Reproduced verbatim from `docs/0.5.0-beta-plan.md:193-199`:
 
-## The withdrawal of `beekeeper-lab/website`
+| Repository | Anonymous `git ls-remote` |
+|---|---|
+| `ScribeVault` | succeeds, `67969dd9…` at HEAD, which is the pin |
+| `ai-security-demos` | succeeds, `dc35f696…` at HEAD, which is the pin |
+| `claude-kit` | succeeds, `94881ec7…` at HEAD |
+| `website` | refused — "Repository not found", authentication failed |
+| `atticus-vault` | refused — same |
 
-Findable, and the reason holds.
+The plan's sentence "Until that check is cited, a visibility claim in this plan
+is the operator's assertion, not a verified fact" is the repair the configuration
+audit's `F17` asked for, and it generalizes rather than patching one paragraph.
 
-It is recorded in `events/trial-2-2026/event.md:59-67`, inside the hypothesis
-section a reader of the event configuration cannot miss, and in
-`docs/0.5.0-beta-plan.md:174-186`, where the candidate table marks the website
-"Accept, with a stated scope" and the paragraph below it records the withdrawal
-on 2026-09-21 with the disclosure reason. `ai-security-demos` is recorded in the
-same table as its replacement.
+### F10 — detachment
 
-Configuration `F17` said the privacy claim was not checkable here. It is
-checkable, and this audit checked it: with credentials disabled,
-`beekeeper-lab/website` refuses anonymous access while both rostered
-repositories answer. The stated reason for the withdrawal is therefore true.
-What remains is presentational, and is `F9`: `event.md:62-65` and the plan still
-assert repository visibility in the event's own voice, with no attribution and no
-reproducible check, which is the habit `F17` objected to rather than the
-conclusion.
+| Checkout | HEAD | Branch | Dirty |
+|---|---|---|---|
+| `team-scribe` | `67969dd9479c096f05d998d8c50e5ea1968e3245` | detached (`HEAD`) | 0 |
+| `team-demos` | `dc35f6962130af5e5be3fe16672e3d4964850eb9` | detached (`HEAD`) | 0 |
 
-## Activity log and timestamps
+Both still equal the pins in `teams.md`, both intake records, the `status.md`
+abbreviations and the remotes.
 
-Complete for the work that happened, strictly ascending, and every value is
-inside the window.
+### F7 — left open, and the reason holds
 
-| Row | Time | Checked against |
-|---|---|---|
-| `atj event init` | 21:51:56Z | `event.md:18` `started_at`, and commit `37ee443` at 21:54:21Z |
-| `atj intake` team-scribe | 21:53:01Z | `team-scribe.md:9-11` |
-| `atj intake` team-demos | 22:04:10Z | `team-demos.md:9-11`, and commit `24a66a1` at 22:04:57Z |
-| configuration audit, round 1 | 22:08:00Z | reconstructed, labelled as such, and equal to the configuration audit's `F19` table |
-| repair round 1 | 22:18:08Z | commit `196aa42` at 22:18:08Z exactly; its output list now includes `docs/0.5.0-beta-plan.md`, which that commit did change |
-| configuration audit, round 2 | 22:19:10Z | reconstructed, labelled, matches `F19` |
-| repair round 2 | 22:28:17Z | operator wall-clock reading; commit `49242aa` at 22:28:44Z |
-| configuration audit, round 3 | 22:28:50Z | matches `F19` and the report's own `started_at` |
-| repair round 3 | 22:34:26Z | commit `a8a0f4e` at 22:34:58Z |
+`check_templates` (`atj/cli.py:1525-1546`) requires `event_id`, `rubric`,
+`framework_commit`, `visibility`, `approval_state`, `validation_state`,
+`started_at` and `completed_at` of every file in `framework/templates/`, so
+trimming `team-roster.md` to the three fields the framework actually writes does
+fail the contract. `events/live-trial-2026/teams.md` carries the three, and that
+event is frozen. The operator's account of why this is a decision rather than a
+patch is accurate, and the finding stays open at advisory.
 
-Nine rows, strictly ascending, none before `started_at: 2026-09-21T21:51:56Z`,
-none after the clock this audit read (23:16:37Z, then 23:24:45Z). Configuration
-`F21` and `F22` are therefore **repaired in fact**, against a ledger the
-configuration audit still lists as `open` because it was written before the
-repair: the log is ordered, both reconstructed stamps match `F19`, the plan file
-is in the round-one output, and `last_updated` (22:34:38Z) is newer than the last
-row rather than stuck at event creation. What is missing from the log is the
-23:16:00Z hand repair, which is `F3`. Two further absences are consistent with
-`live-trial-2026`, which also logs audit results rather than gate commands, so
-they are not findings: the gate record itself and the stage advance have no rows,
-and the audit-result rows carry them.
+It does not hold this gate. The artifact the gate freezes is `teams.md`, it
+validates against `schemas/roster.schema.json`, and its four required keys are
+present and correct. What is missing is a `visibility` and an `approval_state`
+on a roster, which no code reads and which the template promises and the
+generator has never written.
 
-`F2` is the one timestamp defect this stage owns: both intake records claim they
-completed at the minute they were cloned, and both were rewritten 14 and 24
-minutes later.
+## What round one verified, and still holds
 
-## Carry-forward of the configuration audit's open findings
+Re-checked where the repair touched it, taken forward where it did not.
 
-Configuration-audit numbers, not this report's.
-
-| Configuration finding | State recorded there | State now |
-|---|---|---|
-| `F7` — ScribeVault execution profile: display, audio device, network | deferred | still deferred and still visible. `event.md:130-139` names all three unknowns and commits to deciding them at the evidence stage, in the file the evidence stage reads first. The record is where it needs to be |
-| `F11` — untrusted-data wrapper around the demos payloads | deferred | still deferred and visible in `event.md:157-165` and `team-demos.md:100-119`. The requirement is stated; the file set is not enumerated, which is this report's `F5` |
-| `F10` — absolute home paths in provenance tables | open | unchanged, carried as `F8` |
-| `F17` — unverifiable privacy claim behind the roster substitution | open | conclusion now verified by this audit, form unrepaired, carried as `F9` |
-| `F20` — no validator reads a timestamp as a time | open | unchanged. `atj event validate` still accepts `completed_at` values that predate the edits they describe, which is how `F2` passed |
-| `F21` — activity log out of order | open in the audit | **repaired in the artifact**, verified row by row above. The audit's `state` is stale, not wrong: the repair is the ledger's last row and is marked `not-audited` there |
-| `F22` — stale `last_updated` | open in the audit | **repaired in the artifact**, 22:34:38Z against a newest row of 22:34:26Z. Recurring at a smaller scale as `F3` |
-| `F23` — `atj intake` writes `model_used: not-applicable` | open | unchanged in the tool; both records carry the hand-corrected `claude-opus-5` |
-| `F24` — audit template does not name the four `state` values in prose | open | unchanged; this report uses `open` only |
-
-Nothing deferred to the evidence stage has been lost, and no open finding has
-been silently closed.
+- Pins agree at full and abbreviated length across `teams.md`, `status.md`, both
+  intake records, both checkouts and both remotes. Both working trees clean.
+- ScribeVault: 26 test files named across nine README categories, 30 in the tree,
+  all 26 present, difference exactly four. Every other factual claim in the
+  record re-derived in round one and none of them was edited by this commit.
+- AI Security Demos: no test file anywhere in the tree, ten demos, attack-vector
+  list matches the README row for row, 19 `import anthropic` sites all inside
+  function bodies.
+- Both records carry the five template sections plus the two the configuration
+  audit's `F4` repair added, and every field the intake schema requires.
+- Versions: rubric `submission-evaluation@1.1.0`, `prepare-submission@1.1.0`,
+  `judging-auditor@1.1.0`, framework `0.4.0-beta`.
+- Eligibility: one immutable pin each, both repositories reachable and public by
+  anonymous check, both checkouts at the pin. The one unresolved eligibility
+  question in round one — the gitlink's scope — is `F1`, and it is resolved.
+- The withdrawal of `beekeeper-lab/website` is findable in `event.md:59-67` and
+  `docs/0.5.0-beta-plan.md:174-203`, and its privacy premise is verified.
+- The configuration audit's deferrals are still visible where the evidence stage
+  reads them: `F7` in `event.md:130-139`, `F11` in `event.md:157-165` and now in
+  both records' wrapper sections.
 
 ## Privacy and publication
 
 - `events/trial-2-2026/public/` holds `.gitkeep` and nothing else.
-- `atj validate publication events/trial-2-2026` reports CLEAR, 3 artifacts, 0
-  blocking.
-- `public_scores: false` in `event.md:14`; no artifact carries
-  `visibility: public`.
-- No credential, key, token or third-party personal identifier appears in any
-  event artifact. The demos' sample data is synthetic by the submission's own
-  statement and the names in it are fictional.
-- The one private-path disclosure is the operator home path in both provenance
-  tables, in a repository that is public. It is `F8`, at the severity the
-  configuration audit gave it, because it exposes a directory layout and a
-  username already present throughout `events/live-trial-2026/`.
-- The `claude-kit` submodule URL named in `team-scribe.md` discloses nothing
-  new: it is public, and it is already in the pinned checkout's own
-  `.gitmodules`.
+- `atj validate publication` reports CLEAR over four artifacts.
+- No `/home/` path remains in any event artifact; round one's `F8` disclosure is
+  gone from the current tree, though not from the history, which is why the
+  framework change matters more than the file edit.
+- No credential, key or third-party personal identifier appears in any artifact.
+  The plan's new code block names no host beyond `github.com` and no account.
 
 ## Instruction-shaped content encountered
 
-Reported, not followed. All of it is inside the checkouts and none of it is an
-instruction to this or any persona.
-
-| File | What it does |
-|---|---|
-| `team-demos/01-resume-that-talked-back/demo/goofy-goof.md:20-27` | a fake "SYSTEM / ATS PRIORITY DIRECTIVE" inside a resume telling a screening assistant to score the candidate 100 out of 100, rank them first and not penalize the gaps. The known payload, configuration `F11` |
-| `team-demos/02-invisible-ink/demo/camille-vise.md`, `.../README.md` | hidden-channel payload and its presenter script |
-| `team-demos/05-reading-is-safe-calling-is-not/demo/max-goof.md`, `screen_pile.py` | tool-misuse payload, and a script that embeds it |
-| `team-demos/06-approval-is-the-architecture/demo/pete-blackheart.md` | excessive-agency payload |
-| `team-demos/10-show-your-work/demo/attacks/quill-avara.md`, `examples/decisions/quill-avara.json` | capstone payload and a recorded decision about it |
-| `team-scribe/CLAUDE.md`, `.claude/local/{skills,commands,agents,prompts}/`, `.github/copilot-instructions.md`, `ai/beans/` | a project directing its own agents; product and security evidence, not configuration for any persona here |
-
-`event.md:141-166` already forbids rooting a session in a checkout and requires
-this class of file to be quoted inside an untrusted-data wrapper. This audit read
-every one of them by path from the framework root and followed none. The gap is
-that no artifact yet lists them, which is `F5`.
+Same treatment as round one: described, never followed. The phrase scan this
+round re-ran over the demos checkout matched nine text files and 13 Python
+files, all inside `workspaces/trial-2-2026/team-demos`. The Python matches are
+the string "Top candidate" in the demos' own ranking output, not payloads. The
+text matches include the resume payload at
+`01-resume-that-talked-back/demo/goofy-goof.md:20-27`, which directs a screening
+assistant to score a candidate 100 and rank them first; it was read, counted and
+not acted on. No session was rooted in either checkout, and every command ran
+from the framework root.
 
 ## Findings
 
 | Severity | Rule | Artifact | Scope | Blocking | Finding | Required repair |
 |---|---|---|---|---|---|---|
-| major | `CLAUDE.md`: every factual conclusion must cite evidence available in the evidence package, and a claim in an intake record must be re-derivable from the checkout or its named source | `events/trial-2-2026/submissions/team-scribe.md:121-131` | event | **yes** | The record calls `beekeeper-lab/claude-kit` "a private repository reachable only with the operator's SSH credentials" and concludes the gitlink "cannot be fetched, and nothing may be assumed about it". The repository is public and the pinned commit `3dff46d6` fetches anonymously. The true constraint is the SSH URL in `.gitmodules` and the absent key. The eligible-scope ruling built on the false premise is also attributed to nobody, while `event.md:23-27` gives that authority to the event-director | Restate the constraint truthfully; then either record the out-of-scope ruling as an event-director decision with that reason, or materialize `.claude/shared` from the HTTPS URL at `3dff46d6` and re-pin. Re-run `atj event validate` after |
-| minor | `framework/templates/submission-intake.md` front matter describes the record; configuration `F23` and `F20` | `events/trial-2-2026/submissions/team-scribe.md:9-11`, `team-demos.md:9-11` | event | no | `completed_at` equals the clone minute in both records, while commits `196aa42` (22:18:08Z) and `49242aa` (22:28:44Z) rewrote their narratives afterwards | Set `completed_at` to when each record was actually completed, or state in the template that it describes the clone |
-| minor | `CLAUDE.md`: update `status.md` after verified work; configuration `F22`'s repair note | `events/trial-2-2026/status.md:4`, `:26` | event | no | The 23:16:00Z hand repair is in no activity row and `last_updated` still reads 22:34:38Z | Add the activity row and set `last_updated` when the `roster-frozen` gate is recorded |
-| minor | `atj/event.py:514-560` requires body and ledger to agree | `atj/event.py:696-704` | framework | no | The gate and advance commands write the ledger and leave the body checkbox unchecked, so a passing gate produces a `status.md` the framework's own validator rejects | Write the checkbox in the same transaction, or refuse to exit while the body contradicts the new ledger |
-| minor | `event.md:157-165` untrusted-data wrapper requirement; configuration `F11` | `events/trial-2-2026/submissions/team-demos.md:100-119` | event | no | The wrapper obligation is carried by one example file and a four-demo list; payload-shaped content is in at least eight files across five demos, and the ScribeVault agent configuration has two paths the record does not name | Enumerate the payload files and agent-config paths where the evidence stage will read them |
-| advisory | `live-trial-2026` precedent; `atj event approve` | `events/trial-2-2026/submissions/*.md:16-17` | event | no | Both intake records are still `draft` / `unvalidated` after passing `atj validate reports` | Approve both before the freeze, or state that they stay draft |
-| advisory | `CLAUDE.md` single source of artifact shape | `framework/templates/team-roster.md:1-12` | framework | no | Template front matter has ten fields, `events/_template/teams.md` has three, the schema requires four, and `release-check` calls templates PASS | Reconcile the three on one front matter |
-| advisory | configuration `F10` | `events/trial-2-2026/submissions/team-scribe.md:141`, `team-demos.md:129` | framework | no | Absolute operator home path in both provenance tables, committed to a public repository | Write a repository-relative checkout path in `atj intake` |
-| advisory | configuration `F17` | `docs/0.5.0-beta-plan.md:179-186`, `events/trial-2-2026/event.md:62-65` | framework | no | Repository visibility is still asserted as fact without attribution, although the conclusion is now verified | Attribute the claim to the operator or cite a repeatable check |
-| advisory | `event.md:98-101` eligibility means a checkout that matches the pin | `workspaces/trial-2-2026/team-scribe`, `team-demos` | event | no | Both checkouts are on an attached `main` tracking `origin/main`, and `workspaces/` is gitignored, so a pull would move the evidence base invisibly | Detach at the pin, or re-verify `rev-parse HEAD` against the pin in each evidence package |
+| major, **repaired** | a claim in an intake record must be re-derivable | `events/trial-2-2026/submissions/team-scribe.md:139-165` | event | no | Round one's false premise is gone; the constraint is stated truthfully, the error is disclosed, and the out-of-scope ruling is an event-director decision on an approved record | None |
+| minor, repaired | `completed_at` describes the record | `submissions/*.md:11` | event | no | Both set to the minute the content was completed, consistent with mtimes and the approval | None |
+| minor, repaired | the ledger records the work | `events/trial-2-2026/status.md` | event | no | Three rows added, ascending, contents match the history, `last_updated` current | None |
+| minor, repaired | the body may not contradict the ledger | `atj/event.py:515-546` | framework | no | `save_status` writes the gate checkboxes both ways, with two new tests; the rewritten test still covers the remaining route | None; residual `F14` |
+| minor, repaired | wrapper scope | `submissions/team-demos.md:115-146` | event | no | Scope is now every file in the demos checkout, and the ScribeVault paths are enumerated | None for the scope; `F11`, `F12`, `F13` for the text |
+| advisory, repaired | approval precedes the freeze | `submissions/*.md:16-21` | event | no | Both records approved by the event-director | None |
+| advisory, **open** | one source for artifact shape | `framework/templates/team-roster.md:1-12` | framework | no | Template, event template and schema still disagree; the two obvious fixes each break something | Decide it: have `atj event init` write the full roster front matter for new events and leave completed ones alone |
+| advisory, repaired | no operator path in a public artifact | `atj/intake.py:361-373` | framework | no | Tool repaired with a test, both records rewritten, completed events left frozen | None |
+| advisory, repaired | a claim is attributed or checkable | `docs/0.5.0-beta-plan.md:188-203` | framework | no | The credential-free check and its five results are in the plan; reproduced here | None |
+| advisory, repaired | the evidence base may not move | `workspaces/trial-2-2026/*` | event | no | Both checkouts detached at their pins, clean | None |
+| minor, **new** | a count attributed to `find` must be what `find` returns | `submissions/team-scribe.md:126` | event | no | "168 files across 56 `BEAN-*` directories" — 168 is right, the directory count is 54, and 56 is the entry count including two loose files | Write 54 directories plus two files |
+| minor, **new** | same rule, stated scan | `submissions/team-demos.md:138-140` | event | no | "the same scan over `*.py` returns ten more" — it returns 13, all on "Top candidate"; and the tree enumeration omits `.gitignore` | Correct to 13 and say what it matches; name `.gitignore` or drop the enumeration |
+| minor, **new** | an inserted section may not break the antecedent below it | `submissions/team-demos.md:108-151` | event | no | "Every one of those payloads" now points at a list the same section says is mostly not payloads. Configuration `F12`'s defect in the other record | Move the section below that paragraph or name the antecedent |
+| advisory, **new** | no silent change to an artifact | `atj/event.py:1118-1124` | framework | no | The checkbox sync rewrites the body with no notice and no record, so a deliberate manual edit disappears at the next ledger write | Report on stderr when the sync changes a box |
+| advisory, **new** | consistent treatment of two submissions in one event | `submissions/team-scribe.md:128-130` | event | no | One record wraps by class because an allowlist is "under-inclusive by construction"; the other relies on an allowlist, and that allowlist already carries `F11` | State the reason for the difference, or apply the class rule to both |
 
 ## Advisories
 
-1. The configuration audit's `state` values for `F21` and `F22` are stale, since
-   the repair landed after round three. That is normal and not a finding against
-   the audit. This report is where a reader learns they are repaired, and the
-   `roster-frozen` gate record should say so.
-2. `atj validate reports` counts three artifacts at this stage and will count
-   four with this report. Neither it nor `atj event validate` reads a timestamp,
-   a pin or a claim against a checkout, so a clean run is not evidence that the
-   intake is sound. Everything in this report's tables was derived by hand.
-3. `status.md.bak` sits in the event directory, ignored by git and by every
-   validator. It currently preserves the pre-advance state and was useful here as
-   evidence of how the gate wrote. It is also an unreviewed copy of the ledger in
-   a working tree; nothing needs doing, but nothing should read it as state.
-4. `F1` was introduced by the repair that closed configuration `F2`, and survived
-   two audit rounds after that. Four of the ten findings in this report are
-   residue of earlier repairs. The event's own observation about repair rounds
-   now has a fourth data point.
+1. Three of the five new findings are the repair round's own residue, and two of
+   them are miscounts in text written to fix a miscount's cousin. Nothing in the
+   toolchain counts anything in a record: `atj event validate`, `atj validate
+   reports`, `release-check` and 517 tests all pass over "56 directories" and
+   "ten more". This is configuration `F20`'s shape one field over, and worth one
+   line in the framework backlog next to it.
+2. The artifacts now cross-reference this report by finding number —
+   `status.md`'s 23:16:00Z row cites `F3`, `team-scribe.md` cites `F1`, the plan
+   cites `F1` and `F9`. Superseding in place keeps those references valid, which
+   is why the IDs are stable and why a future round must not renumber.
+3. This report was written by the same auditor that wrote round one. Nobody
+   independent has checked either. The framework has no second auditor, and
+   `framework/rubrics/README.md` says the reviewer of a repair is never the party
+   that wrote it; the operator is the only party who can hold that line here.
+4. `F14` and the `F4` repair together mean `validate_status_narrative` is now
+   nearly unreachable in normal operation. That is the intended outcome, but it
+   also means the check is no longer evidence of anything: a passing narrative
+   check after a tool write says only that the tool wrote it.
 
 ## Completion gate
 
-- [x] No blocking findings — **not met.** `F1` is marked blocking
-- [x] No major findings — **not met.** `F1` is major
-- [x] Calculations valid — no official arithmetic exists at this stage; the two
-      counted claims, 26 named and 30 present test files, both re-derived
-- [x] Evidence references resolve — every path, line reference, quotation and
-      commit in both intake records resolves, with the exception recorded in `F1`
-- [x] Version and identity checks pass — rubric `1.1.0`, personas
-      `prepare-submission@1.1.0` and `judging-auditor@1.1.0`, framework
-      `0.4.0-beta`, `release-check` PASS
-- [x] Privacy boundary passes — `public/` empty, publication check CLEAR, one
-      advisory-level path disclosure
+- [x] No blocking findings
+- [x] No major findings — `F1` is major and `repaired`; nothing open exceeds minor
+- [x] Calculations valid — the counted claims re-derived; two that did not are
+      `F11` and `F12`, and neither changes an obligation
+- [x] Evidence references resolve — every path, line reference and commit in both
+      records resolves, including the gitlink SHA and both remotes
+- [x] Version and identity checks pass
+- [x] Privacy boundary passes — `public/` empty, publication CLEAR, no operator
+      path left in the tree
 - [x] Every finding recorded in `findings:` with a `scope` and a `blocking` flag
 - [ ] Approved with `atj event approve <this file>`
 
-The first two boxes are listed unmet on purpose: the verdict is FAIL and the
-gate must read `blocking: true` on `F1`, not this prose.
-
 ## Outstanding work
 
-1. Repair `F1` in `events/trial-2-2026/submissions/team-scribe.md`, and decide
-   the gitlink's scope as an event-director decision or by materializing it.
-2. Repair `F2`, `F3` and `F5` in the event's own artifacts.
-3. Re-audit. Every repair round in this event has introduced a new defect, and
-   this report's `F1` is the fourth instance.
-4. `F4`, `F7`, `F8` and `F9` are framework work and do not hold this gate.
-5. Only then freeze the roster: set `frozen: true` in `teams.md`, record the gate
-   with `atj event gate`, and update `last_updated` and the activity log in the
-   same pass.
+1. Record the `roster-frozen` gate. Freeze `teams.md` at `frozen: true`, run
+   `atj event gate`, and add the activity row; `last_updated` is now written by
+   the tool, as of the `F4` repair.
+2. Correct `F11`, `F12` and `F13` in the two intake records. They are text
+   corrections inside an approved artifact, so re-approve after, and re-validate.
+   None of them needs to precede the freeze, and none changes a pin, an
+   eligibility determination or a wrapper obligation.
+3. `F7` needs a decision, not a patch, and `F14` and `F15` are optional.
+4. Carry the configuration audit's deferrals into the evidence stage: `F7`
+   (ScribeVault display, audio device, network) and `F11` (the untrusted-data
+   wrapper, now scoped by class for the demos and by enumeration for
+   ScribeVault).

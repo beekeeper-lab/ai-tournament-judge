@@ -16,8 +16,8 @@ visibility: private
 approval_state: approved
 validation_state: valid
 approved_by: event-director
-approved_at: "2026-09-21T23:33:46Z"
-approval_note: 'Intake audit F6: both records approved before the roster freezes, matching live-trial-2026.'
+approved_at: "2026-09-21T23:48:55Z"
+approval_note: 'Intake audit round two: approved after the F11-F13 text corrections.'
 ---
 # Submission Intake — ScribeVault
 
@@ -124,7 +124,7 @@ The pinned checkout carries agent-instruction files at these paths, counted with
 | `.claude/local/skills/` | three `SKILL.md` files: `bean-status`, `new-work`, `pick-bean` |
 | `.claude/local/prompts/` | empty — `.gitkeep` only |
 | `.claude/local/agents/` | empty — `.gitkeep` only |
-| `ai/beans/` | 168 files across 56 `BEAN-*` directories |
+| `ai/beans/` | 168 files across 54 `BEAN-*` directories, plus `_bean-template.md` and `_index.md` |
 | `ai/reports/` | 6 files |
 | `.claude/shared/` | empty directory; unmaterialized gitlink, see below |
 

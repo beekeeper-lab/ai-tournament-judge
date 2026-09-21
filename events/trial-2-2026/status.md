@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
 current_stage: intake
-last_updated: "2026-09-21T23:35:29Z"
+last_updated: "2026-09-21T23:49:03Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -62,3 +62,5 @@ gate_evidence:
 | 2026-09-21T23:16:00Z | Hand repair: the body checkbox 'Configuration audited' ticked to match the ledger, which `atj event validate` was failing on | status.md | status.md | audited — intake F3 confirms it correct and minimal |
 | 2026-09-21T23:16:37Z | Intake stage audit | event.md, teams.md, submissions/*.md, status.md, audits/configuration.md, both checkouts | audits/intake.md | FAIL (1 major and blocking, 4 minor, 5 advisory) |
 | 2026-09-21T23:35:29Z | Intake repaired, round one: F1 gitlink scope restated as an event-director decision, F2 `completed_at`, F3 this ledger, F5 wrapper scope, F6 both records approved, F8 repository-relative checkout paths, F9 the visibility check cited, F10 both checkouts detached at their pins. F4 and F8 also repaired in the framework; F7 left open | audits/intake.md F1-F10 | submissions/*.md, status.md, docs/0.5.0-beta-plan.md, atj/event.py, atj/intake.py, tests/ | pending re-audit |
+| 2026-09-21T23:37:00Z | Intake re-audited, round two; report superseded in place | audits/intake.md | audits/intake.md | PASS WITH ADVISORIES (F1 repaired; F11-F15 new, three of them introduced by the round-one repair) |
+| 2026-09-21T23:49:03Z | Intake repaired, round two: F11 bean directory count 56 to 54, F12 python scan count and the tree enumeration, F13 the antecedent the round-one insert broke, F15 why the two records scope the wrapper differently. F14 repaired in the framework; both records re-approved after the edits | audits/intake.md F11-F15 | submissions/*.md, status.md, atj/event.py, atj/cli.py, tests/ | pending re-audit |

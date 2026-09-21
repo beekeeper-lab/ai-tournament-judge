@@ -528,9 +528,11 @@ def cmd_event_gate(args) -> int:
         loaded.status.get("gate_notes", {}).pop(args.gate, None)
 
     loaded.status["last_updated"] = versions.now()
-    event_module.save_status(loaded)
+    rewritten = event_module.save_status(loaded)
     print(f"Gate {args.gate} = {args.state}"
           + (f" (audit: {args.audit})" if args.state == "passed" else ""))
+    for label in rewritten:
+        print(f"  status.md body: {label!r} rewritten to match the ledger")
     return OK
 
 
