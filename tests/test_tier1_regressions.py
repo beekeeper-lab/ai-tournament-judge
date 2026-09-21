@@ -460,8 +460,17 @@ class AuditFindingsScopeTheGate(unittest.TestCase):
 
         None of them may change meaning, and none may start holding a gate it
         did not hold before.
+
+        The two events are named rather than globbed. `findings:` is a supported
+        shape and a live event may use it -- `trial-2-2026` does -- so a glob over
+        `events/` would turn this regression test into a prohibition on the
+        feature it was written to protect. Found in `trial-2-2026`.
         """
-        audits = sorted((ROOT / "events").glob("*/audits/*.md"))
+        audits = sorted(
+            path
+            for event in ("live-trial-2026", "sample-mock-2026")
+            for path in (ROOT / "events" / event / "audits").glob("*.md")
+        )
         self.assertGreaterEqual(len(audits), 15)
         for audit in audits:
             with self.subTest(audit=str(audit.relative_to(ROOT))):

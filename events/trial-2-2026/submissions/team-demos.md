@@ -58,9 +58,14 @@ key, where "the demo's `/` commands appear automatically" after launching
 copying `.env.example` to `.env` and running the scripts with `uv`, and it states
 that "a `--dry-run` flag prints the exact prompt with no API call."
 
-**The `--dry-run` path is the only one this event can execute.** The
+**No path this submission documents can run in this event.** The
 `network_allowlist` is empty and no key is supplied, so both live paths are
-unreachable from inside the sandbox. What a dry run demonstrates is prompt
+unreachable from inside the sandbox — and so is the documented dry run, which
+`README.md` gives as `uv run --with anthropic ...` and which resolves a package
+from PyPI before it prints anything. A dry run is reachable only through an
+invocation the submission does not document, because `import anthropic` sits
+inside the API branch rather than at module scope. Whether to execute it that way
+is the event's decision, taken at the evidence stage and recorded there. What a dry run demonstrates is prompt
 construction, not agent behavior, and the distinction has to survive into the
 judgments: the demos' actual claim is about what an agent does when attacked, and
 that claim is not observable here.
@@ -122,6 +127,7 @@ a bad action, and a bad judgment is exactly what this event is built to detect.
 | Pinned commit | `dc35f6962130af5e5be3fe16672e3d4964850eb9` |
 | How the commit was obtained | cloned |
 | Checkout | `/home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/trial-2-2026/team-demos` |
+| Narrative sections compiled by | `claude-opus-5`, from the submission's own documentation, every claim attributed to the file it came from |
 | Materialized at | 2026-09-21T22:04:10Z |
 
 Nothing in this submission has been executed. Execution requires `atj sandbox preflight` to report isolation available.

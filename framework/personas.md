@@ -46,7 +46,9 @@ in different files, and nothing read them together.
 | build-team-dossier | 1.0.0 | skill | - | 39213ede471ffe71 |
 | audit-judging-run | 1.0.0 | skill | - | d43476babfebee41 |
 | run-judging-event | 1.0.0 | skill | - | 1871381348a82b61 |
-| judging-auditor | 1.1.0 | auditor | events/<event>/audits/ | bc5d7a79103c139b |## Superseded versions
+| judging-auditor | 1.1.0 | auditor | events/<event>/audits/ | bc5d7a79103c139b |
+
+## Superseded versions
 
 Append-only. A row here records a version that has been retired: **no new
 artifact may pin it, and every artifact that already pins it stays valid.**
