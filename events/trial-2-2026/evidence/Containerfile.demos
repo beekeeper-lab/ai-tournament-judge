@@ -1,0 +1,11 @@
+# Evidence image for team-demos (ai-security-demos).
+# Nothing is installed. Every import across all 19 demo scripts resolves to the
+# standard library or to a module inside the checkout (`harness`, `toolbox`,
+# `sift_common`, `sift_memory`, `retrieve`, `reveal`, `send_email`,
+# `set_ats_score`, `schedule_interview`, `_state`). The tree carries no
+# requirements file, no pyproject and no package.json.
+#
+# The demos call a model provider. `network_allowlist` is empty and the
+# container runs with --network none, so those paths are scored from source.
+# Demo 07 runs a loopback beacon server, which still works with no network.
+FROM docker.io/library/python:3.12-slim
