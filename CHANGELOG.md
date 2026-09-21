@@ -5,7 +5,22 @@ policies carry their own independent versions; see `framework/rubrics/`.
 
 ## Unreleased
 
-Nothing yet.
+### Fixed
+
+- Three stale facts in the documentation, found by auditing the docs against the
+  repository rather than against each other. `docs/implementation-detail.md`
+  claimed 487 tests plus 234 subtests at 0.3.0-beta (509 plus 280 at
+  0.4.0-beta, five skipped), omitted `test_egress.py` from its own test table,
+  omitted `atj event approve` and `atj sandbox proxy` from its command list, and
+  still listed "implement an egress proxy" as an extension point after 0.4.0-beta
+  shipped one. The release checklist asserts this file matches what was built, so
+  each of these was a box ticked over something untrue.
+- `docs/final-audit.md` carried `framework_version: 0.2.0-beta` and
+  `audit_rounds: 4` while its own table lists five audit rounds and four of its
+  advisories record closures made at 0.3.0-beta and 0.4.0-beta. The front matter
+  now names the version audited and the version the amendments run through, and
+  the document says which parts move and which do not. The verdict, the round
+  results and the commands verified in that round are unchanged.
 
 ## 0.4.0-beta — 2026-09-18
 
