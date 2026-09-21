@@ -460,8 +460,24 @@ class AuditFindingsScopeTheGate(unittest.TestCase):
 
         None of them may change meaning, and none may start holding a gate it
         did not hold before.
+
+        Completed events are derived, not listed. `findings:` is a supported
+        shape and a live event may use it -- `trial-2-2026` does -- so a glob over
+        `events/` would turn this regression test into a prohibition on the
+        feature it was written to protect. A hard-coded pair would silently drop
+        the protection the next time an event completes. Found in `trial-2-2026`.
         """
-        audits = sorted((ROOT / "events").glob("*/audits/*.md"))
+        completed = [
+            directory
+            for directory in sorted((ROOT / "events").iterdir())
+            if (directory / "status.md").is_file()
+            and frontmatter.read(directory / "status.md")[0].get("current_stage")
+            == "complete"
+        ]
+        audits = sorted(
+            path for directory in completed
+            for path in (directory / "audits").glob("*.md")
+        )
         self.assertGreaterEqual(len(audits), 15)
         for audit in audits:
             with self.subTest(audit=str(audit.relative_to(ROOT))):

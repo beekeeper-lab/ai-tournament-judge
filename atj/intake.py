@@ -249,6 +249,47 @@ class Materialized:
     notes: list[str] = field(default_factory=list)
 
 
+def _submodule_notes(destination: Path) -> list[str]:
+    """Report gitlinks the checkout did not materialize.
+
+    `git clone` without `--recurse-submodules` leaves a pinned but empty gitlink,
+    and `git submodule status` marks it with a leading `-`. The checkout then does
+    not fully realize the commit it claims, which an auditor has to be told rather
+    than left to discover: a judgment about a submission's configuration made from
+    part of that configuration is a judgment on partial evidence.
+    """
+    if not (destination / ".gitmodules").is_file():
+        return []
+    try:
+        status = _git("submodule", "status", cwd=destination)
+    except ValidationError:
+        return ["`.gitmodules` is present but `git submodule status` failed; "
+                "whether every gitlink is materialized is unverified"]
+    notes: list[str] = []
+    for line in status.splitlines():
+        marker, rest = line[:1], line[1:]
+        if marker not in ("-", "+"):
+            continue
+        parts = rest.split()
+        if not parts:
+            continue
+        commit = parts[0]
+        path = parts[1] if len(parts) > 1 else "(unnamed)"
+        if marker == "-":
+            notes.append(
+                f"submodule `{path}` is pinned at `{commit}` and was not "
+                f"materialized; its content is absent from this checkout and "
+                f"outside the eligible scope"
+            )
+        else:
+            notes.append(
+                f"submodule `{path}` is checked out at `{commit}`, which is not the "
+                f"commit the superproject pins; the checkout looks complete and does "
+                f"not match its own pin"
+            )
+    return notes
+
+
 def materialize(
     source: str, destination: Path, *, team_id: str, ref: str | None = None
 ) -> Materialized:
@@ -270,6 +311,7 @@ def materialize(
                 "of the pinned commit and were not ingested"
             )
         commit = _clone(source, destination, ref)
+        notes += _submodule_notes(destination)
         return Materialized(kind, destination, commit, "cloned", notes)
 
     if ref:
@@ -293,6 +335,7 @@ def materialize(
     if (destination / ".git").exists():
         notes.append("the delivery contains a git repository; pinned its own HEAD")
         commit = _git("rev-parse", "HEAD", cwd=destination)
+        notes += _submodule_notes(destination)
         return Materialized(kind, destination, commit, "cloned", notes)
 
     commit = _snapshot(destination, team_id)
@@ -356,8 +399,11 @@ def build_record(
     lines = [
         f"# Submission Intake — {display_name}",
         "",
-        f"`atj intake` materialized this submission and pinned it. The sections below "
-        f"are the team's own account of what they built; the tool does not supply them.",
+        "`atj intake` materialized this submission and pinned it. It does not supply "
+        "the sections below. Complete them from the team's own account of what they "
+        "built. Where no participant supplies one, compile them from the submission's "
+        "own documentation, attribute every claim to the file it came from, and record "
+        "in the provenance table who or what compiled them.",
         "",
     ]
     for heading in _template_sections(root):
@@ -376,6 +422,7 @@ def build_record(
         f"| How the commit was obtained | {materialized.pin} |",
         f"| Checkout | `{materialized.checkout}` |",
         f"| Materialized at | {stamp} |",
+        "| Narrative sections compiled by | unsupplied at intake |",
         "",
     ]
     if materialized.pin == "snapshot":
