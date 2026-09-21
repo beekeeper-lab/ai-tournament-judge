@@ -512,6 +512,38 @@ def status_checkbox_labels(root: Path) -> tuple[list[str], str | None]:
     return labels[:gate_count], labels[gate_count] if len(labels) > gate_count else None
 
 
+def sync_status_checkboxes(event: Event, body: str) -> str:
+    """Rewrite the body's stage-gate checkboxes to match the ledger.
+
+    Intake audit F4. `atj event gate` and `atj event advance` wrote the front
+    matter and left the body alone, so every passing gate put `status.md` into
+    the exact state `validate_status_narrative` rejects, and the operator had to
+    tick the box by hand before the next validate would pass. live-trial-2026
+    finished in that state; that is D30.
+
+    The body is prose about the ledger, so the ledger writes it. Anything in the
+    body that is not one of the known gate labels is left untouched.
+    """
+    gate_labels, complete_label = status_checkbox_labels(event.root)
+    if not gate_labels:
+        return body
+    gates = event.status.get("stage_gates") or {}
+    wanted = {
+        label: str(gates.get(gate, "pending")) == "passed"
+        for gate, label in zip(STAGE_GATES.values(), gate_labels)
+    }
+    if complete_label:
+        wanted[complete_label] = event.stage == "complete"
+
+    def replace(match: re.Match[str]) -> str:
+        label = match.group(2)
+        if label not in wanted:
+            return match.group(0)
+        return f"- [{'x' if wanted[label] else ' '}] {label}"
+
+    return _CHECKBOX.sub(replace, body)
+
+
 def validate_status_narrative(event: Event) -> list[str]:
     """The prose in status.md must agree with the ledger above it.
 
@@ -1086,6 +1118,7 @@ def save_status(event: Event) -> None:
 
     path = event.directory / "status.md"
     _, body = frontmatter.read(path)
+    body = sync_status_checkboxes(event, body)
     schema.require("status", event.status, root=event.root, artifact=str(path))
     rendered = frontmatter.dump(event.status, body)
 

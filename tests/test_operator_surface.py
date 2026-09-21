@@ -586,6 +586,44 @@ class TheStatusBodyAgreesWithItsLedger(unittest.TestCase):
                 loaded = event_module.load(event, root=ROOT)
                 self.assertEqual(event_module.validate_status_narrative(loaded), [])
 
+    def test_save_status_ticks_the_box_the_ledger_just_passed(self):
+        """Intake audit F4. `atj event gate` wrote the front matter and left the
+        body alone, so every passing gate put `status.md` into the exact state
+        `validate_status_narrative` rejects and the operator had to tick the box
+        by hand. The ledger writes the prose about itself now.
+        """
+        holder, event = event_copy(LIVE)
+        try:
+            status = event / "status.md"
+            status.write_text(
+                status.read_text(encoding="utf-8").replace(
+                    "- [x] Bracket frozen and audited", "- [ ] Bracket frozen and audited", 1
+                ),
+                encoding="utf-8",
+            )
+            loaded = event_module.load(event, root=ROOT)
+            self.assertTrue(event_module.validate_status_narrative(loaded))
+            event_module.save_status(loaded)
+            reloaded = event_module.load(event, root=ROOT)
+            self.assertIn("- [x] Bracket frozen and audited", status.read_text(encoding="utf-8"))
+            self.assertEqual(event_module.validate_status_narrative(reloaded), [])
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
+    def test_save_status_unticks_a_box_the_ledger_did_not_pass(self):
+        """The sync runs both ways, or it would launder a hand-ticked box into
+        a passed gate.
+        """
+        holder, event = event_copy(LIVE)
+        try:
+            status = event / "status.md"
+            loaded = event_module.load(event, root=ROOT)
+            loaded.status["stage_gates"]["bracket-audited"] = "pending"
+            event_module.save_status(loaded)
+            self.assertIn("- [ ] Bracket frozen and audited", status.read_text(encoding="utf-8"))
+        finally:
+            shutil.rmtree(holder, ignore_errors=True)
+
     def test_an_unticked_passed_gate_is_reported(self):
         holder, event = event_copy(LIVE)
         try:
@@ -604,11 +642,22 @@ class TheStatusBodyAgreesWithItsLedger(unittest.TestCase):
             shutil.rmtree(holder, ignore_errors=True)
 
     def test_a_ticked_pending_gate_is_reported(self):
+        # The contradiction is written into the body by hand. It used to be
+        # created by setting the gate and calling `save_status`, which no longer
+        # leaves the two disagreeing (intake audit F4); the validator still has
+        # to catch a body someone edited directly.
         holder, event = event_copy(SAMPLE)
         try:
+            status = event / "status.md"
             loaded = event_module.load(event, root=ROOT)
             loaded.status["stage_gates"]["tournament-audited"] = "pending"
             event_module.save_status(loaded)
+            status.write_text(
+                status.read_text(encoding="utf-8").replace(
+                    "- [ ] Tournament complete", "- [x] Tournament complete", 1
+                ),
+                encoding="utf-8",
+            )
             problems = event_module.validate_status_narrative(
                 event_module.load(event, root=ROOT)
             )
