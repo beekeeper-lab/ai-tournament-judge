@@ -9,8 +9,8 @@ framework_commit: ea0db07d84515c66e449ffdf60f0493a412346d6
 submitted_at: "2026-09-21T22:04:10Z"
 started_at: "2026-09-21T22:04:10Z"
 completed_at: "2026-09-21T22:04:10Z"
-model_requested: not-applicable
-model_used: not-applicable
+model_requested: claude-opus-5
+model_used: claude-opus-5
 eligible: true
 visibility: private
 approval_state: draft

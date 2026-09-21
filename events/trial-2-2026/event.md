@@ -145,8 +145,11 @@ Both submissions carry agent-instruction files.
 `team-demos` carries a `.claude/commands/` directory inside each of its ten demo
 folders.
 
-**A judge must never root its session in a checkout.** Judges run from the
-framework root and read submission files by path. A session started inside
+**No agent may root its session in a checkout.** That binds every persona that
+reads one — the four judges, the consolidator, the matchup judge, the dossier
+builder and the auditor. All of them run from the framework root and read
+submission files by path, which is how the configuration audit read both
+checkouts. A session started inside
 `workspaces/trial-2-2026/<team>/` would load that submission's `CLAUDE.md` and
 commands as its own configuration, and H6 would then fail through the harness
 rather than through judgment, which would tell us nothing about the panel.

@@ -55,3 +55,19 @@ def test_failed_status_is_reported_as_unverified(tmp_path, monkeypatch):
     notes = intake._submodule_notes(tmp_path)
     assert len(notes) == 1
     assert "unverified" in notes[0]
+
+
+def test_gitlink_at_the_wrong_commit_is_reported(tmp_path, monkeypatch):
+    """A `+` gitlink is materialized, and not at the commit the pin names.
+
+    It looks complete to anyone listing the tree, which makes it worse than an
+    absent one. Found in `trial-2-2026`, in the repair round for the absent case.
+    """
+    _write_gitmodules(tmp_path)
+    monkeypatch.setattr(
+        intake, "_git",
+        lambda *a, **k: "+aaaaaaaabbbbbbbbccccccccddddddddeeeeeeee .claude/shared (v2)",
+    )
+    notes = intake._submodule_notes(tmp_path)
+    assert len(notes) == 1
+    assert "does not match its own pin" in notes[0]

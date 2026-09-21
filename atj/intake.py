@@ -267,17 +267,26 @@ def _submodule_notes(destination: Path) -> list[str]:
                 "whether every gitlink is materialized is unverified"]
     notes: list[str] = []
     for line in status.splitlines():
-        if not line.startswith("-"):
+        marker, rest = line[:1], line[1:]
+        if marker not in ("-", "+"):
             continue
-        parts = line[1:].split()
+        parts = rest.split()
         if not parts:
             continue
         commit = parts[0]
         path = parts[1] if len(parts) > 1 else "(unnamed)"
-        notes.append(
-            f"submodule `{path}` is pinned at `{commit}` and was not materialized; "
-            f"its content is absent from this checkout and outside the eligible scope"
-        )
+        if marker == "-":
+            notes.append(
+                f"submodule `{path}` is pinned at `{commit}` and was not "
+                f"materialized; its content is absent from this checkout and "
+                f"outside the eligible scope"
+            )
+        else:
+            notes.append(
+                f"submodule `{path}` is checked out at `{commit}`, which is not the "
+                f"commit the superproject pins; the checkout looks complete and does "
+                f"not match its own pin"
+            )
     return notes
 
 
