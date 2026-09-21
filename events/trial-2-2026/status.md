@@ -1,12 +1,12 @@
 ---
 event_id: trial-2-2026
 current_stage: intake
-last_updated: "2026-09-21T23:49:03Z"
+last_updated: "2026-09-21T23:55:13Z"
 blocked: false
 blocked_reason: null
 stage_gates:
   configuration-audited: passed
-  roster-frozen: pending
+  roster-frozen: passed
   evidence-validated: pending
   judgments-audited: pending
   consolidation-audited: pending
@@ -17,6 +17,7 @@ stage_gates:
 units: []
 gate_evidence:
   configuration-audited: audits/configuration.md
+  roster-frozen: audits/intake.md
 ---
 
 # Event Status
@@ -24,7 +25,7 @@ gate_evidence:
 ## Stage gates
 
 - [x] Configuration audited
-- [ ] Roster frozen
+- [x] Roster frozen
 - [ ] All eligible evidence packages validated
 - [ ] All initial judgments audited
 - [ ] All consolidated reports audited
@@ -33,13 +34,12 @@ gate_evidence:
 - [ ] All team dossiers approved
 - [ ] Final event audit passed
 - [ ] Event marked complete
-
 ## Team progress
 
 | Team ID | Intake | Evidence | Four judgments | Consolidated | Audited | Dossier |
 |---|---|---|---|---|---|---|
-| team-scribe | pinned `67969dd9` | — | — | — | — | — |
-| team-demos | pinned `dc35f696` | — | — | — | — | — |
+| team-scribe | pinned `67969dd9`, approved, roster frozen | — | — | — | — | — |
+| team-demos | pinned `dc35f696`, approved, roster frozen | — | — | — | — | — |
 
 ## Blockers and adjudications
 
@@ -64,3 +64,5 @@ gate_evidence:
 | 2026-09-21T23:35:29Z | Intake repaired, round one: F1 gitlink scope restated as an event-director decision, F2 `completed_at`, F3 this ledger, F5 wrapper scope, F6 both records approved, F8 repository-relative checkout paths, F9 the visibility check cited, F10 both checkouts detached at their pins. F4 and F8 also repaired in the framework; F7 left open | audits/intake.md F1-F10 | submissions/*.md, status.md, docs/0.5.0-beta-plan.md, atj/event.py, atj/intake.py, tests/ | pending re-audit |
 | 2026-09-21T23:37:00Z | Intake re-audited, round two; report superseded in place | audits/intake.md | audits/intake.md | PASS WITH ADVISORIES (F1 repaired; F11-F15 new, three of them introduced by the round-one repair) |
 | 2026-09-21T23:49:03Z | Intake repaired, round two: F11 bean directory count 56 to 54, F12 python scan count and the tree enumeration, F13 the antecedent the round-one insert broke, F15 why the two records scope the wrapper differently. F14 repaired in the framework; both records re-approved after the edits | audits/intake.md F11-F15 | submissions/*.md, status.md, atj/event.py, atj/cli.py, tests/ | pending re-audit |
+| 2026-09-21T23:53:00Z | Intake re-audited, round three; report superseded in place | audits/intake.md | audits/intake.md | PASS WITH ADVISORIES — 18 findings over three rounds, 14 repaired, freeze cleared |
+| 2026-09-21T23:55:13Z | Intake repaired, round three: F16 the bean count sentence, F17 the checkbox notice reached only `atj event gate`, F18 the closing paragraph left under the wrong heading. Records and the audit approved, `teams.md` frozen, `roster-frozen` recorded | audits/intake.md F16-F18 | submissions/*.md, teams.md, status.md, audits/intake.md, atj/cli.py | not-audited |
