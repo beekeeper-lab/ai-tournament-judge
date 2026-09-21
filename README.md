@@ -228,6 +228,8 @@ preliminary matches, eight participants, twelve byes, reproducible from its seed
 | `docs/final-audit.md` | Independent audit of this release |
 | `docs/agent-verification.md` | Live-model verification of the judge agents |
 | `docs/implementation-plan.md` | Build and audit record |
+| `docs/framework-fix-plan.md` | The 31 defects `live-trial-2026` found, and their disposition |
+| `docs/0.5.0-beta-plan.md` | Proposed: what the next version and the next event are for |
 | `docs/release-checklist.md` | What to verify before tagging a release |
 | `docs/troubleshooting.md` | Common failures and what they mean |
 | `docs/recovery-and-resume.md` | Recovering from an interruption |
