@@ -358,6 +358,20 @@ def _template_sections(root: Path) -> list[str]:
     return reports.template_sections("submission-intake.md", root)
 
 
+def _relative_checkout(checkout: Path, root: Path) -> str:
+    """The checkout path as the repository sees it, not as this machine does.
+
+    Configuration F10 / intake F8. The provenance table printed the operator's
+    absolute home path into a record committed to a public repository. The
+    repository-relative path identifies the same checkout for every reader and
+    discloses nothing about the machine that made it.
+    """
+    try:
+        return str(checkout.resolve().relative_to(root.resolve()))
+    except ValueError:
+        return str(checkout)
+
+
 def build_record(
     event: event_module.Event,
     team_id: str,
@@ -420,7 +434,7 @@ def build_record(
         f"| Source kind | {materialized.kind} |",
         f"| Pinned commit | `{materialized.commit}` |",
         f"| How the commit was obtained | {materialized.pin} |",
-        f"| Checkout | `{materialized.checkout}` |",
+        f"| Checkout | `{_relative_checkout(materialized.checkout, root)}` |",
         f"| Materialized at | {stamp} |",
         "| Narrative sections compiled by | unsupplied at intake |",
         "",

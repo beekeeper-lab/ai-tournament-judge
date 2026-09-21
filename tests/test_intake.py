@@ -273,6 +273,23 @@ class RecordAndRosterTests(unittest.TestCase):
             self.assertIn("snapshot", body)
             self.assertIn("is not the team's own commit", body)
 
+    def test_the_recorded_checkout_path_is_repository_relative(self):
+        """Configuration F10 / intake F8. The provenance table printed the
+        operator's absolute home path into a record committed to a public
+        repository. The path identifies the checkout, so it is written the way
+        every reader of the repository sees it.
+        """
+        with TemporaryFramework() as root:
+            event = make_event(root)
+            archive = make_zip(root / "src" / "a.zip", {"app.py": "x = 1\n"})
+            result = intake.run(event, "team-alpha", str(archive),
+                                workspace=root / "ws", now=NOW)
+            body = result.record.read_text(encoding="utf-8")
+            line = next(l for l in body.splitlines() if l.startswith("| Checkout |"))
+            self.assertNotIn(str(root), line)
+            self.assertIn("ws/", line)
+            self.assertNotIn("| `/", line)
+
     def test_a_new_team_is_added_to_the_roster_and_read_back(self):
         with TemporaryFramework() as root:
             event = make_event(root)

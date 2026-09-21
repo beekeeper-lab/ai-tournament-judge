@@ -201,6 +201,20 @@ def cmd_event_status(args) -> int:
     return OK
 
 
+def _save_status(loaded) -> None:
+    """Write the ledger and say so when it rewrote the body.
+
+    Intake audit F14 and F17. `save_status` rewrites the status body's gate
+    checkboxes from the ledger, and a rewrite nobody is told about silently
+    discards a deliberate hand edit. F14 wired the notice into `atj event gate`
+    only, which left the advance -- the one write that can flip
+    `Event marked complete` -- still silent. Every command that writes the
+    ledger goes through here.
+    """
+    for label in event_module.save_status(loaded):
+        print(f"  status.md body: {label!r} rewritten to match the ledger")
+
+
 def cmd_event_advance(args) -> int:
     root = _root(args)
     loaded = event_module.load(Path(args.event_dir), root=root)
@@ -211,7 +225,7 @@ def cmd_event_advance(args) -> int:
     except AtjError as exc:
         print(exc.render())
         return FAILURE
-    event_module.save_status(loaded)
+    _save_status(loaded)
     print(f"Stage advanced to {target}"
           + (f" (override recorded: {args.force_reason})" if args.force_reason else ""))
     return OK
@@ -237,7 +251,7 @@ def cmd_event_overrides(args) -> int:
         entry = event_module.review_override(
             loaded, args.review, official=args.official, note=args.note
         )
-        event_module.save_status(loaded)
+        _save_status(loaded)
         _emit({"reviewed": entry}, args)
         if not args.json:
             print(f"override {args.review} marked reviewed by {args.official} "
@@ -310,7 +324,7 @@ def cmd_event_unit(args) -> int:
 
     if args.action == "stale":
         event_module.mark_stale(loaded, args.id, args.reason or "invalidated by an operator")
-        event_module.save_status(loaded)
+        _save_status(loaded)
         print(f"{args.id} marked stale")
         return OK
 
@@ -334,7 +348,7 @@ def cmd_event_unit(args) -> int:
         outputs=args.output, audit_result=args.audit_result,
         completed_at=args.completed_at,
     )
-    event_module.save_status(loaded)
+    _save_status(loaded)
     print(f"{args.id} recorded complete (digest {digest}, audit {args.audit_result})")
     if (
         existing is not None
@@ -528,7 +542,7 @@ def cmd_event_gate(args) -> int:
         loaded.status.get("gate_notes", {}).pop(args.gate, None)
 
     loaded.status["last_updated"] = versions.now()
-    event_module.save_status(loaded)
+    _save_status(loaded)
     print(f"Gate {args.gate} = {args.state}"
           + (f" (audit: {args.audit})" if args.state == "passed" else ""))
     return OK
