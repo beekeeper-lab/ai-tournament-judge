@@ -1,19 +1,27 @@
 ---
 document: final-audit
-framework_version: 0.2.0-beta
-audit_rounds: 4
+framework_version_audited: 0.2.0-beta
+amendments_through: 0.4.0-beta
+audit_rounds: 5
 last_round: 2026-09-16
+last_amended: 2026-09-18
 visibility: private
 result: PASS WITH ADVISORIES
 ---
 
 # Final Audit
 
-Four independent audits were run against this release: a baseline audit of
+Five independent audits were run against this release: a baseline audit of
 v0.1.0-alpha, two audits of the canonical data model and tooling, and two full
 release audits. Each was given the repository and the requirements, never the
 expected conclusion. Every round found real defects. This records what they found,
 what was repaired, and what remains.
+
+The verdict and the round results are the record of 0.2.0-beta and do not move.
+The advisories below do: four were closed after the audit, at 0.3.0-beta and
+0.4.0-beta, and each says so in place rather than being quietly rewritten. That
+is why the front matter names both the version audited and the version the
+amendments run through.
 
 Full reproductions for the baseline round are in `docs/release-readiness-audit.md`.
 

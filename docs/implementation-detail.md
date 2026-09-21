@@ -1,7 +1,9 @@
 ---
 document: implementation-detail
 framework_version: 0.2.0-beta
+current_through: 0.4.0-beta
 written: 2026-09-16
+last_revised: 2026-09-21
 ---
 
 # Implementation Detail
@@ -352,12 +354,17 @@ python3 -m atj validate publication <artifact> --event-dir events/<id>
 python3 -m atj sandbox preflight                  # is isolation real right now?
 python3 -m atj demo check                         # is the sample still honest?
 python3 -m atj event overrides events/<id>        # what did a human step over?
+python3 -m atj event approve <file|dir> --official publication_approval
+python3 -m atj sandbox proxy up|down|status       # the egress allowlist
 python3 -m atj render consolidated events/<id>/summaries
 ```
 
 ## 7. Tests
 
-487 tests plus 234 subtests, at 0.3.0-beta.
+509 tests plus 280 subtests, at 0.4.0-beta. Five are skipped by default:
+`test_egress.py`'s live cases need a container runtime and
+`ATJ_LIVE_SANDBOX=1`, and they are the ones that must be run on an event
+host before an event authorizes network access.
 
 | File | Covers |
 |---|---|
@@ -380,6 +387,7 @@ python3 -m atj render consolidated events/<id>/summaries
 | `test_tier2_regressions.py` | Supersession, write contracts, the rubric's own rules, adjudication authority |
 | `test_tier3_regressions.py` | Citation symmetry, unit digests, hook sequencing |
 | `test_operator_surface.py` | The release advisories that were closed, and the packaging wiring |
+| `test_egress.py` | The allowlist proxy: deny by default, subdomain rules, and both bypass routes |
 
 Each regression file names the defect it locks down in the test's own docstring,
 and says what the pre-fix behaviour did. A test whose name records a defect
@@ -405,8 +413,10 @@ suite that tested one size with one seed.
 - **A different artifact kind:** add a schema, add a template, register the pair
   in `reports.ARTIFACT_KINDS`. Required sections come from the template, so there
   is no second list to maintain.
-- **A real network allowlist:** implement an egress proxy and pass its URL as
-  `egress_proxy`; `sandbox.build_command` already routes through it and refuses
-  without it.
+- **A different egress filter:** `atj sandbox proxy` ships one as of 0.4.0-beta
+  -- tinyproxy on an internal network with no route out -- and
+  `sandbox.build_command` refuses an allowlist with no proxy behind it. To
+  replace it, stand up your own and pass its URL as `egress_proxy`; the refusal
+  path and the `--egress-proxy auto` allowlist match are what the contract is.
 - **A different ceremony design:** `ceremony.render_ceremony` returns a string.
   The constraint that matters is its input set, not its styling.
