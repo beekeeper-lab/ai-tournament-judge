@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
-current_stage: intake
-last_updated: "2026-09-21T23:55:13Z"
+current_stage: evidence
+last_updated: "2026-09-21T23:56:18Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -66,3 +66,4 @@ gate_evidence:
 | 2026-09-21T23:49:03Z | Intake repaired, round two: F11 bean directory count 56 to 54, F12 python scan count and the tree enumeration, F13 the antecedent the round-one insert broke, F15 why the two records scope the wrapper differently. F14 repaired in the framework; both records re-approved after the edits | audits/intake.md F11-F15 | submissions/*.md, status.md, atj/event.py, atj/cli.py, tests/ | pending re-audit |
 | 2026-09-21T23:53:00Z | Intake re-audited, round three; report superseded in place | audits/intake.md | audits/intake.md | PASS WITH ADVISORIES — 18 findings over three rounds, 14 repaired, freeze cleared |
 | 2026-09-21T23:55:13Z | Intake repaired, round three: F16 the bean count sentence, F17 the checkbox notice reached only `atj event gate`, F18 the closing paragraph left under the wrong heading. Records and the audit approved, `teams.md` frozen, `roster-frozen` recorded | audits/intake.md F16-F18 | submissions/*.md, teams.md, status.md, audits/intake.md, atj/cli.py | not-audited |
+| 2026-09-21T23:56:18Z | `atj event advance` intake to evidence | status.md | status.md | gate roster-frozen passed on audits/intake.md |
