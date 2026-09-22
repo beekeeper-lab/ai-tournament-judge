@@ -1,13 +1,13 @@
 ---
 event_id: trial-2-2026
-current_stage: evidence
-last_updated: "2026-09-22T00:59:00Z"
+current_stage: initial-judging
+last_updated: "2026-09-22T01:11:35Z"
 blocked: false
 blocked_reason: null
 stage_gates:
   configuration-audited: passed
   roster-frozen: passed
-  evidence-validated: pending
+  evidence-validated: passed
   judgments-audited: pending
   consolidation-audited: pending
   bracket-audited: pending
@@ -18,6 +18,7 @@ units: []
 gate_evidence:
   configuration-audited: audits/configuration.md
   roster-frozen: audits/intake.md
+  evidence-validated: audits/evidence.md
 ---
 
 # Event Status
@@ -26,7 +27,7 @@ gate_evidence:
 
 - [x] Configuration audited
 - [x] Roster frozen
-- [ ] All eligible evidence packages validated
+- [x] All eligible evidence packages validated
 - [ ] All initial judgments audited
 - [ ] All consolidated reports audited
 - [ ] Bracket frozen and audited
@@ -38,8 +39,8 @@ gate_evidence:
 
 | Team ID | Intake | Evidence | Four judgments | Consolidated | Audited | Dossier |
 |---|---|---|---|---|---|---|
-| team-scribe | pinned `67969dd9`, approved, roster frozen | `ev:…:32470f92`, sandboxed-partial, approved | — | — | — | — |
-| team-demos | pinned `dc35f696`, approved, roster frozen | `ev:…:a9a56723`, sandboxed-partial, approved | — | — | — | — |
+| team-scribe | pinned `67969dd9`, approved, roster frozen | `ev:…:018cf089`, sandboxed-partial, approved | — | — | — | — |
+| team-demos | pinned `dc35f696`, approved, roster frozen | `ev:…:cb3847cb`, sandboxed-partial, approved | — | — | — | — |
 
 ## Blockers and adjudications
 
@@ -68,7 +69,9 @@ gate_evidence:
 | 2026-09-21T23:55:13Z | Intake repaired, round three: F16 the bean count sentence, F17 the checkbox notice reached only `atj event gate`, F18 the closing paragraph left under the wrong heading. Records and the audit approved, `teams.md` frozen, `roster-frozen` recorded | audits/intake.md F16-F18 | submissions/*.md, teams.md, status.md, audits/intake.md, atj/cli.py | not-audited |
 | 2026-09-21T23:56:18Z | `atj event advance` intake to evidence | status.md | status.md | gate roster-frozen passed on audits/intake.md |
 | 2026-09-22T00:14:30Z | Evidence packages prepared for both teams: 11 isolated runs, two manifests, the F7 no-audio-device decision and the F11 whole-checkout wrapper recorded, and the demos dry-run invocation taken as the event's decision | both checkouts at their pins, images `034af8181f8d` and `ec7d6c95cd36` | evidence/team-scribe/manifest.md, evidence/team-demos/manifest.md, runs/*.json, evidence/Containerfile.demos | FAIL — see audits/evidence.md |
-| 2026-09-22T00:41:00Z | Evidence stage audit | both manifests, 11 run records, both Containerfiles, status.md, both checkouts, framework policies and schemas | audits/evidence.md | FAIL (3 major and blocking, 10 minor, 6 advisory) |
-| 2026-09-22T00:40:00Z | Evidence repaired, round one: F1 the fourth `OPENAI_API_KEY` read site, F2 the hardened variant's second change, F3 `agentic` added and `security` argued out, F4-F13 counts, line references, reproduction pointers and timestamps, F15 the stale backup deleted, F16 `execution_record`, F17 both manifests approved, F18 configuration F7 closed, F19 the image contents argued against `event.md`'s rule. F14 left open: `runs/*.json` is validated by nothing, and registering a schema is a framework change this stage will not make mid-event | audits/evidence.md F1-F19 | evidence/*/manifest.md, audits/configuration.md, status.md | pending re-audit |
-| 2026-09-22T00:41:29Z | Evidence re-audited, round two; report superseded in place | audits/evidence.md, both manifests, the repair diff | audits/evidence.md | PASS WITH ADVISORIES — 28 findings, 16 repaired, 12 open, none blocking; gate may be set |
+| 2026-09-22T00:40:30Z | Evidence stage audit | both manifests, 11 run records, both Containerfiles, status.md, both checkouts, framework policies and schemas | audits/evidence.md | FAIL (3 major and blocking, 10 minor, 6 advisory) |
+| 2026-09-22T00:41:20Z | Evidence repaired, round one: F1 the fourth `OPENAI_API_KEY` read site, F2 the hardened variant's second change, F3 `agentic` added and `security` argued out, F4-F13 counts, line references, reproduction pointers and timestamps, F15 the stale backup deleted, F16 `execution_record`, F17 both manifests approved, F18 configuration F7 closed, F19 the image contents argued against `event.md`'s rule. F14 left open: `runs/*.json` is validated by nothing, and registering a schema is a framework change this stage will not make mid-event | audits/evidence.md F1-F19 | evidence/*/manifest.md, audits/configuration.md, status.md | pending re-audit |
+| 2026-09-22T00:56:33Z | Evidence re-audited, round two; report superseded in place | audits/evidence.md, both manifests, the repair diff | audits/evidence.md | PASS WITH ADVISORIES — 28 findings, 16 repaired, 12 open, none blocking; gate may be set |
 | 2026-09-22T00:59:00Z | Evidence repaired, round two: F10 and F13 residue, F20 hand-stamped approvals redone with `atj event approve`, F21 the thirteenth thread-safety test, F22 the apt count and comment range, F23 no payload in either capture, F26-F28 the `DEMO_DIR` path fix, the reporting-function read site and the hardened SYSTEM range. F14 stays open in framework scope | audits/evidence.md F10, F13, F20-F28 | evidence/*/manifest.md, status.md, audits/configuration.md | pending re-audit |
+| 2026-09-22T01:05:25Z | Evidence audited, round three, scoped to the round-two repair; report superseded in place | audits/evidence.md, both manifests, the repair diff | audits/evidence.md | PASS WITH ADVISORIES — 34 findings over three rounds, 26 repaired, none blocking; gate may be set |
+| 2026-09-22T01:10:39Z | Evidence repaired, round three: F22 the install line range, F28 the two citation cells the prose had outrun, F32 and F33 the twelve-of-thirteen wording and the `setUp` it names, F34 the observation R9's payload clause rests on, claimed from both ends. F29-F31 ledger stamps corrected to times that precede their commits. Not audited | audits/evidence.md F22, F28-F34 | evidence/*/manifest.md, status.md | not-audited |

@@ -2,7 +2,7 @@
 event_id: trial-2-2026
 team_id: team-scribe
 commit: 67969dd9479c096f05d998d8c50e5ea1968e3245
-evidence_package_id: ev:trial-2-2026:team-scribe:67969dd9479c:32470f92
+evidence_package_id: ev:trial-2-2026:team-scribe:67969dd9479c:018cf089
 rubric: submission-evaluation@1.1.0
 persona: prepare-submission@1.1.0
 framework_commit: 3f484d58cbe633bead80c332e22fa92be4435fed
@@ -20,8 +20,8 @@ visibility: private
 approval_state: approved
 validation_state: valid
 approved_by: event-director
-approved_at: "2026-09-22T00:58:41Z"
-approval_note: 'Evidence audit round two: approved after the F20-F23 and F26-F28 repairs; F14 remains open in framework scope.'
+approved_at: "2026-09-22T01:10:29Z"
+approval_note: 'Evidence audit round three: approved after the F22, F28, F32, F33 and F34 repairs.'
 ---
 
 # Evidence Manifest — ScribeVault (team-scribe)
@@ -54,13 +54,11 @@ approval_note: 'Evidence audit round two: approved after the F20-F23 and F26-F28
   declared `pyaudio` builds from source, and the `libgl`/`libegl`/`libglib`/
   `libxcb` set so the declared `PySide6` links, `libglib2.0-0` included because
   without it `import PySide6.QtWidgets` fails even under the offscreen platform
-  plugin. Each is tied to the requirement it serves in
-  the comment at `Containerfile.scribe:12-18`, which groups them by the
-  requirement they serve; that comment's groups are abbreviated (`libxcb-*`) and
-  do not name `libice6` or `libxkbcommon-x11-0`, both of which the `RUN` at
-  `:19-29` installs for the same PySide6 reason. A prerequisite of a declared
-  package is not an
-  addition; nothing the submission does not declare is installed, and
+  plugin. The comment at `Containerfile.scribe:12-18` groups them by the
+  requirement each serves; its groups are abbreviated (`libxcb-*`) and do not
+  name `libice6` or `libxkbcommon-x11-0`, which the `RUN` at `:22-28` installs
+  for the same PySide6 reason. A prerequisite of a declared package is not an
+  addition: nothing the submission does not declare is installed, and
   [[evidence:ev-scribe-01]] records what is missing as a result.
 - **Provenance correction.** Commit `3f484d5`'s message records this image as
   `sha256:25a2208baadd6280`. That digest belongs to an earlier build, now
@@ -99,7 +97,7 @@ approval_note: 'Evidence audit round two: approved after the F20-F23 and F26-F28
 
 | ID | Claim or requirement | Source | Evidence status |
 |---|---|---|---|
-| R1 | Record from a microphone via PyAudio, falling back to FFmpeg, flushing frames to a checkpoint WAV on an interval so `recover_checkpoints()` can salvage a partial recording | Intake "Primary workflows" #1; `src/audio/recorder.py` | Not observed at runtime — no audio device, by the event's decision above. What the two failing test classes do establish: the capture path is reached and its error contract holds, since real PyAudio raises at `src/audio/recorder.py:130` and the code wraps it as `AudioException` at `:165` ([[evidence:ev-scribe-08]]); and the thread-safety and cleanup behaviour of `AudioRecorder` is untested in the declared environment, because twelve of the thirteen tests written against it cannot run there ([[evidence:ev-scribe-06]]; the thirteenth, `TestNoDeadlocks::test_settings_no_deadlock` at `tests/test_thread_safety.py:311`, tests `SettingsManager` and fails only because it shares the module's `setUp`). Neither establishes recording, checkpoint flushing or `recover_checkpoints()` |
+| R1 | Record from a microphone via PyAudio, falling back to FFmpeg, flushing frames to a checkpoint WAV on an interval so `recover_checkpoints()` can salvage a partial recording | Intake "Primary workflows" #1; `src/audio/recorder.py` | Not observed at runtime — no audio device, by the event's decision above. What the two failing test classes do establish: the capture path is reached and its error contract holds, since real PyAudio raises at `src/audio/recorder.py:130` and the code wraps it as `AudioException` at `:165` ([[evidence:ev-scribe-08]]); and the thread-safety and cleanup behaviour of `AudioRecorder` is untested in the declared environment, because the twelve tests written against it cannot run there ([[evidence:ev-scribe-06]]). Twelve, not thirteen: the thirteenth failure in that file, `TestNoDeadlocks::test_settings_no_deadlock` at `tests/test_thread_safety.py:311`, tests `SettingsManager`, and it fails at `TestNoDeadlocks.setUp` (`:280-281`) for the same module-level reason as the other twelve — the `mock_pyaudio` binding at `:24`. Neither establishes recording, checkpoint flushing or `recover_checkpoints()` |
 | R2 | Transcribe through the OpenAI Whisper API or a local Whisper model, optionally running `DiarizationService` | Intake "Primary workflows" #2; `src/transcription/` | Not observed at runtime — the API path is unreachable (empty `network_allowlist`, no key) and the local path is not installed (`requirements-local.txt`). The modules import cleanly, [[evidence:ev-scribe-04]], and the provider surface is read statically, [[evidence:ev-scribe-11]]. Behaviour is `NE` for the panel |
 | R3 | Summarize the transcript through an OpenAI GPT model in one of three styles, auto-assign a category, allow re-summarization from templates | Intake "Primary workflows" #3; `src/ai/summarizer.py` | Not observed at runtime, same reason as R2. Modules import cleanly, [[evidence:ev-scribe-04]]; provider surface read statically, [[evidence:ev-scribe-11]] |
 | R4 | Store recording, transcription, summary and pipeline state in a SQLite vault in WAL mode, and export to TXT, Markdown or SRT | Intake "Primary workflows" #4; `src/vault/manager.py`, `src/export/` | Not exercised end to end: nothing upstream produces a recording to store. The modules import cleanly, [[evidence:ev-scribe-04]]. The 509 passing tests are not broken down by subsystem in this package, so nothing here establishes vault or export behaviour specifically |

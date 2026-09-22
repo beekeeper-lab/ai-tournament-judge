@@ -74,7 +74,7 @@ findings:
   summary: ScribeVault's execution profile. The configuration now names the three unknowns and commits to deciding them at the evidence stage; the decisions themselves are owed there.
   artifact: events/trial-2-2026/event.md:130-139
   repair: 'Discharged at the evidence stage. evidence/team-scribe/manifest.md records the decision in its Scope and provenance section — QT_QPA_PLATFORM=offscreen, no display, no audio device, no network, and the test suite plus module imports and the documented start command as what executes.'
-  amended_after_approval: '2026-09-22T00:55:00Z — F7 moved from deferred to repaired by evidence audit F18. The approved text of every other finding is unchanged.'
+  amended_after_approval: '2026-09-22T00:41:20Z — F7 moved from deferred to repaired by evidence audit F18. The approved text of every other finding is unchanged.'
   state: repaired
 - id: F8
   severity: minor
