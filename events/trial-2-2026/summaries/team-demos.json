@@ -1,0 +1,508 @@
+{
+  "accepted_ne": [
+    {
+      "adjudication_id": "adj:trial-2-2026:team-demos:01",
+      "criterion": "functional",
+      "decided_by": "event-director"
+    }
+  ],
+  "adjudication_required": [],
+  "blocked_reasons": [
+    "functional: NE accepted by adjudication adj:trial-2-2026:team-demos:01 (event-director); the rubric permits no official total while a criterion is NE"
+  ],
+  "criteria": {
+    "agentic": {
+      "agreement": "aligned",
+      "criterion": "agentic",
+      "maximum": 4.0,
+      "mean": 3.5,
+      "mean_inputs": [
+        4.0,
+        3.0,
+        4.0,
+        3.0
+      ],
+      "minimum": 3.0,
+      "name": "Agentic and AI system design",
+      "ne_disposition": null,
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 1.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        4.0,
+        3.0,
+        4.0,
+        3.0
+      ],
+      "source_scores": {
+        "judge-backend": 4.0,
+        "judge-frontend-ux": 3.0,
+        "judge-product-agentic": 4.0,
+        "judge-security-ops": 3.0
+      },
+      "weight": 15,
+      "weighted_points": 10.5
+    },
+    "engineering": {
+      "agreement": "aligned",
+      "criterion": "engineering",
+      "maximum": 3.0,
+      "mean": 3.0,
+      "mean_inputs": [
+        3.0,
+        3.0,
+        3.0,
+        3.0
+      ],
+      "minimum": 3.0,
+      "name": "Engineering and maintainability",
+      "ne_disposition": null,
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        3.0,
+        3.0,
+        3.0,
+        3.0
+      ],
+      "source_scores": {
+        "judge-backend": 3.0,
+        "judge-frontend-ux": 3.0,
+        "judge-product-agentic": 3.0,
+        "judge-security-ops": 3.0
+      },
+      "weight": 15,
+      "weighted_points": 9.0
+    },
+    "functional": {
+      "agreement": "aligned",
+      "criterion": "functional",
+      "maximum": 3.0,
+      "mean": 3.0,
+      "mean_inputs": [
+        3.0,
+        3.0
+      ],
+      "minimum": 3.0,
+      "name": "Functional correctness and completeness",
+      "ne_disposition": "accepted",
+      "ne_judges": [
+        "judge-frontend-ux",
+        "judge-security-ops"
+      ],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": {
+        "adjudication_id": "adj:trial-2-2026:team-demos:01",
+        "amendments": [
+          {
+            "amended_at": "2026-09-22T20:40:00Z",
+            "amended_by": "event-director",
+            "reason": "Consolidation audit F26: score_override.rationale was absent, so the machine-readable resolution carried no reason for accepting the NE; the reasoning now matches the Factual resolution section. Consolidation audit F28: the head-to-head citation paraphrased rule 12 as a prohibition; it now quotes the rubric.",
+            "supersedes": "Before this amendment: score_override carried no rationale; the head-to-head sentence read \"forbids deciding a matchup by the higher initial total\"."
+          }
+        ],
+        "authority_withheld": null,
+        "criterion": "functional",
+        "decided_by": "event-director",
+        "decision_authority": "human-official",
+        "rationale": "The event director reviewed the criterion and accepted the NE rather than supplying a score. The evidence package records functional as evidence-limited for team-demos: no model call was possible in this event, and acts 2 and 3 require a write into a read-only pinned checkout. Supplying a number would be a discretionary value standing in for an observation the event could not make, and the rubric's own rule is that a missing observation is NE and not a low score. No official total follows, by decision.",
+        "resolved_score": "NE",
+        "source": "events/trial-2-2026/adjudications/adj-trial-2-2026-team-demos-functional.md"
+      },
+      "resolution_note": "adjudicated resolution recorded alongside the source scores; no source score was modified",
+      "resolved_score": null,
+      "scores": [
+        3.0,
+        3.0
+      ],
+      "source_scores": {
+        "judge-backend": 3.0,
+        "judge-frontend-ux": "NE",
+        "judge-product-agentic": 3.0,
+        "judge-security-ops": "NE"
+      },
+      "weight": 25,
+      "weighted_points": 15.0
+    },
+    "innovation": {
+      "agreement": "aligned",
+      "criterion": "innovation",
+      "maximum": 4.0,
+      "mean": 4.0,
+      "mean_inputs": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "minimum": 4.0,
+      "name": "Innovation and technical ambition",
+      "ne_disposition": null,
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "source_scores": {
+        "judge-backend": 4.0,
+        "judge-frontend-ux": 4.0,
+        "judge-product-agentic": 4.0,
+        "judge-security-ops": 4.0
+      },
+      "weight": 10,
+      "weighted_points": 8.0
+    },
+    "product": {
+      "agreement": "aligned",
+      "criterion": "product",
+      "maximum": 4.0,
+      "mean": 4.0,
+      "mean_inputs": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "minimum": 4.0,
+      "name": "Product value and usability",
+      "ne_disposition": null,
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        4.0,
+        4.0,
+        4.0,
+        4.0
+      ],
+      "source_scores": {
+        "judge-backend": 4.0,
+        "judge-frontend-ux": 4.0,
+        "judge-product-agentic": 4.0,
+        "judge-security-ops": 4.0
+      },
+      "weight": 15,
+      "weighted_points": 12.0
+    },
+    "reliability": {
+      "agreement": "aligned",
+      "criterion": "reliability",
+      "maximum": 3.0,
+      "mean": 2.75,
+      "mean_inputs": [
+        3.0,
+        3.0,
+        2.0,
+        3.0
+      ],
+      "minimum": 2.0,
+      "name": "Reliability, testing, and observability",
+      "ne_disposition": null,
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 1.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        3.0,
+        3.0,
+        2.0,
+        3.0
+      ],
+      "source_scores": {
+        "judge-backend": 3.0,
+        "judge-frontend-ux": 3.0,
+        "judge-product-agentic": 2.0,
+        "judge-security-ops": 3.0
+      },
+      "weight": 10,
+      "weighted_points": 5.5
+    },
+    "security": {
+      "agreement": "aligned",
+      "criterion": "security",
+      "maximum": 4.0,
+      "mean": 3.75,
+      "mean_inputs": [
+        4.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "minimum": 3.0,
+      "name": "Security, privacy, and responsible AI",
+      "ne_disposition": null,
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 1.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        4.0,
+        4.0,
+        4.0,
+        3.0
+      ],
+      "source_scores": {
+        "judge-backend": 4.0,
+        "judge-frontend-ux": 4.0,
+        "judge-product-agentic": 4.0,
+        "judge-security-ops": 3.0
+      },
+      "weight": 10,
+      "weighted_points": 7.5
+    }
+  },
+  "display_total": null,
+  "finalized": false,
+  "individuals": [
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "engineering": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "functional": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 25,
+          "weighted_points": 15.0
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        },
+        "product": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "reliability": {
+          "confidence": "high",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        },
+        "security": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        }
+      },
+      "display_total": 70.0,
+      "judge_id": "judge-backend",
+      "judge_run_id": "jr:trial-2-2026:team-demos:judge-backend:cb3847cb:01",
+      "partial_total": 70.0,
+      "persona": "judge-backend@1.1.0",
+      "total": 70.0,
+      "unresolved_ne": []
+    },
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "engineering": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "functional": {
+          "confidence": "high",
+          "raw": "NE",
+          "weight": 25,
+          "weighted_points": null
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        },
+        "product": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "reliability": {
+          "confidence": "high",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        },
+        "security": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        }
+      },
+      "display_total": null,
+      "judge_id": "judge-frontend-ux",
+      "judge_run_id": "jr:trial-2-2026:team-demos:judge-frontend-ux:cb3847cb:01",
+      "partial_total": 52.0,
+      "persona": "judge-frontend-ux@1.1.0",
+      "total": null,
+      "unresolved_ne": [
+        "functional"
+      ]
+    },
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "engineering": {
+          "confidence": "high",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "functional": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 25,
+          "weighted_points": 15.0
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        },
+        "product": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "reliability": {
+          "confidence": "high",
+          "raw": 2.0,
+          "weight": 10,
+          "weighted_points": 4.0
+        },
+        "security": {
+          "confidence": "high",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        }
+      },
+      "display_total": 68.0,
+      "judge_id": "judge-product-agentic",
+      "judge_run_id": "jr:trial-2-2026:team-demos:judge-product-agentic:cb3847cb:01",
+      "partial_total": 68.0,
+      "persona": "judge-product-agentic@1.1.0",
+      "total": 68.0,
+      "unresolved_ne": []
+    },
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "engineering": {
+          "confidence": "high",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "functional": {
+          "confidence": "high",
+          "raw": "NE",
+          "weight": 25,
+          "weighted_points": null
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 10,
+          "weighted_points": 8.0
+        },
+        "product": {
+          "confidence": "medium",
+          "raw": 4.0,
+          "weight": 15,
+          "weighted_points": 12.0
+        },
+        "reliability": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        },
+        "security": {
+          "confidence": "high",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        }
+      },
+      "display_total": null,
+      "judge_id": "judge-security-ops",
+      "judge_run_id": "jr:trial-2-2026:team-demos:judge-security-ops:cb3847cb:01",
+      "partial_total": 50.0,
+      "persona": "judge-security-ops@1.1.0",
+      "total": null,
+      "unresolved_ne": [
+        "functional"
+      ]
+    }
+  ],
+  "integrity_problems": [],
+  "judge_count": 4,
+  "judge_ids": [
+    "judge-backend",
+    "judge-frontend-ux",
+    "judge-product-agentic",
+    "judge-security-ops"
+  ],
+  "judge_run_ids": [
+    "jr:trial-2-2026:team-demos:judge-backend:cb3847cb:01",
+    "jr:trial-2-2026:team-demos:judge-frontend-ux:cb3847cb:01",
+    "jr:trial-2-2026:team-demos:judge-product-agentic:cb3847cb:01",
+    "jr:trial-2-2026:team-demos:judge-security-ops:cb3847cb:01"
+  ],
+  "provisional_total": 52.5,
+  "rubric": "submission-evaluation@1.1.0",
+  "total": null,
+  "withheld_authority": []
+}
