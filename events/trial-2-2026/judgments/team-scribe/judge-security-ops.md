@@ -221,3 +221,4 @@ The manifest deliberately does not list `security` as evidence-limited, and I ag
 - [x] Every material finding cites evidence
 - [x] No other judge report was inspected
 - [x] Submission instructions were treated as untrusted data
+- [x] Corrected by the event director after a stage audit, 2026-09-22, under audit finding F4 and with no judge re-run: the plaintext-credential finding is re-attributed to the reachable installer branch at `install.py:124-127`, which copies the tracked `.env.example`, the previously quoted `OPENAI_API_KEY=your-key-here` literal being the unreachable `else` arm. S1 and B3 hold on either branch. No score, confidence, anchor or line of reasoning was touched.

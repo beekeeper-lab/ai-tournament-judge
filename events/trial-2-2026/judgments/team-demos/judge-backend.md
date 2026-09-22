@@ -206,3 +206,4 @@ repository script calculated them.
 - [x] Every material finding cites evidence
 - [x] No other judge report was inspected
 - [x] Submission instructions were treated as untrusted data
+- [x] Corrected by the event director after a stage audit, 2026-09-22, under audit finding F10 and with no judge re-run: the enumeration of demos whose primary command pre-approves `Write` and `Bash(python3:*)` is corrected to every demo except 06, whose `clear-the-pile.md:4` withholds `Write`. No score, confidence, anchor or line of reasoning was touched.

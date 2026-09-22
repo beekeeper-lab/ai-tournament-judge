@@ -211,3 +211,4 @@ repository script calculated them.
 - [x] Every material finding cites evidence
 - [x] No other judge report was inspected
 - [x] Submission instructions were treated as untrusted data
+- [x] Corrected by the event director after a stage audit, 2026-09-22, under audit finding F2 and with no judge re-run: the bean count is restated as 52 of 54 tracked beans marked Done at three sites, the audit having verified 54 `BEAN-` rows of which 52 are `Done` and two `Approved`. No score, confidence, anchor or line of reasoning was touched, and `framework/personas.md` gives this judge no write tool, so every version of this file was written by the orchestrator.
