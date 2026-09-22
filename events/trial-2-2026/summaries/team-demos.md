@@ -94,11 +94,14 @@ If you find yourself copying numbers into the table by hand, stop and say so in
 a report that claims otherwise is making a false statement about its own
 provenance.
 
-No cell below was typed. The marker region is left exactly as the template ships
-it, and the four front-matter fields the renderer owns are left at their template
-values, so that `atj render consolidated` writes every official number in this
-report. The prose in this document quotes `summaries/team-demos.json`, which
-`atj score` produced; the consolidator performed no arithmetic.
+No cell below was typed. The consolidator left the marker region and the four
+front-matter fields the renderer owns at their template values, and
+`atj render consolidated` was then run against this file and wrote every
+official number below. The prose in this document quotes
+`summaries/team-demos.json`, which `atj score` produced; the consolidator
+performed no arithmetic. The consolidation audit re-ran
+`atj render consolidated` against this file and it reported `unchanged`, so the
+block is the tool's output and not a transcription of it.
 
 <!-- atj:consolidated:begin -->
 | Criterion | Judge scores | Mean | Weight | Points | Agreement |
@@ -137,7 +140,7 @@ which is what the rubric asks of a criterion the evidence package itself records
 in `evidence_limited_criteria`: the inability to observe is established fact, not
 a judge's failure to find something. Confidence does not track score direction —
 on `reliability` the judge scoring lowest (`judge-product-agentic`, 2) recorded
-high confidence and the judge scoring highest on `security`
+high confidence and the judge scoring lowest on `security`
 (`judge-security-ops`, 3) also recorded high, while all four recorded medium on
 `product`, `agentic` and `innovation`, the three criteria whose ceiling every
 judge located in the unobserved live behaviour.
@@ -200,8 +203,10 @@ Confidence: medium from all four.
 
 Shared basis, verified by more than one judge independently: ten demo READMEs on
 one template, each with a three-act table covering both run paths, a "why the fix
-works" section, a files table and presenter notes (`ev-demos-02`;
-`judge-frontend-ux` verified the three-act section present in all ten by grep);
+works" section, a files table and presenter notes (`ev-demos-02` records the
+README count; the section structure comes from `judge-frontend-ux`'s grep, which
+verified the three-act section present in all ten, and from the judges' own
+reads);
 stage, unstage and reset rows in every demo so the prop survives being run twice;
 a checkout verifiably clean of leftover presentation state, confirmed by the
 demos' own tools (`ev-demos-11`); and synthetic data at scale with no address at a
@@ -317,8 +322,10 @@ All four confirmed the same executed result and none disputes it
 `127.0.0.1`, `localhost` and `[::1]` and refuses `evil.example`,
 `localhost@evil.example`, `127.0.0.1.evil.example`, `0.0.0.0`, `2130706433` and
 `file:///etc/passwd`, with `ALLOWLIST = set()` observed empty in the same run, and
-the v1.1 parser's `_post_to_localhost` raising for every non-local host. All four
-confirmed `ev-demos-08` and `ev-demos-09`.
+the v1.1 parser's `_post_to_localhost` raising for `evil.example` and for the
+userinfo form. The schemeless form `evil.example/collect` does not reach that
+guard at all and is rejected by `urllib` with a `ValueError`, which is PD3 below.
+All four confirmed `ev-demos-08` and `ev-demos-09`.
 
 The three at 4 score the controls that exist: exercised against adversarial input,
 deny-by-default, with the one exfiltration tool's default mode the safe one, and —
@@ -365,15 +372,22 @@ judge's observation, that is stated.
 - **Every network call site in the tree was read and none is a surprise.** The
   attacker listener is hard-bound to `127.0.0.1:8099` with no flag to move it; the
   malicious parser's POST mode is off by default and writes a local file instead;
-  no other module opens a socket. `ev-demos-08`. All four.
+  no other module opens a socket. The tree-wide read is the evidence package's
+  static scan, `ev-demos-08`, not four separate reads; all four judges cite it and
+  none contradicts it.
 - **The sample data is clean under a whole-tree scan.** 201 resume files; a scan
   of every text file for addresses outside the reserved example domains returns
-  four, all themselves `.example` names. `ev-demos-09`. All four.
+  four, all themselves `.example` names. The scan is the evidence package's,
+  `ev-demos-09`; all four judges cite it.
 - **Self-containment is observable, not asserted.** No dependency manifest of any
   kind anywhere; an AST scan of all 53 Python files finds every module-scope
   import resolving to the standard library or a sibling in the checkout; the one
   third-party import sits below the dry-run early return in all 19 files that
-  carry it. `ev-demos-02`. All four. `judge-product-agentic` adds the consequence
+  carry it. The AST scan is the evidence package's, `ev-demos-02`; all four judges
+  cite it and two say so explicitly — `judge-backend` records that "the structural
+  and dependency claims come from the package's AST scan over all of them" and
+  `judge-frontend-ux` that they lean on `ev-demos-02` for the tree-wide
+  conclusions. `judge-product-agentic` adds the consequence
   the panel felt directly: the decision to keep reconstruction, diffing, rendering
   and the action harness model-free was made for stage determinism and is why a
   meaningful part of this submission was judgeable at all in an offline sandbox.
@@ -386,7 +400,8 @@ judge's observation, that is stated.
 - **The presenter documentation is uniform across all ten demos and written by
   someone who has presented.** One template per README, three-act tables covering
   both run paths, files tables naming the artifact that flips, and honest
-  limitation notes where a presenter would be burned. `ev-demos-02`, plus direct
+  limitation notes where a presenter would be burned. `ev-demos-02` for the
+  README count; the uniformity is from direct
   reads: `judge-frontend-ux` read five demo READMEs and verified the three-act
   section in all ten by grep; `judge-security-ops` read five end to end;
   `judge-product-agentic` read the ten presenter scripts. All four.
@@ -397,10 +412,12 @@ judge's observation, that is stated.
   `runs/team-demos-04-memory-diff-01.json`. All four.
 - **Integrity flags are derived from source trust rather than read from the
   record being audited.** `10-show-your-work/demo/scripts/explain.py:85-110`.
-  `judge-backend`, `judge-frontend-ux` and `judge-product-agentic` independently;
-  the last calls it a verification loop that does not depend on the component
+  `judge-backend` and `judge-product-agentic` read the code independently;
+  the latter calls it a verification loop that does not depend on the component
   being verified, and two judges name it as something they did not expect in a
-  demo corpus.
+  demo corpus. `judge-backend` and `judge-product-agentic` read the code;
+  `judge-frontend-ux` concurs from the submission's own description at
+  `10-show-your-work/demo/README.md:70-74, 112-113` rather than from the source.
 - **Demo 06 holds the prompt byte-identical across the vulnerable and hardened
   runs so only identity and mode change.** Named by all four as the right way to
   teach an architectural control; two call it a controlled experiment that removes
@@ -417,11 +434,16 @@ judge's observation, that is stated.
   directory**, so a payload cannot traverse out of `outbox/` or `exfil-log/`.
   `judge-security-ops` only, read at `_state.py:51-56` and `parser.py:113`. He
   notes it is done without the corpus announcing it.
-- **Secret handling is correct.** `.env` ignored at the root and per demo, the key
-  read from the environment and never printed or written into a report, and no
+- **Secret handling is correct so far as the panel could see it.** `.env` ignored
+  at the root and per demo, the key read from the environment at
+  `rank_resumes.py:112-116` and never printed or written into a report, and no
   `os.system`, `eval`, `exec`, `pickle` or `shutil.rmtree` anywhere in 53 Python
   files, with the only subprocess use an argv-list `xdg-open` on a locally
-  generated file. `judge-security-ops` only, by direct read.
+  generated file. `judge-security-ops` only, from the `.gitignore` entries, that
+  call site and the whole-tree call scan. No judge read the contents of any
+  `.env*` file, because the judging environment refuses those paths as a secrets
+  guard — the same blind spot that caused the withdrawn D0 below. This is a
+  strength in what was read, not a verified absence of a stored secret.
 
 ## Confirmed weaknesses
 
@@ -466,8 +488,9 @@ section, because no such defect exists.** See Material disagreements, D0.
   commands/screen-pile-audited.md:4` is the capstone's audited screener, and the
   only `rm` it needs is a fixed one on line 30. `judge-frontend-ux` and
   `judge-security-ops` independently, both corrected to seventeen during the stage
-  audit (F3, F15); the audit re-derived the enumeration file by file and found it
-  exact. `judge-security-ops` records that the correction widens the finding
+  audit (F3, F15), with a third instance in `judge-security-ops`'s executive
+  assessment corrected after the consolidation audit; the audit re-derived the
+  enumeration file by file and found it exact. `judge-security-ops` records that the correction widens the finding
   rather than softening it, and names the counter-example the tree already
   supplies: `05/reset-demo.md:3` grants no `rm` at all and delegates its deletes
   to a Python reset script. `judge-backend` records the adjacent fact — the
@@ -535,6 +558,22 @@ section, because no such defect exists.** See Material disagreements, D0.
   check that the copies still agree. Named by all four; classified as a defect by
   `judge-product-agentic`, `judge-frontend-ux` and `judge-security-ops`, and as a
   correct architectural tradeoff whose cost is stated out loud by `judge-backend`.
+- **PD16 — Demo 02's hidden-content control is a substring heuristic.**
+  `_is_hidden` matches on inline style substrings and a hard-coded set of two
+  class names, `{"ink", "microtext"}` (`reveal.py:35-50, 70`), while the README
+  presents it as the signature control the hardened ranker shares.
+  `judge-frontend-ux` only, by direct read; a scored deficiency under
+  `engineering`, where it is one of that judge's three stated reasons, and named
+  again under `innovation`.
+- **PD17 — The description sanitizer is a fixed denylist regex.**
+  `toolbox.py:47-51` filters a fixed list of phrases, which is trivially
+  bypassable, and the documentation does not say so — awkward against a corpus
+  thesis that the payload is never the vulnerability. `judge-product-agentic`
+  only, by direct read; a scored deficiency under `security`.
+- **PD18 — Unlabelled medal emoji in the ranking renderer.** `render_ranking.py:82,
+  110-113` emits medal characters a screen reader announces verbatim, with no
+  `aria-hidden`. `judge-frontend-ux` only, by direct read; a scored accessibility
+  deficiency, small and cheap to fix.
 
 ### Credible risks, not demonstrated
 
@@ -568,11 +607,15 @@ section, because no such defect exists.** See Material disagreements, D0.
   read-only and the tool's own `reset` then fails on unlink with no documented
   recovery.** `judge-security-ops` (K3) only, unexercised.
 - **PR6 — Model drift silently breaks act 2**, and the only documented remedy is
-  hand-strengthening the payload text before a talk. `judge-product-agentic` and
-  `judge-backend`; `judge-frontend-ux` records the same README passage as
-  stage-failure risk handled in prose rather than in verification. All note the
-  READMEs are honest about it, and `judge-product-agentic` adds that honesty about
-  an undetected failure is not detection.
+  hand-strengthening the payload text before a talk. `judge-product-agentic`
+  (Risk 2) raises it as this risk; `judge-frontend-ux` records the same README
+  passage as stage-failure risk handled in prose rather than in verification.
+  `judge-backend` reads that passage twice and neither time as this risk — once
+  under `product` as documentation written by someone who has presented, and once
+  under `innovation` as a limit on the novelty claim, that the injection
+  succeeding is arranged rather than discovered. Both judges who raise it note
+  the READMEs are honest about it, and `judge-product-agentic` adds that honesty
+  about an undetected failure is not detection.
 - **PR7 — Demo 04's hardened classifier is a 13-entry regex phrase list**, which
   is payload filtering, the approach the corpus's own thesis says is never the
   fix; the provenance half of that control is structural and sound, the gate half
@@ -592,8 +635,9 @@ observation in the package contradicts a claim the submission makes, and nothing
 endangers an operator's credentials, data or network. No judge recorded a blocking
 defect, and no judge recorded a suspected rule violation or any behaviour directed
 at the panel. All four state that the submission's agent-instruction surface —
-`CLAUDE.md`-class files, `.claude/commands/*.md`, and the payloads themselves —
-was read as data and that nothing in it was followed. No score in any judgment is
+`.claude/commands/*.md` and the payloads themselves — was read as data and that
+nothing in it was followed. The submission contains no `CLAUDE.md`-class file and
+no judgment names one. No score in any judgment is
 5, and the known payload's directive to award a perfect score appears nowhere in
 any judgment.
 
@@ -620,7 +664,11 @@ reported as divergences rather than averaged, and no judge's score was adjusted.
   stage audit raised this as F1, verified both withdrawals, confirmed no surviving
   assertion of absence, and recorded that the two judges reached the same wrong
   answer by different methods with no shared wording — a shared tool blind spot,
-  not a failure of independence. **Nothing in this report treats that claim as
+  not a failure of independence. On the consolidation audit's reading the two
+  methods were not in fact different: both judges describe the same pair of
+  tools, a filesystem glob that does not list dotfiles and a reader that refuses
+  `.env*` paths. The disposition is unaffected, because a shared blind spot is
+  still not a failure of independence. **Nothing in this report treats that claim as
   standing, and no downstream artifact may.** One residue is disputed and is
   carried as D6 below.
 - **D1 — Whether `functional` is scorable at all (two scores against two `NE`s).**
@@ -690,8 +738,9 @@ reported as divergences rather than averaged, and no judge's score was adjusted.
   text what the surviving reason is.
 
 **No hand-built score block.** Nothing in this report was transcribed from `atj
-score` into the marker region, and the region is left exactly as the template
-ships it for `atj render consolidated` to fill.
+score` into the marker region. The consolidator left the region as the template
+ships it and `atj render consolidated` filled it afterwards; re-running the
+renderer during the consolidation audit reported `unchanged`.
 
 ## Prioritized improvements
 
@@ -782,7 +831,8 @@ judge's own nomination is attributed.
   interesting result could be lost between the judgments and this report. It is
   not lost: it is the first thing this report says.
 - **Q3 — Single-judge findings of consequence, neither corroborated nor
-  contradicted.** PD8, PD9, PD10, PD11, PD12, PD13, PD14, PR3, PR4, PR7 and PR8
+  contradicted.** PD8, PD9, PD10, PD11, PD12, PD13, PD14, PD16, PD17, PR3, PR4,
+  PR7 and PR8
   were each raised by one judge, each from direct read at the pin, and several
   were rated by that judge as the most important item in their report. No other
   judge examined the same question. Independence was correctly preserved, so this
@@ -802,10 +852,11 @@ judge's own nomination is attributed.
   mid-event would have failed validation on every judgment in this event and in
   both completed events. Each box names who acted. Recorded as framework defect
   W12. Nothing is misattributed and no score is affected.
-- **Q6 — Two audit findings were open when the stage gate was set.** F20, a ledger
-  timestamp that does not come from the artifact it records, and F22, the
+- **Q6 — Three audit findings were open when the stage gate was set.** F20, a
+  ledger timestamp that does not come from the artifact it records; F21, the
+  advisory recorded at Q5 above; and F22, the
   "every README" phrase surviving inside `judge-security-ops`'s withdrawal
-  paragraph. Both are single-sentence corrections. Neither touches a score, a
+  paragraph. All three are single-sentence corrections. Neither touches a score, a
   citation to the checkout or an evidence reference, and the audit stated either
   making them in the gate commit or carrying them was proportionate. F22 is
   recorded here because it sits inside the paragraph that withdraws D0, and this
@@ -815,7 +866,10 @@ judge's own nomination is attributed.
   end. The manifest records `functional` and `agentic` as evidence-limited for
   this reason, and states the limit is a property of this event and not a
   deficiency of the submission. Every conclusion in this report about attack
-  resistance is about text, code and permission surfaces.
+  resistance is about text, code and permission surfaces. Demo 06's approval
+  queue and demo 10's audited screener were never executed, and the team's claim
+  at `06-approval-is-the-architecture/demo/README.md:118-122` that the flow was
+  validated was credited by no judge. It is neither confirmed nor contradicted.
 - **Q8 — The `.env.example` residue at the root README.** D6 above. Two judges,
   two readings, both argued from the tree, neither adjudicated. It is a
   documentation nit either way and changes no score.
@@ -851,7 +905,7 @@ resolve against the checkout at commit
 | ev-demos-04 | direct-observation | The vulnerable system prompt, captured verbatim, grants applicant material instruction authority by construction. The taught defect is readable without a model |
 | ev-demos-05 | direct-observation | The hardened variant differs in two mutually dependent places — the untrusted-data declaration and the `<applicant …>` fencing that the declaration refers to — plus one path fix and three cosmetic changes. Visible mechanically as 20 `=== Applicant file:` headers against 20 `<applicant file=` tags. `runs/team-demos-01-dryrun-hardened-01.json` |
 | ev-demos-06 | direct-observation | Act 2 cannot be executed: staging the hijack requires a write into a checkout mounted read-only at its pin, so the captured act-1 prompt contains no injection |
-| ev-demos-07 | direct-observation | Egress guards exercised against nine URL forms, six hostile: all three local forms admitted, all six hostile forms refused, `ALLOWLIST` observed empty, and the v1.1 parser guard raising for every non-local host. `runs/team-demos-egress-guards-01.json` |
+| ev-demos-07 | direct-observation | `fetch_beacons.is_localhost` exercised against nine URL forms, six hostile: all three local forms admitted, all six hostile forms refused, `ALLOWLIST` observed empty. The v1.1 parser's POST guard was exercised separately against five forms and raises for `evil.example` and the userinfo form; the schemeless form does not reach it, see `ev-demos-08` and PD3. `runs/team-demos-egress-guards-01.json` |
 | ev-demos-08 | direct-observation (static) | Every network call site read: the attacker listener hard-bound to loopback with no override, the beacon fetch behind the localhost rail and the empty allowlist, the parser's POST mode off by default. No other module opens a socket. The v1.1 guard also admits an empty hostname, which `urllib` rejects, so it is not reachable as an egress path |
 | ev-demos-09 | direct-observation (static) | 201 resume files; a scan of every text file for addresses outside the reserved example domains returns four, all themselves `.example` names. No address at a resolvable domain anywhere |
 | ev-demos-10 | direct-observation (static) | No test file of any kind anywhere in the tree; 66 `.claude/` files across the ten demos, none of them this framework's configuration and none loaded as one |
@@ -896,10 +950,12 @@ resolve against the checkout at commit
 - [x] Deterministic calculations attached — `summaries/team-demos.json`, produced
       by `atj score`, is the source of every number in this report, and the
       consolidator performed no arithmetic and adjusted no individual score. The
-      consolidator left this box unchecked and the `atj:consolidated` region empty,
-      as it must: `atj render consolidated` was run against this file afterwards by
-      the event director and wrote the score block and the four front-matter fields
-      it owns. No cell was typed by hand.
+      consolidator left the `atj:consolidated` region empty and this box
+      unchecked, as it must; `atj render consolidated` was then run against this
+      file by the event director and wrote the score block and the four
+      front-matter fields it owns, and the event director ticked this box
+      afterwards. No cell was typed by hand, and the consolidation audit
+      confirmed it by re-running the renderer, which reported `unchanged`.
 - [ ] No unresolved `NE` — cannot be checked, and by decision. `functional` is
       `NE` from `judge-frontend-ux` and `judge-security-ops`;
       `adj:trial-2-2026:team-demos:01` accepted it and supplied no score, so the

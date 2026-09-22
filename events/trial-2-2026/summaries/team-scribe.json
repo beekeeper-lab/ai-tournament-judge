@@ -31,12 +31,23 @@
       "range": 1.0,
       "resolution": {
         "adjudication_id": "adj:trial-2-2026:team-scribe:01",
-        "amendments": [],
+        "amendments": [
+          {
+            "amended_at": "2026-09-22T20:40:00Z",
+            "amended_by": "event-director",
+            "reason": "Consolidation audit F26: score_override.rationale was absent, so the machine-readable resolution carried no reason for accepting the NE; the reasoning now matches the Factual resolution section. Consolidation audit F28: the head-to-head citation paraphrased rule 12 as a prohibition; it now quotes the rubric."
+          },
+          {
+            "amended_at": "2026-09-22T20:40:00Z",
+            "amended_by": "event-director",
+            "reason": "Consolidation audit F29: the disputed-claims row misstated the basis of judge-backend's agentic score as the development-time agent configuration; that judgment rests on the runtime AI path and ev-scribe-11. The question, the resolution and the human decision are unchanged."
+          }
+        ],
         "authority_withheld": null,
         "criterion": "agentic",
         "decided_by": "event-director",
         "decision_authority": "human-official",
-        "rationale": null,
+        "rationale": "The event director reviewed the criterion and accepted the NE rather than supplying a score. The evidence package records agentic as evidence-limited for team-scribe: no model call, no cost figure, no categorization output and no rendered estimate were obtainable. Supplying a number would be a discretionary value standing in for an observation the event could not make, and the rubric's own rule is that a missing observation is NE and not a low score. No official total follows, by decision.",
         "resolved_score": "NE",
         "source": "events/trial-2-2026/adjudications/adj-trial-2-2026-team-scribe-agentic.md"
       },

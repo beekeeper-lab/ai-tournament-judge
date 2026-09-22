@@ -26,7 +26,29 @@ decision_authority: human-official
 score_override:
   criterion: agentic
   resolved_score: NE
-amendments: []
+  rationale: >-
+    The event director reviewed the criterion and accepted the NE rather than
+    supplying a score. The evidence package records agentic as evidence-limited
+    for team-scribe: no model call, no cost figure, no categorization output and
+    no rendered estimate were obtainable. Supplying a number would be a
+    discretionary value standing in for an observation the event could not make,
+    and the rubric's own rule is that a missing observation is NE and not a low
+    score. No official total follows, by decision.
+amendments:
+- amended_at: "2026-09-22T20:40:00Z"
+  amended_by: event-director
+  reason: >-
+    Consolidation audit F26: score_override.rationale was absent, so the
+    machine-readable resolution carried no reason for accepting the NE; the
+    reasoning now matches the Factual resolution section. Consolidation audit F28: the head-to-head citation paraphrased rule 12 as a
+    prohibition; it now quotes the rubric.
+- amended_at: "2026-09-22T20:40:00Z"
+  amended_by: event-director
+  reason: >-
+    Consolidation audit F29: the disputed-claims row misstated the basis of
+    judge-backend's agentic score as the development-time agent configuration;
+    that judgment rests on the runtime AI path and ev-scribe-11. The question,
+    the resolution and the human decision are unchanged.
 approved_by: event-director
 approved_at: "2026-09-22T18:07:45Z"
 approval_note: Both NEs reviewed and accepted; no score supplied.
@@ -53,7 +75,7 @@ permits no official total while a criterion is `NE`.
 |---|---|---|---|
 | `judgments/team-scribe/judge-frontend-ux.md` | `agentic` is not observable from the evidence available | manifest `evidence_limited_criteria` | artifact evidence |
 | `judgments/team-scribe/judge-security-ops.md` | same | manifest `evidence_limited_criteria` | artifact evidence |
-| `judgments/team-scribe/judge-backend.md` | `agentic` is scorable at 2 from the development-time agent configuration in the tree | static read at the pin | direct observation |
+| `judgments/team-scribe/judge-backend.md` | `agentic` is scorable at 2 from the runtime AI path read at the pin, plus `ev-scribe-11` | static read at the pin | direct observation |
 | `judgments/team-scribe/judge-product-agentic.md` | `agentic` is scorable at 3 on the same surface | static read at the pin | direct observation |
 
 ## Evidence reviewed
@@ -101,7 +123,7 @@ and carries no authority of its own.
 The decision costs the event nothing downstream. Two teams grant no byes, so the
 `performance-qualified` bye policy never reads a total
 (`events/trial-2-2026/event.md:88-90`), and `framework/rubrics/head-to-head.md:12`
-forbids deciding a matchup by the higher initial total. The dossier carries
+says "Do not merely select the team with the higher initial total". The dossier carries
 per-criterion scores and no team total.
 
 ## Validation
