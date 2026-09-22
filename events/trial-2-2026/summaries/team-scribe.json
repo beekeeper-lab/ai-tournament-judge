@@ -1,0 +1,501 @@
+{
+  "accepted_ne": [
+    {
+      "adjudication_id": "adj:trial-2-2026:team-scribe:01",
+      "criterion": "agentic",
+      "decided_by": "event-director"
+    }
+  ],
+  "adjudication_required": [],
+  "blocked_reasons": [
+    "agentic: NE accepted by adjudication adj:trial-2-2026:team-scribe:01 (event-director); the rubric permits no official total while a criterion is NE"
+  ],
+  "criteria": {
+    "agentic": {
+      "agreement": "aligned",
+      "criterion": "agentic",
+      "maximum": 3.0,
+      "mean": 2.5,
+      "mean_inputs": [
+        2.0,
+        3.0
+      ],
+      "minimum": 2.0,
+      "name": "Agentic and AI system design",
+      "ne_disposition": "accepted",
+      "ne_judges": [
+        "judge-frontend-ux",
+        "judge-security-ops"
+      ],
+      "possible_outliers": [],
+      "range": 1.0,
+      "resolution": {
+        "adjudication_id": "adj:trial-2-2026:team-scribe:01",
+        "amendments": [],
+        "authority_withheld": null,
+        "criterion": "agentic",
+        "decided_by": "event-director",
+        "decision_authority": "human-official",
+        "rationale": null,
+        "resolved_score": "NE",
+        "source": "events/trial-2-2026/adjudications/adj-trial-2-2026-team-scribe-agentic.md"
+      },
+      "resolution_note": "adjudicated resolution recorded alongside the source scores; no source score was modified",
+      "resolved_score": null,
+      "scores": [
+        2.0,
+        3.0
+      ],
+      "source_scores": {
+        "judge-backend": 2.0,
+        "judge-frontend-ux": "NE",
+        "judge-product-agentic": 3.0,
+        "judge-security-ops": "NE"
+      },
+      "weight": 15,
+      "weighted_points": 7.5
+    },
+    "engineering": {
+      "agreement": "aligned",
+      "criterion": "engineering",
+      "maximum": 2.0,
+      "mean": 2.0,
+      "mean_inputs": [
+        2.0,
+        2.0,
+        2.0,
+        2.0
+      ],
+      "minimum": 2.0,
+      "name": "Engineering and maintainability",
+      "ne_disposition": null,
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        2.0,
+        2.0,
+        2.0,
+        2.0
+      ],
+      "source_scores": {
+        "judge-backend": 2.0,
+        "judge-frontend-ux": 2.0,
+        "judge-product-agentic": 2.0,
+        "judge-security-ops": 2.0
+      },
+      "weight": 15,
+      "weighted_points": 6.0
+    },
+    "functional": {
+      "agreement": "aligned",
+      "criterion": "functional",
+      "maximum": 1.0,
+      "mean": 1.0,
+      "mean_inputs": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "minimum": 1.0,
+      "name": "Functional correctness and completeness",
+      "ne_disposition": null,
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "source_scores": {
+        "judge-backend": 1.0,
+        "judge-frontend-ux": 1.0,
+        "judge-product-agentic": 1.0,
+        "judge-security-ops": 1.0
+      },
+      "weight": 25,
+      "weighted_points": 5.0
+    },
+    "innovation": {
+      "agreement": "aligned",
+      "criterion": "innovation",
+      "maximum": 3.0,
+      "mean": 3.0,
+      "mean_inputs": [
+        3.0,
+        3.0,
+        3.0,
+        3.0
+      ],
+      "minimum": 3.0,
+      "name": "Innovation and technical ambition",
+      "ne_disposition": null,
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        3.0,
+        3.0,
+        3.0,
+        3.0
+      ],
+      "source_scores": {
+        "judge-backend": 3.0,
+        "judge-frontend-ux": 3.0,
+        "judge-product-agentic": 3.0,
+        "judge-security-ops": 3.0
+      },
+      "weight": 10,
+      "weighted_points": 6.0
+    },
+    "product": {
+      "agreement": "aligned",
+      "criterion": "product",
+      "maximum": 2.0,
+      "mean": 2.0,
+      "mean_inputs": [
+        2.0,
+        2.0,
+        2.0,
+        2.0
+      ],
+      "minimum": 2.0,
+      "name": "Product value and usability",
+      "ne_disposition": null,
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        2.0,
+        2.0,
+        2.0,
+        2.0
+      ],
+      "source_scores": {
+        "judge-backend": 2.0,
+        "judge-frontend-ux": 2.0,
+        "judge-product-agentic": 2.0,
+        "judge-security-ops": 2.0
+      },
+      "weight": 15,
+      "weighted_points": 6.0
+    },
+    "reliability": {
+      "agreement": "aligned",
+      "criterion": "reliability",
+      "maximum": 2.0,
+      "mean": 2.0,
+      "mean_inputs": [
+        2.0,
+        2.0,
+        2.0,
+        2.0
+      ],
+      "minimum": 2.0,
+      "name": "Reliability, testing, and observability",
+      "ne_disposition": null,
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 0.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        2.0,
+        2.0,
+        2.0,
+        2.0
+      ],
+      "source_scores": {
+        "judge-backend": 2.0,
+        "judge-frontend-ux": 2.0,
+        "judge-product-agentic": 2.0,
+        "judge-security-ops": 2.0
+      },
+      "weight": 10,
+      "weighted_points": 4.0
+    },
+    "security": {
+      "agreement": "aligned",
+      "criterion": "security",
+      "maximum": 3.0,
+      "mean": 2.75,
+      "mean_inputs": [
+        3.0,
+        3.0,
+        3.0,
+        2.0
+      ],
+      "minimum": 2.0,
+      "name": "Security, privacy, and responsible AI",
+      "ne_disposition": null,
+      "ne_judges": [],
+      "possible_outliers": [],
+      "range": 1.0,
+      "resolution": null,
+      "resolved_score": null,
+      "scores": [
+        3.0,
+        3.0,
+        3.0,
+        2.0
+      ],
+      "source_scores": {
+        "judge-backend": 3.0,
+        "judge-frontend-ux": 3.0,
+        "judge-product-agentic": 3.0,
+        "judge-security-ops": 2.0
+      },
+      "weight": 10,
+      "weighted_points": 5.5
+    }
+  },
+  "display_total": null,
+  "finalized": false,
+  "individuals": [
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "medium",
+          "raw": 2.0,
+          "weight": 15,
+          "weighted_points": 6.0
+        },
+        "engineering": {
+          "confidence": "high",
+          "raw": 2.0,
+          "weight": 15,
+          "weighted_points": 6.0
+        },
+        "functional": {
+          "confidence": "high",
+          "raw": 1.0,
+          "weight": 25,
+          "weighted_points": 5.0
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        },
+        "product": {
+          "confidence": "medium",
+          "raw": 2.0,
+          "weight": 15,
+          "weighted_points": 6.0
+        },
+        "reliability": {
+          "confidence": "high",
+          "raw": 2.0,
+          "weight": 10,
+          "weighted_points": 4.0
+        },
+        "security": {
+          "confidence": "high",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        }
+      },
+      "display_total": 39.0,
+      "judge_id": "judge-backend",
+      "judge_run_id": "jr:trial-2-2026:team-scribe:judge-backend:018cf089:01",
+      "partial_total": 39.0,
+      "persona": "judge-backend@1.1.0",
+      "total": 39.0,
+      "unresolved_ne": []
+    },
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "high",
+          "raw": "NE",
+          "weight": 15,
+          "weighted_points": null
+        },
+        "engineering": {
+          "confidence": "medium",
+          "raw": 2.0,
+          "weight": 15,
+          "weighted_points": 6.0
+        },
+        "functional": {
+          "confidence": "high",
+          "raw": 1.0,
+          "weight": 25,
+          "weighted_points": 5.0
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        },
+        "product": {
+          "confidence": "medium",
+          "raw": 2.0,
+          "weight": 15,
+          "weighted_points": 6.0
+        },
+        "reliability": {
+          "confidence": "medium",
+          "raw": 2.0,
+          "weight": 10,
+          "weighted_points": 4.0
+        },
+        "security": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        }
+      },
+      "display_total": null,
+      "judge_id": "judge-frontend-ux",
+      "judge_run_id": "jr:trial-2-2026:team-scribe:judge-frontend-ux:018cf089:01",
+      "partial_total": 33.0,
+      "persona": "judge-frontend-ux@1.1.0",
+      "total": null,
+      "unresolved_ne": [
+        "agentic"
+      ]
+    },
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 15,
+          "weighted_points": 9.0
+        },
+        "engineering": {
+          "confidence": "high",
+          "raw": 2.0,
+          "weight": 15,
+          "weighted_points": 6.0
+        },
+        "functional": {
+          "confidence": "medium",
+          "raw": 1.0,
+          "weight": 25,
+          "weighted_points": 5.0
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        },
+        "product": {
+          "confidence": "medium",
+          "raw": 2.0,
+          "weight": 15,
+          "weighted_points": 6.0
+        },
+        "reliability": {
+          "confidence": "high",
+          "raw": 2.0,
+          "weight": 10,
+          "weighted_points": 4.0
+        },
+        "security": {
+          "confidence": "high",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        }
+      },
+      "display_total": 42.0,
+      "judge_id": "judge-product-agentic",
+      "judge_run_id": "jr:trial-2-2026:team-scribe:judge-product-agentic:018cf089:01",
+      "partial_total": 42.0,
+      "persona": "judge-product-agentic@1.1.0",
+      "total": 42.0,
+      "unresolved_ne": []
+    },
+    {
+      "criteria": {
+        "agentic": {
+          "confidence": "high",
+          "raw": "NE",
+          "weight": 15,
+          "weighted_points": null
+        },
+        "engineering": {
+          "confidence": "high",
+          "raw": 2.0,
+          "weight": 15,
+          "weighted_points": 6.0
+        },
+        "functional": {
+          "confidence": "high",
+          "raw": 1.0,
+          "weight": 25,
+          "weighted_points": 5.0
+        },
+        "innovation": {
+          "confidence": "medium",
+          "raw": 3.0,
+          "weight": 10,
+          "weighted_points": 6.0
+        },
+        "product": {
+          "confidence": "medium",
+          "raw": 2.0,
+          "weight": 15,
+          "weighted_points": 6.0
+        },
+        "reliability": {
+          "confidence": "high",
+          "raw": 2.0,
+          "weight": 10,
+          "weighted_points": 4.0
+        },
+        "security": {
+          "confidence": "high",
+          "raw": 2.0,
+          "weight": 10,
+          "weighted_points": 4.0
+        }
+      },
+      "display_total": null,
+      "judge_id": "judge-security-ops",
+      "judge_run_id": "jr:trial-2-2026:team-scribe:judge-security-ops:018cf089:01",
+      "partial_total": 31.0,
+      "persona": "judge-security-ops@1.1.0",
+      "total": null,
+      "unresolved_ne": [
+        "agentic"
+      ]
+    }
+  ],
+  "integrity_problems": [],
+  "judge_count": 4,
+  "judge_ids": [
+    "judge-backend",
+    "judge-frontend-ux",
+    "judge-product-agentic",
+    "judge-security-ops"
+  ],
+  "judge_run_ids": [
+    "jr:trial-2-2026:team-scribe:judge-backend:018cf089:01",
+    "jr:trial-2-2026:team-scribe:judge-frontend-ux:018cf089:01",
+    "jr:trial-2-2026:team-scribe:judge-product-agentic:018cf089:01",
+    "jr:trial-2-2026:team-scribe:judge-security-ops:018cf089:01"
+  ],
+  "provisional_total": 32.5,
+  "rubric": "submission-evaluation@1.1.0",
+  "total": null,
+  "withheld_authority": []
+}
