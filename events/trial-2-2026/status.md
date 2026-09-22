@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
 current_stage: evidence
-last_updated: "2026-09-22T00:35:00Z"
+last_updated: "2026-09-22T00:55:00Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -38,8 +38,8 @@ gate_evidence:
 
 | Team ID | Intake | Evidence | Four judgments | Consolidated | Audited | Dossier |
 |---|---|---|---|---|---|---|
-| team-scribe | pinned `67969dd9`, approved, roster frozen | `ev:…:63f56c93`, sandboxed-partial, draft | — | — | — | — |
-| team-demos | pinned `dc35f696`, approved, roster frozen | `ev:…:1c0b2b5e`, sandboxed-partial, draft | — | — | — | — |
+| team-scribe | pinned `67969dd9`, approved, roster frozen | `ev:…:ba263edf`, sandboxed-partial, approved | — | — | — | — |
+| team-demos | pinned `dc35f696`, approved, roster frozen | `ev:…:a19ab6dc`, sandboxed-partial, approved | — | — | — | — |
 
 ## Blockers and adjudications
 
@@ -67,4 +67,6 @@ gate_evidence:
 | 2026-09-21T23:53:00Z | Intake re-audited, round three; report superseded in place | audits/intake.md | audits/intake.md | PASS WITH ADVISORIES — 18 findings over three rounds, 14 repaired, freeze cleared |
 | 2026-09-21T23:55:13Z | Intake repaired, round three: F16 the bean count sentence, F17 the checkbox notice reached only `atj event gate`, F18 the closing paragraph left under the wrong heading. Records and the audit approved, `teams.md` frozen, `roster-frozen` recorded | audits/intake.md F16-F18 | submissions/*.md, teams.md, status.md, audits/intake.md, atj/cli.py | not-audited |
 | 2026-09-21T23:56:18Z | `atj event advance` intake to evidence | status.md | status.md | gate roster-frozen passed on audits/intake.md |
-| 2026-09-22T00:35:00Z | Evidence packages prepared for both teams: 11 isolated runs, two manifests, the F7 no-audio-device decision and the F11 whole-checkout wrapper recorded, and the demos dry-run invocation taken as the event's decision | both checkouts at their pins, images `034af8181f8d` and `ec7d6c95cd36` | evidence/team-scribe/manifest.md, evidence/team-demos/manifest.md, runs/*.json, evidence/Containerfile.demos | not-audited |
+| 2026-09-22T00:35:00Z | Evidence packages prepared for both teams: 11 isolated runs, two manifests, the F7 no-audio-device decision and the F11 whole-checkout wrapper recorded, and the demos dry-run invocation taken as the event's decision | both checkouts at their pins, images `034af8181f8d` and `ec7d6c95cd36` | evidence/team-scribe/manifest.md, evidence/team-demos/manifest.md, runs/*.json, evidence/Containerfile.demos | FAIL — see audits/evidence.md |
+| 2026-09-22T00:41:00Z | Evidence stage audit | both manifests, 11 run records, both Containerfiles, status.md, both checkouts, framework policies and schemas | audits/evidence.md | FAIL (3 major and blocking, 10 minor, 6 advisory) |
+| 2026-09-22T00:55:00Z | Evidence repaired, round one: F1 the fourth `OPENAI_API_KEY` read site, F2 the hardened variant's second change, F3 `agentic` added and `security` argued out, F4-F13 counts, line references, reproduction pointers and timestamps, F15 the stale backup deleted, F16 `execution_record`, F17 both manifests approved, F18 configuration F7 closed, F19 the image contents argued against `event.md`'s rule. F14 left open: `runs/*.json` is validated by nothing, and registering a schema is a framework change this stage will not make mid-event | audits/evidence.md F1-F19 | evidence/*/manifest.md, audits/configuration.md, status.md | pending re-audit |

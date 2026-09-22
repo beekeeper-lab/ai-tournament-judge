@@ -73,8 +73,8 @@ findings:
   blocking: false
   summary: ScribeVault's execution profile. The configuration now names the three unknowns and commits to deciding them at the evidence stage; the decisions themselves are owed there.
   artifact: events/trial-2-2026/event.md:130-139
-  repair: Evidence stage — record the display, audio-device and network answers as a decision in the image approval.
-  state: deferred
+  repair: 'Discharged at the evidence stage. evidence/team-scribe/manifest.md records the decision in its Scope and provenance section — QT_QPA_PLATFORM=offscreen, no display, no audio device, no network, and the test suite plus module imports and the documented start command as what executes.'
+  state: repaired
 - id: F8
   severity: minor
   scope: framework
