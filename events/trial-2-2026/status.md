@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
 current_stage: initial-judging
-last_updated: "2026-09-22T01:11:35Z"
+last_updated: "2026-09-22T13:19:00Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -39,13 +39,15 @@ gate_evidence:
 
 | Team ID | Intake | Evidence | Four judgments | Consolidated | Audited | Dossier |
 |---|---|---|---|---|---|---|
-| team-scribe | pinned `67969dd9`, approved, roster frozen | `ev:…:018cf089`, sandboxed-partial, approved | — | — | — | — |
-| team-demos | pinned `dc35f696`, approved, roster frozen | `ev:…:cb3847cb`, sandboxed-partial, approved | — | — | — | — |
+| team-scribe | pinned `67969dd9`, approved, roster frozen | `ev:…:018cf089`, sandboxed-partial, approved | 4 of 4 written; `atj score` not finalized, `agentic` blocked by unresolved NE | — | audited, repair round one pending re-audit | — |
+| team-demos | pinned `dc35f696`, approved, roster frozen | `ev:…:cb3847cb`, sandboxed-partial, approved | 4 of 4 written; `atj score` not finalized, `functional` blocked by unresolved NE | — | audited, repair round one pending re-audit | — |
 
 ## Blockers and adjudications
 
 | ID | Scope | Description | Owner | Status | Resolution artifact |
 |---|---|---|---|---|---|
+| ADJ-1 | team-scribe, `agentic` | `atj score` records `adjudication_required: unresolved-ne`; judge-frontend-ux and judge-security-ops both recorded `NE`, which blocks an official total. Not due at this stage, since no total is wanted here | event-director | deferred to consolidation by decision | — |
+| ADJ-2 | team-demos, `functional` | `atj score` records `adjudication_required: unresolved-ne`; judge-frontend-ux and judge-security-ops both recorded `NE`, which blocks an official total. Not due at this stage, since no total is wanted here | event-director | deferred to consolidation by decision | — |
 
 ## Activity log
 
@@ -75,3 +77,9 @@ gate_evidence:
 | 2026-09-22T00:59:00Z | Evidence repaired, round two: F10 and F13 residue, F20 hand-stamped approvals redone with `atj event approve`, F21 the thirteenth thread-safety test, F22 the apt count and comment range, F23 no payload in either capture, F26-F28 the `DEMO_DIR` path fix, the reporting-function read site and the hardened SYSTEM range. F14 stays open in framework scope | audits/evidence.md F10, F13, F20-F28 | evidence/*/manifest.md, status.md, audits/configuration.md | pending re-audit |
 | 2026-09-22T01:05:25Z | Evidence audited, round three, scoped to the round-two repair; report superseded in place | audits/evidence.md, both manifests, the repair diff | audits/evidence.md | PASS WITH ADVISORIES — 34 findings over three rounds, 26 repaired, none blocking; gate may be set |
 | 2026-09-22T01:10:39Z | Evidence repaired, round three: F22 the install line range, F28 the two citation cells the prose had outrun, F32 and F33 the twelve-of-thirteen wording and the `setUp` it names, F34 the observation R9's payload clause rests on, claimed from both ends. F29-F31 ledger stamps corrected to times that precede their commits. Not audited | audits/evidence.md F22, F28-F34 | evidence/*/manifest.md, status.md | not-audited |
+| 2026-09-22T01:11:35Z | `atj event gate` evidence-validated passed and `atj event advance` evidence to initial-judging (`75d24b0`) | audits/evidence.md | status.md | gate evidence-validated passed on audits/evidence.md |
+| 2026-09-22T10:37:08Z | Four independent judgments for team-scribe (`5752c04`) | evidence/team-scribe/manifest.md, runs/team-scribe-*.json, checkout at `67969dd9` | judgments/team-scribe/judge-{backend,frontend-ux,product-agentic,security-ops}.md | not-audited |
+| 2026-09-22T10:45:25Z | Repair: three team-scribe judgment files carried a duplicate preamble appended after `## Calculation and independence declaration`, an orchestrator extraction defect. `atj validate reports` had returned PASS on them; recorded as W9 (`0047f03`) | judgments/team-scribe/*.md | judgments/team-scribe/*.md, docs/0.5.0-beta-plan.md | not-audited |
+| 2026-09-22T10:46:19Z | Four independent judgments for team-demos (`2b91208`) | evidence/team-demos/manifest.md, runs/team-demos-*.json, checkout at `dc35f696` | judgments/team-demos/judge-{backend,frontend-ux,product-agentic,security-ops}.md | not-audited |
+| 2026-09-22T13:06:00Z | Initial-judging stage audit; roughly 120 citations followed to the artifact | eight judgments, both manifests, 11 run records, both Containerfiles, status.md, event.md, both checkouts, framework rubrics and templates | audits/judgments.md | FAIL (1 blocking, 1 major, 5 minor, 5 advisory) |
+| 2026-09-22T13:19:00Z | Judgments repaired, round one: F1 the claimed absence of `.env.example`, withdrawn by both judges that made it after each re-checked the git index rather than a filesystem glob; F2 the bean count; F3 the `rm` pre-approval citation; F4 the installer's reachable branch; F5 this ledger; F6 both unresolved-NE triggers recorded as ADJ-1 and ADJ-2; F10 the demo enumeration; F11 the stale backup. F7 recorded as W10 and F1's root cause as W11, both framework scope and not landed mid-event. No raw score changed anywhere | audits/judgments.md F1-F7, F10, F11 | judgments/team-demos/judge-{frontend-ux,security-ops,backend}.md, judgments/team-scribe/judge-{product-agentic,security-ops}.md, status.md, docs/0.5.0-beta-plan.md | pending re-audit |
