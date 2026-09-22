@@ -8,168 +8,240 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.1.0
 persona: judging-auditor@1.1.0
-framework_commit: 355f4582e124d2697bc16eb42d08d578a058bb5b
+framework_commit: 79455e698d04ed2bd2db56a915e157b795ab1838
 model_requested: claude-opus-5
 model_used: claude-opus-5
-started_at: "2026-09-22T00:16:00Z"
-completed_at: "2026-09-22T00:34:00Z"
+started_at: "2026-09-22T00:42:00Z"
+completed_at: "2026-09-22T00:56:33Z"
 visibility: private
 approval_state: draft
 validation_state: unvalidated
-result: FAIL
-audit_rounds: 1
+result: PASS WITH ADVISORIES
+audit_rounds: 2
 findings:
 - id: F1
   severity: major
   scope: event
-  blocking: true
-  summary: '`ev-scribe-11` says `OPENAI_API_KEY` "is read at three sites". There is a fourth, `src/ai/summarizer.py:54`, which reads the environment directly and bypasses the keyring-first chain in `settings.py`. R2, R3, R7 and R8 all cite this observation, and R8 rests specifically on its enumeration of the environment-variable fallback.'
-  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:95
-  repair: 'Correct the count to four and add `src/ai/summarizer.py:54` to the observation and to its source reference. Say whether the direct environment read in `SummarizerService.__init__` bypasses the keyring path, because R7 is the claim that keys live in the keyring.'
-  state: open
+  blocking: false
+  summary: 'Round 1 — `ev-scribe-11` said `OPENAI_API_KEY` "is read at three sites" and omitted `src/ai/summarizer.py:54`. Round 2 repaired it and re-derived correctly: the observation now names four sites (`settings.py:303,332`, `whisper_service.py:96`, `summarizer.py:54`), keeps `whisper_service.py:449` as a report rather than a read, and answers the question R7 needed answered — `whisper_service.py:92-96` and `summarizer.py:50-54` are one fallback pattern written twice, each asking `settings_manager.get_openai_api_key()` first and reading the environment only when no settings manager was supplied, so a caller that constructs either service without one bypasses the keyring and the encrypted store. Verified against the pin: `git grep OPENAI_API_KEY` returns exactly those five `src/` occurrences, and the two constructors read as described.'
+  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:122
+  repair: Done. No further work.
+  state: repaired
 - id: F2
   severity: major
   scope: event
-  blocking: true
-  summary: '`ev-demos-05` says the hardened ranker "differs only in its system prompt" and that "the two prompts are the whole observable difference between the acts", and attributes the `<applicant>` wrapping to the system prompt. `build_user_content` also changed, and that is where the wrapping happens. The package''s own two run records show it: the vulnerable capture has 20 `=== Applicant file:` delimiters and no tags, the hardened capture has 20 `<applicant file=` tags and none of the former.'
-  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:88
-  repair: 'Restate the delta from `diff rank_resumes.py hardened/rank_resumes_hardened.py`: the system prompt changed, and `build_user_content` changed from `=== Applicant file: {name} ===` / `APPLICANT MATERIALS:` to `<applicant file="{name}">…</applicant>` / `ROLE CRITERIA (trusted):` / `APPLICANT MATERIALS (untrusted data):`. Drop "differs only in its system prompt".'
-  state: open
+  blocking: false
+  summary: 'Round 1 — `ev-demos-05` said the hardened ranker "differs only in its system prompt". Round 2 repaired it from the diff: the observation now names two changes, quotes the submission''s own docstring ("Two changes carry the whole fix", `hardened/rank_resumes_hardened.py:5`), cites the system prompt at `:33-44` and `build_user_content` at `:67-70`, states that neither works without the other, and gives the mechanical proof from the two run records. Verified: `diff rank_resumes.py hardened/rank_resumes_hardened.py` shows exactly those two substantive hunks, and the captures hold 20 `=== Applicant file:` headers against 20 `<applicant file=` tags. Two residuals at advisory: F26 and F28.'
+  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:92
+  repair: Done. No further work.
+  state: repaired
 - id: F3
   severity: major
   scope: event
-  blocking: true
-  summary: '`evidence_limited_criteria: [functional]` for team-scribe contradicts the manifest''s own Missing-evidence section, which says the unreachable OpenAI paths limit R2, R3, R7 and R8 — the AI workflows and the key handling, not only `functional`. team-demos records `agentic` for the identical cause. Neither submission made a model call, and event.md:127-128 calls an evidence asymmetry between teams a defect against the event.'
-  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:15
-  repair: 'Either add the criteria the Missing-evidence section already names, or state in the manifest why ScribeVault''s AI paths are assessable from source when the demos'' are not. Whichever is chosen, the two manifests must treat "no model call was possible" the same way.'
-  state: open
+  blocking: false
+  summary: 'Round 1 — `evidence_limited_criteria: [functional]` for team-scribe contradicted the manifest''s own Missing-evidence section and differed from team-demos for the identical no-model-call cause. Round 2 added `agentic`, so both manifests now record `[functional, agentic]`, and argued rather than conceded the rest: `security` is deliberately not listed because the key-handling implementation is entirely readable and was read. That argument holds. `atj/reports.py:274-296` is what consumes this field — it requires an `NE` criterion''s confidence to be `high` when the criterion is listed and `low` when it is not — and a `security` `NE` would in fact rest on evidence a judge can find at `settings.py:288-414`. The symmetry event.md:127-128 demands is satisfied: the two manifests now carry the same list for the same cause.'
+  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:16
+  repair: Done. No further work.
+  state: repaired
 - id: F4
   severity: minor
   scope: event
   blocking: false
-  summary: 'The Tests-and-execution row for the scribe environment probe records a 300s timeout. `runs/team-scribe-envcheck-01.json` carries `limits.timeout_seconds: 600`.'
-  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:104
-  repair: Change 300s to 600s. The other four scribe rows (1800, 120, 300, 300) match their run records.
-  state: open
+  summary: 'Round 1 — the scribe environment-probe row said 300s where `runs/team-scribe-envcheck-01.json` carries 600. Round 2 changed it to 600s. Re-derived: all eleven run records were re-read and all five scribe rows (600, 1800, 120, 300, 300) and the demos rows (120 throughout) now match their records.'
+  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:131
+  repair: Done. No further work.
+  state: repaired
 - id: F5
   severity: minor
   scope: event
   blocking: false
-  summary: '`ev-demos-09` gives 213 files containing `example.com` and 210 containing `(555)`. At the pin the counts are 214 and 211. The file missing from both is the repository-root `README.md`; the scan appears to have been rooted at `*/`.'
-  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:92
-  repair: Correct to 214 and 211, or state the scan root that excludes the top-level `README.md`.
-  state: open
+  summary: 'Round 1 — `ev-demos-09` gave 213 and 210 where the pin holds 214 and 211, and this audit diagnosed the missing file as the repository-root `README.md`. Round 2 corrected the counts and corrected the diagnosis: the observation now reads "213 `.md` files (214 files of any type)" and "210 `.md` files (211 of any type)", which reproduces exactly. The one non-`.md` file in both sets is `02-invisible-ink/demo/resumes-html/camille-vise.html`, not the root `README.md`. Round one''s explanation was wrong and the repair round caught it.'
+  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:96
+  repair: Done. No further work.
+  state: repaired
 - id: F6
   severity: minor
   scope: event
   blocking: false
-  summary: '`ev-demos-09` calls its e-mail scan "exhaustive", says it "returns three", and concludes no address at a resolvable domain appears "anywhere in the corpus". The scan covered `*.md`, `*.json` and `*.html` only. A fourth address, `talent@hexley.example`, sits at `06-approval-is-the-architecture/demo/tools/harness.py:181,218,242`. The conclusion survives because `.example` is reserved; the word "exhaustive" and the count do not.'
-  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:92
-  repair: Either widen the scan to every file type and record four, or drop "exhaustive" and name the three extensions scanned as the scope of the claim.
-  state: open
+  summary: 'Round 1 — the e-mail scan was called "exhaustive", returned three, and missed `talent@hexley.example`. Round 2 widened the scan and records four, dropped "exhaustive", and states the scope as "every text file in the tree, `.git` excluded". Re-derived independently: a regex sweep of the whole tree returns exactly four addresses outside `example.com` — `review@parser-helper.example` (9 occurrences), `talent@hexley.example` (3), `localhost@evil.example` (2), `hiring-manager@hexley.example` (1) — all four `.example`, so the conclusion is unchanged and now rests on the scan that was actually run.'
+  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:96
+  repair: Done. No further work.
+  state: repaired
 - id: F7
   severity: minor
   scope: event
   blocking: false
-  summary: '`ev-scribe-10` and `ev-scribe-13` both give `runs/team-scribe-pytest-config-01.json` as the reproduction for "535 collected tests", and `ev-scribe-10` labels it "(collection count)". That run collected 38 items from one file. 535 comes from `runs/team-scribe-pytest-01.json`, as 509 + 26.'
-  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:94,97
-  repair: Point the 535 to `runs/team-scribe-pytest-01.json` in both rows.
-  state: open
+  summary: 'Round 1 — 535 collected tests was attributed in two rows to `runs/team-scribe-pytest-config-01.json`, which collected 38 items from one file. Round 2 points both rows at `runs/team-scribe-pytest-01.json`, `ev-scribe-10` annotating it "(509 + 26 = 535)" and `ev-scribe-13` "(535 collected)". Verified against the record: its output ends "26 failed, 509 passed in 4.71s"; the config run''s output ends "38 passed".'
+  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:121,124
+  repair: Done. No further work.
+  state: repaired
 - id: F8
   severity: minor
   scope: event
   blocking: false
-  summary: '`ev-demos-13` says commit `3f484d5`''s message and `Containerfile.demos`''s header "both say" all 19 demo scripts. The commit message does. The Containerfile does not: it was repaired in commit 355f458, the same commit that added this manifest, and its header now carries the corrected text and cites ev-demos-13 itself.'
-  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:96
-  repair: Put the Containerfile claim in the past tense and name commit 355f458 as where it was corrected, so a judge who opens the file finds what the observation describes.
-  state: open
+  summary: 'Round 1 — `ev-demos-13` said `Containerfile.demos`''s header currently says "all 19 demo scripts" when commit 355f458 had already corrected it. Round 2 puts the claim in the past tense and names the commit: the header "said the same until commit `355f458` corrected it alongside this manifest". Verified: `git show 355f458 -- Containerfile.demos` is the commit that changed it, and the file on disk now carries the corrected parenthetical citing ev-demos-13.'
+  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:100
+  repair: Done. No further work.
+  state: repaired
 - id: F9
   severity: minor
   scope: event
   blocking: false
-  summary: 'Two demos line ranges do not contain what is attributed to them. `ev-demos-03` cites `rank_resumes.py:92-101` for the dry run''s behaviour and its quoted final line; `if dry:` is at 103 and the quoted `[dry-run] …` print is line 105. `ev-demos-04` cites `:37-47` for the vulnerable system prompt; `SYSTEM` is 33-43, the quoted passage is 37-39, and 46-47 is inside `load_env()`.'
-  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:86,87
-  repair: 'Change `ev-demos-03` to `:94-106` (or `:103-106`) and `ev-demos-04` to `:37-39` for the quoted passage or `:33-43` for the whole `SYSTEM` block.'
-  state: open
+  summary: 'Round 1 — two demos line ranges did not contain what was attributed to them. Round 2 repaired both and propagated the change to every place the same lines are cited. `ev-demos-03` is now `:103-106`, which is `if dry:` through the `return 0`, with the quoted final line at 105. `ev-demos-04` is now `:33-43`, the whole `SYSTEM` literal, with "the sentence at `:37-39`" for the quoted passage; the key-file row follows. `ev-demos-02`, the key-file row and the dry-run decision bullet all moved from `:93-110` to `:103-109`, which is the dry-run branch through `import anthropic` at 109. All four re-derived against the pin.'
+  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:90,91
+  repair: Done. No further work.
+  state: repaired
 - id: F10
   severity: minor
   scope: event
   blocking: false
-  summary: 'The demos egress row says the probe ran "against nine hostile URLs". Nine URLs were exercised, of which three are localhost forms the guard is meant to admit and did admit; six were refused. Separately, `ev-demos-07`''s sub-claim that `--enforce-allowlist` refuses even a localhost beacon is a static read of `fetch_beacons.py:89` — `main()` was never called — inside an observation that opens "The egress guards were exercised directly".'
-  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:90,107
-  repair: Say "nine URL forms, six hostile", and mark the `--enforce-allowlist` consequence as a static read rather than part of what the run exercised.
+  summary: 'Round 1 cited two places, `manifest.md:90,107`, and round 2 repaired one. `ev-demos-07` is now correct and better than the repair asked for: "nine URL forms of which six are hostile", the three local forms named, the `--enforce-allowlist` consequence marked as read from `fetch_beacons.py:88-91` and explicitly "not exercised, because no rendered assessment exists for the flag to scan". All of that verified — the run output shows three `True` and six `False`, `ALLOWLIST = set()` observed in the same run, lines 88-91 are guard 2, and `07/demo/reports/` does not exist at the pin so `render_html()` exits. What was not repaired is the Tests-and-execution row, which still reads "`is_localhost` and `_post_to_localhost` against nine hostile URLs". A judge reading the execution table gets the count the observation now disowns.'
+  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:111
+  repair: Change "nine hostile URLs" in the Tests-and-execution row to "nine URL forms, six hostile", matching `ev-demos-07`.
   state: open
 - id: F11
   severity: minor
   scope: event
   blocking: false
-  summary: '`ev-scribe-14` is headed "Key storage as implemented" and cites `src/config/settings.py:286` for the read order keyring → encrypted config → environment. Line 286 is the docstring stating that priority. The implementation at 288-306 does match it, so the conclusion holds, but a docstring is a team claim and this observation is labelled a direct observation of the implementation.'
-  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:98
-  repair: 'Cite `:288-306` for the implemented order, and keep `:286` only if it is named as the docstring that the implementation was checked against.'
-  state: open
+  summary: 'Round 1 — `ev-scribe-14` cited `settings.py:286`, a docstring, for what the observation labels the implemented read order. Round 2 cites "implemented at `:288-306`; the docstring at `:286` states the same order", and the key-file row moved from `:286-414` to `:288-414`. Verified: 283 is the `def`, 284-287 the docstring, and 288-306 is exactly keyring, then encrypted config, then the environment fallback. Class discipline is now correct — the implementation is the observation and the docstring is named as the team claim it was checked against.'
+  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:125
+  repair: Done. No further work.
+  state: repaired
 - id: F12
   severity: minor
   scope: event
   blocking: false
-  summary: '`Supports` means "establishes" per `framework/templates/evidence-manifest.md`. `ev-scribe-06` and `ev-scribe-08` both list R1, while the R1 row says of those same two observations that "neither establishes or refutes the recording behaviour itself". A judge reading the Supports column alone counts two observations behind R1 that the manifest elsewhere says establish nothing about it.'
-  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:69,90,92
-  repair: 'Drop R1 from both `Supports` cells and leave R1 resting on no observation, as R9 already does, or add one clause to each observation saying what about R1 it does establish (that the tests touching the recording path cannot run here).'
-  state: open
+  summary: 'Round 1 — `ev-scribe-06` and `ev-scribe-08` both listed R1 in `Supports` while the R1 row said neither establishes nor refutes the recording behaviour. Round 2 took the second option and rewrote the R1 row to say what each does establish: the capture path is reached and its error contract holds (`recorder.py:130` raises inside real PyAudio, `:165` wraps it as `AudioException`), and `AudioRecorder`''s thread-safety and cleanup behaviour is untested in the declared environment. Both halves verified at the pin, and the row still closes "Neither establishes recording, checkpoint flushing or `recover_checkpoints()`", so the refusal is preserved. One factual slip inside the new text is F21.'
+  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:96
+  repair: Done, apart from F21.
+  state: repaired
 - id: F13
   severity: minor
   scope: event
   blocking: false
-  summary: 'Both manifests record `prepared_at` and `completed_at` as `2026-09-22T00:30:00Z` and the ledger records the work at `00:35:00Z`. The manifests were written at 00:14:55Z and committed in 355f458 at 00:15:17Z. A manifest cannot be prepared fifteen minutes after the commit that contains it. The run records'' own timestamps (00:02:42Z–00:07:26Z) are real; these three are rounded forward. This is the second recurrence of configuration audit F19.'
-  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:12-13
-  repair: Set `completed_at` and `prepared_at` on both manifests, and the ledger row, to times that precede commit 355f458 at 00:15:17Z and are consistent with the run records.
+  summary: 'Round 1 required three timestamps moved: `prepared_at` and `completed_at` on both manifests, and the ledger row. Round 2 moved the manifests to `2026-09-22T00:14:00Z`, which is after the last run record (00:07:26Z) and before commit 355f458 (00:15:17Z), so the manifests are repaired. The ledger row for the preparation work still reads `2026-09-22T00:35:00Z`; only its outcome column changed, to "FAIL — see audits/evidence.md". That row still records the work twenty minutes after the commit that contains it.'
+  artifact: events/trial-2-2026/status.md:70
+  repair: Set the preparation row's timestamp to a time between the last run record (00:07:26Z) and commit 355f458 (00:15:17Z), consistent with the manifests' 00:14:00Z.
   state: open
 - id: F14
   severity: advisory
   scope: framework
   blocking: false
-  summary: '`atj/reports.py:41` maps `runs/` to the `model-run` schema and template, and report validation globs only `*.md`. The 11 JSON sandbox execution records that every observation in this stage rests on are therefore validated by nothing — `atj validate reports` reported 6 artifacts and none was a run record. Same shape as the D22 note at `atj/reports.py:30-36`. live-trial-2026 did the same, so this is precedent, not a new event defect.'
+  summary: '`atj/reports.py:41` maps `runs/` to the `model-run` schema and template, and report validation globs only `*.md`. The 11 JSON sandbox execution records that every observation in this stage rests on are therefore validated by nothing — `atj validate reports` returned 7 artifacts this round, one more than last round because this report was added, and none of the 7 is a run record. Left open deliberately by the repair round: registering a sandbox-run schema is a framework change and this stage declined to make one mid-event. That is the right call under the rule against changing framework shape during an active event, and it is recorded here so the next framework window inherits it rather than the event.'
   artifact: atj/reports.py:41
-  repair: Framework work. Either register a sandbox-run schema for `runs/*.json` or record in the directory map that `runs/` holds two artifact kinds and only one is checked.
+  repair: Framework work, out of scope for this stage. Either register a sandbox-run schema for `runs/*.json` or record in the directory map that `runs/` holds two artifact kinds and only one is checked.
   state: open
 - id: F15
   severity: advisory
   scope: event
   blocking: false
-  summary: '`events/trial-2-2026/status.md.bak` sits in the event directory carrying `current_stage: intake` and the pre-evidence ledger. It is gitignored (`.gitignore:27`) and untracked, so it never reaches the repository, but a stale stage marker inside the event directory invites reading the wrong file.'
+  summary: 'Round 1 — a gitignored `status.md.bak` carrying `current_stage: intake` sat in the event directory. Round 2 deleted it. Verified: the file is absent and `git status --porcelain --ignored events/trial-2-2026/` returns nothing at all.'
   artifact: events/trial-2-2026/status.md.bak
-  repair: Delete it.
-  state: open
+  repair: Done. No further work.
+  state: repaired
 - id: F16
   severity: advisory
   scope: event
   blocking: false
-  summary: Neither manifest sets `execution_record`, which the evidence-manifest template carries. Nothing reads it and the schema does not require it, but with 11 run records the link from front matter to evidence exists only in prose.
-  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:14
-  repair: Set it to the runs directory or to the primary run per team, or decide the field is unused and raise that against the template.
-  state: open
+  summary: 'Round 1 — `execution_record` was unset on both manifests. Round 2 sets it to `runs/team-scribe-*.json` and `runs/team-demos-*.json`. The schema types the field as `["string", "null"]`, so a glob is valid, and both globs resolve to the five and six records their manifests cite.'
+  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:15
+  repair: Done. No further work.
+  state: repaired
 - id: F17
   severity: advisory
   scope: event
   blocking: false
-  summary: 'Both manifests are `approval_state: draft`. Nothing mechanical requires otherwise — `atj/event.py:214` checks approval only on the audit — but the intake stage approved both team records before its gate and the ledger records it.'
-  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:17
-  repair: After the blocking findings are repaired, approve both manifests with `atj event approve` as intake did.
-  state: open
+  summary: 'Round 1 — both manifests were `approval_state: draft` where intake had approved its records before its gate. Round 2 set both to `approved` with `approved_by: event-director`, an `approved_at` and an `approval_note` naming the findings each repair round closed, which is the shape intake used. The condition is met. How it was met is F24.'
+  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:18
+  repair: Done, apart from F24.
+  state: repaired
 - id: F18
   severity: advisory
   scope: event
   blocking: false
-  summary: '`audits/configuration.md` F7 is still `state: deferred`, its repair line still reading "Evidence stage — record the display, audio-device and network answers as a decision in the image approval". That decision is now recorded at `evidence/team-scribe/manifest.md:52-58`, and the dry-run decision event.md:133-137 owed is recorded at `evidence/team-demos/manifest.md:47-57`. The earlier audit''s findings ledger no longer reflects the disk.'
-  artifact: events/trial-2-2026/audits/configuration.md:70-77
-  repair: 'Move F7 to `state: repaired` with a pointer to the manifest bullet that discharges it, when the configuration audit is next touched.'
-  state: open
+  summary: 'Round 1 — `audits/configuration.md` F7 was still `state: deferred` although the manifests discharge it. Round 2 moved it to `state: repaired` with a repair line pointing at the scribe manifest''s Scope and provenance section and restating the decision it records. Correct, and the pointer names a section rather than line numbers, which survives edits. The absence of any note that an approved report was amended is F25.'
+  artifact: events/trial-2-2026/audits/configuration.md:73-77
+  repair: Done, apart from F25.
+  state: repaired
 - id: F19
   severity: advisory
   scope: event
   blocking: false
-  summary: 'event.md:126-127 says an image "carries what the submission declares, anything added beyond that is named in this file with the reason". `Containerfile.scribe:22-29` adds about twenty apt packages. Each is tied to a declared requirement in the Containerfile''s own comment at lines 12-18, which is a good record and arguably makes them prerequisites rather than additions, but event.md names none of them.'
+  summary: 'Round 1 — the scribe image adds apt packages that event.md:126-128 says must be named there with a reason. Round 2 argued rather than conceded, in a new Scope bullet: nothing is added, because an OS-level prerequisite of a declared Python package is not an addition. The argument holds. `requirements.txt:18` declares `PySide6` and `:19` declares `pyaudio`; without `portaudio19-dev`, `gcc` and `python3-dev` the declared `pyaudio` cannot build, and without the GL/xcb/glib set the declared `PySide6` cannot link. An image that omitted them would carry less than the submission declares, not more, so event.md''s rule is satisfied without an event.md edit. Three factual defects inside the bullet that makes the argument are F22.'
   artifact: events/trial-2-2026/evidence/Containerfile.scribe:22-29
-  repair: Either add a sentence to event.md pointing at the Containerfile comment as the register of system prerequisites, or state there that prerequisites of declared packages are not additions under that rule.
+  repair: Done as an argument, and the argument is accepted. The supporting facts need F22.
+  state: repaired
+- id: F20
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'Fourth recurrence of the invented-timestamp class on this event, and this time introduced by the round that repaired the third. Commit `79455e6` carries `approved_at: "2026-09-22T00:52:00Z"` on both manifests, `last_updated: "2026-09-22T00:55:00Z"` in `status.md`, and a ledger row stamped `00:55:00Z`. That commit was authored and committed at `2026-09-21T20:41:29-04:00`, which is `2026-09-22T00:41:29Z`. All three postdate the commit containing them by eleven to fourteen minutes, and all three were still in the future when this audit read the system clock at `00:48:46Z`. The manifests'' own `prepared_at`/`completed_at` were repaired correctly in the same commit, so the defect was understood and then repeated in the fields the repair itself added.'
+  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:20
+  repair: 'Set `approved_at` on both manifests, `last_updated`, and the final ledger row to the time the work was actually done. `atj event approve` stamps this field from `versions.now()` and would not have produced these values; see F24.'
+  state: open
+- id: F21
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'Introduced by the F12 repair. The rewritten R1 row says "the thread-safety and cleanup behaviour of `AudioRecorder` is untested in the declared environment, because the thirteen tests written for it cannot run there". Twelve of the thirteen were written for `AudioRecorder` — four in `TestAudioRecorderThreadSafety`, seven in `TestAudioRecorderCleanup`, and `TestNoDeadlocks::test_recorder_no_deadlock`. The thirteenth, `TestNoDeadlocks::test_settings_no_deadlock` at `tests/test_thread_safety.py:311`, constructs a `SettingsManager` and exercises lock contention on `save_settings`/`_load_settings`; it fails for the same module-level `reset_mock` reason, but it is not a test of the recorder. `ev-scribe-06` itself says only "thirteen tests in `tests/test_thread_safety.py`", which is right; the attribution to `AudioRecorder` is new in the R1 row.'
+  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:96
+  repair: Say twelve of the thirteen, or drop `AudioRecorder` from the clause and describe the thirteen as the thread-safety file.
+  state: open
+- id: F22
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'Introduced by the F19 repair, in the bullet that carries the argument. Three defects. First, "Each is tied to the requirement it serves in `Containerfile.scribe:19-29`": the comment that ties each package to a declared requirement is at `:12-18`; `:19-20` is the display-and-audio note, `:21` is the `FROM`, and `:22-28` is the `RUN`. Round one cited `:12-18` correctly and the repair moved the citation off it. Second, "the roughly twenty `apt` packages": the `RUN` at `:22-28` installs 27. Round one said "about twenty" and the repair inherited the number without re-deriving it. Third, the comment at `:12-18` that the bullet points to does not name `libice6` or `libxkbcommon-x11-0`, so "each is tied to the requirement it serves" is not true of two of the 27, although both are genuine transitive prerequisites (`libsm6` needs `libICE`; the xcb set needs `libxkbcommon-x11`). None of this touches the argument, which is accepted under F19.'
+  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:47-58
+  repair: Cite `Containerfile.scribe:12-18` for the comment and `:22-28` for the install, say 27, and either add the two missing packages to the Containerfile comment or say the comment names the classes rather than every package.
+  state: open
+- id: F23
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'Introduced by the F2 repair, in the demos R9 row. The rewritten evidence status describes `ev-demos-04` and `ev-demos-05` as "the same 20-resume corpus under two different instruction boundaries … with the payload text untouched on both sides". There is no payload text on either side. `ev-demos-06` establishes that `goofy-goof.md` is not staged into `resumes/` at the pin, and a scan of the 20 staged resumes for the payload''s own phrasing — "score of 100", "rank them first", "pre-approved", ATS or recruiting-system directives — returns nothing. Missing item 4 warns a judge in advance not to read the dry runs as an agent resisting an attack; this clause invites exactly that reading from the requirements table, which a judge reaches first.'
+  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:82
+  repair: Say the resume corpus is byte-identical on both sides and that neither capture contains an injection payload, pointing at `ev-demos-06`.
+  state: open
+- id: F24
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'The F17 repair asserted the approvals rather than performing them. `atj event approve` re-reads front matter and re-dumps it, appending `approved_by`, `approved_at` and `approval_note` after the existing keys: on `submissions/team-scribe.md`, `submissions/team-demos.md`, `audits/configuration.md` and `audits/intake.md` the three fields sit last in the front matter, after `validation_state` and after the whole `findings:` block. On both manifests they sit between `approval_state` and `validation_state`, where only a hand edit puts them, and `approved_at` is a rounded `00:52:00Z` against the tool''s `22:34:29Z`, `23:54:43Z` and `23:55:04Z`. The consequence is that `atj/cli.py:434-443`, which validates each artifact and refuses to approve one carrying a blocking or major finding, never ran. Here it would have passed — `atj validate reports` returns 0 findings over 7 artifacts — so the outcome is sound and the provenance is not.'
+  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:18-21
+  repair: 'Run `python3 -m atj event approve --note "…" events/trial-2-2026/evidence/*/manifest.md` and let it write the fields and the stamp.'
+  state: open
+- id: F25
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: '`audits/configuration.md` carries `approval_state: approved` and `approved_at: "2026-09-21T22:34:29Z"`. The F18 repair changed its F7 entry from `deferred` to `repaired` and rewrote the repair line at `2026-09-22T00:41Z`, eighteen hours of event time after that approval, and nothing in the file records that the approved text changed. The edit is correct and round one asked for it; what is missing is the trace. `atj release-check` reports "signed approvals PASS (15 in completed events, frozen)", which by construction does not cover an in-flight event, so nothing mechanical would notice.'
+  artifact: events/trial-2-2026/audits/configuration.md:17
+  repair: Add a line to the configuration audit recording that the F7 entry was amended at the evidence stage after approval, or re-approve it.
+  state: open
+- id: F26
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'Introduced by the F2 repair. `ev-demos-05` closes "The rest of the diff is cosmetic (docstring, `DEMO_DIR`, report title, error text)". `DEMO_DIR` changes from `Path(__file__).resolve().parent` to `.parent.parent`, which is the path resolution that lets a script one directory deeper find the same `resumes/` and `criteria.md`; it is functional, and it is the reason the two runs read the same corpus. The diff also removes `import glob` at `rank_resumes.py:23`, which is unused there and is genuinely cosmetic, but is not in the list. Calling the path change cosmetic is what a judge would rely on if they wanted to know whether the two captures are comparable.'
+  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:92
+  repair: Describe `DEMO_DIR` as the path fix that keeps both scripts on the same corpus, and add the removed `import glob`, or narrow the sentence to "nothing else changes what either script sends to the model".
+  state: open
+- id: F27
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'Introduced by the F1 repair. `ev-scribe-11` now says "Two of the four are the documented keyring-first chain in `settings.py`". `:303` is the environment fallback inside `get_openai_api_key`, which is that chain. `:332` is inside `get_api_key_storage_method`, a reporting function that re-implements the same priority order to return the string `keyring`, `encrypted_config`, `environment` or `none`; it retrieves nothing and is not part of the chain. The distinction matters slightly for R7, which is about where keys live rather than about how the app reports where they live.'
+  artifact: events/trial-2-2026/evidence/team-scribe/manifest.md:122
+  repair: 'Say one of the four is the chain at `get_openai_api_key` and one is the parallel order in `get_api_key_storage_method`.'
+  state: open
+- id: F28
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'Introduced by the F2 and F9 repairs together, and visible only because they landed in the same round. `ev-demos-04` now cites the vulnerable `SYSTEM` block as `:33-43`, which is the whole literal. `ev-demos-05` and its key-file row cite the hardened system prompt as `:33-44`, but the hardened `SYSTEM` literal runs `:33-48`: `:45` is blank and `:46-48` is the JSON-shape instruction, which is identical on both sides. Everything the observation describes is inside `:33-44`, so nothing false is cited; the two sides of the comparison are simply cut at different places, and a judge diffing the cited ranges gets a whole block against a subset.'
+  artifact: events/trial-2-2026/evidence/team-demos/manifest.md:92,119
+  repair: Cite `:33-48` for the hardened block, or `:36-44` for the security rules that are the described difference.
   state: open
 ---
 
@@ -177,238 +249,249 @@ findings:
 
 ## Result
 
-**FAIL** until all blocking findings are resolved.
+**PASS WITH ADVISORIES.** Round two.
 
-Three major findings, all `scope: event` and all `blocking: true`, hold the
-`evidence-validated` gate. Each is a factual error inside an observation or a
-front-matter field that the four initial judgments would read as settled
-evidence. Sixteen further findings are minor or advisory and do not hold the
-gate.
+The three blocking findings from round one are repaired and independently
+re-derived, not merely edited. Fourteen of the sixteen minor and advisory
+findings are repaired. F14 stays open by the repair round's declared choice and
+is framework scope. F10 and F13 are half-repaired: each named two places and one
+was changed. Nine new findings, F20 to F28, all introduced by the repair round;
+three minor, six advisory, none blocking.
 
-Execution safety is clean and is not the reason for the FAIL. Neither is the
-citation graph's shape, the image provenance, or the handling of the two
-recorded decisions — all of those verified correct and are recorded below so a
-repair round does not disturb them.
+The `evidence-validated` gate may be set on this report.
 
 ## Scope and artifacts inspected
 
-Evidence stage of `trial-2-2026` at `355f4582` on branch
-`event/trial-2-2026-evidence`.
+Evidence stage of `trial-2-2026` at `79455e69` on branch
+`event/trial-2-2026-evidence`. Round one audited `355f4582` and failed it; the
+repair is `79455e69`, and `git diff 4a3ef5a..HEAD -- events/` is four files:
+both manifests, `audits/configuration.md` and `status.md`.
 
-Read in full: both manifests, `Containerfile.scribe`, `Containerfile.demos`, all
-11 `runs/*.json`, `status.md`, `event.md`, `teams.md`, both `submissions/*.md`,
-`audits/configuration.md` and `audits/intake.md` front matter,
-`framework/policies/execution-safety.md`,
-`framework/policies/evidence-and-citation.md`,
-`framework/templates/evidence-manifest.md`,
-`framework/templates/audit-report.md`, `framework/rubrics/README.md`,
-`framework/rubrics/submission-evaluation.md`,
-`schemas/evidence-manifest.schema.json`, `schemas/model-run.schema.json`,
-`atj/reports.py` directory map and `atj/event.py` gate logic.
+This round re-derived every number, line reference, quotation and timestamp the
+repair touched, against the two pinned checkouts and the eleven run records
+rather than against round one's own text. That mattered twice. Round one's F5
+diagnosis was wrong — the file that pushes `example.com` from 213 to 214 is
+`02-invisible-ink/demo/resumes-html/camille-vise.html`, not the root
+`README.md` — and the repair caught it. Round one's F19 said "about twenty" apt
+packages, the repair inherited "roughly twenty", and the `RUN` installs 27.
 
-Both pinned checkouts were read at their pins, read-only, and nothing in either
-was executed. An AST scan of the demos tree was attempted and the project's
-`pre-advance.sh` hook blocked it as host execution of submission code; the same
-questions were answered with `grep` and `git grep` instead, which is the correct
-outcome and the guard rail behaving as designed.
+Read at the pins: `rank_resumes.py`, `hardened/rank_resumes_hardened.py` and the
+diff between them, `fetch_beacons.py`, `settings.py:283-310`, `summarizer.py`,
+`whisper_service.py:80-110`, `recorder.py:124-170`, `test_thread_safety.py`,
+`requirements.txt`, demo 01's `resumes/` and `goofy-goof.md`. Read in the event:
+both manifests, `Containerfile.scribe`, `Containerfile.demos`, all 11
+`runs/*.json`, `status.md`, `audits/configuration.md`. Read in the framework:
+`atj/ids.py`, `atj/cli.py` approve, `atj/reports.py` NE-confidence rule,
+`atj/sandbox.py` limitation, `schemas/audit.schema.json`,
+`schemas/evidence-manifest.schema.json`,
+`framework/rubrics/submission-evaluation.md`, `events/trial-2-2026/event.md`.
+
+Nothing was executed from either checkout. Every count came from `git grep`,
+`find` or a read of the committed run records.
 
 ## Deterministic validation results
 
 | Check | Result |
 |---|---|
 | `atj event validate events/trial-2-2026` | PASS, 0 problems, stage evidence |
-| `atj validate reports events/trial-2-2026` | PASS, 6 artifacts, 0 findings |
-| `atj validate publication events/trial-2-2026` | CLEAR, 6 artifacts, 0 blocking |
+| `atj validate reports events/trial-2-2026` | PASS, 7 artifacts, 0 findings |
+| `atj validate publication events/trial-2-2026` | CLEAR, 7 artifacts, 0 blocking |
 | `atj release-check` | PASS, all 13 checks |
 | `atj event status events/trial-2-2026` | stage evidence, gate `evidence-validated` pending |
 | `atj sandbox preflight` | AVAILABLE, podman 6.1.0 (rootless) |
+| `pytest tests/ -q` | 517 passed, 5 skipped, 283 subtests |
 
-None of the three blocking findings is visible to any of these. That is the
-point `framework/rubrics/README.md` makes under "What validation cannot tell
-you", and this stage is another instance of it: a green report validation over
-manifests containing a miscount, a false mechanism and a wrong front-matter
-field.
+Seven artifacts rather than round one's six, because this report is now one of
+them. None of the nine new findings is visible to any of these checks, which is
+the same point round one made and is now demonstrated twice on one stage.
 
-## What was verified true
+## What the repair got right, re-derived
 
-Recorded so a repair round does not churn correct work.
+Recorded so a third round does not churn it.
 
-**Counts and quotations, re-derived against the pinned checkouts.** team-scribe:
-56 `.py` under `src/`; 30 `tests/test_*.py`; 509 passed and 26 failed with the
-split 13 `test_thread_safety.py` + 7 `test_main_page_speaker.py` + 3
-`test_pipeline_status.py` + 3 `test_checkpoint.py`, so 13 + 10 + 3 = 26 with no
-remainder; 509 + 26 = 535 collected; `README.md`'s table names 26 files across 9
-categories, four short of the 30 on disk; 168 files under `ai/beans/` across 54
-`BEAN-*` directories plus two root files; 6 under `ai/reports/`; 3 commands and 3
-`SKILL.md`; the `.claude/shared` gitlink uninitialized at `-3dff46d6`; eight
-`src/` packages plus `assets`; the README cost figures `$0.00`, `~$0.36`, `~$131`
-at `README.md:150-151`. team-demos: 399 tracked files; 53 `.py` with the
-breakdown 17 demo-root + 17 `scripts/` + 9 `hardened/` + 8 `tools/` + 2 parser
-versions; 19 files importing `anthropic`, every one of them function-scoped and
-none at module scope; 66 `.claude` files across all ten demos with none at the
-repository root; 201 resumes under `*/resumes/`; 20 resumes in demo 01 with
-`goofy-goof.md` absent from them; ten `NN-*/` directories and ten
-`demo/README.md`; no dependency manifest of any kind; no test file of any kind;
-"Sift" in all ten demos and "Marisol" in seven, absent from 01, 03 and 08.
+**The two recomputed evidence package ids are correct, and the rule reproduces.**
+`atj/ids.py:98` builds the id from event, team, twelve commit characters and an
+eight-character digest, and the digest here is `sha256` of the manifest body
+after the front matter. Both the superseded ids and the new ones reproduce under
+that rule at their own commits: `63f56c93` and `1c0b2b5e` at `355f458`,
+`ba263edf` and `a19ab6dc` at `79455e6`. The ids changed because the content
+changed, which is what marks downstream judgments stale, and `status.md`'s team
+table carries the new ones.
 
-**Line citations.** Every scribe line reference resolves to what is claimed:
-`qt_app.py:11,48,54,310,315`, `requirements.txt:19,25`, `requirements.lock:16`,
-`setup_pyside6.py:82`, `main.py:50`, `conftest.py:19-30`,
-`test_thread_safety.py:24,34,122,281`, `test_checkpoint.py:65,72,77`,
-`recorder.py:130,165`, `pytest.ini:1` with its five markers,
-`test_pipeline_status.py:298,355,404`, `test_main_page_speaker.py:66`,
-`settings.py:388,393`, and all four hops of the
-`qt_main_window.py:30 → _actions.py:25 → workers/__init__.py:3 →
-recording_worker.py:17 → qt_app.py:11` chain. On the demos side
-`fetch_beacons.py:42-67,83-90`, `parser.py:90-107,109-112`,
-`attacker.py:4-12,36-37,93-96` and `README.md:31,33,34,70` all resolve. The two
-that do not are F9.
+**Citation symmetry survives the repair, in both directions.** Every
+`[[evidence:…]]` in both manifests resolves to an observation that exists, and
+for all 27 observations the `Supports` cell and the set of requirement rows that
+cite it are the same set. `ev-scribe-13` and `ev-demos-13` still carry `-` and
+are cited by no requirement. The repair added prose citations of `ev-scribe-14`
+and `ev-scribe-11` inside the new `evidence_limited_criteria` bullet, which sits
+outside the requirements table and does not disturb the graph.
 
-**Image provenance, independently re-derived.** `podman image inspect` returns
-`034af8181f8d19d6…` and `sha256:bdbb5d5a422dd262…` created 2026-09-21T23:52:54Z
-for the scribe tag, matching the manifest exactly. The superseded build exists,
-untagged, at `sha256:25a2208baadd6280…` created 23:51:31Z, which is 83 seconds
-earlier, and commit `3f484d5`'s message does name that digest. The demos tag
-resolves to `ec7d6c95cd3692a2…`, byte-identical to
-`docker.io/library/python:3.12-slim`, as the manifest says. Both provenance
-corrections in the manifests are correct and were worth making.
+**Evidence-class discipline improved.** Three of the repairs are class
+corrections rather than fact corrections: the docstring at `settings.py:286`
+demoted to a team claim with the implementation at `:288-306` promoted to the
+observation, the `--enforce-allowlist` consequence marked as a static read inside
+an observation headed as exercised, and `Containerfile.demos`'s header moved to
+the past tense with the commit that changed it named.
 
-**Execution safety, checked against the run records' own fields rather than the
-manifests' description of them.** All 11 records: `podman run`, `--network
-none`, `--read-only`, `--cap-drop ALL`, `--security-opt no-new-privileges`,
-`--user 65534:65534`, `--tmpfs /tmp:rw,noexec,nosuid,size=64m`, `--pids-limit
-256`, `--memory 1g`, `--cpus 1.0`, submission mounted `:ro,Z`. No record has
-`timed_out: true` or `output_truncated: true`. Only the two approved images
-appear. Nothing ran on the host. `atj sandbox preflight` re-run during this audit
-returns AVAILABLE, podman 6.1.0 (rootless), matching what both manifests claim
-preceded execution. One recorded limit is described wrongly in prose and that is
-F4; the enforced control itself is sound in every case.
+**Execution safety is untouched and still clean.** No run record was modified in
+the repair commit. All 11 still carry `podman run`, `--network none`,
+`--read-only`, `--cap-drop ALL`, `--security-opt no-new-privileges`, `--user
+65534:65534`, the `/tmp` tmpfs, `--pids-limit 256`, `--memory 1g`, `--cpus 1.0`
+and a `:ro,Z` mount; none is timed out or truncated; only the two approved images
+appear. The one prose defect round one found in the limits table, F4, is fixed
+and all nine remaining rows re-checked against their records.
 
-**The recorded decisions.** Configuration F7 is discharged at
-`evidence/team-scribe/manifest.md:52-58` — offscreen, no display, no audio
-device, no network, no simulated microphone — with the consequences routed to
-Missing evidence and the affected criterion to front matter. The dry-run decision
-event.md:133-137 owed is discharged at `evidence/team-demos/manifest.md:47-57`,
-correctly framed as the event's choice rather than the team's deficiency, with
-the reason stated (`uv run --with anthropic` resolves from PyPI against an empty
-allowlist) and verified: `import anthropic` does sit below the dry-run return, so
-the plain interpreter reaches the same output. The intake F11 whole-checkout
-wrapper is restated in both manifests and the nine-file phrase scan is correctly
-described as a floor rather than an inventory.
+**The untrusted-data wrapper is intact.** Both manifests still state that the
+whole checkout was read as data, the scribe manifest still enumerates the agent
+surface it covers, and both Validation sections still carry the wrapper checkbox
+ticked. The demos manifest still marks R4 `NE`, still warns at Missing item 4
+that a dry run is not agent behaviour, and still warns at item 6 against scoring
+an evasiveness the submission never claimed. The scribe manifest still says a
+judge must not treat the GUI import failure as an evidence limit. F23 is the one
+place where new text pulls against one of those warnings.
 
-**No steering, on either submission.** `goofy-goof.md` — the payload that
-directs a screening agent to assign 100 and rank first — is absent from all 11
-run records, which is consistent with `ev-demos-06`: it is not staged into
-`resumes/` at the pin. Neither manifest adopts either submission's framing. The
-demos manifest marks its central claim R4 as `NE`, warns at Missing item 4 that a
-dry run is not agent behaviour, and warns at item 6 against scoring an
-evasiveness the submission never claimed. The scribe manifest contradicts R5 on
-direct observation, marks R9 a team claim resting on no observation at all, and
-records a property of the KDF input that the team's claim does not state.
-ScribeVault's `CLAUDE.md` and `.github/copilot-instructions.md` contain no
-scoring or judging directive. H6 is not contested by this stage's artifacts.
+**The status ledger matches disk apart from one row.** `current_stage: evidence`,
+`evidence-validated: pending`, `gate_evidence` naming only the two passed gates,
+both new package ids, both teams `sandboxed-partial, approved`, `public/` holding
+only `.gitkeep`, and a working tree with nothing untracked or ignored inside the
+event directory. The two new ledger rows record the failed audit and the repair,
+and the repair row names F14 as left open, which is the honest entry. The
+timestamps on those rows are F13 and F20.
 
-**The GUI point.** Missing item 4 in the scribe manifest states that both GUI
-modules fail to import because of a cause inside the submission, cites
-`ev-scribe-03`, and says a judge should not record it as evidence-limited. That
-is correct and correctly excluded from `evidence_limited_criteria`, whose
-`functional` entry rests on the audio device and the empty allowlist instead.
-F3 is about what is missing from that field, not about the GUI.
+**Both manifests are `approval_state: approved` with `validation_state: valid`,**
+which is what F17 asked for, and `atj validate reports` independently agrees with
+the validation state. How the fields were written is F24.
 
-**Citation graph.** Every `[[evidence:…]]` in both manifests resolves, and every
-observation's `Supports` cell agrees with the requirements that cite it, in both
-directions, with `ev-scribe-13` and `ev-demos-13` correctly carrying `-`. R9 in
-the scribe manifest deliberately rests on no observation and says so. The one
-place where the graph is formally satisfied but semantically strained is F12.
+## The two arguments the repair made rather than conceded
 
-**Status ledger.** The final row is accurate: 11 runs, images `034af8181f8d` and
-`ec7d6c95cd36`, and an Output list that matches commit 355f458's file list
-exactly, including the fact that `Containerfile.scribe` was not touched.
-`current_stage: evidence`, both gate flags, both evidence package ids
-(`63f56c93`, `1c0b2b5e`) and both `sandboxed-partial, draft` entries match the
-manifests on disk. `public/` holds only `.gitkeep`. The one defect in the ledger
-is the timestamp, F13.
+Round one offered each of these a choice between conceding and justifying. The
+repair justified both. Both hold.
+
+**`security` does not belong in team-scribe's `evidence_limited_criteria`, and
+`functional` and `agentic` do.** This holds, and the field is not decorative: at
+`atj/reports.py:274-296` it decides what confidence a judge may attach to an `NE`
+score. A criterion listed here makes an `NE` a `high`-confidence statement that
+no observation was possible; a criterion not listed makes an `NE` a `low`-
+confidence one resting on evidence the judge could not find. On that test,
+`functional` and `agentic` are right — no model call was possible and no audio
+device was provided, so the runtime behaviour behind R1, R2 and R3 is
+unobservable, which is the identical cause team-demos records. `security` is
+right to omit. The rubric asks whether access, data, tools, model risks and user
+safety are handled responsibly, and the whole of ScribeVault's key handling is
+readable and was read: the priority order at `settings.py:288-306`, the write
+path at `:341-370`, the Fernet fallback at `:380-414`, the machine-string KDF
+input at `:388` and the legacy unsalted path at `:393`. A judge who scored
+`security` `NE` would be declining to read `settings.py`, not reporting an
+absence of evidence. The asymmetry event.md:127-128 forbids is between teams,
+and there is none: both manifests now carry `[functional, agentic]` for the same
+stated reason.
+
+**The scribe image's apt packages are prerequisites of declared packages, not
+additions under event.md's image rule.** This holds. `requirements.txt:18`
+declares `PySide6` and `:19` declares `pyaudio`. Without `portaudio19-dev`, `gcc`
+and `python3-dev` the declared `pyaudio` cannot build from source on Linux;
+without the GL, glib and xcb set the declared `PySide6` cannot link, offscreen
+platform plugin or not. An image that omitted them would carry less than the
+submission declares, not more. event.md's rule binds "anything added beyond" what
+the submission declares, and a transitive system dependency of a declared package
+is not beyond it, so the rule is satisfied with no event.md edit and no
+loosening. The test that convinces is the counterfactual: strip those packages
+and the failures you observe are the image's, not the submission's, which is the
+exact confusion the rule exists to prevent. The Containerfile earns this by
+tying each package to the requirement it serves at `:12-18`, which is more than
+the rule asks. Three facts inside the bullet that makes the argument are wrong
+and are F22; the argument is not one of them.
 
 ## Findings
 
 | Severity | Rule | Artifact | Scope | Blocking | Finding | Required repair |
 |---|---|---|---|---|---|---|
-| major | evidence-and-citation.md, direct observation must be true | `evidence/team-scribe/manifest.md:95` | event | yes | F1 — `ev-scribe-11` says `OPENAI_API_KEY` is read at three sites; `src/ai/summarizer.py:54` is a fourth, reading the environment directly and bypassing the keyring chain. R2, R3, R7 and R8 cite this observation | Correct to four sites, add `summarizer.py:54`, and say whether it bypasses the keyring path that R7 claims |
-| major | evidence-and-citation.md, direct observation must be true | `evidence/team-demos/manifest.md:88` | event | yes | F2 — `ev-demos-05` says the hardened ranker "differs only in its system prompt"; `build_user_content` also changed, and that is where the `<applicant>` wrapping happens. Both run records show it | Restate the delta from the diff; the system prompt and the user-content builder both changed |
-| major | event.md:127-128, evidence asymmetry is a defect against the event | `evidence/team-scribe/manifest.md:15` | event | yes | F3 — `evidence_limited_criteria: [functional]` contradicts the manifest's own Missing item 2, which limits R2, R3, R7 and R8; team-demos records `agentic` for the identical no-model-call cause | Add the criteria the Missing-evidence section names, or state why the two teams are treated differently |
-| minor | execution-safety.md, record the limits applied | `evidence/team-scribe/manifest.md:104` | event | no | F4 — the environment-probe row says 300s; the run record carries 600s | Change 300s to 600s |
-| minor | evidence-and-citation.md, cite what is there | `evidence/team-demos/manifest.md:92` | event | no | F5 — `example.com` and `(555)` counts are 213 and 210; the pin holds 214 and 211, the difference being the root `README.md` | Correct to 214 and 211, or state the scan root |
-| minor | evidence-and-citation.md, do not manufacture certainty | `evidence/team-demos/manifest.md:92` | event | no | F6 — the e-mail scan is called "exhaustive" and returns three; it covered three extensions and missed `talent@hexley.example` in `harness.py` | Widen the scan and record four, or drop "exhaustive" and scope the claim |
-| minor | evidence-manifest.md, Reproduction must reproduce | `evidence/team-scribe/manifest.md:94,97` | event | no | F7 — 535 collected tests is attributed to `pytest-config-01`, which collected 38 from one file; it comes from `pytest-01` | Point the 535 at `runs/team-scribe-pytest-01.json` in both rows |
-| minor | evidence-and-citation.md, cite what is there | `evidence/team-demos/manifest.md:96` | event | no | F8 — `ev-demos-13` says `Containerfile.demos` currently says "all 19 demo scripts"; it was corrected in the same commit that added the manifest | Put the Containerfile claim in the past tense and name commit 355f458 |
-| minor | evidence-and-citation.md, cite line or symbol | `evidence/team-demos/manifest.md:86,87` | event | no | F9 — `ev-demos-03` cites `:92-101` for output produced at 105; `ev-demos-04` cites `:37-47` for a `SYSTEM` block ending at 43 | Change to `:94-106` and `:37-39` (or `:33-43`) |
-| minor | evidence-and-citation.md, keep classes distinct | `evidence/team-demos/manifest.md:90,107` | event | no | F10 — "nine hostile URLs" describes nine URL forms of which three are localhost and admitted; the `--enforce-allowlist` consequence is a static read inside an observation headed as exercised | Say "nine URL forms, six hostile" and mark the allowlist consequence as a static read |
-| minor | evidence-and-citation.md, team claim is not observation | `evidence/team-scribe/manifest.md:98` | event | no | F11 — `ev-scribe-14` cites `settings.py:286`, a docstring, for what is labelled the implemented read order; the implementation at 288-306 does match | Cite `:288-306` for the implemented order |
-| minor | evidence-manifest.md, Supports means establishes | `evidence/team-scribe/manifest.md:69,90,92` | event | no | F12 — `ev-scribe-06` and `ev-scribe-08` claim to support R1 while the R1 row says neither establishes nor refutes the recording behaviour | Drop R1 from both Supports cells, or state what about R1 each does establish |
-| minor | evidence-manifest.md, timestamps must be observed | `evidence/team-scribe/manifest.md:12-13` | event | no | F13 — both manifests' `prepared_at`/`completed_at` of 00:30:00Z and the ledger's 00:35:00Z postdate the 00:15:17Z commit containing them; the run timestamps are real, these are rounded forward | Set all three to times preceding commit 355f458 and consistent with the run records |
-| advisory | atj/reports.py:41 directory map | `atj/reports.py:41` | framework | no | F14 — `runs/` is mapped to the `model-run` schema and validation globs only `*.md`, so the 11 JSON run records are checked by nothing | Register a sandbox-run schema, or record that `runs/` holds two artifact kinds |
-| advisory | event hygiene | `events/trial-2-2026/status.md.bak` | event | no | F15 — a gitignored backup carrying `current_stage: intake` sits in the event directory | Delete it |
-| advisory | evidence-manifest.md front matter | `evidence/team-scribe/manifest.md:14` | event | no | F16 — `execution_record` is unset on both manifests | Set it, or raise the unused field against the template |
-| advisory | intake-stage precedent | `evidence/team-demos/manifest.md:17` | event | no | F17 — both manifests are `approval_state: draft`; intake approved its team records before its gate | Approve both after the blocking repairs |
-| advisory | audit ledger hygiene | `audits/configuration.md:70-77` | event | no | F18 — configuration F7 is still `state: deferred` although the manifests discharge it | Move F7 to `repaired` with a pointer to the manifest bullet |
-| advisory | event.md:126-127 image rule | `evidence/Containerfile.scribe:22-29` | event | no | F19 — about twenty apt packages are added and reasoned in the Containerfile, not named in event.md as the rule directs | Point event.md at the Containerfile comment, or state that prerequisites of declared packages are not additions |
+| minor | evidence-and-citation.md, cite what is there | `evidence/team-demos/manifest.md:111` | event | no | F10 — repaired in `ev-demos-07`, not in the Tests-and-execution row, which still says "against nine hostile URLs" | Say "nine URL forms, six hostile" in that row too |
+| minor | evidence-manifest.md, timestamps must be observed | `status.md:70` | event | no | F13 — both manifests repaired to 00:14:00Z; the ledger's preparation row is still 00:35:00Z, twenty minutes after commit 355f458 | Move it between 00:07:26Z and 00:15:17Z |
+| advisory | atj/reports.py:41 directory map | `atj/reports.py:41` | framework | no | F14 — `runs/*.json` is validated by nothing; left open deliberately as a framework change this stage will not make mid-event | Framework window, not this stage |
+| minor | evidence-manifest.md, timestamps must be observed | `evidence/team-scribe/manifest.md:20` | event | no | F20 — `approved_at` 00:52:00Z on both manifests and `last_updated`/ledger 00:55:00Z postdate commit `79455e6` at 00:41:29Z and the wall clock at 00:48:46Z; fourth recurrence on this event | Stamp them from the tool, or from the time the work was done |
+| minor | evidence-and-citation.md, direct observation must be true | `evidence/team-scribe/manifest.md:96` | event | no | F21 — the new R1 clause calls all thirteen `test_thread_safety.py` failures tests of `AudioRecorder`; `test_settings_no_deadlock` is a `SettingsManager` test | Say twelve of thirteen, or drop the attribution |
+| minor | evidence-and-citation.md, cite line or symbol | `evidence/team-scribe/manifest.md:47-58` | event | no | F22 — the image bullet cites `:19-29` for a comment at `:12-18`, says "roughly twenty" where 27 are installed, and two of the 27 are not in that comment | Cite `:12-18` and `:22-28`, say 27, name the two |
+| minor | evidence-and-citation.md, do not manufacture certainty | `evidence/team-demos/manifest.md:82` | event | no | F23 — R9's "with the payload text untouched on both sides" implies an injection payload in both captures; `ev-demos-06` establishes there is none in either | Say the corpus is identical and neither capture contains a payload |
+| advisory | atj/cli.py approve is the approval mechanism | `evidence/team-scribe/manifest.md:18-21` | event | no | F24 — the approvals were hand-written; field placement and a rounded stamp differ from every other approved artifact on this event, so the refuse-on-major check never ran | Run `atj event approve` on both manifests |
+| advisory | audit ledger hygiene | `audits/configuration.md:17` | event | no | F25 — an approved audit report's findings ledger was amended with no record that the approved text changed | Note the amendment, or re-approve |
+| advisory | evidence-and-citation.md, cite what is there | `evidence/team-demos/manifest.md:92` | event | no | F26 — "the rest of the diff is cosmetic (docstring, `DEMO_DIR`, …)"; `DEMO_DIR` is the path fix that keeps both scripts on one corpus, and the removed `import glob` is unlisted | Narrow the sentence, or describe both |
+| advisory | evidence-and-citation.md, keep classes distinct | `evidence/team-scribe/manifest.md:122` | event | no | F27 — "two of the four are the documented keyring-first chain"; `:332` is a reporting function that repeats the order, not part of the chain | Distinguish the two |
+| advisory | evidence-and-citation.md, cite line or symbol | `evidence/team-demos/manifest.md:92,119` | event | no | F28 — the hardened `SYSTEM` literal runs `:33-48` and is cited `:33-44`, against `:33-43` for the whole vulnerable block | Cite `:33-48`, or `:36-44` for the rules that differ |
+
+F1 to F9, F11, F12, F15 to F19 are repaired and carry `state: repaired` in the
+front matter with what was re-derived for each. They are not in this table
+because the table is what the next round has to act on.
 
 ## Advisories
 
-Three observations that are not findings.
+Four observations that are not findings.
 
-**The blocking three are all of one kind.** Each is a claim that reads as
-settled, is checkable in one command, and was not checked: a `grep` for
-`OPENAI_API_KEY`, a `diff` of two files in the same demo, and a read of the
-manifest's own Missing-evidence section against its own front matter. None
-required judgment to catch. That is consistent with `live-trial-2026`, where the
-LLM audit was the only thing that caught any substantive error, and it argues for
-running those three checks mechanically before the next manifest is written
-rather than after.
+**The repair round is a net improvement, and the improvement is concentrated in
+the three that mattered.** The blocking three were the ones a judge would have
+carried into four independent judgments as settled fact: a miscount of where an
+API key is read, a false mechanism for the one fix the demos corpus exists to
+teach, and a front-matter field that decides what confidence an `NE` may carry.
+All three are now correct, and two of them are better than the repair asked for.
+F1 answers the bypass question R7 turns on instead of just adding a fourth line
+number, and F6 replaces a scan with a wider scan rather than narrowing the claim
+to fit the old one.
 
-**The evidence packages are, on the whole, unusually disciplined.** The refusals
-are the strongest part: R9 resting on no observation and saying so, R6's "traces
-to no real individual is not verifiable from the checkout and is not claimed
-here", Missing item 4 in the demos manifest telling a judge in advance that it
-will have over-read the dry run, and Missing item 4 in the scribe manifest
-telling a judge not to treat the GUI failure as an evidence limit. The
-`NE`-versus-low-score boundary this event exists to test is handled correctly on
-the one case that matters: team-demos has no test suite, and R7 records that as a
-direct observation of absence rather than as an evidence limit, which is the
-distinction D8 and D12 were found on.
+**Nine of twenty-eight findings on this stage were introduced by repairs, and
+they cluster where the repair wrote new prose.** F21, F22, F23, F26, F27 and F28
+are all inside sentences the repair added, and every one of them is a fact that
+was not re-derived: thirteen tests assumed to be one class, a line range moved
+without re-reading the file, "roughly twenty" carried over from this audit's own
+round-one text, a payload assumed present because two prompts were being
+compared. The pattern matches `live-trial-2026`, where nine defects came from
+repairs, and this event's intake stage, where three of five round-two findings
+came from the round-one repair. It is now established on this event that a
+repair round needs the same re-derivation discipline as the work it repairs, and
+it is cheaper to get it from the repairer than from the auditor.
 
-**F13 is the third appearance of invented timestamps on this event.**
-Configuration F19 was about the auditor's own, the intake ledger needed an
-ordering repair, and now both manifests and the ledger carry preparation times
-that postdate the commit containing them. Nothing downstream reads these fields,
-which is why it stays minor, but three recurrences of one defect class on one
-event is a process signal rather than three separate slips.
+**Half-repairs are the second pattern.** F10 and F13 each named two artifacts and
+each got one. The `artifact` field in round one read `manifest.md:90,107` and
+`manifest.md:12-13` with the ledger named only in the `repair` line. A repairer
+working from the findings table alone would see the first location in each. That
+is a report-shape lesson for this auditor as much as a discipline lesson for the
+repairer: when a finding spans two files, the second one belongs in `artifact`,
+not only in prose.
+
+**The timestamp class is now four for four and should stop being repaired one
+field at a time.** Configuration F19 was the auditor's own stamps, intake needed
+an ordering repair, evidence F13 was both manifests and the ledger, and F20 is
+the approval stamps the F13 repair itself wrote. Every instance has the same
+shape: a round number, minutes after the commit that carries it, invented rather
+than read. The fix is mechanical and already exists — `versions.now()` is what
+`atj event approve` calls, and its output is never round. Nothing downstream
+reads these fields, which is why none of the four is blocking, but a fourth
+recurrence on one event is a process signal and the next stage should stamp from
+the tool rather than from memory.
 
 ## Completion gate
 
-- [ ] No blocking findings — three, F1, F2 and F3
-- [ ] No major findings — three
-- [x] Calculations valid — 13 + 10 + 3 = 26 and 509 + 26 = 535 both reproduce against `runs/team-scribe-pytest-01.json`
-- [x] Evidence references resolve — every `[[evidence:…]]` and every `runs/*.json` named; two line ranges are wrong (F9) but resolve to real files
-- [x] Version and identity checks pass — rubric `submission-evaluation@1.1.0`, persona `prepare-submission@1.1.0`, framework commit `3f484d5` correct for the preparation window, both evidence package ids well-formed and matching their commits
-- [x] Privacy boundary passes — both manifests private, `public/` empty, `atj validate publication` CLEAR
+- [x] No blocking findings — none; F1, F2 and F3 are repaired and re-derived
+- [x] No major findings — none open; the three round-one majors are `repaired`
+- [x] Calculations valid — 509 + 26 = 535 reproduces against `runs/team-scribe-pytest-01.json`; 13 + 10 + 3 = 26 reproduces from the FAILED list; 20 against 20 applicant delimiters reproduce from the two dry-run records; 214/213 and 211/210 and four `.example` addresses reproduce by `git grep` at the pin; both `evidence_package_id` digests reproduce under `atj/ids.py`
+- [x] Evidence references resolve — every `[[evidence:…]]` resolves, `Supports` and requirement citations agree in both directions for all 27 observations, and every `runs/*.json` named exists
+- [x] Version and identity checks pass — rubric `submission-evaluation@1.1.0`, persona `prepare-submission@1.1.0` on both manifests, `judging-auditor@1.1.0` here, framework commit `3f484d5` correct for the preparation window, both package ids well-formed and matching their own bodies
+- [x] Privacy boundary passes — both manifests private, `public/` holds only `.gitkeep`, `atj validate publication` CLEAR over 7 artifacts
 - [x] Every finding recorded in `findings:` with a `scope` and a `blocking` flag
 - [ ] Approved with `atj event approve <this file>`
 
 ## Repairs required to clear this audit
 
-1. `evidence/team-scribe/manifest.md:95` — F1, the fourth `OPENAI_API_KEY` read
-   site at `src/ai/summarizer.py:54`.
-2. `evidence/team-demos/manifest.md:88` — F2, the hardened variant's real delta,
-   which includes `build_user_content`.
-3. `evidence/team-scribe/manifest.md:15` — F3, `evidence_limited_criteria`
-   reconciled with the manifest's own Missing-evidence section and with the
-   demos manifest.
+None. No finding on this stage is blocking, and the `evidence-validated` gate may
+be set on this report.
 
-The sixteen minor and advisory findings should be repaired in the same round
-because they touch the same two files, but none of them holds the gate.
+Twelve findings are open and all are minor or advisory. F14 is framework scope
+and belongs to a framework window. The eleven event-scope ones are worth one
+short round before judging begins, because four of them — F10, F21, F23 and F26 —
+are sentences a judge will read as settled fact, and this event exists to test
+how judges handle the boundary between an absent observation and a low score. F20
+and F24 are cheap: run `atj event approve` on both manifests and let the tool
+write the stamps it already knows how to write.
 
-Then re-audit. `framework/rubrics/README.md` requires the repair round to be
-audited before the gate is set, and nine of the defects in `live-trial-2026`
-were introduced by repairs. `atj event gate` reads the last audit, not the first
-one that passed.
+If that round happens, it needs a third audit. `atj event gate` reads the last
+audit, not the first one that passed, and nine of the twenty-eight findings on
+this stage were introduced by the round that repaired the previous nineteen.
