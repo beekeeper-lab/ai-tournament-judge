@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/trial-2-2026/team-scribe:/submission:ro,Z localhost/atj-trial2-scribe:67969dd python3 main.py",
+  "completed_at": "2026-09-22T00:04:16Z",
+  "duration_seconds": 0.522,
+  "exit_status": 1,
+  "image": "localhost/atj-trial2-scribe:67969dd",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 120,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-22T00:04:16Z",
+  "stderr": "2026-09-22 00:04:16 [WARNING ] root: Could not create log file at scribevault.log\n2026-09-22 00:04:16 [CRITICAL] __main__: PySide6 is not installed: No module named 'qdarkstyle'\n",
+  "stdout": "Error: PySide6 is not installed.\nPlease install PySide6 dependencies:\npip install -r requirements.txt\n",
+  "timed_out": false
+}

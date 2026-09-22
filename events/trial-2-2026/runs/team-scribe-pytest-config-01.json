@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/trial-2-2026/team-scribe:/submission:ro,Z localhost/atj-trial2-scribe:67969dd python3 -m pytest tests/test_api_key_validation.py -p no:cacheprovider",
+  "completed_at": "2026-09-22T00:07:26Z",
+  "duration_seconds": 1.932,
+  "exit_status": 0,
+  "image": "localhost/atj-trial2-scribe:67969dd",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 300,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-22T00:07:24Z",
+  "stderr": "",
+  "stdout": "============================= test session starts ==============================\nplatform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0\nrootdir: /submission\nconfigfile: pytest.ini\nplugins: anyio-4.15.1, mock-3.15.1, cov-6.3.0\ncollected 38 items\n\ntests/test_api_key_validation.py ......................................  [100%]\n\n============================== 38 passed in 0.74s ==============================\n",
+  "timed_out": false
+}

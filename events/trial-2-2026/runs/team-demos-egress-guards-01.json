@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/trial-2-2026/team-demos:/submission:ro,Z localhost/atj-trial2-demos:dc35f69 python3 -c 'import sys, importlib.util, pathlib\ndef load(path, name):\n    spec = importlib.util.spec_from_file_location(name, path)\n    m = importlib.util.module_from_spec(spec); sys.modules[name]=m\n    spec.loader.exec_module(m); return m\nfb = load('\"'\"'/submission/07-what-the-output-smuggles-out/demo/fetch_beacons.py'\"'\"', '\"'\"'fb'\"'\"')\nprint('\"'\"'== fetch_beacons.is_localhost (safety rail, guard 1)'\"'\"')\nfor u in ['\"'\"'http://127.0.0.1:8099/b.png'\"'\"','\"'\"'http://localhost:8099/b.png'\"'\"','\"'\"'http://[::1]:8099/b.png'\"'\"',\n          '\"'\"'http://evil.example/b.png'\"'\"','\"'\"'http://localhost@evil.example/b.png'\"'\"',\n          '\"'\"'http://127.0.0.1.evil.example/b.png'\"'\"','\"'\"'file:///etc/passwd'\"'\"','\"'\"'http://0.0.0.0:8099/b.png'\"'\"',\n          '\"'\"'http://2130706433/b.png'\"'\"']:\n    print(f'\"'\"'  {str(fb.is_localhost(u)):5}  host={fb.host_of(u)!r:28} {u}'\"'\"')\nprint('\"'\"'  ALLOWLIST ='\"'\"', fb.ALLOWLIST)\np = load('\"'\"'/submission/09-toolbox-you-didnt-audit/demo/tools/resume_parser/v1.1/parser.py'\"'\"', '\"'\"'p11'\"'\"')\nprint('\"'\"'== resume_parser v1.1 _post guard'\"'\"')\nfor u in ['\"'\"'http://evil.example/collect'\"'\"','\"'\"'http://localhost@evil.example/collect'\"'\"','\"'\"'evil.example/collect'\"'\"','\"'\"'//evil.example/collect'\"'\"','\"'\"'http://127.0.0.1:8099/collect'\"'\"']:\n    try:\n        p._post_to_localhost(u, '\"'\"'x'\"'\"'); print('\"'\"'  SENT (no exception):'\"'\"', u)\n    except RuntimeError as e:\n        print('\"'\"'  BLOCKED RuntimeError:'\"'\"', u, '\"'\"'->'\"'\"', str(e)[:90])\n    except Exception as e:\n        print('\"'\"'  other:'\"'\"', u, type(e).__name__, str(e)[:90])'",
+  "completed_at": "2026-09-22T00:06:54Z",
+  "duration_seconds": 0.58,
+  "exit_status": 0,
+  "image": "localhost/atj-trial2-demos:dc35f69",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 120,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-22T00:06:53Z",
+  "stderr": "",
+  "stdout": "== fetch_beacons.is_localhost (safety rail, guard 1)\n  True   host='127.0.0.1'                  http://127.0.0.1:8099/b.png\n  True   host='localhost'                  http://localhost:8099/b.png\n  True   host='::1'                        http://[::1]:8099/b.png\n  False  host='evil.example'               http://evil.example/b.png\n  False  host='evil.example'               http://localhost@evil.example/b.png\n  False  host='127.0.0.1.evil.example'     http://127.0.0.1.evil.example/b.png\n  False  host=''                           file:///etc/passwd\n  False  host='0.0.0.0'                    http://0.0.0.0:8099/b.png\n  False  host='2130706433'                 http://2130706433/b.png\n  ALLOWLIST = set()\n== resume_parser v1.1 _post guard\n  BLOCKED RuntimeError: http://evil.example/collect -> blocked: resume-parser refuses to POST to non-localhost host 'evil.example'. This demo too\n  BLOCKED RuntimeError: http://localhost@evil.example/collect -> blocked: resume-parser refuses to POST to non-localhost host 'evil.example'. This demo too\n  other: evil.example/collect ValueError unknown url type: 'evil.example/collect'\n  BLOCKED RuntimeError: //evil.example/collect -> blocked: resume-parser refuses to POST to non-localhost host 'evil.example'. This demo too\n  other: http://127.0.0.1:8099/collect URLError <urlopen error [Errno 111] Connection refused>\n",
+  "timed_out": false
+}
