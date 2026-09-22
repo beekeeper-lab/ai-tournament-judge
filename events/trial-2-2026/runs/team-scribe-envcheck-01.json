@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/trial-2-2026/team-scribe:/submission:ro,Z localhost/atj-trial2-scribe:67969dd python3 -c 'import sys, platform, os, subprocess\nprint('\"'\"'python'\"'\"', sys.version.split()[0])\nprint('\"'\"'platform'\"'\"', platform.platform())\nprint('\"'\"'cwd'\"'\"', os.getcwd(), '\"'\"'uid'\"'\"', os.getuid(), '\"'\"'gid'\"'\"', os.getgid())\nprint('\"'\"'QT_QPA_PLATFORM'\"'\"', os.environ.get('\"'\"'QT_QPA_PLATFORM'\"'\"'))\nprint(open('\"'\"'/etc/os-release'\"'\"').readline().strip())\nfor m in ('\"'\"'PySide6'\"'\"','\"'\"'qdarkstyle'\"'\"','\"'\"'qdarktheme'\"'\"','\"'\"'pyaudio'\"'\"','\"'\"'whisper'\"'\"','\"'\"'openai'\"'\"','\"'\"'pytest'\"'\"','\"'\"'torch'\"'\"','\"'\"'keyring'\"'\"','\"'\"'cryptography'\"'\"','\"'\"'numpy'\"'\"','\"'\"'scipy'\"'\"','\"'\"'sklearn'\"'\"'):\n    try:\n        mod = __import__(m); print('\"'\"'import OK  '\"'\"', m, getattr(mod,'\"'\"'__version__'\"'\"','\"'\"''\"'\"'))\n    except Exception as e:\n        print('\"'\"'import FAIL'\"'\"', m, type(e).__name__, e)\nimport PySide6.QtWidgets as W\na = W.QApplication([])\nprint('\"'\"'QApplication constructed offscreen:'\"'\"', type(a).__name__)'",
+  "completed_at": "2026-09-22T00:02:44Z",
+  "duration_seconds": 1.641,
+  "exit_status": 0,
+  "image": "localhost/atj-trial2-scribe:67969dd",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 600,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-22T00:02:42Z",
+  "stderr": "",
+  "stdout": "python 3.12.14\nplatform Linux-7.2.2-arch1-1-x86_64-with-glibc2.41\ncwd /submission uid 65534 gid 65534\nQT_QPA_PLATFORM offscreen\nPRETTY_NAME=\"Debian GNU/Linux 13 (trixie)\"\nimport OK   PySide6 6.11.2\nimport FAIL qdarkstyle ModuleNotFoundError No module named 'qdarkstyle'\nimport OK   qdarktheme \nimport OK   pyaudio 0.2.14\nimport FAIL whisper ModuleNotFoundError No module named 'whisper'\nimport OK   openai 2.54.0\nimport OK   pytest 9.1.1\nimport FAIL torch ModuleNotFoundError No module named 'torch'\nimport OK   keyring \nimport OK   cryptography 47.0.0\nimport OK   numpy 2.5.3\nimport OK   scipy 1.18.1\nimport FAIL sklearn ModuleNotFoundError No module named 'sklearn'\nQApplication constructed offscreen: QApplication\n",
+  "timed_out": false
+}

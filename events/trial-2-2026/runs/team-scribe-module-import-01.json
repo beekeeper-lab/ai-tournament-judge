@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/trial-2-2026/team-scribe:/submission:ro,Z localhost/atj-trial2-scribe:67969dd python3 -c 'import sys, traceback\nsys.path.insert(0, '\"'\"'/submission/src'\"'\"')\nmods = ('\"'\"'version'\"'\"','\"'\"'config.settings'\"'\"','\"'\"'config.logging_config'\"'\"','\"'\"'gui.constants'\"'\"','\"'\"'gui.qt_app'\"'\"','\"'\"'gui.qt_main_window'\"'\"',\n        '\"'\"'audio.recorder'\"'\"','\"'\"'transcription.whisper_service'\"'\"','\"'\"'transcription.speaker_service'\"'\"','\"'\"'transcription.diarization'\"'\"',\n        '\"'\"'ai.summarizer'\"'\"','\"'\"'ai.prompt_templates'\"'\"','\"'\"'vault.manager'\"'\"','\"'\"'export.markdown_generator'\"'\"',\n        '\"'\"'export.transcription_exporter'\"'\"','\"'\"'utils.retry'\"'\"','\"'\"'utils.formatting'\"'\"')\nfor mod in mods:\n    try:\n        __import__(mod); print('\"'\"'import OK  '\"'\"', mod)\n    except Exception as e:\n        tb = traceback.extract_tb(sys.exc_info()[2])[-1]\n        print('\"'\"'import FAIL'\"'\"', mod, '\"'\"'->'\"'\"', type(e).__name__, e, '\"'\"'| at'\"'\"', tb.filename + '\"'\"':'\"'\"' + str(tb.lineno))'",
+  "completed_at": "2026-09-22T00:07:09Z",
+  "duration_seconds": 2.136,
+  "exit_status": 0,
+  "image": "localhost/atj-trial2-scribe:67969dd",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 300,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-22T00:07:07Z",
+  "stderr": "",
+  "stdout": "import OK   version\nimport OK   config.settings\nimport OK   config.logging_config\nimport OK   gui.constants\nimport FAIL gui.qt_app -> ModuleNotFoundError No module named 'qdarkstyle' | at /submission/src/gui/qt_app.py:11\nimport FAIL gui.qt_main_window -> ModuleNotFoundError No module named 'qdarkstyle' | at /submission/src/gui/qt_app.py:11\nimport OK   audio.recorder\nimport OK   transcription.whisper_service\nimport OK   transcription.speaker_service\nimport OK   transcription.diarization\nimport OK   ai.summarizer\nimport OK   ai.prompt_templates\nimport OK   vault.manager\nimport OK   export.markdown_generator\nimport OK   export.transcription_exporter\nimport OK   utils.retry\nimport OK   utils.formatting\n",
+  "timed_out": false
+}

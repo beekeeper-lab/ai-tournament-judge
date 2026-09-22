@@ -1,0 +1,32 @@
+# Evidence image for team-scribe (ScribeVault).
+# Debian slim, not alpine: PySide6 ships manylinux wheels and no musl wheel.
+# Built with network so the container can RUN with --network none.
+#
+# Contents are exactly what the submission declares and nothing more.
+# requirements.txt and requirements-test.txt are installed verbatim. Anything
+# the code imports but does not declare is left missing on purpose: the failure
+# is the evidence, and supplying it would hide a real gap in the team's own
+# install path. `src/gui/qt_app.py:11` imports `qdarkstyle` while
+# requirements.txt declares `pyqtdarktheme`, which imports as `qdarktheme`.
+#
+# System packages, each tied to a declared requirement:
+#   portaudio19-dev, gcc, python3-dev  - pyaudio builds from source on Linux
+#   libgl1, libegl1, libglib2.0-0,     - PySide6 links these even under the
+#   libxkbcommon0, libdbus-1-3,          offscreen platform plugin. libglib is
+#   libfontconfig1, libfreetype6,        not optional: without it `import
+#   libxrender1, libxext6, libsm6,       PySide6.QtWidgets` fails outright
+#   libxcb-*, libx11-xcb1
+# No audio device and no display are provided. QT_QPA_PLATFORM=offscreen is the
+# event's recorded decision for configuration F7.
+FROM docker.io/library/python:3.12-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      gcc python3-dev portaudio19-dev \
+      libgl1 libegl1 libglib2.0-0 libxkbcommon0 libdbus-1-3 \
+      libfontconfig1 libfreetype6 libxrender1 libxext6 libsm6 libice6 \
+      libx11-xcb1 libxcb1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 \
+      libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 \
+      libxcb-sync1 libxcb-xfixes0 libxcb-xinerama0 libxkbcommon-x11-0 \
+ && rm -rf /var/lib/apt/lists/*
+COPY requirements.txt requirements-test.txt /tmp/
+RUN pip install --no-cache-dir -r /tmp/requirements.txt -r /tmp/requirements-test.txt
+ENV QT_QPA_PLATFORM=offscreen

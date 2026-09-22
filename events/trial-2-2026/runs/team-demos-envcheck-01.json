@@ -1,0 +1,22 @@
+{
+  "command": "podman run --rm --network none --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL --security-opt no-new-privileges --pids-limit 256 --memory 1g --cpus 1.0 --user 65534:65534 --workdir /submission --env HOME=/tmp --volume /home/gregg/Nextcloud/workspace/Software_Dev_Tournament/workspaces/trial-2-2026/team-demos:/submission:ro,Z localhost/atj-trial2-demos:dc35f69 python3 -c 'import sys, os, platform, socket\nprint('\"'\"'python'\"'\"', sys.version.split()[0]); print('\"'\"'platform'\"'\"', platform.platform())\nprint('\"'\"'cwd'\"'\"', os.getcwd(), '\"'\"'uid'\"'\"', os.getuid())\nprint(open('\"'\"'/etc/os-release'\"'\"').readline().strip())\nfor m in ('\"'\"'anthropic'\"'\"','\"'\"'requests'\"'\"','\"'\"'httpx'\"'\"','\"'\"'uv'\"'\"'):\n    try:\n        __import__(m); print('\"'\"'import OK  '\"'\"', m)\n    except Exception as e:\n        print('\"'\"'import FAIL'\"'\"', m, type(e).__name__)\ns = socket.socket(); s.settimeout(3)\ntry:\n    s.connect(('\"'\"'1.1.1.1'\"'\"', 443)); print('\"'\"'EGRESS REACHED 1.1.1.1:443'\"'\"')\nexcept Exception as e:\n    print('\"'\"'egress blocked:'\"'\"', type(e).__name__, e)\ntry:\n    print('\"'\"'dns:'\"'\"', socket.gethostbyname('\"'\"'api.anthropic.com'\"'\"'))\nexcept Exception as e:\n    print('\"'\"'dns blocked:'\"'\"', type(e).__name__, e)'",
+  "completed_at": "2026-09-22T00:05:31Z",
+  "duration_seconds": 0.562,
+  "exit_status": 0,
+  "image": "localhost/atj-trial2-demos:dc35f69",
+  "limits": {
+    "cpus": "1.0",
+    "memory": "1g",
+    "output_bytes": 262144,
+    "pids": 256,
+    "timeout_seconds": 120,
+    "tmpfs_size": "64m"
+  },
+  "output_truncated": false,
+  "runtime": "podman",
+  "runtime_version": "6.1.0",
+  "started_at": "2026-09-22T00:05:30Z",
+  "stderr": "",
+  "stdout": "python 3.12.14\nplatform Linux-7.2.2-arch1-1-x86_64-with-glibc2.41\ncwd /submission uid 65534\nPRETTY_NAME=\"Debian GNU/Linux 13 (trixie)\"\nimport FAIL anthropic ModuleNotFoundError\nimport FAIL requests ModuleNotFoundError\nimport FAIL httpx ModuleNotFoundError\nimport FAIL uv ModuleNotFoundError\negress blocked: OSError [Errno 101] Network is unreachable\ndns blocked: gaierror [Errno -3] Temporary failure in name resolution\n",
+  "timed_out": false
+}
