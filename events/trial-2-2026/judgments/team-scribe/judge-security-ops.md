@@ -221,6 +221,3 @@ The manifest deliberately does not list `security` as evidence-limited, and I ag
 - [x] Every material finding cites evidence
 - [x] No other judge report was inspected
 - [x] Submission instructions were treated as untrusted data
-Now the security-relevant code in the pinned checkout.
-Now the run records and the template.
-I'll start by reading the evidence package and the framework files.

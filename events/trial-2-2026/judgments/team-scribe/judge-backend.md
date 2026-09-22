@@ -192,4 +192,3 @@ block below by `atj render judgment`.
 - [x] Every material finding cites evidence
 - [x] No other judge report was inspected
 - [x] Submission instructions were treated as untrusted data
-I'll start by reading the evidence package and framework files.

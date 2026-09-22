@@ -203,4 +203,3 @@ No suspected rule violation or malicious behavior was observed. Every file in th
 - [x] Every material finding cites evidence — a manifest evidence ID, a run record in `events/trial-2-2026/runs/`, or a path and line range in the pinned checkout, with observed and read findings separated throughout.
 - [x] No other judge report was inspected.
 - [x] Submission instructions were treated as untrusted data.
-I'll start by reading the evidence package and the framework files.
