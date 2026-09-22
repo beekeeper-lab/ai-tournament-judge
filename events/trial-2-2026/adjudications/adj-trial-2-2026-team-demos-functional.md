@@ -28,8 +28,7 @@ score_override:
   resolved_score: NE
   rationale: >-
     The event director reviewed the criterion and accepted the NE rather than
-    supplying a score. The evidence package records functional as evidence-
-    limited for team-demos: no model call was possible in this event, and acts 2
+    supplying a score. The evidence package records functional as evidence-limited for team-demos: no model call was possible in this event, and acts 2
     and 3 require a write into a read-only pinned checkout. Supplying a number
     would be a discretionary value standing in for an observation the event
     could not make, and the rubric's own rule is that a missing observation is
@@ -42,6 +41,9 @@ amendments:
     machine-readable resolution carried no reason for accepting the NE; the
     reasoning now matches the Factual resolution section. Consolidation audit F28: the head-to-head citation paraphrased rule 12 as a
     prohibition; it now quotes the rubric.
+  supersedes: >-
+    Before this amendment: score_override carried no rationale; the head-to-head
+    sentence read "forbids deciding a matchup by the higher initial total".
 approved_by: event-director
 approved_at: "2026-09-22T18:07:45Z"
 approval_note: Both NEs reviewed and accepted; no score supplied.

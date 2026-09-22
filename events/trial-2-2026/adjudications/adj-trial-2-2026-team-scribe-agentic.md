@@ -49,6 +49,11 @@ amendments:
     judge-backend's agentic score as the development-time agent configuration;
     that judgment rests on the runtime AI path and ev-scribe-11. The question,
     the resolution and the human decision are unchanged.
+  supersedes: >-
+    Before this amendment: score_override carried no rationale; the head-to-head
+    sentence read "forbids deciding a matchup by the higher initial total"; the
+    disputed-claims row read "`agentic` is scorable at 2 from the development-
+    time agent configuration in the tree".
 approved_by: event-director
 approved_at: "2026-09-22T18:07:45Z"
 approval_note: Both NEs reviewed and accepted; no score supplied.

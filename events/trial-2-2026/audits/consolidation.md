@@ -1,6 +1,6 @@
 ---
 event_id: trial-2-2026
-audit_scope: consolidation stage, both teams, first pass
+audit_scope: consolidation stage, both teams, rounds one and two
 audit_id: consolidation
 team_id: null
 match_id: null
@@ -12,7 +12,7 @@ framework_commit: 7ac67fbecf9a034bba577e0f6639fe428053e5c0
 model_requested: claude-opus-5
 model_used: claude-opus-5
 started_at: "2026-09-22T19:05:00Z"
-completed_at: "2026-09-22T20:02:00Z"
+completed_at: "2026-09-22T22:10:00Z"
 visibility: private
 approval_state: draft
 validation_state: unvalidated
@@ -25,7 +25,7 @@ findings:
     summary: team-scribe attributes a single-judge finding to two judges; judge-product-agentic never mentions .env
     artifact: summaries/team-scribe.md
     repair: attribute to judge-security-ops alone; delete "separately" and the second judge id
-    state: open
+    state: repaired
   - id: F2
     severity: major
     scope: event
@@ -33,7 +33,7 @@ findings:
     summary: the ev-demos-07 row claims the v1.1 POST guard raises for every non-local host; the run record shows one hostile form it does not raise for
     artifact: summaries/team-demos.md
     repair: restate both sites as the manifest does; the schemeless form passes the guard and is rejected by urllib
-    state: open
+    state: repaired
   - id: F3
     severity: major
     scope: event
@@ -41,7 +41,7 @@ findings:
     summary: the security score relationship is inverted; judge-security-ops scored lowest, not highest
     artifact: summaries/team-demos.md
     repair: highest to lowest
-    state: open
+    state: repaired
   - id: F4
     severity: major
     scope: event
@@ -49,7 +49,7 @@ findings:
     summary: three confirmed strengths present one evidence-package scan cited by four judges as four independent confirmations
     artifact: summaries/team-demos.md
     repair: attribute to the evidence package and record that all four judges cited it
-    state: open
+    state: repaired
   - id: F5
     severity: major
     scope: event
@@ -57,7 +57,7 @@ findings:
     summary: PR6 attributed to judge-backend, who recorded that README passage as a strength and as a limit on novelty, not as this risk
     artifact: summaries/team-demos.md
     repair: attribute to judge-product-agentic; restate or drop judge-backend
-    state: open
+    state: repaired
   - id: F6
     severity: major
     scope: event
@@ -65,7 +65,7 @@ findings:
     summary: two justified minority concerns dropped, the substring-heuristic control and the denylist sanitizer
     artifact: summaries/team-demos.md
     repair: carry both, each attributed to its single judge, and add them to Q3
-    state: open
+    state: repaired
   - id: F7
     severity: major
     scope: event
@@ -73,7 +73,7 @@ findings:
     summary: secret handling recorded as confirmed by direct read, when no judge could read any .env file
     artifact: summaries/team-demos.md
     repair: scope the bullet to what was read and cross-reference D0
-    state: open
+    state: repaired
   - id: F8
     severity: major
     scope: event
@@ -81,7 +81,7 @@ findings:
     summary: a conclusion only judge-security-ops drew is reported as drawn by two judges from one manifest cell
     artifact: summaries/team-scribe.md
     repair: attribute the gating conclusion to judge-security-ops and name the shared source
-    state: open
+    state: repaired
   - id: F9
     severity: major
     scope: event
@@ -89,7 +89,7 @@ findings:
     summary: a two-judge evidence-backed weakness dropped, the local transcription default against a base install omitting torch and openai-whisper
     artifact: summaries/team-scribe.md
     repair: add to confirmed weaknesses
-    state: open
+    state: repaired
   - id: F10
     severity: major
     scope: event
@@ -97,7 +97,7 @@ findings:
     summary: the report says several judges turned the agent-instruction surface into evidence about the submission's process, then reports none of it
     artifact: summaries/team-scribe.md
     repair: carry the finding or drop the claim
-    state: open
+    state: repaired
   - id: F11
     severity: major
     scope: event
@@ -105,7 +105,7 @@ findings:
     summary: D3 omits judge-frontend-ux M1, which that judge ranks above an item D3 does carry
     artifact: summaries/team-scribe.md
     repair: add M1 to D3
-    state: open
+    state: repaired
   - id: F12
     severity: minor
     scope: event
@@ -113,7 +113,7 @@ findings:
     summary: present-tense prose says the score block is unrendered while the block is filled; a declaration checkbox is ticked against its own explanation
     artifact: summaries/team-demos.md
     repair: past-tense the provenance sentences to match the section that describes what happened, and reconcile the checkbox
-    state: open
+    state: repaired
   - id: F13
     severity: minor
     scope: event
@@ -121,7 +121,7 @@ findings:
     summary: same false present-tense provenance claim inside the calculation audit checklist
     artifact: summaries/team-scribe.md
     repair: restate in the past tense
-    state: open
+    state: repaired
   - id: F14
     severity: minor
     scope: event
@@ -129,7 +129,7 @@ findings:
     summary: Q6 counts two open judgments-audit findings; three are open, and the same report names the third elsewhere
     artifact: summaries/team-demos.md
     repair: three, and name F21
-    state: open
+    state: repaired
   - id: F15
     severity: minor
     scope: event
@@ -137,7 +137,7 @@ findings:
     summary: a third uncorrected "seven" survives in the judgment while the consolidation states the correction was complete
     artifact: judgments/team-demos/judge-security-ops.md
     repair: correct the executive assessment to seventeen as an amendment, and qualify the consolidation sentence
-    state: open
+    state: repaired
   - id: F16
     severity: minor
     scope: event
@@ -145,7 +145,7 @@ findings:
     summary: a CLAUDE.md-class file surface attributed to all four judges; the submission contains none and no judgment names it
     artifact: summaries/team-demos.md
     repair: drop the clause
-    state: open
+    state: repaired
   - id: F17
     severity: minor
     scope: event
@@ -153,7 +153,7 @@ findings:
     summary: ev-demos-02 cited for README section structure it does not record
     artifact: summaries/team-demos.md
     repair: move the structure claims onto the grep and the judges' reads
-    state: open
+    state: repaired
   - id: F18
     severity: minor
     scope: event
@@ -161,7 +161,7 @@ findings:
     summary: a three-judge independent code reading where one judge read the submission's README instead
     artifact: summaries/team-demos.md
     repair: name the two code readers and record the third as concurring from the README
-    state: open
+    state: repaired
   - id: F19
     severity: minor
     scope: event
@@ -169,7 +169,7 @@ findings:
     summary: three blocking defects attributed to judge-backend, who labels two
     artifact: summaries/team-scribe.md
     repair: restate the count
-    state: open
+    state: repaired
   - id: F20
     severity: minor
     scope: event
@@ -177,7 +177,7 @@ findings:
     summary: D2 mis-summarises what the three concurring judges deducted for
     artifact: summaries/team-scribe.md
     repair: list deductions per judge
-    state: open
+    state: repaired
   - id: F21
     severity: minor
     scope: event
@@ -185,7 +185,7 @@ findings:
     summary: ev-scribe-13 cited for a pipeline-stage mapping the manifest does not make
     artifact: summaries/team-scribe.md
     repair: cite the judge for the mapping and the evidence id for the counts
-    state: open
+    state: repaired
   - id: F22
     severity: minor
     scope: event
@@ -193,7 +193,7 @@ findings:
     summary: two conclusions stated as verified where the method was a five-path enumeration and a static grep over src only
     artifact: summaries/team-scribe.md
     repair: state the method and drop "verified the wider absence"
-    state: open
+    state: repaired
   - id: F23
     severity: minor
     scope: event
@@ -201,7 +201,7 @@ findings:
     summary: the blockers table still shows ADJ-1 and ADJ-2 deferred with no resolution artifact, contradicting the same file's team-progress table
     artifact: status.md
     repair: close both rows against their adjudication records
-    state: open
+    state: repaired
   - id: F24
     severity: minor
     scope: event
@@ -209,7 +209,7 @@ findings:
     summary: one out-of-order pair in the activity log, the round-three repair row before the gate row it precedes in time
     artifact: status.md
     repair: reorder
-    state: open
+    state: repaired
   - id: F25
     severity: minor
     scope: event
@@ -217,7 +217,7 @@ findings:
     summary: the consolidation ledger row and last_updated are stamped twelve minutes before the artifacts they record finished
     artifact: status.md
     repair: restamp both to the artifacts' completed_at or later
-    state: open
+    state: repaired
   - id: F26
     severity: minor
     scope: framework
@@ -225,7 +225,7 @@ findings:
     summary: atj score requires an adjudication rationale only for severe disagreement, so an accepted NE can carry no machine-readable reason
     artifact: atj/scoring.py
     repair: require a rationale for any resolution that disposes of an NE
-    state: open
+    state: deferred
   - id: F27
     severity: minor
     scope: framework
@@ -233,7 +233,7 @@ findings:
     summary: the agreement band and outlier detection are computed from scored judges only, so a criterion half the panel could not judge is labelled aligned and outlier detection silently switches off
     artifact: atj/scoring.py
     repair: qualify the band when NE judges exist, and record that outlier detection did not run
-    state: open
+    state: deferred
   - id: F28
     severity: advisory
     scope: event
@@ -241,7 +241,7 @@ findings:
     summary: the head-to-head rule is paraphrased as "forbids deciding by the higher initial total" where the rubric says "do not merely select"
     artifact: summaries/team-scribe.md
     repair: quote the rubric
-    state: open
+    state: repaired
   - id: F29
     severity: advisory
     scope: event
@@ -249,7 +249,7 @@ findings:
     summary: the adjudication's disputed-claims row misstates the basis of judge-backend's agentic score; the consolidation characterises it correctly
     artifact: adjudications/adj-trial-2-2026-team-scribe-agentic.md
     repair: correct the row by amendment, or record the discrepancy
-    state: open
+    state: repaired
   - id: F30
     severity: advisory
     scope: event
@@ -257,7 +257,7 @@ findings:
     summary: template operator scaffolding retained in the shipped report, the same class the judgments audit deferred as house style
     artifact: summaries/team-demos.md
     repair: none mid-event; settle the class at the framework level
-    state: open
+    state: accepted
   - id: F31
     severity: advisory
     scope: event
@@ -265,7 +265,7 @@ findings:
     summary: five further single-judge items not carried by either report
     artifact: summaries/team-demos.md
     repair: carry or record as deliberately dropped
-    state: open
+    state: repaired
   - id: F32
     severity: advisory
     scope: event
@@ -273,7 +273,7 @@ findings:
     summary: a source discrepancy between two judges' line ranges for one defect is resolved by omitting the line numbers rather than recording it
     artifact: summaries/team-scribe.md
     repair: record both ranges
-    state: open
+    state: repaired
   - id: F33
     severity: advisory
     scope: event
@@ -281,7 +281,7 @@ findings:
     summary: D0 propagates the judgments audit's "different methods, no shared wording" where both judges describe the same two tools
     artifact: summaries/team-demos.md
     repair: qualify when repeating the prior audit's wording
-    state: open
+    state: repaired
   - id: F34
     severity: advisory
     scope: event
@@ -289,12 +289,118 @@ findings:
     summary: both reports enumerate exploitable weaknesses in third-party repositories at exact file and line; the disclosure question reaches the dossier stage undecided
     artifact: summaries/team-demos.md
     repair: settle disclosure with the event director before the dossier stage
-    state: open
+    state: accepted
+  - id: N1
+    severity: blocking
+    scope: event
+    blocking: true
+    summary: the repair said _last_flushed_count is never read; recorder.py:349 reads it, and the judge had written "logged but never used to make the write incremental"
+    artifact: summaries/team-scribe.md
+    repair: restore the judge's formulation
+    state: repaired
+  - id: N2
+    severity: major
+    scope: event
+    blocking: false
+    summary: the repair invented the directory src/gui/widgets/, which does not exist at the pin
+    artifact: summaries/team-scribe.md
+    repair: correct to src/gui/main_window/animated_button.py
+    state: repaired
+  - id: N3
+    severity: major
+    scope: event
+    blocking: false
+    summary: the D2 rewrite turned a largely shared deduction set into three disjoint ones; all three judges deduct for the public KDF input and the two environment-read constructors
+    artifact: summaries/team-scribe.md
+    repair: shared deductions once, then each judge's addition
+    state: repaired
+  - id: N4
+    severity: major
+    scope: event
+    blocking: false
+    summary: the annotation written to justify not reordering the ledger was false on both claims; audits/judgments.md carries an exact completed_at of 14:17:00Z
+    artifact: status.md
+    repair: restamp from the artifact and order by stamp
+    state: repaired
+  - id: N5
+    severity: major
+    scope: event
+    blocking: false
+    summary: the repair round left no activity-log row, so the stage's re-audit had no ledger anchor
+    artifact: status.md
+    repair: add the row and derive last_updated from it
+    state: repaired
+  - id: N6
+    severity: major
+    scope: event
+    blocking: false
+    summary: the F2 repair undercounted the egress guard at two raises; the run record shows three of five, including the protocol-relative form
+    artifact: summaries/team-demos.md
+    repair: state three of five and name the form that never reaches the guard
+    state: repaired
+  - id: N7
+    severity: major
+    scope: event
+    blocking: false
+    summary: PD18 was added from an unverified advisory and no team-demos judgment supports it; the source records the point as unscored inference from the generator only
+    artifact: summaries/team-demos.md
+    repair: removed before re-audit, with Q3 corrected
+    state: repaired
+  - id: N8
+    severity: minor
+    scope: event
+    blocking: false
+    summary: eight statements across both summaries drawn stronger than their source, or left with a broken antecedent, by isolated edits
+    artifact: summaries/team-scribe.md
+    repair: restore each source's scope and qualifier
+    state: repaired
+  - id: N9
+    severity: minor
+    scope: event
+    blocking: false
+    summary: the F18 repair left the clause it replaced in place beside its replacement
+    artifact: summaries/team-demos.md
+    repair: delete the duplicate
+    state: repaired
+  - id: N10
+    severity: minor
+    scope: event
+    blocking: false
+    summary: "'unchanged' from a re-render proves the block matches renderer output, not that nobody transcribed it; the inference was asserted at three sites"
+    artifact: summaries/team-demos.md
+    repair: state what the check establishes
+    state: repaired
+  - id: N11
+    severity: minor
+    scope: event
+    blocking: false
+    summary: the amendment cross-referenced a D-series defect for the empty-hostname point, which is K4 under risks
+    artifact: judgments/team-demos/judge-security-ops.md
+    repair: cite K4
+    state: repaired
+  - id: N12
+    severity: minor
+    scope: framework
+    blocking: false
+    summary: consolidated reports have no amendment form either, so a panel report rewritten after its audit still carries the audited version's completed_at and framework_commit
+    artifact: schemas/consolidated-report.schema.json
+    repair: one amendment form for every artifact class, with W12
+    state: deferred
 ---
 
 # Consolidation Audit — both teams, first pass
 
 ## Result
+
+**FAIL**, superseded in place after round two. Round one: one blocking finding,
+ten major, fourteen minor, seven advisory. Round two, scoped to the repair diff:
+all thirty-two round-one findings closed except the two deliberately deferred to
+the framework and the two accepted, and **twelve new defects the repair itself
+introduced**, one of them blocking. All twelve are now repaired and none has been
+re-audited, so the gate stays shut and round three is the remaining work.
+
+Round one's original text follows unchanged below. The round-two record is the
+section after it.
 
 **FAIL.** One blocking finding, ten major, fourteen minor, seven advisory.
 
@@ -540,3 +646,40 @@ records stay inside private artifacts and are quoted into nothing.
 findings do not hold the gate mechanically, and they must still be repaired and
 re-audited before the dossier stage reads these reports, because every one of
 them is a statement about evidentiary weight that a dossier would inherit.
+
+## Round two — the repair audited
+
+Scope: `git diff 5b4c0ac..4ce5cbb` over both summaries, the amended judgment, both
+adjudications and `status.md`, plus the working-tree delta that removed PD18.
+Arithmetic was excluded and separately re-verified: `atj score` regenerated both
+JSON artifacts and they reproduce identically, and `atj render consolidated`
+reports `unchanged` on both reports.
+
+Thirty of the thirty-two round-one findings are repaired. `F26` and `F27` are
+deferred to `docs/0.5.0-beta-plan.md` (W10 extended, W14 added) rather than
+changing `atj/scoring.py` while a stage's artifacts are already written. `F30`
+and `F34` are accepted: the template scaffolding is a framework-level question,
+and disclosure is the event director's call before the dossier stage.
+
+Twelve defects were introduced by the repair, `N1` through `N12` in the front
+matter. The pattern is worth stating, because it is the same one round one
+found. Three of the twelve are claims drawn stronger than their source —
+`N1` deleted a judge's qualifier and produced a statement the code disproves,
+`N3` turned shared deductions into disjoint ones, `N7` promoted an explicitly
+unscored inference to a confirmed, directly-read, scored deficiency. `N2` and
+`N6` are worse in kind: a citation to a directory that does not exist at the
+pin, and a restatement of the egress evidence that undercounted the control it
+was correcting. `N4` is a false annotation written to justify declining a
+repair. Four are antecedents and counts broken by editing sentences in
+isolation.
+
+`N7` was caught during the round rather than by the re-audit: PD18 was added to
+team-demos from an unverified advisory, and no team-demos judgment mentions a
+medal, an emoji, `aria-hidden` or a screen reader. It was removed and the Q3
+enumeration corrected before the re-audit reported. The removal is recorded in
+the activity log; nothing else in the report depended on it.
+
+Every `N` finding is repaired in the working tree. None has been verified by a
+subsequent audit, and `CLAUDE.md` does not permit advancing on that basis. The
+gate stays `pending` until round three checks the round-two repairs, which is
+the only work this stage still owes.

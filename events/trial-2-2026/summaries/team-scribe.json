@@ -40,7 +40,8 @@
           {
             "amended_at": "2026-09-22T20:40:00Z",
             "amended_by": "event-director",
-            "reason": "Consolidation audit F29: the disputed-claims row misstated the basis of judge-backend's agentic score as the development-time agent configuration; that judgment rests on the runtime AI path and ev-scribe-11. The question, the resolution and the human decision are unchanged."
+            "reason": "Consolidation audit F29: the disputed-claims row misstated the basis of judge-backend's agentic score as the development-time agent configuration; that judgment rests on the runtime AI path and ev-scribe-11. The question, the resolution and the human decision are unchanged.",
+            "supersedes": "Before this amendment: score_override carried no rationale; the head-to-head sentence read \"forbids deciding a matchup by the higher initial total\"; the disputed-claims row read \"`agentic` is scorable at 2 from the development- time agent configuration in the tree\"."
           }
         ],
         "authority_withheld": null,

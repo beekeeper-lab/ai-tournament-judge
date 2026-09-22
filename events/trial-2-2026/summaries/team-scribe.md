@@ -139,7 +139,8 @@ independent derivations, and it is stated as such.
   (`ev-scribe-04`, `runs/team-scribe-module-import-01.json`); the tree is 56
   modules in eight packages (`ev-scribe-13`, which records the counts and the
   package names for proportion judgments), and judge-backend maps those packages
-  onto the four documented pipeline stages. All four judges credit this, and three of them name it as the
+  onto the four documented pipeline stages. All four judges credit the service
+  layer, and three of them name it as the
   reason `functional` is not at the bottom anchor.
 - **The external surface is narrow and verified rather than asserted.** One
   provider through one SDK, imported in exactly four modules, with no `requests`,
@@ -226,10 +227,10 @@ independent derivations, and it is stated as such.
   `SECURITY.md:34` claims all dependencies are pinned against the range bounds at
   `requirements.txt:18-28`; `SECURITY.md:25` claims summary-viewer content is
   HTML-escaped while the markdown path at `src/gui/summary_viewer/render.py`
-  renders unescaped into `setHtml`. The two judges anchor the same defect at
-  different ranges, `:241-266` and `:252-254`; both were verified and neither is
-  withdrawn. Found independently by judge-backend and
-  judge-security-ops. judge-security-ops records that
+  renders unescaped into `setHtml`. Found independently by judge-backend and
+  judge-security-ops, who anchor the same defect at different ranges,
+  `:241-266` and `:252-254`; the judgments stage audit verified both against the
+  pinned checkout and neither is withdrawn. judge-security-ops records that
   `README.md:103-107` recommends an installer that writes a key into `.env`
   and `README.md:119` states twelve lines later that keys are never stored
   there — one judge, uncorroborated and uncontradicted — and
@@ -250,17 +251,21 @@ independent derivations, and it is stated as such.
 - **The default transcription path is not installable from the declared base
   install.** `src/config/settings.py:31` and `README.md:136` default
   transcription to `local`, while the declared base install omits `torch` and
-  `openai-whisper` (`ev-scribe-01`), so a default first run lands in the
-  unconfigured path. judge-product-agentic and judge-frontend-ux, uncontradicted.
-  This is distinct from the event's own inability to install local Whisper, which
-  is recorded under open questions.
+  `openai-whisper` (`ev-scribe-01`), so a default first run appears to land
+  straight in the unconfigured path. judge-product-agentic scored it, as its
+  second `product` deficiency; judge-frontend-ux recorded it as R-c, an unobserved
+  risk it explicitly did not score, and notes the error text for that path is well
+  written. The behaviour was not observed by either. This is distinct from the
+  event's own inability to install local Whisper, which is recorded under open
+  questions.
 - **The submission's own task records claim completion the tree does not
   support.** judge-product-agentic records that 52 of 54 beans are marked Done
   under a `CLAUDE.md` rule requiring tests to pass, while 26 tests fail
   (`ev-scribe-05`, `runs/team-scribe-pytest-01.json`); judge-security-ops records
   that BEAN-037 marks a dependency cleanup complete while the gap it names
   persists. Two judges, from the agent-instruction surface read as data. Both
-  scored it as evidence about process, not as a code defect.
+  recorded it as evidence about the project's own process; neither scored it
+  against a criterion.
 
 ## Material disagreements
 
@@ -309,13 +314,15 @@ the higher initial total."
 
 judge-backend (3, high), judge-frontend-ux (3, medium) and judge-product-agentic
 (3, high) all reach "primary expectations met": the implementation at
-`ev-scribe-14` is responsible for a single-user desktop tool. Their deductions
-differ: judge-backend takes documentation accuracy and the two environment-read
-key sites; judge-frontend-ux credits the documentation at `README.md:117-128` and
-deducts instead for the unsalted legacy path and the missing key-revocation
-affordance; judge-product-agentic deducts for the public KDF input and carries
-the absent privacy, consent and retention statement here as well as under
-`product`. All three are weaknesses inside a working design.
+`ev-scribe-14` is responsible for a single-user desktop tool. All three deduct
+for the same two things: the public KDF input at `src/config/settings.py:388`,
+and the two environment-read constructors that bypass the keyring and the
+encrypted store. Each then adds something of its own — judge-backend the
+documentation overstatement in `SECURITY.md`, judge-frontend-ux the unsalted
+legacy path and the missing key-revocation affordance while crediting the
+documentation at `README.md:117-128`, judge-product-agentic the absent privacy,
+consent and retention statement it also raises under `product`. All of these are
+weaknesses inside a working design.
 
 judge-security-ops (2, high) assembles a chain the other three do not. Since the
 GUI cannot import, the Settings dialog that `README.md:117-124` routes the key
@@ -346,7 +353,7 @@ evidence-backed and it changes what a maintainer should fix first.
 
 ### D3 — Minority findings raised by one judge, neither corroborated nor contradicted
 
-Preserved because each is evidence-backed and none was disputed. Three of them
+Preserved because each is evidence-backed and none was disputed. Most of them
 rest on static reads of the pinned checkout with no manifest evidence id — in
 scope under `event.md:158` and verified by the judging audit, but untraceable
 through the evidence index (audit F12, carried here deliberately).
@@ -379,16 +386,20 @@ through the evidence index (audit F12, carried here deliberately).
   (`src/gui/main_window/_actions.py:87-118`) and marks a stylesheet-grammar
   concern (`qt_app.py:57-234`) as inference, explicitly not load-bearing on the
   score.
-- **judge-frontend-ux, two further interaction defects.** The recording animation
-  cannot be stopped and honours no reduced-motion preference, and its docstring
-  states the inverse of what the code does
-  (`src/gui/widgets/animated_button.py:1-5, 60, 66-70`); icon paths are resolved
-  relative to the working directory (`src/gui/qt_app.py:246, 261, 381`), so the
-  icons are missing whenever the app is launched from anywhere else.
+- **judge-frontend-ux, two further interaction defects (M4 and R-b).** An
+  infinite opacity animation that cannot be stopped during recording and honours
+  no reduced-motion setting, with a docstring at `:1-5` describing the inverse of
+  the implemented behaviour (`src/gui/main_window/animated_button.py:1-5, 60,
+  66-70`). And window and tray icon assets loaded from working-directory-relative
+  paths (`src/gui/qt_app.py:261, 381`; the judge's citation also carries `:246`,
+  which is the font directory), so they are likely absent when the app is
+  launched from anywhere but the repository root. R-b is recorded by that judge
+  as not observed.
 - **judge-backend, the checkpoint flush is quadratic.**
-  `src/audio/recorder.py:326-352` re-walks the whole buffer on every flush, and
-  `_last_flushed_count` at `:346` is recorded and never read. This judge makes
-  fixing it their highest-value improvement on `innovation`.
+  `src/audio/recorder.py:326-352` joins all of `current_frames` on every flush,
+  and `_last_flushed_count` is recorded at `:346` and logged but never used to
+  make the write incremental. This judge makes fixing it their highest-value
+  improvement on `innovation`.
 - **judge-product-agentic, no privacy, consent or retention statement.** For an
   application that records conversations and uploads them, `README.md` carries
   none — a verified absence, scored under both `product` and `security` by that
