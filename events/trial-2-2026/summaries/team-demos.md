@@ -142,10 +142,9 @@ in `evidence_limited_criteria`: the inability to observe is established fact, no
 a judge's failure to find something. Confidence does not track score direction —
 on `reliability` the judge scoring lowest (`judge-product-agentic`, 2) recorded
 high confidence, while all four recorded medium on `product`, `agentic` and
-`innovation` — the three criteria they scored highest, and the three whose
-ceiling every judge located in the unobserved live behaviour. `security` is high
-from all four despite a one-point spread, so it distinguishes nothing either
-way.
+`innovation`, the three criteria whose ceiling every judge located in the
+unobserved live behaviour. `security` is high from all four despite a one-point
+spread, so it distinguishes nothing either way.
 
 ## Per-criterion agreement analysis
 
@@ -624,9 +623,7 @@ section, because no such defect exists.** See Material disagreements, D0.
   under `innovation` as a limit on the novelty claim, that the injection
   succeeding is arranged rather than discovered. `judge-product-agentic` notes
   the READMEs are honest about it and adds that honesty about an undetected
-  failure is not detection; `judge-frontend-ux` reads the same passage less
-  generously, as stage-failure risk handled in prose rather than in
-  verification.
+  failure is not detection.
 - **PR7 — Demo 04's hardened classifier is a 13-entry regex phrase list**, which
   is payload filtering, the approach the corpus's own thesis says is never the
   fix; the provenance half of that control is structural and sound, the gate half

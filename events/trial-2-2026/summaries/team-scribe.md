@@ -229,8 +229,8 @@ independent derivations, and it is stated as such.
   HTML-escaped while the markdown path at `src/gui/summary_viewer/render.py`
   renders unescaped into `setHtml`. Found independently by judge-backend and
   judge-security-ops, who anchor the same defect at different ranges,
-  `:241-266` and `:252-254`; the judgments stage audit verified both against the
-  pinned checkout and neither is withdrawn. judge-security-ops records that
+  `:241-266` and `:252-254`; both ranges fall inside `markdown_to_html` at the
+  pin and neither is withdrawn. judge-security-ops records that
   `README.md:103-107` recommends an installer that writes a key into `.env`
   and `README.md:119` states twelve lines later that keys are never stored
   there — one judge, uncorroborated and uncontradicted — and
@@ -314,12 +314,20 @@ the higher initial total."
 
 judge-backend (3, high), judge-frontend-ux (3, medium) and judge-product-agentic
 (3, high) all reach "primary expectations met": the implementation at
-`ev-scribe-14` is responsible for a single-user desktop tool. All three deduct
-for the same two things: the public KDF input at `src/config/settings.py:388`,
-and the two environment-read constructors that bypass the keyring and the
-encrypted store. Each then adds something of its own — judge-backend the
-documentation overstatement in `SECURITY.md`, judge-frontend-ux the unsalted
-legacy path and the missing key-revocation affordance while crediting the
+`ev-scribe-14` is responsible for a single-user desktop tool. All three name the
+same two environment-read constructors, `whisper_service.py:92-96` and
+`summarizer.py:50-54`, which prefer the settings manager and read
+`OPENAI_API_KEY` directly when none is supplied or it returns no key, so the
+documented keyring-first ordering holds for `settings.py` and is one of two
+paths elsewhere.
+All three also record the retained unsalted legacy derivation at `:393`. The
+public KDF input at `src/config/settings.py:388` is a deduction for two of them:
+judge-product-agentic and judge-frontend-ux both hold that it makes the fallback
+weaker than the claim implies, while judge-backend records the same property,
+calls it defensible for this class of application, and names its own deductions
+as documentation accuracy and a secondary key path. Each judge then adds
+something of its own — judge-backend the three `SECURITY.md` overstatements,
+judge-frontend-ux the missing key-revocation affordance while crediting the
 documentation at `README.md:117-128`, judge-product-agentic the absent privacy,
 consent and retention statement it also raises under `product`. All of these are
 weaknesses inside a working design.
@@ -353,10 +361,10 @@ evidence-backed and it changes what a maintainer should fix first.
 
 ### D3 — Minority findings raised by one judge, neither corroborated nor contradicted
 
-Preserved because each is evidence-backed and none was disputed. Most of them
-rest on static reads of the pinned checkout with no manifest evidence id — in
-scope under `event.md:158` and verified by the judging audit, but untraceable
-through the evidence index (audit F12, carried here deliberately).
+Preserved because each is evidence-backed and none was disputed. All eight rest
+on static reads of the pinned checkout with no manifest evidence id — in scope
+under `event.md:158`, and the class the judging audit recorded as verified but
+untraceable through the evidence index (audit F12, carried here deliberately).
 
 - **judge-backend, the stage-retry feature is dead at this commit.**
   `src/gui/workers/retry_worker.py` references `STAGE_TRANSCRIPTION`,
@@ -558,9 +566,11 @@ capabilities dropped, `no-new-privileges`, uid/gid 65534. Nothing ran on the hos
       time.
 - [x] Deterministic calculations attached — `events/trial-2-2026/summaries/team-scribe.json`,
       produced by `atj score`; `integrity_problems` is empty. The consolidator
-      performed no arithmetic, and the score block above was written by
-      `atj render consolidated` rather than transcribed; re-running the renderer
-      during the consolidation audit reported `unchanged`.
+      performed no arithmetic, and that the score block above was written by
+      `atj render consolidated` rather than transcribed is the consolidator's own
+      declaration; re-running the renderer during the consolidation audit
+      reported `unchanged`, which establishes that the block matches renderer
+      output and not, by itself, who wrote it.
 - [ ] No unresolved `NE` — **fails.** `agentic` is `NE` from judge-frontend-ux and
       judge-security-ops. `adj:trial-2-2026:team-scribe:01` accepted it rather than
       clearing it, so it remains unresolved for scoring: `finalized: false`,
