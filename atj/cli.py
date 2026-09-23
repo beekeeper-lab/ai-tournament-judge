@@ -1757,8 +1757,11 @@ def check_no_duplicate_weights(root: Path) -> list[str]:
 
     rubric = canon.load(root)
     rubric_path = (root / canon.SUBMISSION_RUBRIC).resolve()
+    # Weights are integers. `(?![.\d])` keeps a float that happens to equal one
+    # from matching: a decisive head-to-head value produces a criterion margin of
+    # exactly the weight, written as `15.0` in every `atj matchup` result.
     pattern = _re.compile(
-        r"""["']?(""" + "|".join(rubric.criterion_ids) + r""")["']?\s*[:=]\s*(\d+)"""
+        r"""["']?(""" + "|".join(rubric.criterion_ids) + r""")["']?\s*[:=]\s*(\d+)(?![.\d])"""
     )
     # `atj/data/` is a build-time copy staged by tools/stage_package_data.py. It is
     # generated, git-ignored, and not an editable source.

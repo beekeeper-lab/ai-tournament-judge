@@ -76,6 +76,27 @@ class CanonicalRubricTests(unittest.TestCase):
 
         self.assertEqual(check_no_duplicate_weights(ROOT), [])
 
+    def test_a_decisive_matchup_margin_is_not_a_weight_copy(self):
+        """trial-2-2026: a ±2 value makes the criterion margin equal its weight.
+
+        `"product": 15.0` in an `atj matchup` result is a margin, while
+        `"product": 15` is still a copy and must still be caught.
+        """
+        import shutil
+        import tempfile
+        from atj.cli import check_no_duplicate_weights
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rubric = root / canon.SUBMISSION_RUBRIC
+            rubric.parent.mkdir(parents=True)
+            shutil.copy(ROOT / canon.SUBMISSION_RUBRIC, rubric)
+            (root / "margin.json").write_text('{"product": 15.0}', encoding="utf-8")
+            (root / "copy.json").write_text('{"product": 15}', encoding="utf-8")
+            problems = check_no_duplicate_weights(root)
+        self.assertEqual(len(problems), 1, problems)
+        self.assertIn("copy.json", problems[0])
+
     def test_retired_scripts_no_longer_define_weights(self):
         for name in ("calculate_scores", "build_bracket", "validate_configuration",
                      "validate_reports", "initialize_event"):
