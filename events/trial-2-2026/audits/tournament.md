@@ -1,6 +1,6 @@
 ---
 event_id: trial-2-2026
-audit_scope: tournament stage, round one — the two mu-final-01 pass reports, the atj matchup result and its private report, the draft public summary, the release-check fix 36cd3d5, and the H4 edit in docs/0.5.0-beta-plan.md
+audit_scope: tournament stage, rounds one and two — the two mu-final-01 pass reports, the atj matchup result and its private report, the draft public summary, the release-check fix 36cd3d5, the H4 edit, and the round-one repair aa0de72
 audit_id: tournament
 team_id: null
 match_id: mu:trial-2-2026:final:01
@@ -8,11 +8,11 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.1.0
 persona: judging-auditor@1.1.0
-framework_commit: 36cd3d5ae05923f66de797b26a5f7d7eca701dd9
+framework_commit: aa0de720a0840c39999e142221c158eb5d56f2e7
 model_requested: claude-opus-5
 model_used: claude-opus-5-5[1m]
 started_at: "2026-09-23T18:05:00Z"
-completed_at: "2026-09-23T18:27:09Z"
+completed_at: "2026-09-23T18:36:46Z"
 visibility: private
 approval_state: draft
 validation_state: unvalidated
@@ -22,90 +22,90 @@ findings:
   severity: major
   scope: event
   blocking: false
-  summary: the draft public summary says every runnable part of AI Security Demos "ran as its documentation describes"; the approved manifest records that the dry run used an invocation the submission does not document, and list_verdicts' exit 1 is documented nowhere
-  artifact: scratchpad draft public/mu-final-01.md (not yet under events/trial-2-2026/public/)
-  repair: restate as what the manifest supports, e.g. that the offline parts that could run behaved as described, through an event-chosen invocation, and that the headline acts needing a model were not observed. Re-check before a human approves it
+  summary: round two, partly repaired. The draft now names the undocumented invocation, but still says "Every part of AI Security Demos that could run in this event worked". The manifest execution table ran demo 01's act-1 dry runs, two state tools and an event probe. Nine demos' dry runs were not run and are not recorded as unrunnable, and the draft does not say the model-driven acts were not observed. My round-one repair text ("the offline parts that could run") carried the same overstatement
+  artifact: scratchpad draft public/mu-final-01.md, "Why" paragraph (not yet under events/trial-2-2026/public/)
+  repair: say what was run, not what could run, e.g. "Every part of AI Security Demos the event ran worked", and add that the acts that need a model were not observed (evidence/team-demos/manifest.md:105-114). Re-check before a human approves it
   state: open
 - id: F2
   severity: major
   scope: framework
   blocking: false
-  summary: 36cd3d5 makes check_no_duplicate_weights blind to every float-typed weight copy and to a weight at the end of a sentence; it exempts by number shape, not by provenance
-  artifact: atj/cli.py:1760-1765; tests/test_canonical_model.py:79-98
-  repair: exempt atj matchup output by provenance (the criterion_margins and criteria blocks of a matchup result, or events/*/matchups/*.json), restore the old number match elsewhere, and add a test that a float weight dict in a .py still fails. Record in docs/0.5.0-beta-plan.md if deferred
-  state: open
+  summary: round two, repaired. aa0de72 restores the integer pattern and exempts events/*/matchups/*.json by path. The test now requires integer, float and prose copies elsewhere to be caught. The exemption itself is looser than its comment claims (R3)
+  artifact: atj/cli.py:1760-1794; tests/test_canonical_model.py:79-107
+  repair: done
+  state: repaired
 - id: F3
   severity: minor
   scope: event
   blocking: false
-  summary: mu-final-01.md says both passes applied consolidation F1 and consolidation N6; pass A never cites consolidation F1 and pass B never cites N6
-  artifact: matchups/mu-final-01.md:61-66 (the paragraph beginning "Both passes applied")
-  repair: say which pass cited which correction. Pass A cites consolidation F2 and N6, judgments F1, F19, F4 and F18. Pass B cites judgments F1, consolidation F1, consolidation F2 and judgments F4
-  state: open
+  summary: round two, repaired. The paragraph attributes each correction to the pass that cites it, and every attribution resolves (pass A :70, pass B :54-56 and :69)
+  artifact: matchups/mu-final-01.md:65-71
+  repair: done
+  state: repaired
 - id: F4
   severity: minor
   scope: event
   blocking: false
-  summary: mu-final-01.md says head-to-head.md "forbids selecting on" totals; the rubric says "Do not merely select", the paraphrase consolidation F28 already flagged
-  artifact: matchups/mu-final-01.md:59
-  repair: quote head-to-head.md:12
-  state: open
+  summary: round two, repaired. The report quotes head-to-head.md:12 exactly
+  artifact: matchups/mu-final-01.md:62-63
+  repair: done
+  state: repaired
 - id: F5
   severity: minor
   scope: event
   blocking: false
-  summary: three pass A citations do not carry their claims (ev-demos-02 for a shared README template, judge-security-ops.md:151-161 for Bash(rm:*), judge-security-ops.md:135-139 for a dead recovery feature). No comparison value depends on them
-  artifact: matchup-passes/mu-final-01-pass-a-first.md:79,82,83
-  repair: record the corrected citations as an erratum in matchups/mu-final-01.md. The template ships no amendment mechanism for a pass, so do not hand-edit the pass file or its values
-  state: open
+  summary: round two, repaired. Each erratum resolves. The grant citation omits the enumerated list at team-demos judge-security-ops.md:194 (R7)
+  artifact: matchups/mu-final-01.md:143-147
+  repair: done
+  state: repaired
 - id: F6
   severity: minor
   scope: event
   blocking: false
-  summary: pass B says all five team-demos offline executions "exited as documented, including list_verdicts.py's documented exit 1"; the exit 1 exists only in code, and the dry runs used an undocumented invocation the pass itself cites
-  artifact: matchup-passes/mu-final-01-pass-b-first.md:81
-  repair: erratum in matchups/mu-final-01.md, as for F5
+  summary: round two, partly repaired. The erratum fixes the invocation half. It gives no citation for "exit 1 is behaviour in the code". It is silent on the egress probe, an event-authored python3 -c harness that is one of the five executions pass B calls "exited as documented". "Holds for the documented output" is not true of list_verdicts, whose output and exit status are documented nowhere
+  artifact: matchups/mu-final-01.md:148-151
+  repair: cite 10-show-your-work/demo/scripts/list_verdicts.py:20-21 and 10-show-your-work/demo/README.md:93 at the pin for the exit 1, and add that the egress probe is an event harness (evidence/team-demos/manifest.md:113), not a documented use. Do not touch the pass file
   state: open
 - id: F7
   severity: minor
   scope: event
   blocking: false
-  summary: status.md records no row and no unit for the two passes, the atj matchup resolution or 36cd3d5; last_updated is still 14:52:55Z
+  summary: round two, repaired, with two new defects (R4, R5). Four rows and the unit exist. The unit digest re-derives as 1d4f5a970e3f5dc9 and covers the .md, the .json and both passes
   artifact: status.md
-  repair: add activity-log rows for the passes, the resolution and the framework fix, record the match as a ledger unit as bracket audit F12 did for the draw, and derive last_updated from the last row
-  state: open
+  repair: done
+  state: repaired
 - id: F8
   severity: minor
   scope: event
   blocking: false
-  summary: both passes requested "opus" and ran claude-opus-5-5[1m]; event.md:16 requests claude-opus-5 and the panel ran claude-opus-5. mu-final-01.md records the fact but no one authorized it
+  summary: round two, open by the orchestrator's decision. Both passes ran claude-opus-5-5[1m] against event.md:16's claude-opus-5 and nothing records a decision to accept it. The options are listed in the round-two body
   artifact: matchup-passes/*.md front matter; event.md:16
-  repair: record in status.md, or in an override if the event-director treats model_requested as binding, that the matchup model was inherited from the orchestrating session and why that is acceptable. Both passes used the same model, so order balancing is intact
+  repair: event-director decision, recorded in status.md or as an override. No re-run is required, because both orders share the model
   state: open
 - id: F9
   severity: minor
   scope: framework
   blocking: false
-  summary: the publication gate blocks a 40-hex framework_commit as a private identifier, although the public template requires the field and ids.py:157 accepts 7-64 hex. The sample event never hits this because it uses "uncommitted"
-  artifact: atj/publication.py:88; framework/templates/public-matchup-summary.md:6; atj/ids.py:157
-  repair: exempt the framework_commit front-matter value, or make the template specify the abbreviated form. Defer to a W entry. The draft's 7-character 43e7e50 is an acceptable workaround for this event
-  state: open
+  summary: round two, deferred as W21. Its citations resolve (publication.py:88, common.schema.json:15-18, the template's framework_commit field)
+  artifact: docs/0.5.0-beta-plan.md W21
+  repair: framework window
+  state: deferred
 - id: F10
   severity: minor
   scope: framework
   blocking: false
-  summary: atj validate publication reports CLEAR on an approved public artifact that carries abbreviated submission commits, a repository URL, the affiliation group and integer matchup margins
-  artifact: atj/publication.py:84-108
-  repair: framework scope. Record it against H4, whose kill condition is a raw score or private detail reaching a public artifact while validation passes. The draft contains none of these
-  state: open
+  summary: round two, deferred as W22 and tied to H4
+  artifact: docs/0.5.0-beta-plan.md W22
+  repair: framework window
+  state: deferred
 - id: F11
   severity: minor
   scope: event
   blocking: false
-  summary: the draft public summary's "Both teams did well" overstates two facts. "Ten presenter guides on one consistent template" rests on one judge's generalization from demo 01 (a second judge read five of ten). "Standard library only" ignores the documented API path, which needs the anthropic SDK
+  summary: round two, repaired. "one consistent template" and "standard library only" are gone. "each with its own presenter guide" rests on ev-demos-02 and R1 (manifest.md:76,91). The new "dry run that needs no model or package install" is R2
   artifact: scratchpad draft public/mu-final-01.md
-  repair: e.g. "presenter guides with a shared structure" and "no third-party dependency on its offline paths"
-  state: open
+  repair: done
+  state: repaired
 - id: F12
   severity: advisory
   scope: event
@@ -118,23 +118,23 @@ findings:
   severity: advisory
   scope: event
   blocking: false
-  summary: pass A says judgments F19 withdraws the .env.example defect and F18 "adds the placeholder filter"; F19 accepts the rewritten product rationales and F18 records that no repair was made
-  artifact: matchup-passes/mu-final-01-pass-a-first.md:70
-  repair: note in the F5 erratum. It has no effect on any value
-  state: open
+  summary: round two, repaired. The erratum points to audits/judgments.md, and F18 (no repair made) and F19 (product rationales accepted) say what the erratum implies
+  artifact: matchups/mu-final-01.md:152-153
+  repair: done
+  state: repaired
 - id: F14
   severity: advisory
   scope: event
   blocking: false
-  summary: the pass timestamps, the concurrent launch, the claim that neither judge saw the other or matchups/, and the transcript extraction are unverifiable by this audit
-  artifact: matchup-passes/*.md started_at/completed_at; matchups/mu-final-01.md:42-46,134-145
-  repair: none possible from the repository. Record them as orchestrator-attested, not audited
+  summary: the pass timestamps, the concurrent launch, independence and the transcript extraction are orchestrator-attested. mu-final-01.md:46-48 now says so
+  artifact: matchups/mu-final-01.md:42-48
+  repair: none possible from the repository
   state: accepted
 - id: F15
   severity: advisory
   scope: event
   blocking: false
-  summary: the draft public summary discloses per-criterion comparison outcomes ("no meaningful difference in reliability or innovation"). It is not numeric and not blocked, so disclosing it is the approver's decision
+  summary: the draft discloses per-criterion outcomes in words. Not numeric and not blocked, so disclosure is the approver's decision
   artifact: scratchpad draft public/mu-final-01.md
   repair: approver decides
   state: open
@@ -142,21 +142,271 @@ findings:
   severity: advisory
   scope: framework
   blocking: false
-  summary: the H4 observation line was rewritten mid-event with no amendment note. The substance is a correction and the kill condition is unchanged, so the test is not weakened
-  artifact: docs/0.5.0-beta-plan.md:112-114
-  repair: add a dated amendment note naming commit 77fcc6a and the disclosure override as the reason
-  state: open
+  summary: round two, repaired. A dated amendment under H4 quotes the old text exactly (43e7e50:docs/0.5.0-beta-plan.md:112) and states the kill condition is unchanged. It does not name 77fcc6a, which git log supplies
+  artifact: docs/0.5.0-beta-plan.md:123-126
+  repair: done
+  state: repaired
 - id: F17
   severity: advisory
   scope: framework
   blocking: false
-  summary: check_no_duplicate_weights cannot see a Markdown table although its docstring names one, and both matchup templates put a Weight column in every report
-  artifact: atj/cli.py:1751-1765; framework/templates/matchup-pass-report.md:59; framework/templates/matchup-report.md:43
-  repair: framework window. Either drop the Weight column from the templates or document the column as a rendered read of the rubric
+  summary: round two, deferred as W23
+  artifact: docs/0.5.0-beta-plan.md W23
+  repair: framework window
+  state: deferred
+- id: R1
+  severity: minor
+  scope: event
+  blocking: false
+  summary: aa0de72 was committed with release-check failing and six tests red. The cause was this audit's own round-one F2 table, which quoted weight-shaped copies that the restored pattern now catches. That is evidence the F2 repair works. This round restates them
+  artifact: audits/tournament.md (round-one F2 table); commit aa0de72
+  repair: restated by the auditor in its own report. Confirmed by release-check and pytest after the rewrite
+  state: repaired
+- id: R2
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'the F11 rewrite says the AI Security Demos dry run "needs no model or package install". The documented dry run is `uv run --with anthropic ... --dry-run`, which resolves a PyPI package first (evidence/team-demos/manifest.md:55-58). Only the event''s undocumented invocation needs no install'
+  artifact: scratchpad draft public/mu-final-01.md, "Both teams did well"
+  repair: e.g. "a dry run whose code path needs no model or third-party package"
+  state: open
+- id: R3
+  severity: minor
+  scope: framework
+  blocking: false
+  summary: the F2 exemption skips every .json directly under events/*/matchups/, including events/_template/matchups/, and never checks that the file is atj matchup output. Its comment says "exempt by what it is", and the code exempts by where the file is. A hand-written events/_template/matchups/weights.json holding the functional and product weights passes the check. No such file exists today
+  artifact: atj/cli.py:1788-1794
+  repair: exempt only files that parse as an atj matchup result (for instance, the top-level keys criteria, passes and outcome present), exclude events/_template, and add a test for a hand-written weight dict in a matchups directory. Or record as a W entry
+  state: open
+- id: R4
+  severity: minor
+  scope: event
+  blocking: false
+  summary: status.md last_updated is 18:29:45Z. The last activity row is 18:29:57Z. The repair row claims last_updated was derived from the last row, and it was not
+  artifact: status.md:4 against the final activity-log row
+  repair: set last_updated to the last row's stamp when the next row is added
+  state: open
+- id: R5
+  severity: minor
+  scope: event
+  blocking: false
+  summary: unit matchup:mu-final-01 is recorded with audit_result PASS WITH ADVISORIES. The round-one audit is still draft and unapproved, and the same repair's ledger row says "pending re-audit". The bracket stage recorded its unit's audit result at approval (status.md row 14:52:44Z)
+  artifact: status.md units, matchup:mu-final-01
+  repair: re-record the unit with --audit-result after atj event approve on this report, as the bracket stage did. The digest stays 1d4f5a970e3f5dc9 unless an input changes
+  state: open
+- id: R6
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: the unit's completed_at is 17:26:17Z. The mu-final-01.md content it digests was last changed around 18:29Z by the errata. This matches atj event unit's documented rule that a re-record keeps the original time, and the front matter's completed_at matches the later pass
+  artifact: status.md units, matchup:mu-final-01
+  repair: none required
+  state: accepted
+- id: R7
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: the F5 erratum places the grants at team-demos judge-security-ops.md:49,165,185. All three mention them. The enumerated seventeen-file list is at :194, and :165 is the recommendation to narrow them
+  artifact: matchups/mu-final-01.md:144
+  repair: optional, add :194
   state: open
 ---
 
-# Judging Audit — tournament stage, first pass
+# Judging Audit — tournament stage, round two
+
+## Result
+
+**PASS WITH ADVISORIES.** No finding is blocking. Of the seventeen round-one
+findings, eleven are repaired or accepted, three are deferred to the plan, and
+four stay open: `F1` (major, uncommitted draft), `F6`, `F8` and `F15`. The
+repair added seven findings. `R1` is repaired. `R2`, `R3`, `R4`, `R5` and `R7`
+are open, and `R6` is accepted. No decision artifact changed a value. The pass
+files are byte-unchanged since 77fcc6a, and `mu-final-01.json` is unchanged.
+
+`tournament-audited` may be set once this report is approved. Nothing in
+`findings:` blocks the gate. `F1` and `R2` must be repaired before any human
+approves the public summary, whatever the gate does.
+
+## Scope and artifacts inspected
+
+- `git diff 36cd3d5..aa0de72` and the 18:29:57Z activity-log row, checked against
+  the sources and not against my round-one repair text.
+- The draft public summary at the orchestrator's scratchpad path, as edited in
+  place.
+- `atj/cli.py` `check_no_duplicate_weights`, probed with hand-written files.
+- Every erratum citation, and the F3/F4 paragraph, against the pass files,
+  `audits/judgments.md`, `framework/rubrics/head-to-head.md`, both teams'
+  judgments and `evidence/team-demos/manifest.md`.
+- `status.md`, `atj event unit ... list`, `atj.event.derive_digests`, and
+  `git log --format='%h %cI'`.
+- `docs/0.5.0-beta-plan.md` W21-W23 and the H4 amendment, against
+  `atj/publication.py:84-89`, `schemas/common.schema.json:15-18`,
+  `atj/ids.py:157`, both matchup templates, and `43e7e50`'s H4 text.
+
+## Deterministic validation results
+
+| Check | Result |
+|---|---|
+| `python3 -m atj validate reports events/trial-2-2026`, at aa0de72 | PASS, 28 artifacts, 0 findings |
+| `python3 -m pytest tests/ -q`, at aa0de72 | 6 failed, 513 passed, 5 skipped. All six fail on the weight check reading this report (`R1`) |
+| `python3 -m atj release-check`, at aa0de72 | FAIL, `single-source`, this report (`R1`) |
+| The same three after this rewrite | recorded under "After the rewrite" below |
+| `atj event unit events/trial-2-2026 list` | 2 units, 0 stale |
+| `derive_digests` for `matchup:mu-final-01` | `1d4f5a970e3f5dc9`, equal to the recorded digest |
+| Weight check probe: a matchup result under `events/e/matchups/` | exempt |
+| Probe: hand-written weight dict at `events/_template/matchups/weights.json` | **exempt** (`R3`) |
+| Probe: the same copy in `.yaml`, `.md`, or one directory deeper | caught |
+
+## Round-one findings against the source
+
+**F1.** The draft now says the dry run went through "a direct Python invocation
+rather than the documented `uv` command". That half is right. The sentence
+before it still reads "Every part of AI Security Demos that could run in this
+event worked". The manifest's execution table (`evidence/team-demos/manifest.md:105-114`)
+records six executions: an environment probe, demo 01's two act-1 dry runs,
+`list_verdicts.py`, `memory_diff.py`, and an event-written egress probe. The
+dry runs of demos 02-10 were not run, and the table does not record them as
+unrunnable. So "could run" claims more than the event observed. The draft also
+never says that acts 2 and 3, which need a model, were not observed. My
+round-one repair suggested "the offline parts that could run behaved as
+described", which contains the same error. The repair followed my text. The
+fault is in the text.
+
+**F2.** The integer pattern `(\d+)` is back, so float and sentence-final copies
+are caught again. The exemption skips a file when its path relative to the root
+has exactly four parts, `events/<x>/matchups/<name>.json`. It is narrow in depth
+and suffix. The probes above show that `.yaml`, `.md` and deeper paths are still
+scanned. The new test writes a margin into `events/e/matchups/mu-final-01.json`,
+plus an integer JSON copy, a float JSON copy and a prose copy at the root. It
+requires all three copies to be caught and none of the problems to name
+`matchups`. That covers what round one asked for. The hole is `R3`. The
+exemption trusts any JSON in that directory, including `events/_template/`,
+which is copied into new events. The comment says the file is exempt "by what
+it is", but nothing checks what it is. The matchup result also carries a
+literal `weight` field per criterion. The pattern cannot see it, because the key
+is `weight` and not a criterion id. That is tool output, not a new copy.
+
+**F3.** Pass A (`:70`) cites consolidation F2 and N6, judgments F1 and F19, and
+judgments F4 and F18. Pass B cites judgments F1 (`:54`), consolidation F1 (`:55`,
+`:89`), consolidation F2 (`:56`) and judgments F4 (`:69`, "verified by judgments
+audit F4"). Every attribution in the new paragraph matches. So does "both use
+the three-of-five count".
+
+**F4.** `head-to-head.md:12` reads "Do not merely select the team with the
+higher initial total." The quote is exact.
+
+**F5 erratum.**
+- `ev-demos-02` (`manifest.md:91`) records counts and the dependency surface,
+  with no template claim. Correct.
+- `judgments/team-demos/judge-security-ops.md:49`, `:165` and `:185` each name
+  the `Bash(rm:*)` grants. `:194` holds the enumerated list and is omitted
+  (`R7`). The erratum is correct as far as it goes.
+- `judgments/team-scribe/judge-security-ops.md:137` says `recover_checkpoints()`
+  is "entirely unobserved". Correct.
+- `judgments/team-scribe/judge-backend.md:113` names `retry_worker.py`'s
+  undefined names, and `:117` says "the feature is dead ... converts the
+  `NameError` into a log line". Correct.
+
+**F6 erratum.** `manifest.md:53-55` says the dry run is "*not* the invocation
+the submission documents". Correct. The rest is `F6`, still open: the exit-1
+claim is uncited, the egress probe is not addressed, and "holds for the
+documented output" is false for `list_verdicts.py`.
+
+**F13 erratum.** `audits/judgments.md` F18 says "None made", and F19 says the
+rationales "check out". The erratum sends the reader there. Correct.
+
+**F14.** `mu-final-01.md:46-48` states that the independence and extraction
+facts rest on the orchestrator's record. Correct.
+
+**F7, ledger and unit.** Checked against `git log --format='%h %cI'`:
+
+| Row | Against | Holds |
+|---|---|---|
+| 17:26:17Z passes judged | pass B `completed_at` 17:26:17Z. Pass A starts 17:23:53Z, pass B 17:24:01Z | yes |
+| 17:28:59Z committed 77fcc6a | `77fcc6a 2026-09-23T13:28:59-04:00`. 36cd3d5 at 17:30:42Z | yes |
+| 18:27:09Z round-one audit | this report's round-one `completed_at` | yes |
+| 18:29:57Z repair | `aa0de72` at 18:30:04Z, after the row. The draft's mtime is 18:28Z | yes |
+| `last_updated` 18:29:45Z | the last row, 18:29:57Z | **no** (`R4`) |
+
+The unit's inputs are the report, the JSON and both passes
+(`atj/event.py:977-989`). The unit lists only the report as an output, but the
+digest covers all four, so drift in any of them is caught. The unit's
+`audit_result` is `R5`, and its `completed_at` is `R6`. The repair row's claim
+"float and prose copies tested as still caught" is true.
+
+**F8 options.** The event-director can:
+- **O1.** Accept by a dated `status.md` row. It would name `matchup-judge`'s
+  `model: inherit` as the cause and note that both orders shared one model, so
+  order balance holds. It would also record as a limitation that the panel and
+  the matchup ran on different models. This is the cheapest option and enough if
+  `model_requested` in `event.md` is read as covering the panel only.
+- **O2.** Record an override under `overrides/`, the way this event handled
+  disclosure. This fits if `event.md:16` is binding for every agent in the
+  event. It leaves a record a later audit can cite by id.
+- **O3.** Re-run both passes with `claude-opus-5` explicitly requested,
+  re-resolve with `atj matchup`, and re-audit. The unit goes stale and the
+  stage repeats. At a combined margin of 50 with a band of 5, the outcome is
+  unlikely to move. The only gain is conformance, and the re-run adds a second
+  sample to H5.
+- Editing `event.md:16` is not an option. It is frozen configuration after
+  judging began, per `CLAUDE.md`.
+
+**Plan entries.** W21 is accurate. The pattern is at `atj/publication.py:88`,
+the schema accepts 7-64 hex at `schemas/common.schema.json:17`, and the template
+requires the field at `framework/templates/public-matchup-summary.md:6`. W22 is
+accurate as to what I placed in the draft and what cleared. W23 is accurate: the
+pattern needs `:` or `=`, and the templates carry a Weight column at
+`matchup-pass-report.md:59` and `matchup-report.md:43`. No W entry was needed for
+`F2`, because it was fixed. `R3` is not in the plan. The H4 amendment quotes the
+old text exactly and leaves the **Kills it** line unchanged.
+
+## Restated examples in this report
+
+The requested restatement: `release-check` read the round-one F2 table as seven
+weight copies. They were at lines 328 and 336-340 of the round-one text. The
+table now puts the criterion and the value in separate columns, and the prose
+line names the value in words. Each row still evidences the same probe result.
+The reproduction line at round-one lines 213-214 never matched the pattern. No
+value there equals its weight, and I scanned it with the live pattern. I left it
+as written.
+
+## After the rewrite
+
+| Check | Result |
+|---|---|
+| `python3 -m atj validate reports events/trial-2-2026` | PASS, 28 artifacts, 0 findings |
+| `python3 -m pytest tests/ -q` | 518 passed, 5 skipped |
+| `python3 -m atj release-check` | PASS |
+
+`R1` is repaired by this rewrite alone. No other file changed.
+
+## Required repairs
+
+None holds the gate. Before any human approves the public summary:
+
+1. `F1`: "that could run" becomes what was run, plus one sentence saying the
+   acts needing a model were not observed.
+2. `R2`: qualify "needs no ... package install".
+
+Before this branch merges, recommended:
+
+3. `F6`: finish the erratum with the two citations and the egress-probe sentence.
+4. `R3`: tighten the exemption, or add a W entry.
+5. `R4`, `R5`: fix `last_updated`, and re-record the unit's audit result after
+   approval.
+6. `F8`: an event-director decision, O1 to O3.
+
+Re-audit whatever repair diff follows. This is the second round in which a
+repair introduced a defect, and the second in which my own repair text carried
+one.
+
+**Verdict: PASS WITH ADVISORIES. No blocking finding. `tournament-audited` may
+be set after `atj event approve` on this report.**
+
+---
+
+# Judging Audit — tournament stage, round one (superseded, retained)
+
 
 ## Result
 
@@ -325,20 +575,23 @@ the affiliation and integer margins. That is direct evidence for H4.
 
 ## 36cd3d5 (F2)
 
-The old pattern flagged `"product": 15.0` in `mu-final-01.json` because `(\d+)`
+The old pattern flagged the `product` criterion margin in `mu-final-01.json`,
+written there as the float fifteen point zero, because `(\d+)`
 matched the `15`. The added `(?![.\d])` fixes that. Backtracking cannot defeat
 it, because `1` followed by `5` also fails the lookahead. It also stops the
 check from matching any weight written as a float, or at the end of a sentence.
 I compiled both patterns against the live rubric:
 
-| Input | Old | New |
-|---|---|---|
-| `{"product": 15.0}` (the matchup margin) | flagged | clear |
-| `WEIGHTS = {"functional": 25.0, "product": 15.0}` | flagged | **clear** |
-| `functional = 25.0` | flagged | **clear** |
-| `product: 15.` in prose | flagged | **clear** |
-| `"product": 15` | flagged | flagged |
-| `\| product \| 15 \|` | clear | clear (F17) |
+Restated in round two so the criterion and the value sit in separate columns:
+
+| Input shape | Criterion | Value written | Old | New |
+|---|---|---|---|---|
+| JSON key, as in the matchup margin | product | 15.0 | flagged | clear |
+| Python dict literal of floats | functional, product | 25.0, 15.0 | flagged | **clear** |
+| Python assignment with `=` | functional | 25.0 | flagged | **clear** |
+| prose `criterion` then `:` then value, sentence-final | product | "15." | flagged | **clear** |
+| JSON key with an integer value | product | 15 | flagged | flagged |
+| Markdown table row | product | 15 | clear | clear (F17) |
 
 A float weight dict is the most likely shape for a Python copy used in
 arithmetic, and alpha defect X1 was a Python dict. The fix trades a false

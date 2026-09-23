@@ -141,14 +141,19 @@ Found by `audits/tournament.md` and checked against the sources. The pass report
 are left as their judges returned them. No comparison value rests on any of these.
 
 - **F5, pass A.** `ev-demos-02` establishes ten demo READMEs, not that they share
-  one template. The `Bash(rm:*)` grants are at `judgments/team-demos/judge-security-ops.md:49,165,185`,
+  one template. The `Bash(rm:*)` grants are at `judgments/team-demos/judge-security-ops.md:49,165,185,194`,
   not `:151-161`. `judgments/team-scribe/judge-security-ops.md:135-139` calls the
   recovery path unobserved, not dead. The `NameError` is in the retry worker
   (`judgments/team-scribe/judge-backend.md:113-119`).
-- **F6, pass B.** `list_verdicts.py`'s exit 1 is behaviour in the code, not
-  documented behaviour. The two dry runs used `python3 <script> --dry-run`, which
-  the submission does not document (`evidence/team-demos/manifest.md:53-55`), so
-  "exited as documented" holds for the documented output, not the invocation.
+- **F6, pass B.** `list_verdicts.py`'s exit 1 is behaviour in the code
+  (`10-show-your-work/demo/scripts/list_verdicts.py:20-21` at the pin), not
+  documented behaviour: the demo README (`10-show-your-work/demo/README.md:93`)
+  describes only what the script prints on success. The two dry runs used
+  `python3 <script> --dry-run`, which the submission does not document
+  (`evidence/team-demos/manifest.md:53-55`). "Exited as documented" therefore holds
+  for neither the invocation nor the `list_verdicts.py` exit, only for the dry-run
+  and `memory_diff.py` output. The egress guard probe was the event's own script,
+  not a documented command (`evidence/team-demos/manifest.md:112`).
 - **F13, pass A.** Pass A's description of what judgments F18 and F19 did does not
   match `audits/judgments.md`. Read that audit, not the pass, for their effect.
 
