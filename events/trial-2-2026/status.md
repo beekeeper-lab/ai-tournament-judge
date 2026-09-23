@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
-current_stage: tournament
-last_updated: "2026-09-23T18:49:16Z"
+current_stage: dossiers
+last_updated: "2026-09-23T18:53:28Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -11,14 +11,14 @@ stage_gates:
   judgments-audited: passed
   consolidation-audited: passed
   bracket-audited: passed
-  tournament-audited: pending
+  tournament-audited: passed
   dossiers-approved: pending
   final-audit-passed: pending
 units:
 - unit_id: bracket:draw
   stage: bracket
   state: complete
-  input_digest: 3c88ccc1e0f9f863
+  input_digest: 7c5f7f20e68c9919
   outputs:
   - bracket.json
   audit_result: PASS WITH ADVISORIES
@@ -29,7 +29,7 @@ units:
   input_digest: 0ddde002acd441b6
   outputs:
   - matchups/mu-final-01.md
-  audit_result: not-audited
+  audit_result: PASS WITH ADVISORIES
   completed_at: "2026-09-23T17:26:17Z"
 gate_evidence:
   configuration-audited: audits/configuration.md
@@ -38,6 +38,7 @@ gate_evidence:
   judgments-audited: audits/judgments.md
   consolidation-audited: audits/consolidation.md
   bracket-audited: audits/bracket.md
+  tournament-audited: audits/tournament.md
 ---
 
 # Event Status
@@ -50,7 +51,7 @@ gate_evidence:
 - [x] All initial judgments audited
 - [x] All consolidated reports audited
 - [x] Bracket frozen and audited
-- [ ] Tournament complete
+- [x] Tournament complete
 - [ ] All team dossiers approved
 - [ ] Final event audit passed
 - [ ] Event marked complete
@@ -141,3 +142,6 @@ gate_evidence:
 | 2026-09-23T18:44:48Z | Tournament repaired, round three. T2 the egress probe citation corrected to `manifest.md:113`; T3 the F6 erratum no longer calls `memory_diff.py` output documented; T1 deferred as `W24`, not repaired, because each repair round so far has introduced a defect and both real results are exempt correctly. T4 accepted. T5 and F15 are the approver's. F8 and R5 carried | audits/tournament.md T1-T5 | matchups/mu-final-01.md, docs/0.5.0-beta-plan.md, status.md | pending re-audit |
 | 2026-09-23T18:48:26Z | Tournament re-audited, round four, scoped to the round-three repair `958d7df`; report superseded in place. **FAIL.** U1 blocking: the erratum edit left unit `matchup:mu-final-01` stale. U2 minor, U3 advisory | audits/tournament.md, the repair diff `c4d346e..958d7df` | audits/tournament.md | FAIL |
 | 2026-09-23T18:49:16Z | Tournament repaired, round four. U3 the erratum cites `04-agent-that-remembered-wrong/demo/README.md:35,98` for the documented invocation and gives the script's full path; U2 this ledger's round-three audit cell; U1 unit `matchup:mu-final-01` re-recorded after the last edit to its inputs, `not-audited`. The round-four auditor had itself run the record command at 18:48:57Z, after its report, which restamped the unit's `completed_at`; restored to the matchup's own 17:26:17Z | audits/tournament.md U1-U3 | matchups/mu-final-01.md, status.md | pending re-audit |
+| 2026-09-23T18:52:00Z | Tournament re-audited, round five, scoped to the round-four repair `d5c8f32`; report superseded in place. **PASS WITH ADVISORIES.** U1-U3 repaired; V1 minor (a repair row stamped with the auditor's record time, fixed in the approval commit), V2 accepted. The auditor ran no record, approve, gate or advance command | audits/tournament.md, the repair diff `958d7df..d5c8f32` | audits/tournament.md | PASS WITH ADVISORIES |
+| 2026-09-23T18:52:39Z | `atj event approve` on `audits/tournament.md` as event-director, then `atj bracket advance`: `mu:trial-2-2026:final:01`, team-demos advances, `ready to judge next: none`. Unit `matchup:mu-final-01` re-recorded with the audit result; `completed_at` held at 17:26:17Z | audits/tournament.md, matchups/mu-final-01.md | bracket.json, bracket.md, status.md | PASS WITH ADVISORIES |
+| 2026-09-23T18:53:23Z | The advance changed `bracket.json` by its `winner` field alone (verified by diff), which staled `bracket:draw`, because its digest covers the whole file. Re-recorded with the draw's own 01:55:10Z and its bracket-audit result; framework defect `W25`. `atj event gate` tournament-audited passed on `audits/tournament.md`. Open and not blocking: F8 (matchup model differs from `event.md`) and the public summary, both for the event-director | bracket.json, audits/tournament.md | status.md, bracket.md, docs/0.5.0-beta-plan.md | gate tournament-audited passed on audits/tournament.md; `atj event advance` tournament to dossiers |

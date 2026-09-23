@@ -11,11 +11,11 @@ persona: judging-auditor@1.1.0
 framework_commit: d5c8f320035268085e15dedfcdcba9fd91df4c50
 model_requested: claude-opus-5
 model_used: claude-opus-5-5[1m]
-started_at: '2026-09-23T18:50:00Z'
-completed_at: '2026-09-23T18:52:00Z'
+started_at: "2026-09-23T18:50:00Z"
+completed_at: "2026-09-23T18:52:00Z"
 visibility: private
-approval_state: draft
-validation_state: unvalidated
+approval_state: approved
+validation_state: valid
 result: PASS WITH ADVISORIES
 findings:
 - id: F1
@@ -290,6 +290,8 @@ findings:
   artifact: status.md units, matchup:mu-final-01; atj/event.py:812-846
   repair: none now. If any input changes before the R5 re-record, pass --completed-at 2026-09-23T17:26:17Z and state why in the activity log
   state: accepted
+approved_by: event-director
+approved_at: "2026-09-23T18:52:39Z"
 ---
 
 # Judging Audit — tournament stage, round five
