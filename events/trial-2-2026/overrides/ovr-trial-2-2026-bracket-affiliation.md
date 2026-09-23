@@ -39,13 +39,27 @@ No team, slot, seed, policy or constraint status was edited. `bracket.json`
 still records `feasible: false` and still names the unsatisfied constraint. The
 override changes what the event does with that result, not the result.
 
+`scope` is `stage` and not `match` on purpose: what is accepted is the draw, and
+`atj bracket build` reports the exception against the bracket rather than
+against a pairing. `match_id` is populated because at this bracket size the
+stage produced exactly one match and the exception is about that pairing. The
+two fields do not disagree.
+
 ## Authority
 
-`events/trial-2-2026/event.md:96-107` — "Eligibility and human officials".
-`event-director` holds all four reserved authorities and Gregg Reed holds that
-role. A bracket exception is a rules exception, which
-`framework/templates/manual-override-record.md` lists among the decisions
-reserved to humans.
+`framework/policies/disagreement-and-adjudication.md:9` — "A human event
+official owns disqualification, rules exceptions, and unresolved final ties."
+That is the line that grants this authority. A bracket exception is a rules
+exception, which `framework/templates/manual-override-record.md:34-35` also
+lists among the decisions reserved to humans.
+
+`events/trial-2-2026/event.md:103` names the official: `event-director` holds
+all four reserved authorities and Gregg Reed holds that role. Rules exceptions
+are not one of the four keys `event.md:23-27` declares under `officials` — the
+framework reserves five decisions to humans and the event schema declares four
+owners, which `audits/bracket.md` F5 records as a framework finding. The event
+has one human official holding every authority it does declare, so the gap
+changes nothing here about who decided.
 
 `.claude/skills/build-bracket/SKILL.md` step 6 requires this record by name: "A
 bracket with `feasible: false` must not be used until an event official accepts

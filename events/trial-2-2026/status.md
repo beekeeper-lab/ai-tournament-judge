@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
 current_stage: bracket
-last_updated: "2026-09-23T10:52:05Z"
+last_updated: "2026-09-23T11:09:15Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -14,7 +14,15 @@ stage_gates:
   tournament-audited: pending
   dossiers-approved: pending
   final-audit-passed: pending
-units: []
+units:
+- unit_id: bracket:draw
+  stage: bracket
+  state: complete
+  input_digest: 3c88ccc1e0f9f863
+  outputs:
+  - bracket.json
+  audit_result: not-audited
+  completed_at: "2026-09-23T01:55:10Z"
 gate_evidence:
   configuration-audited: audits/configuration.md
   roster-frozen: audits/intake.md
@@ -101,5 +109,7 @@ gate_evidence:
 | 2026-09-22T21:11:39Z | `atj event approve` audits/consolidation.md, then `atj event gate` consolidation-audited passed and `atj event advance` consolidation to bracket. `blocking: true` cleared on F1 and N1, both repaired and verified by a later round, following the precedent this event set at `audits/judgments.md` F1; severity is left at `blocking` so the record still says what they were. This row and the two stamps the tools wrote are real clock; the four rows above it are reconstructed and run ahead of it, which `audits/consolidation.md` records under round four | audits/consolidation.md | status.md | gate consolidation-audited passed on audits/consolidation.md |
 | 2026-09-23T01:55:10Z | `atj bracket build` at seed `trial-2-2026`, then `atj bracket verify`, which re-derived every constraint from the roster and passed. No team placed by hand | teams.md roster version 1 (2 eligible), framework `c728437` | bracket.json — `feasible: false`, bracket size 2, 0 byes, input digest `0fa1d02b4c6f44c3`, one match `mu:trial-2-2026:final:01` | not-audited — the draw may not be used until an official accepts the one infeasible hard constraint |
 | 2026-09-23T10:49:58Z | Event-director accepted that constraint: both teams carry `affiliation_group: beekeeper-lab`, and at two teams every possible draw pairs them, so no assignment satisfies it. Category `rules exception`, authority `event.md:96-107`. `bracket.json` is unmodified and still records `feasible: false` | bracket.json constraint audit, `.claude/skills/build-bracket/SKILL.md` step 6 | overrides/ovr-trial-2-2026-bracket-affiliation.md | not-audited |
-| 2026-09-23T10:51:23Z | Bracket report written. Both tables are `atj/render.py` `bracket_tables` output over `bracket.json`, written in whole and not transcribed. The claim that no score was read is proved twice: `atj/bracket.py:161` returns before any `.score` access at `count == 0`, and six score permutations at the same seed leave `rounds`, `constraint_audit` and `bye_teams` identical while `input_digest` moves as `atj/bracket.py:911` intends | bracket.json, overrides/ovr-trial-2-2026-bracket-affiliation.md, teams.md, summaries/*.json | bracket.md | not-audited |
+| 2026-09-23T10:51:23Z | Bracket report written. Both tables are `atj/render.py` `bracket_tables` output over `bracket.json`, written in whole and not transcribed. The claim that no score was read is proved twice: `atj/bracket.py:161-162` guards and returns before the first `.score` access at `:169`, and six score permutations at the same seed leave `rounds`, `constraint_audit` and `bye_teams` identical while `input_digest` moves as `atj/bracket.py:911` intends | bracket.json, overrides/ovr-trial-2-2026-bracket-affiliation.md, teams.md, summaries/*.json | bracket.md | not-audited |
 | 2026-09-23T10:52:05Z | Disclosure settled by the event-director, closing `audits/consolidation.md` F34 before the stage that would first produce a public artifact. All three repositories checked public on 2026-09-23, so the private-source condition `event.md` guards is not met by this event. Publication approved with the file-and-line weakness citations intact and unredacted; redaction rejected as a manual step the publication gate has no control for. `public_scores` stays `false` and this decision does not change it | audits/consolidation.md F34, `gh repo view` on ScribeVault, ai-security-demos and ai-tournament-judge | event.md | not-audited |
+| 2026-09-23T11:03:00Z | Bracket stage audit. The draw itself is sound: it reproduces from its seed with only `framework_commit` moving, both `bracket verify` modes pass, the two tables in `bracket.md` are byte-identical to `render.bracket_tables` output, the six-permutation experiment reproduces as claimed, both repository pins and all three visibilities verify, `public_scores` is unchanged, and nothing in the stage touched a score, judgment, manifest or the roster. The stage fails on its records | bracket.json, bracket.md, overrides/ovr-trial-2-2026-bracket-affiliation.md, event.md, status.md, teams.md, summaries/*, framework rubrics, policies, templates and schemas, atj/bracket.py, atj/event.py, atj/reports.py, atj/versions.py, atj/cli.py | audits/bracket.md | FAIL (0 blocking, 3 major, 9 minor, 4 advisory) |
+| 2026-09-23T11:09:00Z | Bracket repaired, round one. F3: the disclosure decision re-recorded as `overrides/ovr-trial-2-2026-publication-disclosure.md`, category `publication`, `authorized_by: event-director`, and `event.md`'s subsection reduced to a pointer — it had been prose in the event configuration, which nothing validates and which carries no approver, one artifact away from where the same commit did it correctly. F2: `atj/versions.py:144-164` corrected to `:216-238`, the git call at `:225`. F4: the authority for a rules exception corrected to `framework/policies/disagreement-and-adjudication.md:9`, and the four-of-five `officials` gap named. F6, F7, F13, F14: repaired by moving the reasoning into the override record and stating the citations it approves in full, including a `team-demos` one and the KDF literal the "where to look, not what the code says" sentence had overstated. F8: `atj/bracket.py:161` corrected to `:161-162` with `:169` named, here and in the row above. F11: `event.md:91-94` pre-registered a cost and got a hard infeasibility; `bracket.md` now records why the prediction missed. F15: the `scope: stage` and `match_id` pairing explained rather than changed. F12: `bracket:draw` recorded as a ledger unit, digest `3c88ccc1e0f9f863`. F1, F5, F9, F10 and F16 deferred to `docs/0.5.0-beta-plan.md` as framework scope, not landed mid-event. No score, judgment, evidence reference or bracket value moved | audits/bracket.md F1-F16 | overrides/ovr-trial-2-2026-publication-disclosure.md, overrides/ovr-trial-2-2026-bracket-affiliation.md, event.md, bracket.md, status.md, docs/0.5.0-beta-plan.md | pending re-audit |

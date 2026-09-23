@@ -49,8 +49,9 @@ rather than supplying a score, so both panels stay unfinalized by decision and
 the provisional sums 32.5 and 52.5 are not official and not usable for seeding.
 
 No score was read by this assignment, proved two ways. By code path:
-`atj/bracket.py:161` returns from `choose_byes` before any `.score` access when
-`count == 0`, and 2 teams is an exact power of two, so `count` is 0. By
+`atj/bracket.py:161-162` is a `count == 0` guard that returns from `choose_byes`
+before the first `.score` access, which is at `:169`; 2 teams is an exact power
+of two, so `count` is 0. By
 experiment: rebuilding at seed `trial-2-2026` under six score permutations —
 both `None`, the two provisional sums in each order, a tie at 0.0, and 100.0
 against 1.0 in each order — leaves `rounds`, `constraint_audit` and `bye_teams`
@@ -103,10 +104,24 @@ distinction between an exception it could not avoid and one it created; the soft
 constraint below it reports `maximized` for the same reason, round 1 being the
 only round there is.
 
+`event.md:91-94` pre-registered this and got it wrong. It expected
+`bracket-assignment.md` to treat the shared affiliation "as a cost rather than a
+constraint, so the bracket record is expected to carry that cost as a reason
+string rather than fail". The draw did carry a reason string — the `maximized`
+soft constraint below — but it also returned `feasible: false`. The policy
+states affiliation separation twice: "Two teams from one group: target opposite
+halves" and "When perfect separation is impossible, maximize the earliest round
+in which affiliated teams can meet". `atj/bracket.py:549-550` implements the
+first as a hard constraint and `:573-574` the second as a soft one, and
+`:760` makes any hard constraint at `violated` or `infeasible` set
+`feasible: false`. The prediction read the fallback and missed the target.
+Nothing in the draw is wrong; the expectation was.
+
 Accepted by the event director at
 `overrides/ovr-trial-2-2026-bracket-affiliation.md`, category `rules exception`,
-authority `event.md:96-107`. `bracket.json` is unmodified by that acceptance and
-still records `feasible: false` and still names the constraint.
+authority `framework/policies/disagreement-and-adjudication.md:9` and
+`event.md:103`. `bracket.json` is unmodified by that acceptance and still
+records `feasible: false` and still names the constraint.
 
 ## Reproduction
 
@@ -117,8 +132,9 @@ python3 -m atj bracket build --event-dir events/trial-2-2026 --seed trial-2-2026
 Roster version 1, input digest `0fa1d02b4c6f44c3`. Rebuilding from this seed
 against the frozen roster reproduces `rounds`, `constraint_audit`,
 `input_digest` and `bye_teams` identically. `framework_commit` is read from git
-at build time (`atj/versions.py:144-164`) and is not derived from the seed, so
-it is the one field that moves between rebuilds; it is
+at build time (`atj/versions.py:216-238`, the `framework_commit` function; the
+`git rev-parse HEAD` call is at `:225`) and is not derived from the seed, so it
+is the one field that moves between rebuilds; it is
 `c728437466d0940734bee600765af298eebb062d` here.
 
 ```
