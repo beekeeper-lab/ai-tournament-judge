@@ -192,8 +192,9 @@ F34.
 
 The decision and its reasoning are recorded at
 `overrides/ovr-trial-2-2026-publication-disclosure.md`, category `publication`,
-`authorized_by: event-director`. It is a validated artifact carrying who
-decided, which is what `audits/bracket.md` F3 found this subsection was not.
+`authorized_by: event-director`. It is an artifact `atj validate reports`
+checks, carrying who decided, which is what `audits/bracket.md` F3 found this
+subsection was not.
 Read it there; this paragraph is a pointer and not a second copy.
 
 In short: neither submission is private, so the paragraph above does not reach

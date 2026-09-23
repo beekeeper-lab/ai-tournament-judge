@@ -11,8 +11,8 @@ persona: build-bracket@1.0.0
 framework_commit: c728437466d0940734bee600765af298eebb062d
 model_requested: not-applicable
 model_used: not-applicable
-started_at: "2026-09-23T10:47:00Z"
-completed_at: "2026-09-23T11:09:00Z"
+started_at: "2026-09-23T11:03:00Z"
+completed_at: "2026-09-23T11:26:00Z"
 visibility: private
 approval_state: draft
 validation_state: unvalidated
@@ -26,6 +26,12 @@ stage: both panel reports enumerate weaknesses in the submission repositories at
 exact file and line, and `event.md` held `public/` closed until the
 event-director settled it. This record is that decision.
 
+`persona` is `build-bracket@1.0.0` because that is the skill that was running
+when this was written, not because a bracket skill produces publication
+decisions. No persona in `framework/personas.md` produces a human decision
+record taken outside a stage's own skill, which `audits/bracket.md` N14 raises
+and `W16` in `docs/0.5.0-beta-plan.md` now carries.
+
 `audits/bracket.md` F3 is why it is a record rather than prose. The decision was
 first written into `event.md` as a subsection, where nothing validates it and no
 `authorized_by` field carries who made it. The same commit recorded the bracket
@@ -37,13 +43,13 @@ here.
 | Field | Value |
 |---|---|
 | Artifact | `events/trial-2-2026/event.md` — Publication |
-| Framework result | No framework result. `event.md:25` reserves publication approval to `event-director` and the framework declines to decide; `public/` stays closed and `atj validate publication` has not run on any artifact |
+| Framework result | No framework result. `event.md:26` reserves publication approval to `event-director` and the framework declines to decide; `public/` stays closed and `atj validate publication` has not run on any artifact |
 | Override result | Public artifacts are approved for this event, with the panel reports' file-and-line weakness citations intact and unredacted. `public_scores` stays `false` and is not changed by this decision |
 | Category | publication |
 
 ## Authority
 
-`events/trial-2-2026/event.md:25` — `officials.publication_approval:
+`events/trial-2-2026/event.md:26` — `officials.publication_approval:
 event-director`. `event.md:103` — `event-director` holds all four authorities
 and Gregg Reed holds that role.
 `framework/templates/manual-override-record.md:34-35` lists publication approval
@@ -67,17 +73,35 @@ question stays open there. It does not reach this event.
 
 **What is actually disclosed.** The panel reports cite weaknesses at exact file
 and line in both repositories — on `team-scribe`, an unescaped
-markdown-to-`setHtml` render path (`summaries/team-scribe.md:343`) and four
-`OPENAI_API_KEY` read sites (`:241`); on `team-demos`, thirteen file-and-line
-citations of its own. A reader mostly learns where to look rather than what the
-code says, though not always: `summaries/team-scribe.md:243` quotes the fallback
+markdown-to-`setHtml` render path (`summaries/team-scribe.md:230,344`) and four
+`OPENAI_API_KEY` read sites (`:241`); on `team-demos`, its own citations at the
+same resolution, among them
+`09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51` and
+`10-show-your-work/demo/scripts/explain.py:85-110`. A reader mostly learns
+where to look rather than what the code says, though not always: `summaries/team-scribe.md:243` quotes the fallback
 KDF input literal verbatim. Every cited line is already readable by anyone at
 the pinned commit, in a public repository, without the report.
 
-**`team-demos` needs no different treatment.** It is ten demonstrations of
-attacks against LLM agents. Its weaknesses are its subject matter, written to be
-read and published as such, and a report naming them at line level discloses
-nothing the repository does not set out to teach.
+**`team-demos` needs no different treatment, but not because its weaknesses
+are its subject matter.** They are not. The repository demonstrates attacks
+against LLM agents and ships hardened counter-examples, and part of what the
+panel found is that some of the hardened examples are not hardened.
+`summaries/team-demos.md` PD4 records `Bash(rm:*)` pre-approved in seventeen
+command files, the seventeenth being
+`10-show-your-work/demo/.claude/commands/screen-pile-audited.md:4`, the
+capstone's audited screener, which needs one fixed `rm` on line 30. PD5 records
+demo 06's approval gate as a constant in one run path and a model-supplied
+argument in the other, against a CLI that accepts `--mode fire` from any caller,
+with the README presenting the weaker path as the hero path. PD3 records the
+v1.1 POST guard admitting an empty hostname. Those are real defects in the fix,
+disclosed here first, and a reader of the public artifact learns something the
+repository does not currently teach.
+
+It is approved anyway, on the same ground as `team-scribe`: the repository is
+public, the operator owns it, every cited line is readable at the pin without
+the report, and there is no third party whose disclosure window is being closed.
+The honest description is that this discloses a defect to its owner's own
+readers, not that it discloses nothing.
 
 **Redaction was rejected, and not only on those grounds.** Redacting the
 citations in public artifacts would put a manual step in front of
@@ -117,13 +141,17 @@ so nothing is marked stale.
 ## Validation
 
 - [x] Human official identified by role — `authorized_by: event-director`, the
-      role `event.md:25` grants publication approval to
-- [x] Authority cited — `event.md:25`, `event.md:103`, and
+      role `event.md:26` grants publication approval to
+- [x] Authority cited — `event.md:26`, `event.md:103`, and
       `framework/templates/manual-override-record.md:34-35`
-- [x] Original artifact preserved unmodified — nothing was overridden. The
-      framework produced no result here; it reserved the decision and this
-      record supplies it. `public_scores: false` is untouched
+- [x] Original artifact preserved unmodified — recorded rather than ticked
+      past. Nothing was overridden: the framework produced no result here, it
+      reserved the decision and this record supplies it. The artifact named
+      under "What was overridden" is `event.md` Publication, and that section
+      *was* rewritten in the same commit, to point here instead of carrying the
+      decision. What is preserved is what matters: `public_scores: false` is
+      untouched, and no judgment, summary or evidence reference moved
 - [x] Downstream artifacts marked stale — none are stale. The table above says
-      so artifact by artifact; three of the five do not exist yet
+      so artifact by artifact; two of the five do not exist yet
 - [x] Disclosure decided — that is what this record is, and the table above
       states it by audience

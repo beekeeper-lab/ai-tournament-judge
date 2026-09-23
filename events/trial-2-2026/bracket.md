@@ -104,18 +104,28 @@ distinction between an exception it could not avoid and one it created; the soft
 constraint below it reports `maximized` for the same reason, round 1 being the
 only round there is.
 
-`event.md:91-94` pre-registered this and got it wrong. It expected
-`bracket-assignment.md` to treat the shared affiliation "as a cost rather than a
-constraint, so the bracket record is expected to carry that cost as a reason
-string rather than fail". The draw did carry a reason string — the `maximized`
-soft constraint below — but it also returned `feasible: false`. The policy
-states affiliation separation twice: "Two teams from one group: target opposite
-halves" and "When perfect separation is impossible, maximize the earliest round
-in which affiliated teams can meet". `atj/bracket.py:549-550` implements the
-first as a hard constraint and `:573-574` the second as a soft one, and
-`:760` makes any hard constraint at `violated` or `infeasible` set
-`feasible: false`. The prediction read the fallback and missed the target.
-Nothing in the draw is wrong; the expectation was.
+`event.md:91-94` pre-registered this and the prediction did not hold, though
+not through any misreading. It expected `bracket-assignment.md` to treat the
+shared affiliation "as a cost rather than a constraint, so the bracket record is
+expected to carry that cost as a reason string rather than fail". That is what
+the policy says. `framework/rubrics/bracket-assignment.md:22` lists affiliation
+separation under Priority as something to "Maximize", and `:27-30` give targets
+— opposite halves at two teams, separate quarters at three or four — and a
+fallback when perfect separation is impossible. Nowhere does the policy declare
+any affiliation rule a hard constraint.
+
+`atj/bracket.py:550` supplies the hardness the policy does not, emitting
+`No avoidable same-affiliation or previous-finalist first-round match` with
+`kind: hard`; `:758-761` collects every hard constraint at `violated` or
+`infeasible` and `:775` is where `feasible` is assigned from that. So the draw
+returned `feasible: false` on a rule its own policy states only as a priority
+and a target.
+
+The event's expectation matched the policy and the implementation did not. That
+divergence is the finding, recorded as `audits/bracket.md` N5 and carried to
+`docs/0.5.0-beta-plan.md` as `W20`. It changes nothing about this draw: at two
+teams from one group there is no alternative pairing under either reading, and
+the exception is accepted below.
 
 Accepted by the event director at
 `overrides/ovr-trial-2-2026-bracket-affiliation.md`, category `rules exception`,
