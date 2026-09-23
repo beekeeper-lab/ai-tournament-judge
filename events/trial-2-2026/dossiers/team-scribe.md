@@ -9,8 +9,10 @@ framework_commit: 566166b
 source_reports:
 - summaries/team-scribe.md
 - summaries/team-scribe.json
+- judgments/team-scribe/
 - adjudications/adj-trial-2-2026-team-scribe-agentic.md
 - evidence/team-scribe/manifest.md
+- runs/team-scribe-envcheck-01.json
 - runs/team-scribe-app-start-01.json
 - runs/team-scribe-pytest-01.json
 - matchups/mu-final-01.md
@@ -156,7 +158,7 @@ and 315) to `qdarktheme`, which `setup_pyside6.py:82` already uses, or declare
 `main.py:50` catches every `ImportError` from the GUI import tree and reports it
 as "PySide6 is not installed", prescribing `pip install -r requirements.txt`,
 which cannot supply the missing module. PySide6 is installed and works
-(`runs/team-scribe-app-start-01.json`). All four reviewers recorded this.
+(`runs/team-scribe-envcheck-01.json`). All four reviewers recorded this.
 
 Three further points were each raised by one reviewer:
 
@@ -332,9 +334,9 @@ demonstrable without a microphone or a provider.
 
 ## Tournament journey
 
-ScribeVault met team-demos in the event's single final matchup,
+ScribeVault met AI Security Demos in the event's single final matchup,
 `mu:trial-2-2026:final:01`. Two independent matchup judges compared the teams,
-each seeing them in the opposite order, and both chose team-demos. ScribeVault
+each seeing them in the opposite order, and both chose AI Security Demos. ScribeVault
 did not advance.
 
 The decisive evidence was the start failure. A user following ScribeVault's own
@@ -346,7 +348,7 @@ than on the other team's demonstrated success.
 Two criteria came out even in both orders. Reliability was even because
 ScribeVault's 509 passing tests were offset by a red suite, an inert coverage
 gate and no CI. Innovation was even as well. Neither judge used or compared an
-overall total, since neither team had one.
+overall total; the comparison is made criterion by criterion.
 
 ## Blocking issues
 

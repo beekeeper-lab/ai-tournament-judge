@@ -14,12 +14,9 @@ model_used: not-applicable
 started_at: "2026-09-23T20:18:07Z"
 completed_at: "2026-09-23T20:18:07Z"
 visibility: private
-approval_state: approved
+approval_state: draft
 validation_state: valid
 authorized_by: event-director
-approved_by: event-director
-approved_at: "2026-09-23T20:18:26Z"
-approval_note: F8 decision, event-director, 2026-09-23
 ---
 
 # Manual Override Record
@@ -34,14 +31,16 @@ record and no re-run.
 |---|---|
 | Artifact | `events/trial-2-2026/event.md` front matter `model_requested: claude-opus-5` |
 | Framework result | `matchup-passes/mu-final-01-pass-a-first.md`, `matchup-passes/mu-final-01-pass-b-first.md`, `matchups/mu-final-01.md`, `dossiers/team-demos.md` and `dossiers/team-scribe.md` record `model_used: claude-opus-5-5[1m]`. Nothing recorded a decision to accept it |
-| Override result | `claude-opus-5-5[1m]` is accepted for the tournament and dossiers stages. `event.md` is not changed. The eight panel judgments record `claude-opus-5` and are not affected |
-| Category | other |
+| Override result | `claude-opus-5-5[1m]` is accepted for the tournament and dossiers stages. `event.md` is not changed. The eight panel judgments record `claude-opus-5` and are not affected. The three matchup artifacts also record `model_requested: opus`, not `claude-opus-5`; that field is left as recorded |
+| Category | rules exception |
 
 ## Authority
 
-`events/trial-2-2026/event.md` names `event-director` for every official role.
-`audits/tournament.md` F8 names the repair as an event-director decision recorded
-in `status.md` or as an override.
+`framework/policies/disagreement-and-adjudication.md:9`: "A human event official
+owns disqualification, rules exceptions, and unresolved final ties." Departing from
+`event.md`'s `model_requested` is a rules exception. `event.md:103` records that
+`event-director` holds every authority in this event, and no other official exists.
+`audits/tournament.md` F8 is why this record exists, not its authority.
 
 ## Reason
 

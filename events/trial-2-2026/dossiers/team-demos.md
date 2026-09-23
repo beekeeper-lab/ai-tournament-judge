@@ -12,6 +12,12 @@ source_reports:
 - judgments/team-demos/
 - adjudications/adj-trial-2-2026-team-demos-functional.md
 - evidence/team-demos/manifest.md
+- runs/team-demos-envcheck-01.json
+- runs/team-demos-01-dryrun-vulnerable-01.json
+- runs/team-demos-01-dryrun-hardened-01.json
+- runs/team-demos-04-memory-diff-01.json
+- runs/team-demos-10-list-verdicts-01.json
+- runs/team-demos-egress-guards-01.json
 - matchups/mu-final-01.md
 model_requested: claude-opus-5
 model_used: claude-opus-5-5[1m]
@@ -100,8 +106,8 @@ Items here were reached by all four judges unless a single judge is named.
   usually appears only after someone has been burned.
 - **Demo 06 holds the prompt constant across the vulnerable and hardened runs**,
   so only identity and mode change and the lesson cannot be mistaken for prompt
-  tuning. Named by two judges, the backend reviewer and the product and agentic
-  reviewer.
+  tuning. Named by three judges: the backend reviewer, the frontend and UX
+  reviewer, and the product and agentic reviewer.
 - **Demo 05 expresses least privilege where it binds**: the hardened command drops
   `Bash` from `allowed-tools` while its vulnerable twin keeps it. Named by two
   judges, the backend reviewer and the security reviewer.
@@ -205,9 +211,10 @@ folder runs standalone. The backend reviewer called that tradeoff the right one.
 **Limitations.** Duplication with nothing to catch drift: the renderer, the resume
 corpus and demo 06's harness are copied across demos. Three judges treated this
 as a defect; the backend reviewer treated it as a correct tradeoff with a stated
-cost. Single-judge findings, each from the backend reviewer: the demo 09 POST
-guard accepts an empty hostname where demo 07's guard for the same concern does
-not (no egress path was shown, since `urllib` rejects that form); demo 06's
+cost. All four judges found that the demo 09 POST guard accepts an empty
+hostname where demo 07's guard for the same concern does not (no egress path was
+shown, since `urllib` rejects that form). Single-judge findings, each from the
+backend reviewer: demo 06's
 approval queue derives its id from a file count, so archiving one file can make
 the next proposal overwrite a pending approval (`harness.py:74-77`); and demo 10's
 audit read path guards `json.loads` in one function and not another. The frontend
@@ -290,7 +297,8 @@ The bracket had two teams and no byes, so your journey was one match: the final.
 
 **Final — you won.** `atj matchup` resolved the result from two order-balanced
 passes, one presenting you first and one presenting you second, judged by
-evaluators who could not see each other's work and did not compute the margin.
+evaluators who were run independently, as the event records, and did not compute
+the margin.
 Both passes picked AI Security Demos. Every criterion was order-consistent, and
 the result was well outside the close-call band, so it confirmed with no
 adjudication and no tie-break. Initial panel scores were not used to pick a
