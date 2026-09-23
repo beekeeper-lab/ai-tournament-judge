@@ -151,9 +151,11 @@ are left as their judges returned them. No comparison value rests on any of thes
   describes only what the script prints on success. The two dry runs used
   `python3 <script> --dry-run`, which the submission does not document
   (`evidence/team-demos/manifest.md:53-55`). "Exited as documented" therefore holds
-  for neither the invocation nor the `list_verdicts.py` exit, only for the dry-run
-  and `memory_diff.py` output. The egress guard probe was the event's own script,
-  not a documented command (`evidence/team-demos/manifest.md:112`).
+  for neither the invocation nor the `list_verdicts.py` exit, and not for
+  `memory_diff.py`, whose "No change" text is in the script only (`memory_diff.py:45`).
+  It holds for the dry-run output, which the root README documents as printing the
+  exact prompt. The egress guard probe was the event's own script, not a documented
+  command (`evidence/team-demos/manifest.md:113`).
 - **F13, pass A.** Pass A's description of what judgments F18 and F19 did does not
   match `audits/judgments.md`. Read that audit, not the pass, for their effect.
 
