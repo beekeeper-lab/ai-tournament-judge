@@ -1,0 +1,85 @@
+{
+  "bracket_size": 2,
+  "bye_count": 0,
+  "bye_policy": "performance-qualified",
+  "bye_teams": [],
+  "constraint_audit": [
+    {
+      "constraint": "Every eligible team appears exactly once",
+      "detail": "2 of 2 teams placed",
+      "exceptions": [],
+      "kind": "hard",
+      "status": "satisfied"
+    },
+    {
+      "constraint": "Bye count and match count match the bracket size",
+      "detail": "0 byes, 1 first-round matches, 1 first-round slots",
+      "exceptions": [],
+      "kind": "hard",
+      "status": "satisfied"
+    },
+    {
+      "constraint": "Bye policy 'performance-qualified' applied consistently",
+      "detail": "no byes: the team count is an exact power of two",
+      "exceptions": [],
+      "kind": "hard",
+      "status": "satisfied"
+    },
+    {
+      "constraint": "Previous champion and runner-up in opposite halves",
+      "detail": "previous finalists present: []",
+      "exceptions": [],
+      "kind": "hard",
+      "status": "not-applicable"
+    },
+    {
+      "constraint": "No avoidable same-affiliation or previous-finalist first-round match",
+      "detail": "affiliation 'beekeeper-lab' holds 2 of 2 play-in teams; at most 1 can be paired without a same-affiliation match",
+      "exceptions": [
+        "team-scribe vs team-demos (affiliation beekeeper-lab)"
+      ],
+      "kind": "hard",
+      "status": "infeasible"
+    },
+    {
+      "constraint": "Affiliation separation maximized",
+      "detail": "beekeeper-lab (2 teams): earliest meeting round 1",
+      "exceptions": [
+        "team-scribe vs team-demos (affiliation beekeeper-lab)"
+      ],
+      "kind": "soft",
+      "status": "maximized"
+    }
+  ],
+  "event_id": "trial-2-2026",
+  "feasible": false,
+  "format": "single-elimination",
+  "framework_commit": "c728437466d0940734bee600765af298eebb062d",
+  "input_digest": "0fa1d02b4c6f44c3",
+  "policy": "bracket-assignment@1.0.0",
+  "roster_version": 1,
+  "rounds": [
+    {
+      "matches": [
+        {
+          "bye": false,
+          "entrants": [
+            "team-demos",
+            "team-scribe"
+          ],
+          "match_id": "mu:trial-2-2026:final:01",
+          "slot": 1,
+          "source_matches": [],
+          "winner": null
+        }
+      ],
+      "round_id": "final",
+      "round_index": 1
+    }
+  ],
+  "seed": "trial-2-2026",
+  "team_count": 2,
+  "unsatisfied_hard_constraints": [
+    "No avoidable same-affiliation or previous-finalist first-round match"
+  ]
+}

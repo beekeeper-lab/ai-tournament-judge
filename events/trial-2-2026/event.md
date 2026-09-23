@@ -173,8 +173,9 @@ human decision in `adjudications/`.
 
 ## Publication
 
-`public_scores: false`. Nothing in this event is approved for publication, and
-`public/` stays empty until that changes.
+`public_scores: false`. No numeric score is approved for publication, and
+`public/` stays empty until an artifact passes `atj validate publication` under
+the decision below.
 
 This is not a formality here. **The framework repository is public.** Everything
 committed under `events/` is world-readable the moment it is pushed, including
@@ -182,3 +183,23 @@ artifacts marked `visibility: private`. That marker is a statement of intent tha
 the git remote does not enforce. Before any artifact naming a private-source
 submission is committed, the disclosure question has to be settled by the
 event-director, not by the validator.
+
+### The disclosure decision, 2026-09-23
+
+Settled by the event-director at the bracket stage, ahead of the matchup stage
+that would first produce a public artifact, closing `audits/consolidation.md`
+F34.
+
+The decision and its reasoning are recorded at
+`overrides/ovr-trial-2-2026-publication-disclosure.md`, category `publication`,
+`authorized_by: event-director`. It is an artifact `atj validate reports`
+checks, carrying who decided, which is what `audits/bracket.md` F3 found this
+subsection was not.
+Read it there; this paragraph is a pointer and not a second copy.
+
+In short: neither submission is private, so the paragraph above does not reach
+this event; public artifacts are approved with the panel reports' file-and-line
+weakness citations intact and unredacted; and `public_scores` stays `false`,
+which that decision does not change. Per-artifact approval is unchanged —
+`atj validate publication` must pass and name an approving official before
+anything reaches `public/`.
