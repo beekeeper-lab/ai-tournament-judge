@@ -1,6 +1,6 @@
 ---
 event_id: trial-2-2026
-audit_scope: bracket stage, rounds one through three — the draw, the override records, the bracket report, the disclosure decision, the ledger, and two repair rounds
+audit_scope: bracket stage, rounds one through four — the draw, the override records, the bracket report, the disclosure decision, the ledger, and three repair rounds
 audit_id: bracket
 team_id: null
 match_id: null
@@ -8,11 +8,11 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.1.0
 persona: judging-auditor@1.1.0
-framework_commit: 92e922e0e4b53d6ba5d02d5b57c76e2b4a6d1f4e
+framework_commit: 52183d35fc16735022034fd652ec1ddbf97322d7
 model_requested: claude-opus-5
 model_used: claude-opus-5
 started_at: '2026-09-23T10:55:00Z'
-completed_at: '2026-09-23T14:36:00Z'
+completed_at: '2026-09-23T14:45:00Z'
 visibility: private
 approval_state: draft
 validation_state: unvalidated
@@ -128,8 +128,8 @@ findings:
   blocking: false
   summary: all three disclosure examples came from ScribeVault while the decision covers both reports; team-demos was never shown against the reasoning
   artifact: events/trial-2-2026/event.md:199-207
-  repair: not repaired. The new record gives a count instead of a citation and the count is wrong. See N2. The `H4` half is repaired — `overrides/ovr-trial-2-2026-publication-disclosure.md:85` now reads "`H4` in `docs/0.5.0-beta-plan.md`"
-  state: open
+  repair: closed in round four. The record names `09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51`, which is PD17 and is a genuine team-demos weakness citation, so the finding's requirement is met. The second citation in the same sentence is Q2
+  state: repaired
 - id: F15
   severity: advisory
   scope: event
@@ -152,7 +152,7 @@ findings:
   blocking: false
   summary: the new record's whole justification for treating team-demos no differently — "its weaknesses are its subject matter ... discloses nothing the repository does not set out to teach" — is contradicted by the panel report it summarizes, whose five confirmed team-demos defects are documentation, missing tests, a broken guard, over-broad tool pre-approvals and a bypassable gate
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:77-80
-  repair: 'done and verified in round three — the paragraph retracts the ''weaknesses are its subject matter'' ground in terms, states PD3, PD4 and PD5, and approves on the ground that actually holds. PD4''s restatement was re-derived at the pin: screen-pile-audited.md:4 carries Bash(rm:*) and line 30 holds the one fixed rm. PD5''s was checked against 06-approval-is-the-architecture/demo/README.md:19-22,66-74,88. The ''does not currently teach'' judgement holds for all three: the demo-09 README at :117 asserts the opposite of PD3. Residual defects: P1 and P4'
+  repair: 'done and verified in round three — the paragraph retracts the ''weaknesses are its subject matter'' ground in terms, states PD3, PD4 and PD5, and approves on the ground that actually holds. PD4''s restatement was re-derived at the pin: screen-pile-audited.md:4 carries Bash(rm:*) and line 30 holds the one fixed rm. PD5''s was checked against 06-approval-is-the-architecture/demo/README.md:19-22,66-74,88. The ''does not currently teach'' judgement holds for all three: the demo-09 README at :117 asserts the opposite of PD3. Residual defects: P1 and P4. Correction carried from round three: this summary''s characterisation of PD3 as a hardened-example defect was wrong, which P4 found and the round-three repair fixed in the record. The summary text above is left as what round two said'
   state: repaired
 - id: N2
   severity: major
@@ -160,7 +160,7 @@ findings:
   blocking: false
   summary: F14 is not repaired and the ledger certifies that it is; the record names no team-demos citation and its substitute count, "thirteen file-and-line citations", is wrong — summaries/team-demos.md carries 20 occurrences and 16 distinct file-and-line references, and thirteen is the line count of a .py-only pattern taken from this audit's round one without re-derivation
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:71
-  repair: 'the count is gone and two citations are named, which closes the count half. One of the two is a strength citation and not a weakness: P1'
+  repair: 'the count is gone and two citations are named, which closes the count half. One of the two is a strength citation and not a weakness: P1. Closed in round four: the strength citation is gone. Q2 is the residual'
   state: repaired
 - id: N3
   severity: major
@@ -272,55 +272,101 @@ findings:
   blocking: false
   summary: one of the two team-demos citations the record names as an example of what publication discloses is a confirmed strength, not a weakness — summaries/team-demos.md:418-419 credits 10-show-your-work/demo/scripts/explain.py:85-110 for deriving integrity flags from source trust, and :261 cites it as structural enforcement the judges scoring 4 weight positively; it appears nowhere in the report as a defect
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:78-81
-  repair: replace it with a real team-demos weakness citation — hardened/clear_the_pile_hardened.py:42-43 for PD5, or 10-show-your-work/demo/.claude/commands/screen-pile-audited.md:4 for PD4, which the same paragraph already names two sentences later — or keep 09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51 alone, which is PD17 and is correct. Correct the 11:26:00Z ledger row, which says the paragraph "names two of its citations". The citation was suggested by audits/bracket.md N2 and adopted without checking what the report says about it, the third round running in which this audit own text became the artifact defect
-  state: open
+  repair: 'done and verified in round four — `explain.py:85-110` is gone and `hardened/clear_the_pile_hardened.py:42-43` is in its place, cited by `summaries/team-demos.md:505` inside PD5 and by three judgments. Verified at the pin: `:41` labels them "the two knobs that define this version". Those two lines are the compliant half of PD5, which is Q2'
+  state: repaired
 - id: P2
   severity: minor
   scope: event
   blocking: false
   summary: '"It changes nothing about this draw" is true of the pairing and false of everything else — under the policy as written the constraint is soft, hard_failures at atj/bracket.py:758-761 is empty, :775 assigns feasible true, and no override record would have been required at all'
   artifact: events/trial-2-2026/bracket.md:126-128
-  repair: '"It changes nothing about the pairing — at two teams from one group there is no alternative under either reading — but it is why the draw is `feasible: false` and why this stage needed a human override at all"'
-  state: open
+  repair: 'done and verified in round four — bracket.md:126-131 now separates the pairing from `feasible`, and the counterfactual it states is correct: soft constraint, `:758-761` collects nothing, `:775` assigns `feasible: true`, no override required'
+  state: repaired
 - id: P3
   severity: minor
   scope: framework
   blocking: false
   summary: W20 closes "Changing either is a bracket-policy change and may not land while an event is judging"; changing atj/bracket.py:550 is not a bracket-policy change under CLAUDE.md source-of-truth table, which maps bracket policy to framework/rubrics/bracket-assignment.md, and the asymmetry is sharper than W20 states
   artifact: docs/0.5.0-beta-plan.md W20
-  repair: 'state the two halves separately: changing the policy file is a frozen-contract change that .claude/hooks/pre-write.sh:41 already blocks for framework/rubrics/*, and changing atj/bracket.py alters a frozen event draw semantics without moving bracket-assignment@1.0.0 and is guarded by nothing. The conclusion — neither lands mid-event — is right and stays'
-  state: open
+  repair: done and verified in round four — W20 now states the two halves separately and names `CLAUDE.md`'s source-of-truth table and `.claude/hooks/pre-write.sh:41`, which does guard `framework/rubrics/*` and does not guard `atj/bracket.py`. "Only one of them would be stopped" is exactly right
+  state: repaired
 - id: P4
   severity: minor
   scope: event
   blocking: false
   summary: '"Those are real defects in the fix" covers PD4 and PD5 and not PD3, whose guard is the containment rail around demo 09 optional code-POST exfil variant rather than one of the four hardened controls; the record also drops what the panel recorded, that all four judges state there is no observable consequence and urllib rejects the schemeless form so no egress path is demonstrated'
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:88-91
-  repair: 'separate PD3 from the two hardened-example defects and carry summaries/team-demos.md:484-485 no-consequence qualifier. PD3 stays in the paragraph on its own merit: 09-toolbox-you-didnt-audit/demo/README.md:117 asserts the guard refuses any host but localhost, which is exactly what makes the gap undisclosed'
-  state: open
+  repair: 'PD3 is separated into its own paragraph, correctly described as the containment rail around demo 09''s optional code-POST variant rather than one of the four hardened controls at `09-toolbox-you-didnt-audit/demo/README.md:65-79`, with the four-judge no-consequence qualifier carried and `README.md:117` named as the sentence it contradicts. The repair introduced a count in the preceding sentence: Q1'
+  state: repaired
 - id: P5
   severity: advisory
   scope: event
   blocking: false
   summary: the constraint name is attributed to atj/bracket.py:550; :549 carries the name and :550 the kind. The claim the sentence makes, that :550 supplies the hardness, is exactly right and the appositive spills one line
   artifact: events/trial-2-2026/bracket.md:113-115
-  repair: cite the audit block as :548-554, or move the constraint name to :549
-  state: open
+  repair: done and verified in round four — bracket.md:117-119 cites `atj/bracket.py:548-554`, naming `:549` for the constraint and `:550` for the kind. Both resolve
+  state: repaired
 - id: P6
   severity: minor
   scope: event
   blocking: false
   summary: the record explains persona build-bracket@1.0.0 as "the skill that was running when this was written"; it was written at 11:09 and revised at 11:26, both in rounds the ledger records as repairs against audits/bracket.md, and build-bracket own step list ends at writing and auditing the bracket report
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:29-30
-  repair: drop the first clause. The second half of the same paragraph — no persona in framework/personas.md produces a human decision record taken outside a stage own skill, which W16 now carries — is both true and checkable, and is the whole explanation the field needs
+  repair: done and verified in round four — the paragraph is reduced to the checkable half and the unsupported process claim is gone
+  state: repaired
+- id: Q1
+  severity: major
+  scope: event
+  blocking: false
+  summary: '"Two of the panel''s confirmed defects are in the hardened path itself" undercounts — at least five of the seventeen are (PD4, PD5, PD6, PD16, PD17), and PD17 is the hardened-control defect the same record cites two sentences earlier as 09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51'
+  artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:89
+  repair: drop the quantifier and restore the unquantified form the sentence before it already carries — "some of the hardened examples are not hardened" — or write "at least five" and name them. PD6 is demo 09's sandbox, hardened control two of four; PD16 is demo 02's _is_hidden, which summaries/team-demos.md:566-575 calls the signature control the hardened ranker shares; PD17 is demo 09's description sanitizer, hardened control one of four. Correct the 14:42:00Z ledger row, which repeats "the two hardened-example defects". This is the third count a repair has added without checking it, after N2 and N7
   state: open
+- id: Q2
+  severity: minor
+  scope: event
+  blocking: false
+  summary: hardened/clear_the_pile_hardened.py:42-43 is the compliant half of PD5 — the constants the Python path gets right, labelled at the pin as "the two knobs that define this version" — not the lines where PD5's defect lives, which are .claude/commands/clear-the-pile-hardened.md:26-32 and tools/act.py:106-107
+  artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:80
+  repair: cite .claude/commands/clear-the-pile-hardened.md:26-32 or tools/act.py:106-107, either of which is where the defect is and neither of which the repository documents. Publishing :42-43 discloses that the Python path uses constants, which 06-approval-is-the-architecture/demo/README.md:66-74,90 already states at length. Correct the 14:42:00Z ledger row, which says the replacement "is PD5 and is a defect". This citation came from this audit's P1 repair text, the fourth round running on the same sentence
+  state: open
+- id: Q3
+  severity: minor
+  scope: event
+  blocking: false
+  summary: this report's superseded sections carry line references valid only at the commit each round audited, and nothing in the file said so; at least six round-one references now resolve elsewhere or out of range, including two finding artifact fields
+  artifact: events/trial-2-2026/audits/bracket.md
+  repair: 'repaired in round four by this auditor, in this auditor''s own artifact: a sentence under Result states that each round''s citations are as of the commit that round audited — abc7e7a, ebeb4bd, 92e922e and 52183d3 — and that later rounds moved the lines. Recorded rather than fixed silently, on the N13 precedent'
+  state: repaired
+- id: Q4
+  severity: minor
+  scope: event
+  blocking: false
+  summary: N1's front-matter summary and the 11:18:00Z ledger row both describe PD3 as a defect in the hardened examples, which P4 established it is not; neither was annotated when P4 was repaired
+  artifact: events/trial-2-2026/audits/bracket.md, events/trial-2-2026/status.md
+  repair: 'N1''s repair field now records the correction and its summary is left as what round two said. The 11:18:00Z ledger row stays unchanged and is accepted with a reason: it records what the round-two audit found on the day, which is what an activity log is for, and P4 and this entry are the correction. Nothing is silently dropped'
+  state: repaired
 ---
 
 # Judging Audit — bracket stage, first pass
 
 ## Result
 
-**FAIL**, superseded in place after round three. Round one: sixteen findings —
+**FAIL**, superseded in place after round four. Round one: sixteen findings —
+three major, nine minor, four advisory. Round two (`ebeb4bd`): eleven repaired,
+five deferred, one open, fifteen new. Round three (`92e922e`): thirteen
+repaired, two carried, six new. Round four (`52183d3`): all six repaired, four
+new, two of those closed in the same round. **41 findings: 32 repaired, 7
+deferred to a named `W` entry, 2 open — `Q1`, major, and `Q2`.** No finding in
+any round is blocking. Round four's record is the last section of this file.
+
+**Citations are pinned to the round that made them.** Each round's line
+references were correct at the commit it audited — `abc7e7a`, `ebeb4bd`,
+`92e922e`, `52183d3` — and later rounds moved lines in `event.md`, `bracket.md`
+and the disclosure record. A reference in a superseded section resolves against
+that section's commit, not against HEAD. See `Q3`.
+
+**FAIL**, as recorded after round three. Round one: sixteen findings —
 three major, nine minor, four advisory. Round two, scoped to `ebeb4bd`: eleven
 repaired, five deferred to `W15`-`W19`, one open, and fifteen new. Round three,
 scoped to `92e922e`: thirteen of the fifteen repaired and verified, two carried
@@ -1257,3 +1303,255 @@ that check; the outstanding work is four sentences and two line numbers. Re-audi
 the round-three repair before the tournament stage, and check the replacement
 citation in `P1` against `summaries/team-demos.md` before adopting it, including
 if it is a citation this report suggested.
+
+---
+
+# Round four — the round-three repair audited
+
+**FAIL**, on one open major. All six round-three findings repaired and verified.
+Four new findings — one major, three minor, and two of the three closed inside
+this round. None blocking.
+
+Scope: `git diff 52183d3~1 52183d3`, five files. `bracket.json` was not
+re-audited and is unchanged since `abc7e7a`; the draw, the two tables, the
+permutation experiment and the repository-visibility checks all stand from the
+rounds that established them.
+
+Five of the six repairs are clean and one of them is better than what I asked
+for: `W20`'s restatement of the two frozen-contract halves is more precise than
+`P3` specified. The verdict turns on one sentence in the disclosure record, and
+on the same sentence as the last three rounds.
+
+**`P4`'s repair added a count.** The paragraph it edited already said, correctly
+and without a number, that "some of the hardened examples are not hardened". The
+repair put "Two of the panel's confirmed defects are in the hardened path
+itself" in front of it. At least five are, and one of the five is the citation
+the same record names two sentences earlier. That is `Q1`, and it is the third
+time in four rounds that a repair has added a number it did not check — after
+`N2`'s "thirteen" and `N7`'s "three of the five".
+
+## Deterministic validation, re-run
+
+| Command | Result |
+|---|---|
+| `python3 -m atj event validate events/trial-2-2026` | PASS, 0 problems, stage bracket |
+| `python3 -m atj validate reports events/trial-2-2026` | PASS, 24 artifacts, 0 findings |
+| `python3 -m atj validate publication events/trial-2-2026` | CLEAR, 24 artifacts, 0 blocking |
+| `python3 -m atj release-check` | PASS |
+| `python3 -m pytest tests/ -q` | 517 passed, 5 skipped, 286 subtests |
+| `python3 -m atj bracket verify bracket.json --event-dir events/trial-2-2026` | `PASS (constraints re-derived from the roster)` |
+| `derive_digests` recomputed | `bracket:draw = 3c88ccc1e0f9f863`, unchanged since round two; `stale_units` empty |
+
+## P1: the replacement citation
+
+`10-show-your-work/demo/scripts/explain.py:85-110` is gone from
+`overrides/ovr-trial-2-2026-publication-disclosure.md` and appears nowhere else
+in the stage record. `P1` is closed.
+
+The replacement, `hardened/clear_the_pile_hardened.py:42-43`, was checked in both
+directions rather than taken from my own `P1` repair text.
+
+**In the report.** `summaries/team-demos.md:505` carries it as the opening
+citation of **PD5**, a confirmed defect, and three judgments cite it:
+`judge-security-ops.md:153` and `:195`, and `judge-product-agentic.md:243` and
+`:457`. It is not a strength citation and nothing like the round-three defect.
+
+**At the pin.** `06-approval-is-the-architecture/demo/hardened/clear_the_pile_hardened.py`
+at `dc35f696` has, at `:41-44`:
+
+> `# --- the two knobs that define this version (the ONLY difference) ---`
+> `IDENTITY = "sift-agent"`
+> `MODE = "gate"`
+
+Which is `Q2`, and it is milder than `P1` by a clear margin. Those two lines are
+the half of PD5 the submission got **right** — the Python path's constants, out
+of the model's reach. PD5's defect is the other path:
+`.claude/commands/clear-the-pile-hardened.md:26-32`, where the same values are
+typed by the model, and `tools/act.py:106-107`, the CLI that accepts
+`--mode fire` from any caller, both named at
+`judgments/team-demos/judge-security-ops.md:153` and `:195`.
+
+The paragraph's job, set by `F14` and `N2`, is to show a reader what publication
+discloses about `team-demos`. Publishing `:42-43` discloses that the hardened
+Python path uses constants, which
+`06-approval-is-the-architecture/demo/README.md:66-74` explains at length and
+`:90` states outright. `F14` is nonetheless satisfied: the sentence's *other*
+citation, `09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51`, is PD17 and
+is a real weakness at a real line. `F14` closes; `Q2` is about the second
+citation only.
+
+I am recording `Q2` as a defect in my own `P1` repair text. Four rounds have now
+touched this one sentence and the suggestion each time came from this report.
+
+## P4, and the count it introduced
+
+The PD3 separation is right in every particular I could check. PD3 is now its own
+paragraph, described as the containment rail around demo 09's *optional*
+code-POST variant rather than one of the four hardened controls — and
+`09-toolbox-you-didnt-audit/demo/README.md:65-79` does enumerate exactly four.
+The four-judge no-consequence qualifier is carried and cited to
+`summaries/team-demos.md:480-487`, which is where it lives. `README.md:117`
+— "The POST path is hard-guarded: it **refuses any host but localhost**. Nothing
+leaves the machine." — is correctly named as the sentence the finding
+contradicts.
+
+The new sentence in front of it is wrong. "Two of the panel's confirmed defects
+are in the hardened path itself." `summaries/team-demos.md:461-585` lists
+seventeen confirmed defects, PD1 through PD17. At least five are in the hardened
+path:
+
+| Defect | Where | Source |
+|---|---|---|
+| PD4 | `10-show-your-work/demo/.claude/commands/screen-pile-audited.md:4`, the capstone's audited screener | `summaries/team-demos.md:488-503` |
+| PD5 | demo 06's hardened clearer on the Claude Code path | `:504-512` |
+| PD6 | demo 09's sandbox — hardened control **two** of the four | `:513-519` |
+| PD16 | demo 02's `_is_hidden`, "the signature control the hardened ranker shares" | `:566-575` |
+| PD17 | demo 09's description sanitizer — hardened control **one** of the four | `:576-585` |
+
+PD8 is arguably a sixth and I have not counted it, because the finding is about
+demo 07's containment claim rather than about a hardened artifact.
+
+PD17 is the one that makes this more than arithmetic: it is the defect behind
+`09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51`, which this same record
+names two sentences earlier as an example of what publication discloses. The
+record cites a hardened-path defect and then says there are two, listing the
+other two.
+
+The direction matters for a publication decision. The count understates how much
+the panel discloses about the operator's own hardened examples, which is the
+quantity the decision is weighing. The sentence the repair replaced —
+"some of the hardened examples are not hardened" — was unquantified and correct.
+
+## P2, P3, P5, P6
+
+| Finding | Repair | Verified |
+|---|---|---|
+| `P2` | `bracket.md:126-131` separates the pairing from `feasible` | yes. The counterfactual is right: with the constraint soft, `hard_failures` at `atj/bracket.py:758-761` is empty and `:775` assigns `feasible: true`, so `overrides/ovr-trial-2-2026-bracket-affiliation.md` would not have been required |
+| `P3` | `W20`'s closing restated as two halves | yes, and better than specified. `.claude/hooks/pre-write.sh:41` matches `framework/rubrics/*` and `framework/personas.md` and does not match `atj/bracket.py`; `CLAUDE.md`'s source-of-truth table names `framework/rubrics/bracket-assignment.md`. "Neither should land while an event is judging, and only one of them would be stopped" is exactly the asymmetry |
+| `P5` | `bracket.md:117-119` cites `atj/bracket.py:548-554` | yes — `:549` is the constraint name, `:550` is `"kind": "hard"`, and the block runs `:548-554` |
+| `P6` | persona paragraph reduced | yes. The unsupported "the skill that was running" clause is gone and what remains — no persona in `framework/personas.md` produces a human decision record taken outside a stage's own skill, and `build-bracket@1.0.0`'s step list ends at writing and auditing the bracket — is true and checkable |
+
+## What the ledger says about all this
+
+Two new rows, `14:36:00Z` for the round-three audit and `14:42:00Z` for the
+round-three repair, both in order and both before the commit, which is authored
+`2026-09-23 10:38:42 -0400` = `14:38:42Z`.
+
+That is a problem in one direction only: the `14:42:00Z` repair row is stamped
+**four minutes after** the commit that contains it. Every other stamp in this
+stage precedes its commit. It is a forward-dated ledger row rather than a wrong
+one — the work it describes is in the commit — and the coordinating note gives
+real clock at commit time as 14:43Z, which suggests the commit timestamp and the
+row were set from different clocks. It is not worth a finding on its own and I
+record it here so the next stage does not inherit the habit.
+
+The `14:36:00Z` audit row is accurate, including its counts and its statement
+that the citation came from this audit's own repair text. The `14:42:00Z` repair
+row carries `Q1` and `Q2` forward: it says "the two hardened-example defects" and
+says the replacement citation "is PD5 and is a defect".
+
+## Nothing contradicts the superseded rounds, with two exceptions now closed
+
+The coordinator asked whether anything in the stage record now contradicts an
+earlier round that was superseded in place rather than corrected. Two things
+did.
+
+**`Q3` — stale line references in the preserved sections.** Round one's text and
+several of its `findings:` `artifact` fields point at lines that three repair
+rounds have since moved. `event.md` is 205 lines, so round one's `F3` artifact
+`event.md:186-221` and its body citations `event.md:212` and `:219` are out of
+range; `F7`'s `event.md:204-205` now lands on the closing sentence of the
+Publication section; `F13` and `F14`'s `event.md:199-207` now covers the "In
+short" paragraph; `F2`'s `bracket.md:120` is now a line of the F11 divergence
+paragraph. Nothing in the file said the citations were pinned to their own
+round. A sentence under Result now does, naming `abc7e7a`, `ebeb4bd`, `92e922e`
+and `52183d3`. Repaired in this round, in this auditor's own artifact, and
+recorded rather than fixed silently, on the `N13` precedent.
+
+**`Q4` — `N1` on PD3.** Round two's `N1` summary, and the `11:18:00Z` ledger row
+that carries it, describe PD3 as one of the "defects in the hardened examples".
+`P4` established that it is not. `N1`'s `repair` field now records the
+correction and its `summary` is left as what round two said. The ledger row
+stays unchanged and is **accepted with a reason**: an activity log records what
+an audit found on the day it found it, and `P4` plus this entry are the
+correction. Altering it would make the ledger a summary of the current state
+rather than a record of what happened.
+
+Nothing else. Round one's `F14` "13 file-and-line citations" and `F3`'s
+`event.md:25` were both wrong and both were corrected in round two's own text,
+under "This audit's own round-one errors", not silently. Round one's deterministic
+table says 22 artifacts against today's 24, which is correct for the commit it
+audited and is labelled as round one's.
+
+## Is the gate honestly settable
+
+Not yet, and the reason is one sentence rather than anything structural.
+
+Of 41 findings across four rounds: **32 repaired**, **7 deferred to a named `W`
+entry**, **2 open**. Nothing is dropped, nothing is closed without a statement,
+and every deferral names its destination.
+
+| Disposition | Findings |
+|---|---|
+| Deferred to a named `W` | `F1`→`W15`, `F5`→`W16`, `F9`→`W17`, `F10`→`W18`, `F16`→`W19`, `N5`→`W20`, `N15`→`W15`. `N14` is carried in `W16` and repaired in the record |
+| Accepted with a stated reason | the `11:18:00Z` ledger row under `Q4`; `F15`, explained rather than changed, which the finding permitted |
+| Open | `Q1` (major), `Q2` (minor) |
+| Everything else | repaired and verified by a later round |
+
+Every one of the seven `W` entries was read as an artifact and every line
+reference in all seven resolves. `W15` and `W16` carry the round-two additions,
+`W20` carries `N5` and the `P3` restatement.
+
+`Q1` and `Q2` are in the same paragraph of the same record and are two
+sentences of work. Nothing else in the stage is waiting on anything.
+
+## Untrusted-content scan, round four
+
+Two files were fetched from `beekeeper-lab/ai-security-demos` at `dc35f696`:
+`06-approval-is-the-architecture/demo/hardened/clear_the_pile_hardened.py` and
+the repository tree listing. The Python file's lines `:41-46` are comments and
+two constant assignments; `:46` reads "IDENTICAL to ../clear_the_pile.py on
+purpose. The fix is not in the words", which is a note to a reader of the
+repository and not an instruction to this audit, and it was treated as neither.
+No fetched content addressed a judge, a scorer or an auditor. The five-file
+repair diff matched nothing on a scan for reader-directed instruction, role
+reassignment, system-prompt framing or suppression directives.
+
+## Findings — round four
+
+| Severity | Rule | Artifact | Scope | Blocking | Finding | Required repair |
+|---|---|---|---|---|---|---|
+| major | count added by a repair, wrong and self-contradicted | `overrides/...-publication-disclosure.md:89` | event | no | `Q1`. "Two of the panel's confirmed defects are in the hardened path itself." `summaries/team-demos.md:461-585` lists seventeen; at least five are in the hardened path — PD4 (the capstone's audited screener), PD5 (demo 06's hardened clearer), PD6 (demo 09's sandbox, hardened control two of four), PD16 (demo 02's `_is_hidden`, which the report calls "the signature control the hardened ranker shares"), PD17 (demo 09's description sanitizer, hardened control one of four). PD17 is the defect behind `09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51`, which this record names two sentences earlier. The count understates how much the panel discloses about the operator's own hardened examples, which is the quantity the decision weighs, and the sentence it replaced was unquantified and correct | drop the quantifier, or write "at least five" and name them. Correct the 14:42:00Z ledger row, which repeats "the two hardened-example defects" |
+| minor | citation resolves to the compliant half | `overrides/...-publication-disclosure.md:80` | event | no | `Q2`. `hardened/clear_the_pile_hardened.py:42-43` is inside PD5 but is the half the submission got right — `IDENTITY = "sift-agent"` and `MODE = "gate"`, labelled at the pin `:41` as "the two knobs that define this version (the ONLY difference)". PD5's defect is at `.claude/commands/clear-the-pile-hardened.md:26-32` and `tools/act.py:106-107` (`judgments/team-demos/judge-security-ops.md:153,195`). Publishing `:42-43` discloses what `06-.../README.md:66-74,90` already states. The citation came from this report's `P1` repair text — the fourth round on this sentence, and the third whose replacement I supplied | cite `.claude/commands/clear-the-pile-hardened.md:26-32` or `tools/act.py:106-107`. Correct the 14:42:00Z ledger row, which says the replacement "is PD5 and is a defect" |
+| minor | stale references in superseded sections | `events/trial-2-2026/audits/bracket.md` | event | no | `Q3`. This report's round-one sections and two of its `findings:` `artifact` fields cite lines that later rounds moved: `event.md:186-221`, `:212` and `:219` are now out of range in a 205-line file, `event.md:204-205` and `:199-207` land on different text, and `bracket.md:120` is now part of the F11 paragraph. Nothing said the citations were pinned to their own round | **repaired in this round** by this auditor in this auditor's own artifact: a sentence under Result names the four commits and says the lines moved. Recorded rather than fixed silently, on the `N13` precedent |
+| minor | earlier finding text overtaken and not annotated | `events/trial-2-2026/audits/bracket.md`, `events/trial-2-2026/status.md` | event | no | `Q4`. `N1`'s summary and the `11:18:00Z` ledger row both call PD3 a defect in the hardened examples; `P4` established it is the containment rail around an optional variant | **repaired in this round** for the audit: `N1`'s `repair` field records the correction and its `summary` is left as what round two said. The ledger row is **accepted unchanged with a reason** — an activity log records what an audit found on the day, and `P4` plus this entry are the correction |
+
+## Completion gate — round four
+
+- [x] No blocking findings
+- [ ] No major findings — one, `Q1`. Round three's `P1`-`P6` are all repaired and verified
+- [x] Calculations valid — `bracket:draw` recomputes to `3c88ccc1e0f9f863` unchanged, `stale_units` empty, the draw untouched since `abc7e7a`, no score exists to calculate
+- [ ] Evidence references resolve — `Q1` states a count `summaries/team-demos.md` contradicts; `Q2` resolves to the compliant half of the finding it cites. Every other reference in the repair resolves, including the two checked at the pin
+- [x] Version and identity checks pass — `release-check` PASS, 24 artifacts clean, no version moved in any of four rounds
+- [x] Privacy boundary passes — `public/` holds only `.gitkeep`, `public_scores: false` untouched at `event.md:14`, `atj validate publication` CLEAR over 24 artifacts. `Q1` and `Q2` both understate what is disclosed, which is the direction that cannot leak anything
+- [x] Every finding recorded in `findings:` with a `scope` and a `blocking` flag
+- [ ] Approved with `atj event approve <this file>`
+
+## Required repairs before round five
+
+1. `Q1` — drop the quantifier or write "at least five" and name them, and fix the
+   `14:42:00Z` ledger row. This is the only thing holding the verdict.
+2. `Q2` — one citation, and the same ledger row.
+
+That is two sentences in one paragraph of one record, plus one ledger row that
+carries both. Nothing else in the stage is open. `bracket.json`, the summaries,
+the judgments, the manifests and the roster have not moved in four rounds and
+must not move in a fifth.
+
+**One instruction for round five, and it is the lesson of all four.** Do not take
+the replacement citation from this report. Three of the four rounds introduced a
+defect that came from my own repair text — `N2` and `N6` from round one, `P1`
+from round two, `Q2` from round three — and in each case the repair adopted a
+value I supplied without checking it against the source. Take `Q2`'s citation
+from `summaries/team-demos.md` and `judgments/team-demos/judge-security-ops.md`
+directly, and take `Q1`'s number by counting PD1 through PD17 yourself.

@@ -76,17 +76,16 @@ and line in both repositories — on `team-scribe`, an unescaped
 markdown-to-`setHtml` render path (`summaries/team-scribe.md:230,344`) and four
 `OPENAI_API_KEY` read sites (`:241`); on `team-demos`, its own citations at the
 same resolution, among them
-`09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51` and
-`hardened/clear_the_pile_hardened.py:42-43`. A reader mostly learns
-where to look rather than what the code says, though not always: `summaries/team-scribe.md:243` quotes the fallback
-KDF input literal verbatim. Every cited line is already readable by anyone at
+`09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51`, the fixed denylist
+regex `summaries/team-demos.md` PD17 records as trivially bypassable. A reader
+mostly learns where to look rather than what the code says, though not always:
+`summaries/team-scribe.md:243` quotes the fallback KDF input literal verbatim. Every cited line is already readable by anyone at
 the pinned commit, in a public repository, without the report.
 
 **`team-demos` needs no different treatment, but not because its weaknesses
 are its subject matter.** They are not. The repository demonstrates attacks
 against LLM agents and ships hardened counter-examples, and part of what the
 panel found is that some of the hardened examples are not hardened.
-Two of the panel's confirmed defects are in the hardened path itself.
 `summaries/team-demos.md` PD4 records `Bash(rm:*)` pre-approved in seventeen
 command files, the seventeenth being
 `10-show-your-work/demo/.claude/commands/screen-pile-audited.md:4`, the
@@ -95,7 +94,7 @@ demo 06's approval gate as a constant in one run path and a model-supplied
 argument in the other, against a CLI that accepts `--mode fire` from any caller,
 with the README presenting the weaker path as the hero path.
 
-PD3 is a third and is not one of the hardened controls: it is the containment
+PD3 is different in kind and is not one of the hardened controls: it is the containment
 rail around demo 09's optional code-POST variant, whose v1.1 guard admits an
 empty hostname where the demo-07 guard written for the same concern requires set
 membership and a scheme. All four judges record that it has no observable
