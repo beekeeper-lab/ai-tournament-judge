@@ -1,5 +1,6 @@
 """Stage 1 — the rubric Markdown is the only source of official numbers."""
 
+import json
 import re
 import unittest
 from pathlib import Path
@@ -75,6 +76,45 @@ class CanonicalRubricTests(unittest.TestCase):
         from atj.cli import check_no_duplicate_weights
 
         self.assertEqual(check_no_duplicate_weights(ROOT), [])
+
+    def test_a_decisive_matchup_margin_is_not_a_weight_copy(self):
+        """trial-2-2026: a ±2 value makes the criterion margin equal its weight.
+
+        An `atj matchup` result is exempt by location and shape. A copy anywhere else is
+        still caught, whether written as an integer, a float, or at the end of
+        a sentence.
+        """
+        import shutil
+        import tempfile
+        from atj.cli import check_no_duplicate_weights
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rubric = root / canon.SUBMISSION_RUBRIC
+            rubric.parent.mkdir(parents=True)
+            shutil.copy(ROOT / canon.SUBMISSION_RUBRIC, rubric)
+            result = root / "events" / "e" / "matchups" / "mu-final-01.json"
+            result.parent.mkdir(parents=True)
+            result.write_text(json.dumps({
+                "rubric": "head-to-head@1.1.0", "outcome": "confirmed", "combined_margin": 15.0,
+                "passes": {"a_first": {"criterion_margins": {"product": 15.0}}},
+                "criteria": {"product": {"a_first_value": 2, "b_first_normalized_value": 2,
+                                         "combined_margin": 15.0, "weight": 15}},
+            }), encoding="utf-8")
+            copies = {
+                "int.json": '{"product": 15}',
+                "float.json": '{"functional": 25.0}',
+                "prose.md": "The weight is product: 15.",
+                # In the right place but not a result: location alone does not exempt.
+                "events/e/matchups/weights.json": '{"product": 15}',
+                "events/_template/matchups/mu.json": '{"product": 15}',
+            }
+            for name, text in copies.items():
+                (root / name).parent.mkdir(parents=True, exist_ok=True)
+                (root / name).write_text(text, encoding="utf-8")
+            problems = check_no_duplicate_weights(root)
+        self.assertEqual(len(problems), len(copies), problems)
+        self.assertFalse(any("mu-final-01.json" in p for p in problems), problems)
 
     def test_retired_scripts_no_longer_define_weights(self):
         for name in ("calculate_scores", "build_bracket", "validate_configuration",

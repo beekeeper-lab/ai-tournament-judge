@@ -1747,6 +1747,33 @@ def tracked_files(root: Path) -> list[Path] | None:
     return sorted(root / name for name in names if name)
 
 
+_MATCHUP_RESULT_KEYS = {"criteria", "passes", "outcome", "combined_margin", "rubric"}
+
+
+def _is_matchup_result(path: Path, root: Path) -> bool:
+    """True for an `atj matchup` result in an event's `matchups/`, and nothing else.
+
+    Location alone is not enough: `events/_template/matchups/weights.json` would
+    pass. The file must also parse as a result, and every criterion under
+    `criteria` must carry the fields `atj matchup` writes.
+    """
+    rel = path.relative_to(root).parts
+    if not (len(rel) == 4 and rel[0] == "events" and rel[1] != "_template"
+            and rel[2] == "matchups" and path.suffix == ".json"):
+        return False
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, ValueError):
+        return False
+    if not isinstance(data, dict) or not _MATCHUP_RESULT_KEYS <= data.keys():
+        return False
+    criteria = data["criteria"]
+    return isinstance(criteria, dict) and all(
+        isinstance(c, dict) and {"a_first_value", "b_first_normalized_value", "combined_margin"} <= c.keys()
+        for c in criteria.values()
+    )
+
+
 def check_no_duplicate_weights(root: Path) -> list[str]:
     """No second editable copy of the official weights outside the rubric.
 
@@ -1785,6 +1812,12 @@ def check_no_duplicate_weights(root: Path) -> list[str]:
         if skip_parts & set(path.parts):
             continue
         resolved = path.resolve()
+        # An `atj matchup` result keys its criterion margins by criterion id, and a
+        # decisive value makes the margin equal the weight. The file is tool output,
+        # reproduced by the tournament audit, so it is exempt by what it is and not
+        # by how its numbers are written: a float copy elsewhere is still a copy.
+        if _is_matchup_result(path, root):
+            continue
         if resolved in allowed or any(
             base.is_dir() and str(resolved).startswith(str(base) + "/") for base in allowed
         ):

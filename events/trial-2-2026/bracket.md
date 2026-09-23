@@ -73,7 +73,9 @@ applications. That is what makes the draw infeasible, below.
 Byes: none. `bye_policy` is `performance-qualified` and it never runs.
 
 The single match is `mu:trial-2-2026:final:01`, round `final`, round index 1,
-entrants `team-demos` and `team-scribe`, `winner: null`. It has not been judged.
+entrants `team-demos` and `team-scribe`. Drawn with `winner: null`; `atj bracket
+advance` recorded `winner: team-demos` on 2026-09-23 from `matchups/mu-final-01.md`,
+after the tournament stage audit. Nothing else in the draw changed.
 Presentation order in the bracket is not presentation order in the matchup: the
 head-to-head pass is order-balanced and `judge-matchup@1.0.0` runs both.
 

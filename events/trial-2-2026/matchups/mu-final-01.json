@@ -1,0 +1,130 @@
+{
+  "adjudication_reasons": [],
+  "close_call_band": 5.0,
+  "combined_margin": 50.0,
+  "criteria": {
+    "agentic": {
+      "a_first_value": 0,
+      "b_first_normalized_value": 1,
+      "combined_margin": 3.75,
+      "order_disagreement": false,
+      "weight": 15
+    },
+    "engineering": {
+      "a_first_value": 1,
+      "b_first_normalized_value": 1,
+      "combined_margin": 7.5,
+      "order_disagreement": false,
+      "weight": 15
+    },
+    "functional": {
+      "a_first_value": 1,
+      "b_first_normalized_value": 2,
+      "combined_margin": 18.75,
+      "order_disagreement": false,
+      "weight": 25
+    },
+    "innovation": {
+      "a_first_value": 0,
+      "b_first_normalized_value": 0,
+      "combined_margin": 0.0,
+      "order_disagreement": false,
+      "weight": 10
+    },
+    "product": {
+      "a_first_value": 2,
+      "b_first_normalized_value": 2,
+      "combined_margin": 15.0,
+      "order_disagreement": false,
+      "weight": 15
+    },
+    "reliability": {
+      "a_first_value": 0,
+      "b_first_normalized_value": 0,
+      "combined_margin": 0.0,
+      "order_disagreement": false,
+      "weight": 10
+    },
+    "security": {
+      "a_first_value": 1,
+      "b_first_normalized_value": 1,
+      "combined_margin": 5.0,
+      "order_disagreement": false,
+      "weight": 10
+    }
+  },
+  "criterion_order_disagreements": [],
+  "order_disagreement": false,
+  "outcome": "confirmed",
+  "passes": {
+    "a_first": {
+      "criterion_margins": {
+        "agentic": 0.0,
+        "engineering": 7.5,
+        "functional": 12.5,
+        "innovation": 0.0,
+        "product": 15.0,
+        "reliability": 0.0,
+        "security": 5.0
+      },
+      "margin": 40.0,
+      "normalized_comparisons": {
+        "agentic": 0,
+        "engineering": 1,
+        "functional": 1,
+        "innovation": 0,
+        "product": 2,
+        "reliability": 0,
+        "security": 1
+      },
+      "picks": "team-demos",
+      "presented_first": "team-demos",
+      "raw_comparisons": {
+        "agentic": 0,
+        "engineering": 1,
+        "functional": 1,
+        "innovation": 0,
+        "product": 2,
+        "reliability": 0,
+        "security": 1
+      }
+    },
+    "b_first": {
+      "criterion_margins": {
+        "agentic": 7.5,
+        "engineering": 7.5,
+        "functional": 25.0,
+        "innovation": 0.0,
+        "product": 15.0,
+        "reliability": 0.0,
+        "security": 5.0
+      },
+      "margin": 60.0,
+      "normalized_comparisons": {
+        "agentic": 1,
+        "engineering": 1,
+        "functional": 2,
+        "innovation": 0,
+        "product": 2,
+        "reliability": 0,
+        "security": 1
+      },
+      "picks": "team-demos",
+      "presented_first": "team-scribe",
+      "raw_comparisons": {
+        "agentic": -1,
+        "engineering": -1,
+        "functional": -2,
+        "innovation": 0,
+        "product": -2,
+        "reliability": 0,
+        "security": -1
+      }
+    }
+  },
+  "rubric": "head-to-head@1.1.0",
+  "source_rubric": "submission-evaluation@1.1.0",
+  "team_a": "team-demos",
+  "team_b": "team-scribe",
+  "winner": "team-demos"
+}
