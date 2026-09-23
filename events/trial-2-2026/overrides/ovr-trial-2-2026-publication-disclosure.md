@@ -14,9 +14,11 @@ model_used: not-applicable
 started_at: "2026-09-23T11:03:00Z"
 completed_at: "2026-09-23T11:26:00Z"
 visibility: private
-approval_state: draft
-validation_state: unvalidated
+approval_state: approved
+validation_state: valid
 authorized_by: event-director
+approved_by: event-director
+approved_at: "2026-09-23T14:52:44Z"
 ---
 
 # Manual Override Record

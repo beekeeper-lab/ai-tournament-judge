@@ -1,6 +1,6 @@
 ---
 event_id: trial-2-2026
-audit_scope: bracket stage, rounds one through four — the draw, the override records, the bracket report, the disclosure decision, the ledger, and three repair rounds
+audit_scope: bracket stage, rounds one through five — the draw, the override records, the bracket report, the disclosure decision, the ledger, and four repair rounds
 audit_id: bracket
 team_id: null
 match_id: null
@@ -8,15 +8,15 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.1.0
 persona: judging-auditor@1.1.0
-framework_commit: 52183d35fc16735022034fd652ec1ddbf97322d7
+framework_commit: 5163048e18509c72a63f39b39e8c65840bcc8055
 model_requested: claude-opus-5
 model_used: claude-opus-5
-started_at: '2026-09-23T10:55:00Z'
-completed_at: '2026-09-23T14:45:00Z'
+started_at: "2026-09-23T10:55:00Z"
+completed_at: "2026-09-23T14:50:00Z"
 visibility: private
-approval_state: draft
-validation_state: unvalidated
-result: FAIL
+approval_state: approved
+validation_state: valid
+result: PASS WITH ADVISORIES
 findings:
 - id: F1
   severity: major
@@ -320,16 +320,16 @@ findings:
   blocking: false
   summary: '"Two of the panel''s confirmed defects are in the hardened path itself" undercounts — at least five of the seventeen are (PD4, PD5, PD6, PD16, PD17), and PD17 is the hardened-control defect the same record cites two sentences earlier as 09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51'
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:89
-  repair: drop the quantifier and restore the unquantified form the sentence before it already carries — "some of the hardened examples are not hardened" — or write "at least five" and name them. PD6 is demo 09's sandbox, hardened control two of four; PD16 is demo 02's _is_hidden, which summaries/team-demos.md:566-575 calls the signature control the hardened ranker shares; PD17 is demo 09's description sanitizer, hardened control one of four. Correct the 14:42:00Z ledger row, which repeats "the two hardened-example defects". This is the third count a repair has added without checking it, after N2 and N7
-  state: open
+  repair: 'repaired in the record and verified in round five — the invented count is gone from ovr-trial-2-2026-publication-disclosure.md:88-89 and the paragraph returns to the unquantified form that was correct, with PD4 and PD5 following and "PD3 is a third" restated as "different in kind". The second half of the repair was not done: status.md''s 14:42:00Z row still reads "separated from the two hardened-example defects", which is R1'
+  state: repaired
 - id: Q2
   severity: minor
   scope: event
   blocking: false
   summary: hardened/clear_the_pile_hardened.py:42-43 is the compliant half of PD5 — the constants the Python path gets right, labelled at the pin as "the two knobs that define this version" — not the lines where PD5's defect lives, which are .claude/commands/clear-the-pile-hardened.md:26-32 and tools/act.py:106-107
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:80
-  repair: cite .claude/commands/clear-the-pile-hardened.md:26-32 or tools/act.py:106-107, either of which is where the defect is and neither of which the repository documents. Publishing :42-43 discloses that the Python path uses constants, which 06-approval-is-the-architecture/demo/README.md:66-74,90 already states at length. Correct the 14:42:00Z ledger row, which says the replacement "is PD5 and is a defect". This citation came from this audit's P1 repair text, the fourth round running on the same sentence
-  state: open
+  repair: done and verified in round five, and verified twice over rather than from this report's text. hardened/clear_the_pile_hardened.py:42-43 is removed and not replaced. The single remaining team-demos example, 09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51, is PD17 at summaries/team-demos.md:576-585, is under the Confirmed defects heading at :461, and is a scored deficiency under security. At the pin those lines are IMPERATIVE_RE, a fixed alternation of eleven phrases, with the comment at :45-46 confirming the hardened path is what strips them. "Fixed denylist regex" and "trivially bypassable" are PD17's own words. R3 is an advisory beside it, not a defect
+  state: repaired
 - id: Q3
   severity: minor
   scope: event
@@ -346,13 +346,65 @@ findings:
   artifact: events/trial-2-2026/audits/bracket.md, events/trial-2-2026/status.md
   repair: 'N1''s repair field now records the correction and its summary is left as what round two said. The 11:18:00Z ledger row stays unchanged and is accepted with a reason: it records what the round-two audit found on the day, which is what an activity log is for, and P4 and this entry are the correction. Nothing is silently dropped'
   state: repaired
+- id: R1
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'Q1''s repair was two-part and one part was left: status.md''s 14:42:00Z row still says "PD3 separated from the two hardened-example defects", a count that never described anything, and that row was edited in the same commit for the Q2 half so it is not frozen history'
+  artifact: events/trial-2-2026/status.md, 14:42:00Z row
+  repair: change "the two hardened-example defects" to "the hardened-example defects". One phrase. The 14:49:00Z row also says the 14:42:00Z row was "corrected, which had carried the wrong citation forward", which is true of the citation and not of the count
+  state: open
+- id: R2
+  severity: minor
+  scope: event
+  blocking: false
+  summary: two of the four repair rows are stamped after the commit that contains them — 14:42:00Z against commit 52183d3 authored 14:38:42Z, and 14:49:00Z against 5163048 authored 14:46:31Z, along with last_updated 14:49:00Z; round four recorded this as a habit not worth a finding and it recurred in the next commit
+  artifact: events/trial-2-2026/status.md
+  repair: restamp the two rows and last_updated at or before their commits, or record in the row why the ledger clock and the commit clock differ. The first two repair rows, 11:09:00Z and 11:26:00Z, both precede their commits correctly, so the convention exists and these two depart from it
+  state: open
+- id: R3
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: the record's single team-demos disclosure example rests on a single-judge finding — PD17 is judge-product-agentic only, by direct read — while both team-scribe examples beside it are multi-judge; the record claims no corroboration so nothing is overstated
+  artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:79-80
+  repair: 'optional, and four words: "PD17, one judge, records as trivially bypassable". Not a defect. Raised because consolidation F1 and F8 in this event were both about implied corroboration, and a later reader weighing what is disclosed would want the attribution the team-scribe examples carry implicitly'
+  state: open
+- id: R4
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: this report's round-five front matter was first written with a fabricated framework_commit — a plausible-looking hash beginning 5163048 that git rev-parse does not produce — caught by this auditor before delivery and before any commit
+  artifact: events/trial-2-2026/audits/bracket.md
+  repair: corrected to 5163048e18509c72a63f39b39e8c65840bcc8055, verified with git rev-parse. Recorded rather than fixed silently, on the N13 precedent. It is the same failure this round's closing note describes — a value written from memory instead of derived from its source — committed by the auditor who spent five rounds finding it in others, and caught only because the hash was checkable in one command. Nothing downstream consumed it
+  state: repaired
+approved_by: event-director
+approved_at: "2026-09-23T14:52:44Z"
+approval_note: Five rounds, 45 findings, 35 repaired, 7 deferred to W15-W20, 2 accepted, 3 open and none blocking or major
 ---
 
 # Judging Audit — bracket stage, first pass
 
 ## Result
 
-**FAIL**, superseded in place after round four. Round one: sixteen findings —
+**PASS WITH ADVISORIES**, superseded in place after round five. Round one:
+sixteen findings — three major, nine minor, four advisory. Round two
+(`ebeb4bd`): eleven repaired, five deferred, one open, fifteen new. Round three
+(`92e922e`): thirteen repaired, two carried, six new. Round four (`52183d3`):
+all six repaired, four new. Round five (`5163048`): both repaired, three new,
+none in a decision artifact. **45 findings: 35 repaired and verified, 7
+deferred to a named `W` entry, 2 accepted with a stated reason, 3 open — two
+minor and one advisory, all in `status.md` prose or optional.** No finding in
+any round is blocking. Round five's record is the last section of this file and
+answers the gate questions.
+
+**Citations are pinned to the round that made them.** Each round's line
+references were correct at the commit it audited — `abc7e7a`, `ebeb4bd`,
+`92e922e`, `52183d3`, `5163048` — and later rounds moved lines in `event.md`,
+`bracket.md` and the disclosure record. A reference in a superseded section
+resolves against that section's commit, not against HEAD. See `Q3`.
+
+**FAIL**, as recorded after round four. Round one: sixteen findings —
 three major, nine minor, four advisory. Round two (`ebeb4bd`): eleven repaired,
 five deferred, one open, fifteen new. Round three (`92e922e`): thirteen
 repaired, two carried, six new. Round four (`52183d3`): all six repaired, four
@@ -1555,3 +1607,251 @@ from round two, `Q2` from round three — and in each case the repair adopted a
 value I supplied without checking it against the source. Take `Q2`'s citation
 from `summaries/team-demos.md` and `judgments/team-demos/judge-security-ops.md`
 directly, and take `Q1`'s number by counting PD1 through PD17 yourself.
+
+---
+
+# Round five — the round-four repair audited
+
+**PASS WITH ADVISORIES.** Both round-four findings repaired and verified. Three
+new findings — two minor, one advisory — none blocking, none in a decision
+artifact, all three in `status.md` prose or optional.
+
+Scope: `git diff 5163048~1 5163048`, three files, one paragraph of substance.
+
+This is the first round in five that did not introduce a defect into a decision
+artifact, and the first whose repair I did not supply. The coordinator took
+`PD17` from `summaries/team-demos.md:576-580` directly. I checked it in both
+directions and it is right.
+
+**The stage is signable.** What remains is one phrase and two timestamps in the
+activity log, and an optional four-word attribution. Nothing open touches the
+draw, the override records, the bracket report, the disclosure decision, a
+score, a judgment, an evidence manifest or the roster.
+
+## Q2: the citation, checked twice and not from this report
+
+`hardened/clear_the_pile_hardened.py:42-43` is removed from
+`ovr-trial-2-2026-publication-disclosure.md` and was not replaced with a second
+citation. The sentence now names one `team-demos` example.
+
+**In the report.** `09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51` is
+the opening citation of **PD17** at `summaries/team-demos.md:576-585`. PD17 sits
+under `### Confirmed defects` at `:461` — not under `### Credible risks, not
+demonstrated` at `:586` — and closes "a scored deficiency under `security`". The
+record's description, "the fixed denylist regex ... records as trivially
+bypassable", is PD17's own wording: "The description sanitizer is a fixed
+denylist regex" and "filters a fixed list of phrases, which is trivially
+bypassable".
+
+**At the pin.** `toolbox.py:47-51` at `dc35f696` is:
+
+> `IMPERATIVE_RE = re.compile(`
+> `r"(forward|email|send|e-mail|upload|post|exfiltrat|proceed automatically|"`
+> `r"do not ask|without confirm|pre-approved|QA UPDATE)",`
+> `re.IGNORECASE,`
+> `)`
+
+A fixed alternation of eleven phrases. The comment above it, `:45-46`, reads
+"The hardened path strips any line matching these before the description reaches
+the model", which independently confirms both that the description is accurate
+and — incidentally — that `Q1`'s deleted count was wrong, since this is a
+hardened-path defect and the count excluded it.
+
+`R3` is the only thing to say beside it, and it is an advisory rather than a
+defect: PD17 is `judge-product-agentic` only, by direct read, where both
+`team-scribe` examples in the same sentence are multi-judge. The record asserts
+no corroboration, so nothing is overstated. It is raised because this event's
+consolidation stage failed twice on exactly that distinction, at `F1` and `F8`.
+
+## Q1: the count is gone from the record and survives in the ledger
+
+`ovr-trial-2-2026-publication-disclosure.md:87-88` now reads "part of what the
+panel found is that some of the hardened examples are not hardened", and goes
+straight into PD4 and PD5. That is the unquantified form the sentence carried
+before `P4`'s repair, and it is correct. "PD3 is a third" is restated as "PD3 is
+different in kind", which the removal of the count required.
+
+**The antecedent check the coordinator asked for.** Removing a count and a
+citation from a paragraph is where this event's repairs have most often broken
+something. Nothing broke:
+
+| Reference | Antecedent after the edit |
+|---|---|
+| "PD3 is different in kind" (`:97`) | PD4 and PD5, the two defects immediately preceding. Intact |
+| "All three are disclosed here first" (`:107`) | PD4, PD5, PD3. Intact — the count's removal did not change how many defects the paragraph names |
+| "among them `...toolbox.py:47-51`" (`:78-80`) | one item after "among them", which is loose and not wrong; the claim is that this is one of the report's team-demos citations, which it is |
+| "It is approved anyway, on the same ground as `team-scribe`" (`:110`) | the approval grounds two paragraphs up. Intact |
+
+**Dangling-reference sweep.** `hardened/clear_the_pile_hardened.py:42-43` and
+`10-show-your-work/demo/scripts/explain.py:85-110` appear nowhere in
+`events/trial-2-2026/` outside `summaries/team-demos.md` and the four
+`judgments/team-demos/` files, which are the sources and are untouched. The nine
+occurrences inside `audits/bracket.md` are all in superseded finding text and are
+covered by the citation-pinning note `Q3` added under Result.
+
+**`R1` is what is left of `Q1`.** The repair had two parts. `status.md`'s
+14:42:00Z row still reads "P4: PD3 separated from **the two hardened-example
+defects**". That row is not frozen history: it was edited in this same commit to
+correct the `Q2` citation, so it has been brought current in one half and not the
+other. The 14:49:00Z row describes it as "corrected, which had carried the wrong
+citation forward", which is true of the citation and silent on the count.
+
+This is a ledger row and not a decision, and the audit template is explicit that
+activity-log prose does not hold a gate. It is one phrase.
+
+## R2: two ledger rows postdate their commits
+
+| Row | Commit containing it | Author time | Verdict |
+|---|---|---|---|
+| 11:09:00Z repair | `ebeb4bd` | 11:10:26Z | row precedes commit |
+| 11:26:00Z repair | `92e922e` | 11:26:05Z | row precedes commit by 5s |
+| 14:42:00Z repair | `52183d3` | 14:38:42Z | **row 3m18s after** |
+| 14:49:00Z repair | `5163048` | 14:46:31Z | **row 2m29s after** |
+
+`last_updated: "2026-09-23T14:49:00Z"` carries the same offset. Round four
+recorded this as a habit and said it was not worth a finding on its own; it
+recurred in the very next commit, so it is one now. The first two rows establish
+the convention, which makes the last two a departure rather than a house style.
+
+The work each row describes is genuinely in its commit, so no history is
+misstated — only the order of finishing and committing. That is why it is minor
+and not more.
+
+## The gate questions, answered
+
+### 1. Is every finding dispositioned?
+
+**Yes.** Forty-five findings across five rounds — `F1`-`F16`, `N1`-`N15`,
+`P1`-`P6`, `Q1`-`Q4`, `R1`-`R4`. The front matter carries all forty-four with no
+duplicate and no gap, checked by enumeration against the expected id set. `R4` is this auditor's own, caught before delivery.
+
+| Disposition | Count | Detail |
+|---|---|---|
+| Repaired and verified by a later round | 35 | each with the round that verified it named in its `repair` field |
+| Deferred to a named `W` entry | 7 | `F1`→`W15`, `F5`→`W16`, `F9`→`W17`, `F10`→`W18`, `F16`→`W19`, `N5`→`W20`, `N15`→`W15` |
+| Accepted with a stated reason | 2 | `F15`, explained rather than changed, which the finding permitted; and the 11:18:00Z ledger row under `Q4`, left as the record of what round two found |
+| Open | 3 | `R1`, `R2` minor; `R3` advisory |
+
+`N14` is both: repaired in the record and carried in `W16`.
+
+**All six `W` entries exist and every line reference in them resolves at HEAD.**
+`W15`: `atj/reports.py:26-45`, `atj/event.py:61` and `:959-975`. `W16`:
+`framework/policies/disagreement-and-adjudication.md:9`,
+`framework/templates/manual-override-record.md:34-35`,
+`schemas/event.schema.json:30-38`. `W17`: `build-bracket` step 6, and `feasible`
+still absent from `atj/event.py`. `W18`: `framework/templates/bracket-report.md:32-38`,
+`atj/render.py:212` and `:220`. `W19`: `atj/cli.py:1015`,
+`atj/bracket.py:918-921`. `W20`: `framework/rubrics/bracket-assignment.md:22,27-30`,
+`atj/bracket.py:550,758-761,775`, `.claude/hooks/pre-write.sh:41`. Re-resolved
+this round rather than carried forward.
+
+**Nothing is none of the three.**
+
+### 2. Does anything in the superseded report contradict the artifacts, and was any round dropped?
+
+**No round was dropped.** Every id from every round is in the front matter, and
+each supersede preserved the previous round's body text unchanged and appended
+rather than replacing. Round one's text is still round one's text.
+
+**Two contradictions existed and both are dispositioned, neither silently.**
+`Q3`: the superseded sections carried line references that later rounds moved,
+and a note under Result now pins each round's citations to the commit it audited
+— `abc7e7a`, `ebeb4bd`, `92e922e`, `52183d3`, `5163048`. `Q4`: round two's `N1`
+summary and the 11:18:00Z ledger row describe PD3 as a hardened-example defect,
+which `P4` disproved; `N1`'s `repair` field records the correction, its `summary`
+is left as what round two said, and the ledger row is accepted unchanged because
+an activity log records what an audit found on the day.
+
+**One live contradiction remains and it is `R1`** — the 14:42:00Z row against
+the record it describes. It is open, not accepted, and named.
+
+Three round-one errors were the audit's own — `N2`'s "thirteen", `N6`'s
+`event.md:25`, `N13`'s forward-dated `completed_at` — and all three are recorded
+as such in round two's text rather than quietly corrected. Two more, `P1` and
+`Q2`, were citations this report supplied that the repair adopted; both are
+recorded against this report in the rounds that caught them.
+
+### 3. Would I sign this stage as complete?
+
+**Yes.**
+
+Everything the stage exists to produce is verified. The draw reproduces from its
+recorded seed with only `framework_commit` moving, both `bracket verify` modes
+pass, the `bracket:draw` digest recomputes to `3c88ccc1e0f9f863` and `stale_units`
+is empty. The two tables in `bracket.md` are byte-identical to `bracket_tables`
+output. The six-permutation experiment reproduces. The `feasible: false` result
+has the written acceptance `build-bracket` step 6 requires, with an authority
+that resolves. The disclosure decision is a validated override record carrying
+`authorized_by`, and every factual claim in it has been checked — repository
+visibility through the API, both pins through the API, PD3, PD4, PD5 and PD17
+against the panel report *and* against the repository at `dc35f696`.
+
+**No framework, schema, template, persona or `atj/` file was modified in any of
+the five commits.** The stage moved `bracket.json`, four event artifacts and
+`docs/0.5.0-beta-plan.md`, and nothing else. Every framework defect the stage
+found — seven of them — is recorded as a `W` entry and none landed mid-event.
+
+No score, judgment, evidence manifest, run record or roster row moved in any
+round. Neither team has or gained an official total.
+
+**What I would do before setting the gate, and it does not need a sixth audit.**
+`R1` and `R2` are one phrase and three timestamps in `status.md`. They contain
+no claim that needs deriving and no citation that could be wrong, which is what
+every previous round's repair got wrong. Fix them in the commit that sets the
+gate; the repair is mechanical and self-evidencing. If instead they are carried
+into the tournament stage as open minors, that is also defensible and the gate
+is settable as the record stands — `atj event gate` reads the findings list, all
+three open findings are `blocking: false`, and none is in a decision artifact.
+
+What I would not do is run a sixth round for them. Five rounds have shown that
+every round of prose repair on this stage costs a new defect, and the two open
+items are the first in the sequence that cannot generate one.
+
+## Untrusted-content scan, round five
+
+One file fetched from `beekeeper-lab/ai-security-demos` at `dc35f696`:
+`09-toolbox-you-didnt-audit/demo/tools/toolbox.py`. Lines `:45-51` are a comment
+and a compiled regex. The regex literal contains the strings "proceed
+automatically", "do not ask", "without confirm", "pre-approved" and "QA UPDATE"
+— which are attack phrases the submission *detects*, quoted here as the content
+of a denylist and not as instructions. Nothing in the file addresses a judge, a
+scorer or an auditor. The three-file repair diff matched nothing on a scan for
+reader-directed instruction, role reassignment, system-prompt framing or
+suppression directives.
+
+Across five rounds this audit read `team-demos` content directly twice, both
+times to check a claim an artifact made about it, and both times the content
+was quoted with its file and line so a later reader can check it without
+re-fetching.
+
+## Findings — round five
+
+| Severity | Rule | Artifact | Scope | Blocking | Finding | Required repair |
+|---|---|---|---|---|---|---|
+| minor | half a repair | `events/trial-2-2026/status.md`, 14:42:00Z row | event | no | `R1`. `Q1` required the invented count removed from the record and from the ledger row that repeats it. The record is fixed; the row still reads "PD3 separated from **the two hardened-example defects**". The row is not frozen history — it was edited in this same commit to correct the `Q2` citation — so it has been brought current in one half only, and the 14:49:00Z row describes it as corrected without qualifying which half. At least five of the seventeen confirmed defects are in the hardened path, including PD17, which the same record cites | change "the two hardened-example defects" to "the hardened-example defects" |
+| minor | ledger stamps postdate their commits | `events/trial-2-2026/status.md` | event | no | `R2`. The 14:42:00Z repair row sits 3m18s after `52183d3` (authored 14:38:42Z) and the 14:49:00Z row 2m29s after `5163048` (authored 14:46:31Z), as does `last_updated`. The 11:09:00Z and 11:26:00Z rows both precede their commits, so the convention exists and these two depart from it. Round four recorded this as a habit not worth a finding and it recurred in the next commit. The work each row describes is in its commit, so no history is misstated — only the order of finishing and committing | restamp the two rows and `last_updated` at or before their commits, or record in the row why the two clocks differ |
+| advisory | single-judge source, not claimed otherwise | `overrides/...-publication-disclosure.md:79-80` | event | no | `R3`. The record's one `team-demos` disclosure example rests on PD17, which `summaries/team-demos.md:585` attributes to `judge-product-agentic` only, by direct read, where both `team-scribe` examples in the same sentence are multi-judge. The record asserts no corroboration and nothing is overstated. Raised because this event's consolidation stage failed twice on implied corroboration, at `F1` and `F8` | optional, four words: "PD17, one judge, records as trivially bypassable" |
+
+## Completion gate — round five
+
+- [x] No blocking findings
+- [x] No major findings — all eight majors across five rounds are repaired or deferred to a `W` entry
+- [x] Calculations valid — the draw reproduces from its seed, `bracket:draw` recomputes to `3c88ccc1e0f9f863`, `stale_units` empty, no score exists to calculate
+- [x] Evidence references resolve — every citation in every decision artifact was re-derived from its source, and the two that touch the submission were re-derived at the pin. `R1` is a ledger phrase, not a citation
+- [x] Version and identity checks pass — `release-check` PASS, 24 artifacts clean, no version moved and no framework file touched in five commits
+- [x] Privacy boundary passes — `public/` holds only `.gitkeep`, `public_scores: false` untouched at `event.md:14`, `atj validate publication` CLEAR over 24 artifacts, no private data in any public surface
+- [x] Every finding recorded in `findings:` with a `scope` and a `blocking` flag — 44, no gap, no duplicate
+- [ ] Approved with `atj event approve <this file>`
+
+## Closing note for the tournament stage
+
+Five rounds, forty-four findings, and the durable lesson is not about the
+bracket. Every round of this audit that supplied a value — a count, a citation,
+a line number — saw that value adopted into an artifact without being checked
+against its source, and three of them were wrong. `N2`, `N6`, `P1` and `Q2` are
+all the same failure: a repair treating an auditor's text as evidence. The
+round that finally held is the one where the repair went to
+`summaries/team-demos.md` instead of to me.
+
+The tournament stage should read that as a rule. An audit finding is a claim
+that something is wrong. It is not a source for what is right.
