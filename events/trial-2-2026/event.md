@@ -173,8 +173,8 @@ human decision in `adjudications/`.
 
 ## Publication
 
-`public_scores: false`. Nothing in this event is approved for publication, and
-`public/` stays empty until that changes.
+`public_scores: false`. No numeric score is approved for publication, and
+`public/` was empty until the decision below.
 
 This is not a formality here. **The framework repository is public.** Everything
 committed under `events/` is world-readable the moment it is pushed, including
@@ -182,3 +182,40 @@ artifacts marked `visibility: private`. That marker is a statement of intent tha
 the git remote does not enforce. Before any artifact naming a private-source
 submission is committed, the disclosure question has to be settled by the
 event-director, not by the validator.
+
+### The disclosure decision, 2026-09-23
+
+Settled by the event-director at the bracket stage, ahead of the matchup stage
+that would first produce a public artifact. `audits/consolidation.md` F34 raised
+it and carried it here.
+
+**Neither submission is private.** `beekeeper-lab/ScribeVault` and
+`beekeeper-lab/ai-security-demos` are both public repositories, checked on
+2026-09-23, as is `beekeeper-lab/ai-tournament-judge`. The condition the
+paragraph above guards — an artifact naming a private-source submission — is not
+met by this event. `live-trial-2026` is the event it was written for, and that
+question stays open there.
+
+What remained was narrower: the panel reports name weaknesses in those
+repositories at exact file and line, including an unescaped markdown-to-`setHtml`
+render path, a `subprocess.run(..., shell=True)` call site and four
+`OPENAI_API_KEY` read sites. **Publication is approved with those citations
+intact, unredacted.** Both repositories are the operator's own, both are public,
+and every cited line is already readable by anyone at the pin. A reader learns
+where to look, not what the code says. The teams are the operator and consented
+to entry (`event.md:96-101`), so there is no third party whose vulnerability is
+being disclosed and no coordinated-disclosure window to respect.
+
+Redacting the citations was rejected for a second reason: it would put a manual
+step in front of the publication gate that the framework has no control for, so
+`atj validate publication` would not be what caught a leak. Publishing the
+citations as written is also what makes `H4` a real test — a named approver
+reading artifacts that genuinely say something, rather than a shape check over
+artifacts drained of content.
+
+**Still false: `public_scores`.** This decision approves publishing the
+artifacts and their evidence citations. It does not approve publishing numeric
+scores, and the flag stays `false` until the event-director says otherwise.
+Neither team carries an official total in any case. Per-artifact approval is
+unchanged: `atj validate publication` must pass and name an approving official
+before anything reaches `public/`.
