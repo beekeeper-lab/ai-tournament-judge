@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
 current_stage: dossiers
-last_updated: "2026-09-23T20:30:25Z"
+last_updated: "2026-09-23T20:37:33Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -152,3 +152,7 @@ gate_evidence:
 | 2026-09-23T20:29:16Z | Dossiers audited, round one, `8200b4e`. **PASS WITH ADVISORIES.** DO1 major, DO2-DO11 minor, DOA1-DOA10. The auditor ran no record, approve, gate or advance command | ffcf150..483cff7 | audits/dossiers.md | PASS WITH ADVISORIES |
 | 2026-09-23T20:30:25Z | Errata to audited consolidated summaries, recorded here because an edit would stale `bracket:draw` and the dossier units (DO2-DO4, DOA8). `summaries/team-demos.md:425-427`: demo 06's byte-identical prompt was named by three judges (backend, frontend-ux, product-agentic), not four. `summaries/team-scribe.md:203-205`: narrowing `main.py:50` was the highest-value improvement for two judges (`judge-backend.md:95`, `judge-product-agentic.md:106`), not three. `summaries/team-scribe.md:160-166`: `PipelineStatus` is credited by three judges (backend, frontend-ux, product-agentic), not four; security-ops credits the retry decorator. Carry to the final audit | audits/dossiers.md DO2-DO4 | status.md | - |
 | 2026-09-23T20:30:25Z | Dossiers repaired, round one. DO1 demo 06 attributed to three judges; DO5 the empty-hostname guard to all four; DO6 `judgments/team-scribe/` and every cited run record declared in both dossiers; DO7 the tournament section no longer states the other team's scoring state; DO8 PySide6 cited to `runs/team-scribe-envcheck-01.json`; DOA5 display name used; DOA6 independence stated as the event's record. DO10 and DOA9 the override is a rules exception citing `disagreement-and-adjudication.md:9` and `event.md:103`, and was returned to `draft` for the event-director to approve (DOA2). DO11 negative approve test added. DOA7 not taken | audits/dossiers.md | dossiers/*.md, overrides/ovr-trial-2-2026-model-substitution.md, tests/test_tier1_regressions.py, status.md | not-audited |
+| 2026-09-23T20:33:43Z | Dossiers re-audited, round two, scoped to `8200b4e..ef6d656`. **PASS WITH ADVISORIES.** DO1-DO11 repaired; DOA2 open for the event-director, DOA8 deferred; new DE1 minor, DEA1-DEA3 advisory. The auditor ran no record, approve, gate or advance command | 8200b4e..ef6d656 | audits/dossiers.md | PASS WITH ADVISORIES |
+| 2026-09-23T20:35:01Z | Dossiers repaired, round two, `16a332c`. DE1 the override's authority sentence reworded | audits/dossiers.md DE1 | overrides/ovr-trial-2-2026-model-substitution.md | not-audited |
+| 2026-09-23T20:36:51Z | Dossiers re-audited, round three, scoped to `16a332c`. **PASS WITH ADVISORIES.** New DF1 minor (the DE1 sentence cited `event.md:103-105` for facts at `:23-27`), DF2 minor (these ledger rows missing). No unit stale | 16a332c | audits/dossiers.md | PASS WITH ADVISORIES |
+| 2026-09-23T20:37:33Z | Dossiers repaired, round three. DF1 the override cites `event.md:23-27` for the four official keys and `:103` for "holds all four authorities", and states why rules exceptions fall to the event-director. DEA2 the override's `completed_at` moved to this edit; `framework_commit` left as the commit it was first written at. DF2 these rows | audits/dossiers.md DF1, DF2 | overrides/ovr-trial-2-2026-model-substitution.md, status.md | not-audited |

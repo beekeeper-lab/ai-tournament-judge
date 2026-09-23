@@ -1,5 +1,195 @@
 ---
 event_id: trial-2-2026
+audit_scope: dossiers stage, round three, scoped to the DE1 repair in 16a332c (overrides/ovr-trial-2-2026-model-substitution.md)
+audit_id: dossiers
+team_id: null
+match_id: null
+commit: null
+evidence_package_id: null
+rubric: submission-evaluation@1.1.0
+persona: judging-auditor@1.1.0
+framework_commit: 16a332cc4e2393a48bd7a0d0cc00f32edb2113a3
+model_requested: claude-opus-5
+model_used: claude-opus-5-5[1m]
+started_at: "2026-09-23T20:35:46Z"
+completed_at: "2026-09-23T20:36:51Z"
+visibility: private
+approval_state: draft
+validation_state: unvalidated
+result: PASS WITH ADVISORIES
+findings:
+- id: DF1
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'round three, new. The repaired sentence attributes to event.md:103-105 two things those lines do not say. (a) "all four named authorities, none of which is rules exceptions": event.md:103 says "holds all four authorities" and names none. The names are at event.md:23-27 (disqualification, adjudication, publication_approval, security_escalation). (b) "no other official is available": event.md:104-105 says "with a single operator none is available", where "none" is separation of duties, not an official. The paragraph also now concedes rules exceptions is not among the four and does not state why the event-director may still decide it. The DE1 repair text itself carried error (b)'
+  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:41-43'
+  repair: 'replace the event.md sentence with: "`event.md:23-27` names four authorities, none of them rules exceptions. `event.md:103-105` records that `event-director` holds all four, that Gregg Reed holds that role, and that with a single operator no separation of duties is available. This record treats the event-director, as the only human official, as the owner under `:9`." Edit while the record is draft, then re-audit the diff'
+  state: open
+- id: DF2
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'round three, new. status.md has no row for the round-two audit (20:31:46Z-20:33:43Z) or the DE1 repair in 16a332c (20:35:01Z). The last row and last_updated are 20:30:25Z'
+  artifact: 'status.md:4 and the activity log tail'
+  repair: 'add rows for the round-two audit, the DE1 repair (16a332c) and this round, times from git log and this front matter, then set last_updated to the last row'
+  state: open
+- id: DE1
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'round two. Repaired in part. "every authority" is gone and the record stays draft. The new wording has its own errors, recorded as DF1'
+  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:41-43'
+  repair: 'see DF1'
+  state: repaired
+- id: DEA1
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'round two. Still open. The override is draft, so tournament F8 is open again, and status.md still reads "F8 closed" at 20:18:32Z'
+  artifact: 'status.md'
+  repair: 'after atj event approve on the override, add a status.md row with that time recording F8 closed'
+  state: open
+- id: DEA2
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'round two. Still open. 16a332c changed the body again, and started_at, completed_at (20:18:07Z) and framework_commit (c0a55df) are unchanged'
+  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:11,14-15'
+  repair: 'optional. Restamp completed_at from date -u with the DF1 edit, or record in status.md that the times are the original authoring times'
+  state: open
+- id: DEA3
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'round two. Accepted. Round-one DO6 miscounted seven run records. There are six and the repair is right'
+  artifact: 'audits/dossiers.md round one DO6; dossiers/team-demos.md:15-20'
+  repair: 'none'
+  state: accepted
+- id: DOA2
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'round one. Still open. The repository cannot show that a human approved the public summary or will approve the override'
+  artifact: 'public/mu-final-01.md; overrides/ovr-trial-2-2026-model-substitution.md'
+  repair: 'Gregg runs, or confirms in person, each approval'
+  state: open
+- id: DOA8
+  severity: advisory
+  scope: framework
+  blocking: false
+  summary: 'round one. Still deferred. docs/0.5.0-beta-plan.md has no errata W-item yet'
+  artifact: 'atj/event.py:936-953,966-974'
+  repair: 'add the W-item in the framework window'
+  state: deferred
+---
+
+# Dossiers Audit, round three
+
+Scoped to the DE1 repair in `16a332c`, `git show 16a332c -- events/trial-2-2026/overrides/`.
+New findings use `DF1..DFn`.
+
+## Result
+
+**PASS WITH ADVISORIES.** No blocking or major finding. Two new minor findings
+(`DF1`, `DF2`), neither blocking. Fix `DF1` before the override is approved,
+because approval freezes a sentence that misattributes its source.
+
+## Scope and artifacts inspected
+
+- The override diff in `16a332c`: one hunk, lines 41-43, +3/-2 in the Authority paragraph.
+  No other line of the override changed, including front matter.
+  `git diff 16a332c HEAD` on `overrides/` is empty.
+- `event.md:23-27` and `event.md:101-106`, compared word for word with the new
+  sentence (`DF1`).
+- The `status.md` front matter and activity log tail (`DF2`).
+
+No record, unit, approve, gate or advance command was run.
+
+## Deterministic validation results
+
+| Command | Result |
+|---|---|
+| `atj event status events/trial-2-2026` | stage dossiers, `dossiers-approved` pending, units 2 complete, none stale |
+| `atj validate reports events/trial-2-2026` | PASS WITH ADVISORIES, 33 artifacts, 1 advisory `foreign-team` |
+| `atj validate publication events/trial-2-2026` | CLEAR, 33 artifacts, 0 blocking |
+
+## Word-for-word check
+
+| Override says `event.md:103-105` records | Source |
+|---|---|
+| "holds all four named authorities" | `:103` "holds all four authorities". The names are at `:23-27` |
+| "none of which is rules exceptions" | true of `:23-27`. Not in `:103-105` |
+| "with a single operator no other official is available" | `:104-105` "with a single operator none is available", where "none" means separation of duties |
+
+## Findings
+
+| ID | Severity | Scope | Blocking | Artifact | One line |
+|---|---|---|---|---|---|
+| DF1 | minor | event | no | override `:41-43` | the sentence cites `:103-105` for facts found at `:23-27`, or found nowhere |
+| DF2 | minor | event | no | `status.md` | no rows for the round-two audit or `16a332c` |
+| DE1 | minor | event | no | override `:41-43` | repaired in part, remainder is DF1 |
+| DEA1, DEA2, DOA2 | advisory | event | no | see front matter | open |
+| DEA3 | advisory | event | no | round-one DO6 | accepted |
+| DOA8 | advisory | framework | no | `atj/event.py` | deferred |
+
+Round-one DO1-DO11 and DOA1, DOA3-DOA7, DOA9, DOA10 keep the states in the
+retained round-two front matter below.
+
+## Recommended commands, in order
+
+1. Repair `DF1` and `DF2` (orchestrator). Check with
+   `git diff -- events/trial-2-2026/overrides/ events/trial-2-2026/status.md`,
+   then run a round-four audit scoped to that diff.
+2. Validate (orchestrator):
+
+```bash
+python3 -m atj validate reports events/trial-2-2026
+python3 -m atj validate publication --event-dir events/trial-2-2026 events/trial-2-2026/dossiers/
+```
+
+3. Approvals, **event-director only** (`DOA2`):
+
+```bash
+python3 -m atj event approve events/trial-2-2026/audits/dossiers.md --official event-director
+python3 -m atj event approve events/trial-2-2026/overrides/ovr-trial-2-2026-model-substitution.md --official event-director
+python3 -m atj event approve events/trial-2-2026/dossiers/team-demos.md events/trial-2-2026/dossiers/team-scribe.md --official event-director
+```
+
+4. Units (orchestrator):
+
+```bash
+python3 -m atj event unit events/trial-2-2026 record --id dossier:team-demos --stage dossiers --output dossiers/team-demos.md --audit-result "PASS WITH ADVISORIES"
+python3 -m atj event unit events/trial-2-2026 record --id dossier:team-scribe --stage dossiers --output dossiers/team-scribe.md --audit-result "PASS WITH ADVISORIES"
+```
+
+5. Add `status.md` rows for the approvals, F8 closed (`DEA1`) and the Dossier column.
+6. Gate, **event-director only**, then status:
+
+```bash
+python3 -m atj event gate events/trial-2-2026 dossiers-approved passed --audit events/trial-2-2026/audits/dossiers.md
+python3 -m atj event status events/trial-2-2026
+```
+
+## Completion gate
+
+- [x] No blocking findings
+- [x] No major findings
+- [x] Calculations valid
+- [x] Evidence references resolve
+- [x] Version and identity checks pass
+- [x] Privacy boundary passes
+- [x] Every finding recorded in `findings:` with a `scope` and a `blocking` flag
+- [ ] Approved with `atj event approve <this file>`
+
+---
+
+# Superseded, retained
+
+## Round-two front matter, retained verbatim
+
+```yaml
+event_id: trial-2-2026
 audit_scope: dossiers stage, round two, scoped to the round-one repair diff 8200b4e..ef6d656 (dossiers/team-demos.md, dossiers/team-scribe.md, overrides/ovr-trial-2-2026-model-substitution.md, status.md, tests/test_tier1_regressions.py)
 audit_id: dossiers
 team_id: null
@@ -218,9 +408,9 @@ findings:
   artifact: 'commit ac513ed'
   repair: 'name it in the PR body'
   state: accepted
----
+```
 
-# Dossiers Audit, round two
+# Dossiers Audit, round two (superseded, retained)
 
 This round is scoped to `8200b4e..ef6d656`. I read every changed line and checked
 each round-one finding against `judgments/`, `runs/`, the policy and `event.md`,

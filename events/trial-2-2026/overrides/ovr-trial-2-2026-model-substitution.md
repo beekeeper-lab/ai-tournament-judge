@@ -12,7 +12,7 @@ framework_commit: c0a55dfb6c2339c691c13bfe3a1ce3fe42eb126c
 model_requested: not-applicable
 model_used: not-applicable
 started_at: "2026-09-23T20:18:07Z"
-completed_at: "2026-09-23T20:18:07Z"
+completed_at: "2026-09-23T20:37:33Z"
 visibility: private
 approval_state: draft
 validation_state: valid
@@ -38,9 +38,11 @@ record and no re-run.
 
 `framework/policies/disagreement-and-adjudication.md:9`: "A human event official
 owns disqualification, rules exceptions, and unresolved final ties." Departing from
-`event.md`'s `model_requested` is a rules exception. `event.md:103-105` records that
-`event-director` holds all four named authorities, none of which is rules
-exceptions, and that with a single operator no other official is available.
+`event.md`'s `model_requested` is a rules exception. `event.md:23-27` names `event-director` for all four official
+keys, and none of them is rules exceptions. `event.md:103` records that
+`event-director` "holds all four authorities". The policy gives rules exceptions
+to "a human event official", and `event-director` is the only official this
+event names, so the decision is the event-director's.
 `audits/tournament.md` F8 is why this record exists, not its authority.
 
 ## Reason
