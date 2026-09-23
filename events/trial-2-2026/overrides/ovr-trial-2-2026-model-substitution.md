@@ -38,8 +38,9 @@ record and no re-run.
 
 `framework/policies/disagreement-and-adjudication.md:9`: "A human event official
 owns disqualification, rules exceptions, and unresolved final ties." Departing from
-`event.md`'s `model_requested` is a rules exception. `event.md:103` records that
-`event-director` holds every authority in this event, and no other official exists.
+`event.md`'s `model_requested` is a rules exception. `event.md:103-105` records that
+`event-director` holds all four named authorities, none of which is rules
+exceptions, and that with a single operator no other official is available.
 `audits/tournament.md` F8 is why this record exists, not its authority.
 
 ## Reason

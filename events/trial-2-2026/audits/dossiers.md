@@ -1,6 +1,6 @@
 ---
 event_id: trial-2-2026
-audit_scope: dossiers stage, round one — dossiers/team-demos.md and dossiers/team-scribe.md, the two consolidated-summary errors the dossier writers reported, public/mu-final-01.md as placed and approved, the approve fix ac513ed, overrides/ovr-trial-2-2026-model-substitution.md, and status.md (commits ffcf150..483cff7)
+audit_scope: dossiers stage, round two, scoped to the round-one repair diff 8200b4e..ef6d656 (dossiers/team-demos.md, dossiers/team-scribe.md, overrides/ovr-trial-2-2026-model-substitution.md, status.md, tests/test_tier1_regressions.py)
 audit_id: dossiers
 team_id: null
 match_id: null
@@ -8,187 +8,314 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.1.0
 persona: judging-auditor@1.1.0
-framework_commit: 483cff70a30f15e78fbd658b000743e3224956d6
+framework_commit: ef6d65625d52db4b871acf1c538e97047d571c5f
 model_requested: claude-opus-5
 model_used: claude-opus-5-5[1m]
-started_at: "2026-09-23T20:18:57Z"
-completed_at: "2026-09-23T20:27:37Z"
+started_at: "2026-09-23T20:31:46Z"
+completed_at: "2026-09-23T20:33:43Z"
 visibility: private
 approval_state: draft
 validation_state: unvalidated
 result: PASS WITH ADVISORIES
 findings:
+- id: DE1
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'round two, new. The override''s Authority paragraph says event.md:103 records that event-director "holds every authority in this event". event.md:103 says "holds all four authorities", and the four keys at event.md:23-27 (disqualification, adjudication, publication_approval, security_escalation) do not include rules exceptions, which is what round-one DO10 said. The citation to disagreement-and-adjudication.md:9 is exact'
+  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:41-43'
+  repair: 'replace the event.md sentence with: "`event.md:103-105` records that `event-director` holds all four named authorities and that, with a single operator, no other official is available." Edit while the record is still draft, then approve'
+  state: open
+- id: DEA1
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'round two, new. Returning the override to draft reopens tournament F8 until it is approved again. The status.md row at 20:18:32Z still reads "F8 closed", and the repair row at 20:30:25Z says the record went back to draft without saying F8 is open again'
+  artifact: 'status.md:151,154'
+  repair: 'after atj event approve on the override, add a status.md row with that time recording F8 closed'
+  state: open
+- id: DEA2
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'round two, new. The override body changed in ef6d656, but started_at and completed_at still read 20:18:07Z and framework_commit still reads c0a55df, so the front matter describes the first version'
+  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:11,14-15'
+  repair: 'optional. Either restamp completed_at from date -u with the DE1 edit or record in status.md that the times are the original authoring times'
+  state: open
+- id: DEA3
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'round two, new. Round-one DO6 said team-demos cites seven run records. It cites six distinct files, and all six exist in runs/. The repair declared exactly those six, so the repair is right and the round-one count was wrong'
+  artifact: 'audits/dossiers.md round one DO6; dossiers/team-demos.md:15-20'
+  repair: 'none'
+  state: accepted
 - id: DO1
   severity: major
   scope: event
   blocking: false
-  summary: team-demos dossier says demo 06's constant prompt was named by two judges. Three named it (backend, frontend-ux, product-agentic). The writer's report of two is wrong, and so is the summary's four (DO2)
-  artifact: dossiers/team-demos.md:101-104
-  repair: 'replace "Named by two judges, the backend reviewer and the product and agentic reviewer." with "Named by three judges: the backend reviewer, the frontend and UX reviewer and the product and agentic reviewer." Sources: judgments/team-demos/judge-backend.md:51,107; judge-frontend-ux.md:164,166; judge-product-agentic.md:256. judge-security-ops.md:169 says only "reduces its lesson to two constants", which is identity and mode, not the prompt'
-  state: open
+  summary: 'round one. Repaired. dossiers/team-demos.md:109-110 now names three judges. Checked against judge-backend.md:51,107, judge-frontend-ux.md:164,166 and judge-product-agentic.md:256. judge-security-ops.md:169 says only "two constants"'
+  artifact: 'dossiers/team-demos.md:107-110'
+  repair: 'done'
+  state: repaired
 - id: DO2
   severity: minor
   scope: event
   blocking: false
-  summary: summaries/team-demos.md says all four judges named demo 06's byte-identical prompt. Three did. The writer's count of two is also wrong, so an erratum written from the writer's report would be a second error
-  artifact: summaries/team-demos.md:425-427
-  repair: do not edit the summary. Its digest feeds bracket:draw and both dossier units (atj/event.py:936-953,966-974), so an edit would stale two closed stages. Add a status.md activity row recording the erratum as "three judges (backend, frontend-ux, product-agentic), not four", citing this finding, and carry it to the final audit
-  state: open
+  summary: 'round one. Repaired by an erratum row. status.md:153 records three judges (backend, frontend-ux, product-agentic), not four. summaries/team-demos.md:425-427 is the correct range. The summary is unedited'
+  artifact: 'status.md:153'
+  repair: 'done. Carry to the final audit'
+  state: repaired
 - id: DO3
   severity: minor
   scope: event
   blocking: false
-  summary: summaries/team-scribe.md says three judges made narrowing main.py:50 their highest-value improvement. Two did (backend, product-agentic). The writer is right
-  artifact: summaries/team-scribe.md:203-205
-  repair: 'same route as DO2: a status.md erratum row, "two judges (judge-backend.md:95, judge-product-agentic.md:106). frontend-ux :96 and security-ops :103 chose other product improvements". No summary edit'
-  state: open
+  summary: 'round one. Repaired by the same row. Two judges is correct: judge-backend.md:95 and judge-product-agentic.md:106 both name main.py:50 as highest-value improvement. frontend-ux and security-ops chose other improvements. summaries/team-scribe.md:203-205 is the correct range'
+  artifact: 'status.md:153'
+  repair: 'done'
+  state: repaired
 - id: DO4
   severity: minor
   scope: event
   blocking: false
-  summary: summaries/team-scribe.md says all four judges credit the failure-as-state design. Three credit PipelineStatus (backend, frontend-ux, product-agentic). security-ops credits only the retry decorator in that bullet. The writer is right
-  artifact: summaries/team-scribe.md:160-166
-  repair: 'same route as DO2: a status.md erratum row, "PipelineStatus credited by three (judge-backend.md:129, judge-frontend-ux.md:53,128, judge-product-agentic.md:140-142); the retry decorator by backend, product-agentic and security-ops (judge-security-ops.md:109,135,183)". No summary edit. The dossier does not repeat the claim'
-  state: open
+  summary: 'round one. Repaired by the same row. Three judges is correct: judge-backend.md:129, judge-frontend-ux.md:114,128,158, judge-product-agentic.md:142 (per-stage persisted pipeline state). security-ops does not credit PipelineStatus. summaries/team-scribe.md:160-166 is the correct range'
+  artifact: 'status.md:153'
+  repair: 'done'
+  state: repaired
 - id: DO5
   severity: minor
   scope: event
   blocking: false
-  summary: team-demos dossier lists the demo 09 empty-hostname guard as a single-judge finding from the backend reviewer. All four judges found it, and the declared source summary says so
-  artifact: dossiers/team-demos.md:208-211
-  repair: 'move it out of the single-judge sentence. Suggested text: "All four judges found that the demo 09 POST guard accepts an empty hostname where demo 07''s guard for the same concern does not; no egress path was shown, since urllib rejects that form." Sources: summaries/team-demos.md:480-485 (PD3); judge-backend.md:124,190; judge-frontend-ux.md:154; judge-product-agentic.md:430; judge-security-ops.md:205'
-  state: open
+  summary: "round one. Repaired. All four judges found it: judge-backend.md:124,190, judge-frontend-ux.md:154, judge-product-agentic.md:430-432, judge-security-ops.md:205. Each also says it is narrower than demo 07's guard"
+  artifact: 'dossiers/team-demos.md:214-216'
+  repair: 'done'
+  state: repaired
 - id: DO6
   severity: minor
   scope: event
   blocking: false
-  summary: source_reports are incomplete and inconsistent. team-scribe quotes judgments that are not declared ("in far better shape than the headline failure suggests" exists only at judge-product-agentic.md:180). team-demos cites seven run records and declares none. team-scribe declares two runs and cites a third indirectly (DO8)
-  artifact: dossiers/team-scribe.md:9-16; dossiers/team-demos.md:9-15
-  repair: add `judgments/team-scribe/` to team-scribe's source_reports. A directory path clears the persona-name pattern at atj/publication.py:78, as team-demos already shows. Declare run records the same way in both, either `runs/` in each or every cited run file in each
-  state: open
+  summary: 'round one. Repaired. team-scribe declares judgments/team-scribe/ and all three run records it cites. team-demos declares all six run records it cites (DEA3)'
+  artifact: 'dossiers/team-demos.md:9-21; dossiers/team-scribe.md:9-18'
+  repair: 'done'
+  state: repaired
 - id: DO7
   severity: minor
   scope: event
   blocking: false
-  summary: team-scribe's tournament section says neither judge compared a total "since neither team had one". That tells team-scribe that team-demos has no official total, which is team-demos's scoring state and is not in public/mu-final-01.md
-  artifact: dossiers/team-scribe.md:348-349
-  repair: 'replace with "Neither judge used or compared an overall total; the comparison is made criterion by criterion." Source: mu-final-01-pass-a-first.md:72, pass-b-first.md:57'
-  state: open
+  summary: "round one. Repaired. The sentence no longer gives the opponent's scoring state"
+  artifact: 'dossiers/team-scribe.md:350-351'
+  repair: 'done'
+  state: repaired
 - id: DO8
   severity: minor
   scope: event
   blocking: false
-  summary: '"PySide6 is installed and works" cites runs/team-scribe-app-start-01.json. That record holds the misleading message and the qdarkstyle error. PySide6 being installed and constructing a QApplication is in runs/team-scribe-envcheck-01.json (ev-scribe-01)'
-  artifact: dossiers/team-scribe.md:158-159
-  repair: cite `ev-scribe-01` (evidence/team-scribe/manifest.md) or `runs/team-scribe-envcheck-01.json`, and declare it under DO6
-  state: open
+  summary: 'round one. Repaired. runs/team-scribe-envcheck-01.json stdout shows "import OK PySide6 6.11.2" and "QApplication constructed offscreen", exit 0'
+  artifact: 'dossiers/team-scribe.md:160-161'
+  repair: 'done'
+  state: repaired
 - id: DO9
   severity: minor
   scope: event
   blocking: false
-  summary: status.md was not updated after verified work. It has no rows for the dossier drafts (ffcf150), the approve fix (ac513ed), the public summary's placement and approval (c0a55df), or the F8 override (483cff7). last_updated is still 18:53:28Z, row 147 still calls F8 and the public summary open, and the Team progress Dossier column reads "—"
-  artifact: status.md:4,147,62-63
-  repair: add one activity row per commit with its UTC time. Record that F8 is closed by the override, that T5 and F15 are closed (DOA3), that R5 is closed (unit matchup:mu-final-01 has audit_result PASS WITH ADVISORIES), and the DO2-DO4 errata. Set last_updated to the last row. Fill the Dossier column after approval
-  state: open
+  summary: 'round one. Repaired. Six rows were added. Each time matches git log for ffcf150, ac513ed, c0a55df, 483cff7 and 8200b4e. The repair row (20:30:25Z) comes before ef6d656 (20:31:18Z). last_updated equals the last row. T5, F15 and R5 are recorded closed. The Dossier column waits for approval, which is correct'
+  artifact: 'status.md:4,148-154'
+  repair: 'done'
+  state: repaired
 - id: DO10
   severity: minor
   scope: event
   blocking: false
-  summary: the override files a model substitution under category "other" and cites event.md's officials and an audit finding as authority. None of the four officials keys at event.md:23-27 covers it, and an audit's repair text grants no authority. Deviating from event.md's model_requested is a rules exception, and the bracket stage recorded the same defect as F4
-  artifact: overrides/ovr-trial-2-2026-model-substitution.md:38,40-44
-  repair: set Category to `rules exception`. Cite framework/policies/disagreement-and-adjudication.md:9 ("A human event official owns ... rules exceptions") and the event.md line that names event-director as that official. Keep tournament F8 as the reason the record exists, not as its authority. Re-approve after the edit
-  state: open
+  summary: 'round one. Repaired except for one overstatement. Category is rules exception, disagreement-and-adjudication.md:9 is quoted exactly, F8 is named as the reason, and the record is back in draft. The event.md:103 paraphrase overstates its source (DE1)'
+  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:35,38-43'
+  repair: 'see DE1'
+  state: repaired
 - id: DO11
   severity: minor
   scope: framework
   blocking: false
-  summary: ac513ed is sound. Only publication.py:336-346 emits rule "approval", and both findings are cleared by the fields approve writes. The one new test covers only the success path, so nothing proves a draft public artifact with a second blocking finding is still refused
-  artifact: tests/test_tier1_regressions.py:614-632; atj/cli.py:436-440
-  repair: add a negative test. Take a draft public artifact that also carries a numeric total or a private-only field, run approve, and assert exit FAILURE with the artifact unchanged. Framework window, not this stage
-  state: deferred
+  summary: 'round one. Repaired. test_a_draft_public_artifact_with_another_blocker_is_refused sets evidence_package_id on a draft public artifact and asserts exit 1, private-field and an unchanged file. The test passes'
+  artifact: 'tests/test_tier1_regressions.py:634-651'
+  repair: 'done'
+  state: repaired
 - id: DOA1
   severity: advisory
   scope: event
   blocking: false
-  summary: team-demos was written with validation_state valid and team-scribe with unvalidated, and no tool produced either value. Both dossiers carry the same completed_at to the second (20:01:27Z)
-  artifact: dossiers/team-demos.md:22; dossiers/team-scribe.md:23
-  repair: none by hand. atj event approve writes validation_state. Record in status.md whether the times were stamped by each writer or by the orchestrator
-  state: open
+  summary: "round one. Recorded. status.md:148 says each writer stamped the times from date -u, by the writers' own reports, and says this is not independently verified"
+  artifact: 'status.md:148'
+  repair: 'done'
+  state: accepted
 - id: DOA2
   severity: advisory
   scope: event
   blocking: false
-  summary: the repository cannot show that a human made either approval. public/mu-final-01.md (20:17:22Z) and the override (20:18:26Z) both read approved_by event-director, written by atj event approve in an agent session. The public approval also ran before ac513ed was committed (20:17:57Z)
-  artifact: public/mu-final-01.md:13-17; overrides/ovr-trial-2-2026-model-substitution.md:17-22
-  repair: Gregg confirms both decisions were his. If either was not, withdraw it with atj event approve --state withdrawn
+  summary: "round one. Open. The repository cannot show that a human approved either artifact. status.md:150 now says the orchestrator ran the public approval on the event-director's answer. The override approval was withdrawn to draft"
+  artifact: 'public/mu-final-01.md; overrides/ovr-trial-2-2026-model-substitution.md'
+  repair: 'Gregg runs, or confirms in person, each approval'
   state: open
 - id: DOA3
   severity: advisory
   scope: event
   blocking: false
-  summary: public/mu-final-01.md is the audited draft. Diffed against the scratchpad draft the round-five tournament audit reviewed (mtime 18:37:34Z, before that audit), the body is identical and only the approval fields differ. T5 is closed, because atj validate publication returns CLEAR at the declared location. F15 is closed by approval_note. The pre-approval run T5 asked for could only have shown the two approval blockers, and it is recorded nowhere
-  artifact: public/mu-final-01.md
-  repair: record the T5 and F15 closure in status.md (DO9)
+  summary: 'round one. Accepted, and recorded at status.md:150'
+  artifact: 'status.md:150'
+  repair: 'done'
   state: accepted
 - id: DOA4
   severity: advisory
   scope: event
   blocking: false
-  summary: each dossier gives six per-criterion means that, multiplied by the rubric weights, reproduce the provisional sums in status.md:62-63. Neither dossier combines them. The live-trial precedent (its DOA4) accepts this
-  artifact: dossiers/team-demos.md:129-137; dossiers/team-scribe.md:127-135
-  repair: keep the "no official total" sentences through every later edit
+  summary: 'round one. Accepted. Both dossiers still say there is no official total, and neither combines the means'
+  artifact: 'dossiers/team-demos.md:53; dossiers/team-scribe.md:43'
+  repair: 'keep through later edits'
   state: accepted
 - id: DOA5
   severity: advisory
   scope: event
   blocking: false
-  summary: team-demos's statement that the opponent's start-up path failed is match-public, because public/mu-final-01.md:29-32 says the same thing. team-scribe names its opponent by team id (the validator's foreign-team advisory) while the public summary uses the display name
-  artifact: dossiers/team-demos.md:303-306; dossiers/team-scribe.md:335-337
-  repair: optionally write "AI Security Demos" in team-scribe's dossier
-  state: accepted
+  summary: 'round one. Repaired. The display name is used at dossiers/team-scribe.md:337-340. The foreign-team advisory remains and is match-public'
+  artifact: 'dossiers/team-scribe.md:337-340'
+  repair: 'done'
+  state: repaired
 - id: DOA6
   severity: advisory
   scope: event
   blocking: false
-  summary: team-demos states as fact that the matchup evaluators "could not see each other's work". The repository shows this only as orchestrator-attested (tournament F14)
-  artifact: dossiers/team-demos.md:291-293
-  repair: optionally write "were run independently, as the event records"
-  state: open
+  summary: 'round one. Repaired. The wording now reads "were run independently, as the event records"'
+  artifact: 'dossiers/team-demos.md:299-301'
+  repair: 'done'
+  state: repaired
 - id: DOA7
   severity: advisory
   scope: event
   blocking: false
-  summary: several attributions are accurate but narrower than the record. Error messages were also credited by the backend reviewer (judge-backend.md:85,169). The KDF was also flagged by security-ops (:159,204). frontend-ux's version of the CI job names neither health_check nor a pytest run (:122). product-agentic's contrary categorize_content finding (:114) is not mentioned. The demo 09 "no write capability" attribution to product-agentic follows summaries/team-demos.md:513-516 (PD6), but product-agentic's own text credits the docstring's disclosure
-  artifact: dossiers/team-scribe.md:114-118,268,301-306,205-207; dossiers/team-demos.md:249-252
-  repair: optional wording repairs in the same pass as DO1-DO8
-  state: open
+  summary: 'round one. Not taken, as status.md:154 says. The attributions it lists are narrower than the record but none is false'
+  artifact: 'dossiers/team-scribe.md; dossiers/team-demos.md'
+  repair: 'none'
+  state: accepted
 - id: DOA8
   severity: advisory
   scope: framework
   blocking: false
-  summary: an audited consolidated summary has no errata route that does not stale the downstream ledger, because the bracket:draw and dossier digests include summaries/*.md
-  artifact: atj/event.py:936-953,966-974
-  repair: add a W-item to docs/0.5.0-beta-plan.md for an errata attachment outside the digested file
+  summary: 'round one. Still deferred. docs/0.5.0-beta-plan.md has no errata W-item yet'
+  artifact: 'atj/event.py:936-953,966-974'
+  repair: 'add the W-item in the framework window'
   state: deferred
 - id: DOA9
   severity: advisory
   scope: event
   blocking: false
-  summary: the override is accurate about model_used, the eight judgments, the unchanged event.md and the public artifact. It does not mention that all three matchup artifacts record model_requested `opus`, not event.md's claude-opus-5
-  artifact: overrides/ovr-trial-2-2026-model-substitution.md:36; matchup-passes/*.md:15; matchups/mu-final-01.md:15
-  repair: add one sentence in the DO10 edit
-  state: open
+  summary: 'round one. Repaired. model_requested is opus at matchup-passes/*.md:15 and matchups/mu-final-01.md:15, as the override now says'
+  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:34'
+  repair: 'done'
+  state: repaired
 - id: DOA10
   severity: advisory
   scope: framework
   blocking: false
-  summary: ac513ed, a framework fix, landed on the event branch in the middle of a stage. 519 tests pass and release-check passes
-  artifact: commit ac513ed
-  repair: none. Name it in the PR body
+  summary: 'round one. Accepted'
+  artifact: 'commit ac513ed'
+  repair: 'name it in the PR body'
   state: accepted
 ---
 
-# Dossiers Audit, round one
+# Dossiers Audit, round two
+
+This round is scoped to `8200b4e..ef6d656`. I read every changed line and checked
+each round-one finding against `judgments/`, `runs/`, the policy and `event.md`,
+not against the repair's own wording. New findings use `DE1..DEn` and new
+advisories use `DEA1..DEAn`.
+
+## Result
+
+**PASS WITH ADVISORIES.** There are no blocking or major findings, one new minor
+finding (`DE1`) and three new advisories.
+
+The round-one major `DO1` and every round-one minor are repaired. The judge counts
+in the errata row at `status.md:153` match the judgments, and its summary line
+ranges are exact. Every ledger time matches `git log`. The event status shows no
+stale unit. `DE1` is an overstated paraphrase in a draft record. Fix it before the
+override is approved.
+
+## Scope and artifacts inspected
+
+- The full diff `8200b4e..ef6d656` (5 files, +55/-20).
+- `judgments/team-demos/*.md` for demo 06 and the empty-hostname guard, and
+  `judgments/team-scribe/*.md` for `main.py:50`, `PipelineStatus` and the retry
+  decorator.
+- `summaries/team-demos.md:423-428` and `summaries/team-scribe.md:158-167,201-206`.
+- `runs/team-scribe-envcheck-01.json` stdout, plus a list of `runs/` for both teams
+  compared with each dossier's citations.
+- `framework/policies/disagreement-and-adjudication.md:9`, `event.md:23-27,95-107`,
+  and `model_requested` in `matchup-passes/*.md` and `matchups/mu-final-01.md`.
+- `git log` times for `ffcf150`, `ac513ed`, `c0a55df`, `483cff7`, `8200b4e` and
+  `ef6d656`.
+
+No record, unit, approve, gate or advance command was run.
+
+## Deterministic validation results
+
+| Command | Result |
+|---|---|
+| `atj validate publication … dossiers/team-demos.md` | CLEAR, 0 blocking |
+| `atj validate publication … dossiers/team-scribe.md` | CLEAR, 0 blocking, 1 advisory `foreign-team` (match-public) |
+| `atj validate publication … public/mu-final-01.md` | CLEAR, 0 blocking |
+| `atj validate reports events/trial-2-2026` | PASS WITH ADVISORIES, 33 artifacts, 1 advisory |
+| `atj event status events/trial-2-2026` | stage dossiers, `dossiers-approved` pending, units 2 complete, none stale |
+| `python3 -m pytest tests/ -q` | 520 passed, 5 skipped (the new negative test passes) |
+| `python3 -m atj release-check` | PASS |
+
+## Findings
+
+| ID | Severity | Scope | Blocking | Artifact | One line |
+|---|---|---|---|---|---|
+| DE1 | minor | event | no | override `:41-43` | "every authority" overstates event.md:103, which says "all four authorities" |
+| DEA1 | advisory | event | no | `status.md:151,154` | F8 is open again until the override is re-approved |
+| DEA2 | advisory | event | no | override front matter | times and framework_commit describe the first version |
+| DEA3 | advisory | event | no | round-one DO6 | round one counted seven runs. There are six, and the repair is right |
+
+The round-one states are in front matter. 16 are repaired, 7 accepted, 1 deferred
+(`DOA8`) and 1 open (`DOA2`, which needs Gregg).
+
+## Recommended commands, in order
+
+1. Repair `DE1` in the draft override, then check it with
+   `git diff -- events/trial-2-2026/overrides/`.
+
+```bash
+python3 -m atj validate publication --event-dir events/trial-2-2026 events/trial-2-2026/dossiers/
+python3 -m atj event approve events/trial-2-2026/audits/dossiers.md --official event-director
+python3 -m atj event approve events/trial-2-2026/overrides/ovr-trial-2-2026-model-substitution.md --official event-director
+python3 -m atj event approve events/trial-2-2026/dossiers/team-demos.md events/trial-2-2026/dossiers/team-scribe.md --official event-director
+python3 -m atj event unit events/trial-2-2026 record --id dossier:team-demos --stage dossiers --output dossiers/team-demos.md --audit-result "PASS WITH ADVISORIES"
+python3 -m atj event unit events/trial-2-2026 record --id dossier:team-scribe --stage dossiers --output dossiers/team-scribe.md --audit-result "PASS WITH ADVISORIES"
+```
+
+2. Add `status.md` rows for the approvals, F8 closed (`DEA1`) and the Dossier
+   column. Then run:
+
+```bash
+python3 -m atj event gate events/trial-2-2026 dossiers-approved passed --audit events/trial-2-2026/audits/dossiers.md
+python3 -m atj event status events/trial-2-2026
+```
+
+The event-director runs every approval in person (`DOA2`).
+
+## Completion gate
+
+- [x] No blocking findings
+- [x] No major findings
+- [x] Calculations valid
+- [x] Evidence references resolve
+- [x] Version and identity checks pass
+- [x] Privacy boundary passes
+- [x] Every finding recorded in `findings:` with a `scope` and a `blocking` flag
+- [ ] Approved with `atj event approve <this file>`
+
+---
+
+# Dossiers Audit, round one (superseded, retained)
 
 `team_id`, `commit` and `evidence_package_id` are `null` because this audit covers
 two dossiers, two pinned commits and two evidence packages. Findings use `DO1..DOn`
