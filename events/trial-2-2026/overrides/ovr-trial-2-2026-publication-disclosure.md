@@ -26,11 +26,11 @@ stage: both panel reports enumerate weaknesses in the submission repositories at
 exact file and line, and `event.md` held `public/` closed until the
 event-director settled it. This record is that decision.
 
-`persona` is `build-bracket@1.0.0` because that is the skill that was running
-when this was written, not because a bracket skill produces publication
-decisions. No persona in `framework/personas.md` produces a human decision
-record taken outside a stage's own skill, which `audits/bracket.md` N14 raises
-and `W16` in `docs/0.5.0-beta-plan.md` now carries.
+No persona in `framework/personas.md` produces a human decision record taken
+outside a stage's own skill, and `build-bracket@1.0.0` — whose step list ends at
+writing and auditing the bracket — does not produce this one. The field carries
+it for want of a truthful option. `audits/bracket.md` N14 and P6 raise it and
+`W16` in `docs/0.5.0-beta-plan.md` carries it.
 
 `audits/bracket.md` F3 is why it is a record rather than prose. The decision was
 first written into `event.md` as a subsection, where nothing validates it and no
@@ -77,7 +77,7 @@ markdown-to-`setHtml` render path (`summaries/team-scribe.md:230,344`) and four
 `OPENAI_API_KEY` read sites (`:241`); on `team-demos`, its own citations at the
 same resolution, among them
 `09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51` and
-`10-show-your-work/demo/scripts/explain.py:85-110`. A reader mostly learns
+`hardened/clear_the_pile_hardened.py:42-43`. A reader mostly learns
 where to look rather than what the code says, though not always: `summaries/team-scribe.md:243` quotes the fallback
 KDF input literal verbatim. Every cited line is already readable by anyone at
 the pinned commit, in a public repository, without the report.
@@ -86,16 +86,27 @@ the pinned commit, in a public repository, without the report.
 are its subject matter.** They are not. The repository demonstrates attacks
 against LLM agents and ships hardened counter-examples, and part of what the
 panel found is that some of the hardened examples are not hardened.
+Two of the panel's confirmed defects are in the hardened path itself.
 `summaries/team-demos.md` PD4 records `Bash(rm:*)` pre-approved in seventeen
 command files, the seventeenth being
 `10-show-your-work/demo/.claude/commands/screen-pile-audited.md:4`, the
 capstone's audited screener, which needs one fixed `rm` on line 30. PD5 records
 demo 06's approval gate as a constant in one run path and a model-supplied
 argument in the other, against a CLI that accepts `--mode fire` from any caller,
-with the README presenting the weaker path as the hero path. PD3 records the
-v1.1 POST guard admitting an empty hostname. Those are real defects in the fix,
-disclosed here first, and a reader of the public artifact learns something the
-repository does not currently teach.
+with the README presenting the weaker path as the hero path.
+
+PD3 is a third and is not one of the hardened controls: it is the containment
+rail around demo 09's optional code-POST variant, whose v1.1 guard admits an
+empty hostname where the demo-07 guard written for the same concern requires set
+membership and a scheme. All four judges record that it has no observable
+consequence — `urllib` rejects the schemeless form and no egress path is
+demonstrated (`summaries/team-demos.md:480-487`). It belongs here anyway,
+because `09-toolbox-you-didnt-audit/demo/README.md:117` asserts the guard
+refuses any host but localhost, and that is the sentence the finding
+contradicts.
+
+All three are disclosed here first, and a reader of the public artifact learns
+something the repository does not currently say about itself.
 
 It is approved anyway, on the same ground as `team-scribe`: the repository is
 public, the operator owns it, every cited line is readable at the pin without

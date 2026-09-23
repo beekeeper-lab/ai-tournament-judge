@@ -114,18 +114,21 @@ separation under Priority as something to "Maximize", and `:27-30` give targets
 fallback when perfect separation is impossible. Nowhere does the policy declare
 any affiliation rule a hard constraint.
 
-`atj/bracket.py:550` supplies the hardness the policy does not, emitting
-`No avoidable same-affiliation or previous-finalist first-round match` with
-`kind: hard`; `:758-761` collects every hard constraint at `violated` or
+`atj/bracket.py:548-554` supplies the hardness the policy does not, naming
+`No avoidable same-affiliation or previous-finalist first-round match` at `:549`
+and giving it `kind: hard` at `:550`; `:758-761` collects every hard constraint at `violated` or
 `infeasible` and `:775` is where `feasible` is assigned from that. So the draw
 returned `feasible: false` on a rule its own policy states only as a priority
 and a target.
 
 The event's expectation matched the policy and the implementation did not. That
 divergence is the finding, recorded as `audits/bracket.md` N5 and carried to
-`docs/0.5.0-beta-plan.md` as `W20`. It changes nothing about this draw: at two
-teams from one group there is no alternative pairing under either reading, and
-the exception is accepted below.
+`docs/0.5.0-beta-plan.md` as `W20`. It changes nothing about the pairing — at two teams from
+one group there is no alternative under either reading — but it is why the draw
+is `feasible: false` and why this stage needed a human override at all. Under
+the policy as written the constraint is soft, `atj/bracket.py:758-761` collects
+nothing, `:775` assigns `feasible: true`, and no override record would have been
+required.
 
 Accepted by the event director at
 `overrides/ovr-trial-2-2026-bracket-affiliation.md`, category `rules exception`,

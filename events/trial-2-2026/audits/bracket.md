@@ -1,6 +1,6 @@
 ---
 event_id: trial-2-2026
-audit_scope: bracket stage, rounds one and two — the draw, the override records, the bracket report, the disclosure decision, the ledger, and the repair of round one's sixteen findings
+audit_scope: bracket stage, rounds one through three — the draw, the override records, the bracket report, the disclosure decision, the ledger, and two repair rounds
 audit_id: bracket
 team_id: null
 match_id: null
@@ -8,11 +8,11 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.1.0
 persona: judging-auditor@1.1.0
-framework_commit: ebeb4bd0e34c821b53f99d7b18dbebb3636705fa
+framework_commit: 92e922e0e4b53d6ba5d02d5b57c76e2b4a6d1f4e
 model_requested: claude-opus-5
 model_used: claude-opus-5
-started_at: "2026-09-23T10:55:00Z"
-completed_at: "2026-09-23T11:18:00Z"
+started_at: '2026-09-23T10:55:00Z'
+completed_at: '2026-09-23T14:36:00Z'
 visibility: private
 approval_state: draft
 validation_state: unvalidated
@@ -30,9 +30,9 @@ findings:
   severity: major
   scope: event
   blocking: false
-  summary: 'bracket.md:120 cites `atj/versions.py:144-164` for reading framework_commit from git; that range is require_personas, components_available and the head of check_personas, and contains no git call'
+  summary: bracket.md:120 cites `atj/versions.py:144-164` for reading framework_commit from git; that range is require_personas, components_available and the head of check_personas, and contains no git call
   artifact: events/trial-2-2026/bracket.md:120
-  repair: 'done and verified in round two — bracket.md:135-136 now reads `atj/versions.py:216-238`, the `framework_commit` function, with the `git rev-parse HEAD` call at `:225`. Both resolve exactly'
+  repair: done and verified in round two — bracket.md:135-136 now reads `atj/versions.py:216-238`, the `framework_commit` function, with the `git rev-parse HEAD` call at `:225`. Both resolve exactly
   state: repaired
 - id: F3
   severity: major
@@ -46,15 +46,15 @@ findings:
   severity: minor
   scope: event
   blocking: false
-  summary: 'the override cites event.md:96-107 — "event-director holds all four authorities" — as authority for a `rules exception`, which is not one of the four officials keys event.md declares'
+  summary: the override cites event.md:96-107 — "event-director holds all four authorities" — as authority for a `rules exception`, which is not one of the four officials keys event.md declares
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-bracket-affiliation.md:44-48
-  repair: 'done and verified in round two — the Authority section now leads with `framework/policies/disagreement-and-adjudication.md:9`, names `event.md:103` for the official, and states the four-of-five gap and where it is recorded. All four citations resolve'
+  repair: done and verified in round two — the Authority section now leads with `framework/policies/disagreement-and-adjudication.md:9`, names `event.md:103` for the official, and states the four-of-five gap and where it is recorded. All four citations resolve
   state: repaired
 - id: F5
   severity: minor
   scope: framework
   blocking: false
-  summary: 'schemas/event.schema.json officials declares four keys while the framework reserves five decisions to humans; rules exceptions and unresolved final ties have no event-level owner'
+  summary: schemas/event.schema.json officials declares four keys while the framework reserves five decisions to humans; rules exceptions and unresolved final ties have no event-level owner
   artifact: schemas/event.schema.json:30-38
   repair: deferred to docs/0.5.0-beta-plan.md W16, verified accurate in round two. "The first override this framework has ever produced" checks out — only two override records exist anywhere under events/, both written by this stage
   state: deferred
@@ -62,7 +62,7 @@ findings:
   severity: minor
   scope: event
   blocking: false
-  summary: 'event.md:177 says "`public/` was empty until the decision below"; `public/` holds only .gitkeep and this decision produced no public artifact'
+  summary: event.md:177 says "`public/` was empty until the decision below"; `public/` holds only .gitkeep and this decision produced no public artifact
   artifact: events/trial-2-2026/event.md:176-177
   repair: 'done and verified in round two — event.md:176-178 now reads "`public/` stays empty until an artifact passes `atj validate publication` under the decision below", which is true. The 11:09:00Z ledger row misdescribes how it was fixed: N4'
   state: repaired
@@ -70,15 +70,15 @@ findings:
   severity: minor
   scope: event
   blocking: false
-  summary: 'event.md:204-205 "A reader learns where to look, not what the code says" is contradicted by the artifacts it approves — summaries/team-scribe.md:243 quotes the KDF input literal verbatim'
+  summary: event.md:204-205 "A reader learns where to look, not what the code says" is contradicted by the artifacts it approves — summaries/team-scribe.md:243 quotes the KDF input literal verbatim
   artifact: events/trial-2-2026/event.md:204-205
-  repair: 'done and verified in round two — the sentence now reads "A reader mostly learns where to look rather than what the code says, though not always" and cites summaries/team-scribe.md:243 as the exception. The concession is the right repair and the citation resolves'
+  repair: done and verified in round two — the sentence now reads "A reader mostly learns where to look rather than what the code says, though not always" and cites summaries/team-scribe.md:243 as the exception. The concession is the right repair and the citation resolves
   state: repaired
 - id: F8
   severity: minor
   scope: event
   blocking: false
-  summary: 'bracket.md:52 and the 10:51:23Z ledger row say `atj/bracket.py:161` returns; :161 is the `if count == 0:` guard, the return is :162, and the first `.score` access is :169'
+  summary: bracket.md:52 and the 10:51:23Z ledger row say `atj/bracket.py:161` returns; :161 is the `if count == 0:` guard, the return is :162, and the first `.score` access is :169
   artifact: events/trial-2-2026/bracket.md:52
   repair: 'done and verified in round two in both places — ":161-162 is a `count == 0` guard that returns from `choose_byes` before the first `.score` access, which is at `:169`". All three line numbers resolve. The same shape was reintroduced elsewhere in the same repair: N9'
   state: repaired
@@ -94,7 +94,7 @@ findings:
   severity: minor
   scope: framework
   blocking: false
-  summary: 'framework/templates/bracket-report.md declares table shapes atj/render.py bracket_tables does not produce'
+  summary: framework/templates/bracket-report.md declares table shapes atj/render.py bracket_tables does not produce
   artifact: framework/templates/bracket-report.md:32-38
   repair: deferred to docs/0.5.0-beta-plan.md W18, verified accurate in round two
   state: deferred
@@ -102,7 +102,7 @@ findings:
   severity: minor
   scope: event
   blocking: false
-  summary: 'event.md:91-94 pre-registered that the shared affiliation would be carried as a cost rather than a constraint; the draw returned feasible false, and no stage artifact recorded that the event''s own stated expectation was wrong'
+  summary: event.md:91-94 pre-registered that the shared affiliation would be carried as a cost rather than a constraint; the draw returned feasible false, and no stage artifact recorded that the event's own stated expectation was wrong
   artifact: events/trial-2-2026/bracket.md
   repair: 'a paragraph was added at bracket.md:107-117 and event.md was correctly left alone, so the omission is closed. The paragraph''s content is defective: N3 (the policy is miscounted and the cause is misassigned), N5 (the framework finding underneath it) and N9 (the `:760` citation)'
   state: repaired
@@ -112,13 +112,13 @@ findings:
   blocking: false
   summary: 'no ledger unit was recorded for the draw — status.md front matter was `units: []`'
   artifact: events/trial-2-2026/status.md
-  repair: 'done and verified in round two by recomputation — `derive_digests` returns `bracket:draw = 3c88ccc1e0f9f863`, matching the recorded unit exactly, `stale_units` returns empty, and `completed_at` is stamped 2026-09-23T01:55:10Z, the build time rather than the record time'
+  repair: done and verified in round two by recomputation — `derive_digests` returns `bracket:draw = 3c88ccc1e0f9f863`, matching the recorded unit exactly, `stale_units` returns empty, and `completed_at` is stamped 2026-09-23T01:55:10Z, the build time rather than the record time
   state: repaired
 - id: F13
   severity: advisory
   scope: event
   blocking: false
-  summary: 'event.md:201 presents the `subprocess.run(..., shell=True)` call site among "the weaknesses it names"; the panel files it under D3 minority findings'
+  summary: event.md:201 presents the `subprocess.run(..., shell=True)` call site among "the weaknesses it names"; the panel files it under D3 minority findings
   artifact: events/trial-2-2026/event.md:199-202
   repair: done and verified in round two — the example is gone from the relocated reasoning and appears nowhere in the new override record
   state: repaired
@@ -128,7 +128,7 @@ findings:
   blocking: false
   summary: all three disclosure examples came from ScribeVault while the decision covers both reports; team-demos was never shown against the reasoning
   artifact: events/trial-2-2026/event.md:199-207
-  repair: 'not repaired. The new record gives a count instead of a citation and the count is wrong. See N2. The `H4` half is repaired — `overrides/ovr-trial-2-2026-publication-disclosure.md:85` now reads "`H4` in `docs/0.5.0-beta-plan.md`"'
+  repair: not repaired. The new record gives a count instead of a citation and the count is wrong. See N2. The `H4` half is repaired — `overrides/ovr-trial-2-2026-publication-disclosure.md:85` now reads "`H4` in `docs/0.5.0-beta-plan.md`"
   state: open
 - id: F15
   severity: advisory
@@ -136,13 +136,13 @@ findings:
   blocking: false
   summary: 'the bracket override carries `scope: stage` with a populated `match_id`'
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-bracket-affiliation.md:5-6
-  repair: 'done and verified in round two — a paragraph at :42-47 states that the draw is what is accepted, that `atj bracket build` reports the exception against the bracket rather than a pairing, and that the match_id is populated because the stage produced exactly one match. Explained rather than changed, which the finding permitted'
+  repair: done and verified in round two — a paragraph at :42-47 states that the draw is what is accepted, that `atj bracket build` reports the exception against the bracket rather than a pairing, and that the match_id is populated because the stage produced exactly one match. Explained rather than changed, which the finding permitted
   state: repaired
 - id: F16
   severity: advisory
   scope: framework
   blocking: false
-  summary: 'atj bracket verify --reproduce raises an unhandled TypeError on a roster JSON that is a bare list'
+  summary: atj bracket verify --reproduce raises an unhandled TypeError on a roster JSON that is a bare list
   artifact: atj/cli.py:1015
   repair: deferred to docs/0.5.0-beta-plan.md W19, verified accurate in round two
   state: deferred
@@ -152,119 +152,167 @@ findings:
   blocking: false
   summary: the new record's whole justification for treating team-demos no differently — "its weaknesses are its subject matter ... discloses nothing the repository does not set out to teach" — is contradicted by the panel report it summarizes, whose five confirmed team-demos defects are documentation, missing tests, a broken guard, over-broad tool pre-approvals and a bypassable gate
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:77-80
-  repair: 'restate against summaries/team-demos.md PD1-PD5. PD4 (Bash(rm:*) pre-approved in seventeen command files, including the capstone''s audited screener) and PD5 (an approval gate that is a constant in one path and a model-supplied argument in the other) disclose that the repository''s own hardened examples are not hardened, which is the opposite of what it sets out to teach. Give the reason that actually holds — the repository is the operator''s own and public, the same reason as team-scribe — or say what is disclosed beyond the subject matter and why it is still approved'
-  state: open
+  repair: 'done and verified in round three — the paragraph retracts the ''weaknesses are its subject matter'' ground in terms, states PD3, PD4 and PD5, and approves on the ground that actually holds. PD4''s restatement was re-derived at the pin: screen-pile-audited.md:4 carries Bash(rm:*) and line 30 holds the one fixed rm. PD5''s was checked against 06-approval-is-the-architecture/demo/README.md:19-22,66-74,88. The ''does not currently teach'' judgement holds for all three: the demo-09 README at :117 asserts the opposite of PD3. Residual defects: P1 and P4'
+  state: repaired
 - id: N2
   severity: major
   scope: event
   blocking: false
-  summary: 'F14 is not repaired and the ledger certifies that it is; the record names no team-demos citation and its substitute count, "thirteen file-and-line citations", is wrong — summaries/team-demos.md carries 20 occurrences and 16 distinct file-and-line references, and thirteen is the line count of a .py-only pattern taken from this audit''s round one without re-derivation'
+  summary: F14 is not repaired and the ledger certifies that it is; the record names no team-demos citation and its substitute count, "thirteen file-and-line citations", is wrong — summaries/team-demos.md carries 20 occurrences and 16 distinct file-and-line references, and thirteen is the line count of a .py-only pattern taken from this audit's round one without re-derivation
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:71
-  repair: 'name at least one team-demos citation as F14 asked — `09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51` or `10-show-your-work/demo/scripts/explain.py:85-110` — and either drop the count or state it as sixteen distinct file-and-line references across `.py` and `.md`. Correct the 11:09:00Z ledger row, which claims a team-demos citation was included'
-  state: open
+  repair: 'the count is gone and two citations are named, which closes the count half. One of the two is a strength citation and not a weakness: P1'
+  state: repaired
 - id: N3
   severity: major
   scope: event
   blocking: false
-  summary: 'the new F11 paragraph miscounts the policy and misassigns the cause — bracket-assignment.md states affiliation separation at :22, :27, :28, :29 and :30, not twice, and the omitted :22 is the governing Priority entry that says "Maximize", which is exactly the reading event.md:91-94 took'
+  summary: the new F11 paragraph miscounts the policy and misassigns the cause — bracket-assignment.md states affiliation separation at :22, :27, :28, :29 and :30, not twice, and the omitted :22 is the governing Priority entry that says "Maximize", which is exactly the reading event.md:91-94 took
   artifact: events/trial-2-2026/bracket.md:107-117
-  repair: '"The prediction read the fallback and missed the target" is not what happened. The policy nowhere declares any affiliation rule a hard constraint; `atj/bracket.py:550` supplies the hardness. Restate the cause as a divergence between what the policy states and what the implementation enforces, cite :22 as the line the prediction tracked, and drop "Nothing in the draw is wrong; the expectation was" — the expectation matched the policy'
-  state: open
+  repair: 'done and verified in round three — bracket.md:107-128 now states the divergence, and the negative claim was re-checked across the whole 44-line policy: the word ''hard'' does not appear in framework/rubrics/bracket-assignment.md at all. P2 and P5 are residual'
+  state: repaired
 - id: N4
   severity: minor
   scope: event
   blocking: false
-  summary: 'the 11:09:00Z ledger row misdescribes the repair in three places — it groups F6 with "repaired by moving the reasoning into the override record" when F6 was a reword of event.md:176-178, it says the record states "the citations it approves in full" when it states two and a count, and it says "including a team-demos one" when no team-demos citation is named'
+  summary: the 11:09:00Z ledger row misdescribes the repair in three places — it groups F6 with "repaired by moving the reasoning into the override record" when F6 was a reword of event.md:176-178, it says the record states "the citations it approves in full" when it states two and a count, and it says "including a team-demos one" when no team-demos citation is named
   artifact: events/trial-2-2026/status.md
-  repair: restate the row to what the diff does. Every other claim in it verified, including the digest, the deferrals and "no score, judgment, evidence reference or bracket value moved"
-  state: open
+  repair: done and verified in round three — F6 separated as a reword of event.md:176-178, F7 and F13 described by what the record does, F14 recorded as attempted and not repaired pointing at N2. Every claim in the restated row checks out
+  state: repaired
 - id: N5
   severity: minor
   scope: framework
   blocking: false
-  summary: 'framework/rubrics/bracket-assignment.md states affiliation separation only as a priority to "maximize" and as targets, and never as a hard constraint, while atj/bracket.py:543-554 emits it with kind hard and atj/bracket.py:758-761,775 lets it set feasible false — a policy that says maximize produces an infeasible bracket'
+  summary: framework/rubrics/bracket-assignment.md states affiliation separation only as a priority to "maximize" and as targets, and never as a hard constraint, while atj/bracket.py:543-554 emits it with kind hard and atj/bracket.py:758-761,775 lets it set feasible false — a policy that says maximize produces an infeasible bracket
   artifact: framework/rubrics/bracket-assignment.md:22,25-30
-  repair: 'either state the hard form in the policy — "a same-affiliation first-round match is a hard constraint wherever an alternative pairing exists" — or downgrade the implementation to soft. Add a W entry; this is the framework finding N3 obscured, and it is the substantive thing this event''s falsified pre-registration found. Framework scope, do not land mid-event'
-  state: open
+  repair: 'carried to docs/0.5.0-beta-plan.md W20, verified in round three. Every line reference in W20 resolves. Its closing sentence about what may land mid-event is imprecise: P3'
+  state: deferred
 - id: N6
   severity: minor
   scope: event
   blocking: false
   summary: 'the new record cites event.md:25 for officials.publication_approval in three places including the Authority section and a Validation checkbox; :25 is `adjudication: event-director` and publication_approval is at :26'
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:40,46,120
-  repair: 'event.md:26 in all three places. The error originated in this audit''s own round-one F3 text and was copied without checking'
-  state: open
+  repair: 'done and verified in round three — event.md:26 in all four places, and :26 is `publication_approval: event-director`'
+  state: repaired
 - id: N7
   severity: minor
   scope: event
   blocking: false
-  summary: 'the Validation checkbox says "three of the five do not exist yet"; the Downstream effects table marks two rows not yet written, and event.md, public/ and the summaries and judgments all exist'
+  summary: the Validation checkbox says "three of the five do not exist yet"; the Downstream effects table marks two rows not yet written, and event.md, public/ and the summaries and judgments all exist
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:126-127
-  repair: two of the five
-  state: open
+  repair: done and verified in round three — "two of the five", which matches the table
+  state: repaired
 - id: N8
   severity: minor
   scope: event
   blocking: false
   summary: '"Original artifact preserved unmodified" is ticked while the artifact the record names at :39 as the thing overridden — event.md Publication — was rewritten in the same commit'
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:123-125
-  repair: 'mark the checkbox not-applicable and say why, or name what was actually preserved. `public_scores: false` is untouched and that part is true'
-  state: open
+  repair: done and verified in round three — the checkbox now records that event.md Publication was rewritten in the same commit and names what was preserved instead of ticking past it
+  state: repaired
 - id: N9
   severity: minor
   scope: event
   blocking: false
   summary: 'the new F11 paragraph says atj/bracket.py:760 "makes any hard constraint at violated or infeasible set feasible: false"; :758-761 is the predicate that collects hard failures and :775 is where feasible is assigned — the guard-versus-assignment shape F8 had just repaired, reintroduced in the same commit, and it contradicts what round one of this audit recorded'
   artifact: events/trial-2-2026/bracket.md:113-115
-  repair: 'cite `atj/bracket.py:758-761` for the selection and `:775` for the assignment'
-  state: open
+  repair: done and verified in round three — :758-761 for the selection and :775 for the assignment, both resolving
+  state: repaired
 - id: N10
   severity: minor
   scope: event
   blocking: false
   summary: 'event.md:195-196 calls the new override record "a validated artifact carrying who decided"; its own front matter is `validation_state: unvalidated` and `approval_state: draft`'
   artifact: events/trial-2-2026/event.md:195-196
-  repair: '"an artifact `atj validate reports` checks, carrying who decided", which is the true and sufficient claim'
-  state: open
+  repair: done and verified in round three — event.md:194-196 now reads "an artifact `atj validate reports` checks"
+  state: repaired
 - id: N11
   severity: minor
   scope: event
   blocking: false
-  summary: 'the new record cites summaries/team-scribe.md:343 for the unescaped markdown-to-setHtml render path; :343 ends the previous sentence and the render path is named at :344, with the confirmed-weakness statement at :230'
+  summary: the new record cites summaries/team-scribe.md:343 for the unescaped markdown-to-setHtml render path; :343 ends the previous sentence and the render path is named at :344, with the confirmed-weakness statement at :230
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:70
-  repair: 'summaries/team-scribe.md:230,344'
-  state: open
+  repair: done and verified in round three — summaries/team-scribe.md:230,344, both of which carry the render path
+  state: repaired
 - id: N12
   severity: minor
   scope: event
   blocking: false
-  summary: 'the new record carries started_at 2026-09-23T10:47:00Z, copied from the bracket override; it was written at 11:09 in answer to a finding that did not exist until 11:03, and the decision it relocates is stamped 10:52:05Z in the ledger'
+  summary: the new record carries started_at 2026-09-23T10:47:00Z, copied from the bracket override; it was written at 11:09 in answer to a finding that did not exist until 11:03, and the decision it relocates is stamped 10:52:05Z in the ledger
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:14
-  repair: a start time that does not precede the decision it records or the finding that caused it
-  state: open
+  repair: done and verified in round three — started_at is 2026-09-23T11:03:00Z, which is the audit row that produced the finding and is after the 10:52:05Z decision it records
+  state: repaired
 - id: N13
   severity: minor
   scope: event
   blocking: false
-  summary: 'this audit''s round-one front matter carried completed_at 2026-09-23T11:12:00Z while the commit containing it is authored 11:10:26Z, so the report''s own completion stamp ran 94 seconds ahead of the commit that holds it'
+  summary: this audit's round-one front matter carried completed_at 2026-09-23T11:12:00Z while the commit containing it is authored 11:10:26Z, so the report's own completion stamp ran 94 seconds ahead of the commit that holds it
   artifact: events/trial-2-2026/audits/bracket.md
-  repair: corrected in this round's front matter and recorded here rather than silently fixed. Two other round-one defects are recorded at N2 and N6
+  repair: closed in round two
   state: repaired
 - id: N14
   severity: advisory
   scope: event
   blocking: false
-  summary: 'both override records carry persona build-bracket@1.0.0; the bracket-building skill did not produce a publication disclosure record, and the template says persona is what produced the document'
+  summary: both override records carry persona build-bracket@1.0.0; the bracket-building skill did not produce a publication disclosure record, and the template says persona is what produced the document
   artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:10
-  repair: pick a persona that produced the document, or extend W16 to cover the fact that a human decision outside the bracket has no producing persona. Round one missed this on the bracket override; it applies to both
-  state: open
+  repair: 'carried into W16 and stated in the record body at :29-33. The explanation offered for the field value is not supported by the ledger: P6'
+  state: repaired
 - id: N15
   severity: advisory
   scope: framework
   blocking: false
   summary: the repair rewrote bracket.md and the bracket:draw ledger unit stayed non-stale, because derive_digests covers bracket.json, teams.md and the summaries and not the report — W15 demonstrated rather than argued
   artifact: atj/event.py:959-975
-  repair: record the demonstration in W15. No repair inside this event
+  repair: folded into W15, verified in round three — the demonstration is stated accurately
+  state: deferred
+- id: P1
+  severity: major
+  scope: event
+  blocking: false
+  summary: one of the two team-demos citations the record names as an example of what publication discloses is a confirmed strength, not a weakness — summaries/team-demos.md:418-419 credits 10-show-your-work/demo/scripts/explain.py:85-110 for deriving integrity flags from source trust, and :261 cites it as structural enforcement the judges scoring 4 weight positively; it appears nowhere in the report as a defect
+  artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:78-81
+  repair: replace it with a real team-demos weakness citation — hardened/clear_the_pile_hardened.py:42-43 for PD5, or 10-show-your-work/demo/.claude/commands/screen-pile-audited.md:4 for PD4, which the same paragraph already names two sentences later — or keep 09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51 alone, which is PD17 and is correct. Correct the 11:26:00Z ledger row, which says the paragraph "names two of its citations". The citation was suggested by audits/bracket.md N2 and adopted without checking what the report says about it, the third round running in which this audit own text became the artifact defect
+  state: open
+- id: P2
+  severity: minor
+  scope: event
+  blocking: false
+  summary: '"It changes nothing about this draw" is true of the pairing and false of everything else — under the policy as written the constraint is soft, hard_failures at atj/bracket.py:758-761 is empty, :775 assigns feasible true, and no override record would have been required at all'
+  artifact: events/trial-2-2026/bracket.md:126-128
+  repair: '"It changes nothing about the pairing — at two teams from one group there is no alternative under either reading — but it is why the draw is `feasible: false` and why this stage needed a human override at all"'
+  state: open
+- id: P3
+  severity: minor
+  scope: framework
+  blocking: false
+  summary: W20 closes "Changing either is a bracket-policy change and may not land while an event is judging"; changing atj/bracket.py:550 is not a bracket-policy change under CLAUDE.md source-of-truth table, which maps bracket policy to framework/rubrics/bracket-assignment.md, and the asymmetry is sharper than W20 states
+  artifact: docs/0.5.0-beta-plan.md W20
+  repair: 'state the two halves separately: changing the policy file is a frozen-contract change that .claude/hooks/pre-write.sh:41 already blocks for framework/rubrics/*, and changing atj/bracket.py alters a frozen event draw semantics without moving bracket-assignment@1.0.0 and is guarded by nothing. The conclusion — neither lands mid-event — is right and stays'
+  state: open
+- id: P4
+  severity: minor
+  scope: event
+  blocking: false
+  summary: '"Those are real defects in the fix" covers PD4 and PD5 and not PD3, whose guard is the containment rail around demo 09 optional code-POST exfil variant rather than one of the four hardened controls; the record also drops what the panel recorded, that all four judges state there is no observable consequence and urllib rejects the schemeless form so no egress path is demonstrated'
+  artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:88-91
+  repair: 'separate PD3 from the two hardened-example defects and carry summaries/team-demos.md:484-485 no-consequence qualifier. PD3 stays in the paragraph on its own merit: 09-toolbox-you-didnt-audit/demo/README.md:117 asserts the guard refuses any host but localhost, which is exactly what makes the gap undisclosed'
+  state: open
+- id: P5
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: the constraint name is attributed to atj/bracket.py:550; :549 carries the name and :550 the kind. The claim the sentence makes, that :550 supplies the hardness, is exactly right and the appositive spills one line
+  artifact: events/trial-2-2026/bracket.md:113-115
+  repair: cite the audit block as :548-554, or move the constraint name to :549
+  state: open
+- id: P6
+  severity: minor
+  scope: event
+  blocking: false
+  summary: the record explains persona build-bracket@1.0.0 as "the skill that was running when this was written"; it was written at 11:09 and revised at 11:26, both in rounds the ledger records as repairs against audits/bracket.md, and build-bracket own step list ends at writing and auditing the bracket report
+  artifact: events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md:29-30
+  repair: drop the first clause. The second half of the same paragraph — no persona in framework/personas.md produces a human decision record taken outside a stage own skill, which W16 now carries — is both true and checkable, and is the whole explanation the field needs
   state: open
 ---
 
@@ -272,7 +320,15 @@ findings:
 
 ## Result
 
-**FAIL**, superseded in place after round two. Round one: sixteen findings —
+**FAIL**, superseded in place after round three. Round one: sixteen findings —
+three major, nine minor, four advisory. Round two, scoped to `ebeb4bd`: eleven
+repaired, five deferred to `W15`-`W19`, one open, and fifteen new. Round three,
+scoped to `92e922e`: thirteen of the fifteen repaired and verified, two carried
+to the plan as `W20` and into `W15`, and **six new findings, one of them
+major** — a confirmed strength named as a disclosed weakness, `P1`. No finding
+in any round is blocking. Round three's record is the last section of this file.
+
+**FAIL**, as recorded after round two. Round one: sixteen findings —
 three major, nine minor, four advisory, none blocking. Round two, scoped to the
 repair diff `ebeb4bd`: eleven of the sixteen repaired and verified, five
 deferred to the framework plan as `W15`-`W19` and each verified accurate, one —
@@ -945,3 +1001,259 @@ needs to. Re-audit the round-two repair diff before the tournament stage. Three
 of this round's fifteen findings — `N2`, `N6` and `N13` — are errors this audit
 made in round one and the repair adopted, which is the strongest argument
 available for auditing the repair rather than the finding list.
+
+---
+
+# Round three — the round-two repair audited
+
+**FAIL**, on one open major. All fifteen round-two findings addressed: thirteen
+repaired and verified, two carried to the plan as `W20` and into `W15`. Six new
+findings — one major, four minor, one advisory. None blocking.
+
+Scope: `git diff 92e922e~1 92e922e`, six files. `bracket.json` was not
+re-audited; it is byte-identical to the file round one verified and
+`bracket verify` still returns `PASS (constraints re-derived from the roster)`.
+
+This is the strongest repair round this event has produced, and the first whose
+central judgement I could confirm against something outside the framework. The
+claim that publishing PD3, PD4 and PD5 tells a reader something
+`beekeeper-lab/ai-security-demos` does not currently teach was checked against
+that repository's own READMEs at the pin `dc35f696`, not against the panel
+report that made the claim, and it holds for all three.
+
+The one major is narrow and one line wide. Of the two `team-demos` citations the
+record names as examples of what publication discloses, one is a **confirmed
+strength**. I suggested that citation in round two's `N2` repair text and the
+repair took it without checking what the report says about it. That is now three
+consecutive rounds in which this audit's own words became the artifact's defect.
+
+## Deterministic validation, re-run
+
+| Command | Result |
+|---|---|
+| `python3 -m atj event validate events/trial-2-2026` | PASS, 0 problems, stage bracket |
+| `python3 -m atj validate reports events/trial-2-2026` | PASS, 24 artifacts, 0 findings |
+| `python3 -m atj validate publication events/trial-2-2026` | CLEAR, 24 artifacts, 0 blocking |
+| `python3 -m atj release-check` | PASS |
+| `python3 -m pytest tests/ -q` | 517 passed, 5 skipped, 286 subtests |
+| `python3 -m atj bracket verify bracket.json --event-dir events/trial-2-2026` | `PASS (constraints re-derived from the roster)` |
+| `derive_digests` recomputed | `bracket:draw = 3c88ccc1e0f9f863`, unchanged; `stale_units` empty |
+
+## The `team-demos` paragraph, re-derived at the pin
+
+`N1` and `N2` were repaired together. The paragraph now opens by retracting its
+old ground in terms — "not because its weaknesses are its subject matter. They
+are not" — states three defects, and approves on the ground that actually holds.
+The coordinating instruction was explicit that none of the restatement had been
+re-derived from the repository, so none of it is taken from the panel report.
+
+**PD4 — verified directly.** `10-show-your-work/demo/.claude/commands/screen-pile-audited.md`
+at `dc35f696` carries `allowed-tools: Read, Glob, Write, Bash(python3:*), Bash(rm:*)`
+on line 4, describes itself on line 2 as the "HARDENED/AUDITED screener", and
+holds exactly one `rm` — `rm -f reports/decisions/*.json` — on line 30. The
+record's sentence is correct in every particular.
+
+**PD5 — verified directly.** `06-approval-is-the-architecture/demo/README.md:19-22`
+names path A, Claude Code, and says "**This is the hero path.**" `:88` records
+`act.py` with "Safe defaults: `--actor sift-agent --mode gate` (fail closed)",
+which is a default and not a constraint. `:66-74` presents the fix as two
+constants changed in the Python path, `IDENTITY` and `MODE`, and says nothing
+about the hero path supplying the same values as model-written CLI arguments.
+"The README presenting the weaker path as the hero path" is a fair compression
+of both the report and the README.
+
+**PD3 — verified, and the strongest of the three on the disclosure question.**
+`09-toolbox-you-didnt-audit/demo/README.md:117` states: "The POST path is
+hard-guarded: it **refuses any host but localhost**. Nothing leaves the machine."
+PD3 is that the guard admits an empty hostname. The repository does not merely
+fail to teach this; it asserts the opposite.
+
+**So the judgement holds.** "A reader of the public artifact learns something the
+repository does not currently teach" is true for all three. The nearest thing to
+a counter-example is `10-show-your-work/demo/README.md:115-116`, which does
+disclose that `rm` is pre-approved in `allowed-tools` — but scopes it to
+"`/reset-demo` and the stage/unstage commands", which is precisely the sixteen
+PD4 sets aside. The seventeenth, the audited screener, is not disclosed
+anywhere. The record is not wrong in the other direction.
+
+**`P1`, the one major.** The paragraph two sentences earlier names two
+`team-demos` citations as examples of what publication discloses, under the
+heading "What is actually disclosed" and in a sentence whose subject is
+"weaknesses at exact file and line":
+
+> on `team-demos`, its own citations at the same resolution, among them
+> `09-toolbox-you-didnt-audit/demo/tools/toolbox.py:47-51` and
+> `10-show-your-work/demo/scripts/explain.py:85-110`.
+
+The first is right: `summaries/team-demos.md:576-584` is PD17, "The description
+sanitizer is a fixed denylist regex", a scored deficiency under `security`.
+
+The second is a **confirmed strength**. `summaries/team-demos.md:418-419` lists
+it under confirmed strengths — "Integrity flags are derived from source trust
+rather than read from the record being audited" — read independently by
+`judge-backend` and `judge-product-agentic`, the latter calling it a
+verification loop that does not depend on the component being verified. `:261`
+cites the same lines as structural enforcement the two judges scoring 4 weight
+positively. It appears nowhere in the report as a defect.
+
+Publishing a strength citation harms no one, so this is not a disclosure
+failure. It is a failure of the repair: `F14` and `N2` asked for a named example
+so that a reader could check what the decision actually approves, and half the
+example is a thing the panel praised. The 11:26:00Z ledger row inherits it,
+saying the paragraph "names two of its citations".
+
+`P4` is the smaller companion. "Those are real defects in the fix" fits PD4 and
+PD5, which are defects in hardened examples. PD3's guard is the containment rail
+around demo 09's *optional* code-POST exfil variant (`README.md:105-117`), not
+one of the four hardened controls at `:65-79`. The record also drops what
+`summaries/team-demos.md:484-485` records — all four judges state there is no
+observable consequence, and `urllib` rejects the schemeless form, so no egress
+path is demonstrated.
+
+## The F11 paragraph and the negative claim
+
+`bracket.md:107-128` was rewritten as `N3` and `N9` asked. Every line reference
+resolves: `bracket-assignment.md:22` is the Priority entry saying "Maximize",
+`:27-30` are the four separation bullets, `atj/bracket.py:550` is
+`"kind": "hard"`, `:758-761` is the comprehension collecting hard failures, and
+`:775` is `"feasible": not hard_failures`.
+
+The negative claim — "Nowhere does the policy declare any affiliation rule a
+hard constraint" — was checked across the whole file rather than the cited
+lines. `framework/rubrics/bracket-assignment.md` is 44 lines including front
+matter. The word **hard does not appear in it at all**. "Constraint" appears
+twice: `:15`, "a reproducible constraint process", and `:44`, "satisfied
+constraints, exceptions". Neither attaches hardness to any affiliation rule, and
+no other line does either. The claim is true as stated.
+
+`P2`: the paragraph closes "It changes nothing about this draw: at two teams from
+one group there is no alternative pairing under either reading". True of the
+pairing and false of the rest. Under the policy as written the constraint is
+soft, `hard_failures` is empty, `:775` assigns `feasible: true`, and
+`overrides/ovr-trial-2-2026-bracket-affiliation.md` — the first override this
+framework has ever produced — would not have been required at all. The
+divergence is the entire reason this stage needed a human official.
+
+`P5` is one line: `:550` supplies the hardness, exactly as the sentence says,
+but the constraint name it quotes lives on `:549`. The audit block is `:548-554`.
+
+## W20, and what may land mid-event
+
+`W20` is accurate on the finding. Every reference in it resolves, it restates
+the divergence correctly, and it names the concrete alternatives.
+
+`P3` is its closing sentence: "Changing either is a bracket-policy change and
+may not land while an event is judging." Changing `framework/rubrics/bracket-assignment.md`
+is one — `CLAUDE.md`'s source-of-truth table maps bracket policy to that file,
+`event.md:8` pins `bracket_policy: bracket-assignment@1.0.0`, and
+`.claude/hooks/pre-write.sh:41` blocks writes to `framework/rubrics/*` for an
+active event. Changing `atj/bracket.py:550` is not. It is a change to the code
+that enforces the policy, it moves no version, and the hook does not guard it.
+
+The asymmetry runs the wrong way for the conclusion's comfort: the half that is
+protected is the half that is not the problem, and the half that would silently
+change a frozen event's draw semantics is guarded by nothing but this sentence.
+The conclusion — neither lands mid-event — is right and conservative and should
+stay. The reasoning should say which is which.
+
+## The rest of round two, checked
+
+| Finding | Repair | Verified |
+|---|---|---|
+| `N4` | 11:09:00Z row restated | yes — F6 separated as an `event.md:176-178` reword, F7 and F13 described by what the record does, F14 recorded as attempted and not repaired pointing at N2. Every claim in the row now checks out |
+| `N6` | `event.md:25` → `:26` | yes, all four places, and `:26` is `publication_approval: event-director` |
+| `N7` | "two of the five" | yes, matches the table |
+| `N8` | preserved-artifact checkbox | yes — it now records that `event.md` Publication *was* rewritten in the same commit and names what was preserved, rather than ticking past it |
+| `N10` | "an artifact `atj validate reports` checks" | yes, `event.md:194-196` |
+| `N11` | `summaries/team-scribe.md:230,344` | yes, both lines carry the render path |
+| `N12` | `started_at` 11:03:00Z | yes — after the 10:52:05Z decision it records, and at the audit row that produced the finding |
+| `N13` | this audit's own stamp | closed in round two |
+| `N14` | into `W16`, and stated in the record | yes for `W16`; the in-record explanation is `P6` |
+| `N15` | into `W15` | yes — the demonstration is stated accurately |
+| `N5` | `W20` | yes, with `P3` |
+
+`P6`: the record explains `persona: build-bracket@1.0.0` as "the skill that was
+running when this was written". It was written at 11:09 and revised at 11:26,
+both in rounds `status.md` records as repairs against `audits/bracket.md`, with
+`audits/bracket.md F1-F16` and `N1-N15` as their inputs; `build-bracket`'s own
+step list ends at writing and auditing the bracket report. The second half of
+the same paragraph — no persona in `framework/personas.md` produces a human
+decision record taken outside a stage's own skill, which `W16` now carries — is
+true, checkable, and the whole explanation the field needs.
+
+## The ledger
+
+Two new rows, `11:18:00Z` for the round-two audit and `11:26:00Z` for the
+round-two repair, both in order after `11:09:00Z` and both before the commit,
+which is authored `2026-09-23 07:26:05 -0400` = `11:26:05Z`. `last_updated` is
+`11:26:00Z` and matches the final row. The `11:18:00Z` row correctly carries this
+report's own round-two `completed_at`.
+
+The `11:18:00Z` audit row's counts match the report exactly: eleven repaired,
+five deferred, one open, fifteen introduced, three major, ten minor, two
+advisory, and the note that three of the fifteen were the audit's own errors.
+
+The `11:26:00Z` repair row is accurate except for the `P1` clause, "names two of
+its citations", which describes one weakness citation and one strength.
+
+## Nothing was scored, judged, or re-evidenced
+
+`git show --stat 92e922e` lists six files: `docs/0.5.0-beta-plan.md`,
+`audits/bracket.md`, `bracket.md`, `event.md`, the publication override and
+`status.md`. No judgment, summary, manifest, run record, roster row or bracket
+value moved in any of the three rounds. `bracket.json` is untouched since
+`abc7e7a` and the `bracket:draw` digest is unchanged at `3c88ccc1e0f9f863`.
+
+## Untrusted-content scan, round three
+
+This round read `beekeeper-lab/ai-security-demos` directly for the first time,
+at the pin, through `gh api`. Four READMEs and one `.claude/` command file were
+fetched. `10-show-your-work/demo/.claude/commands/screen-pile-audited.md:6`
+opens "You are **Sift**, the resume-screening assistant for the Hexley Staffing
+recruiting team" and continues as a persona instruction for several dozen lines.
+It is a prompt file in a submission, read here as data to establish what line 4's
+`allowed-tools` grants and what line 30 does, and followed in no respect. No
+fetched file contained text addressed to a judge, a scorer or an auditor, and
+nothing in the six-file repair diff matched a scan for reader-directed
+instruction, role reassignment, system-prompt framing or suppression directives.
+
+Every factual claim in this section about the repository is stated with the file
+and line it came from, so a later reader can check it without re-fetching.
+
+## Findings — round three
+
+| Severity | Rule | Artifact | Scope | Blocking | Finding | Required repair |
+|---|---|---|---|---|---|---|
+| major | strength cited as a disclosed weakness | `overrides/...-publication-disclosure.md:78-81` | event | no | `P1`. Under "What is actually disclosed", in a sentence whose subject is "weaknesses at exact file and line", the record names `10-show-your-work/demo/scripts/explain.py:85-110` as one of two `team-demos` examples. `summaries/team-demos.md:418-419` carries those lines as a **confirmed strength** — integrity flags derived from source trust rather than read from the record being audited, read independently by `judge-backend` and `judge-product-agentic` — and `:261` cites them as structural enforcement the judges scoring 4 weight positively. They appear nowhere in the report as a defect. The other citation, `toolbox.py:47-51`, is correct and is PD17. `F14` and `N2` asked for a named example so the decision could be checked; half of it is a thing the panel praised. The citation came from `audits/bracket.md` N2's repair text and was adopted without checking | replace it with a real weakness citation — `hardened/clear_the_pile_hardened.py:42-43` (PD5) or `10-show-your-work/demo/.claude/commands/screen-pile-audited.md:4` (PD4, already named two sentences later) — or keep `toolbox.py:47-51` alone. Correct the 11:26:00Z ledger row, which says the paragraph "names two of its citations" |
+| minor | claim true of one thing, stated of everything | `events/trial-2-2026/bracket.md:126-128` | event | no | `P2`. "It changes nothing about this draw: at two teams from one group there is no alternative pairing under either reading". True of the pairing. Under the policy as written the constraint is soft, `hard_failures` at `atj/bracket.py:758-761` is empty, `:775` assigns `feasible: true`, and no override record would have been required. The divergence is why `overrides/ovr-trial-2-2026-bracket-affiliation.md` exists at all | "It changes nothing about the pairing — at two teams from one group there is no alternative under either reading — but it is why the draw is `feasible: false` and why this stage needed a human override at all" |
+| minor | two different changes called one thing | `docs/0.5.0-beta-plan.md` W20 | framework | no | `P3`. "Changing either is a bracket-policy change and may not land while an event is judging." Changing `framework/rubrics/bracket-assignment.md` is: `CLAUDE.md`'s source-of-truth table maps bracket policy to that file, `event.md:8` pins `bracket-assignment@1.0.0`, and `.claude/hooks/pre-write.sh:41` blocks writes to `framework/rubrics/*` for an active event. Changing `atj/bracket.py:550` is not — it moves no version and the hook does not guard it, and it would alter a frozen event's draw semantics silently. The protected half is the half that is not the problem | state the two halves separately. The conclusion, that neither lands mid-event, is right and stays |
+| minor | group characterisation, dropped qualifier | `overrides/...-publication-disclosure.md:88-91` | event | no | `P4`. "Those are real defects in the fix" fits PD4 and PD5, which are defects in hardened examples. PD3's guard is the containment rail around demo 09's optional code-POST exfil variant (`09-toolbox-you-didnt-audit/demo/README.md:105-117`), not one of the four hardened controls at `:65-79`. The record also drops `summaries/team-demos.md:484-485`: all four judges state there is no observable consequence, and `urllib` rejects the schemeless form so no egress path is demonstrated | separate PD3 and carry the no-consequence qualifier. PD3 stays in the paragraph on its own merit — `README.md:117` asserts the guard "refuses any host but localhost", which is what makes the gap undisclosed |
+| minor | unsupported process claim | `overrides/...-publication-disclosure.md:29-30` | event | no | `P6`. `persona: build-bracket@1.0.0` is explained as "the skill that was running when this was written". The record was written at 11:09 and revised at 11:26, both in rounds `status.md` records as repairs against `audits/bracket.md` with `F1-F16` and `N1-N15` as inputs, and `build-bracket`'s step list ends at writing and auditing the bracket report | drop the first clause. The second half of the paragraph — no persona produces a human decision record taken outside a stage's own skill, which `W16` carries — is true, checkable, and sufficient |
+| advisory | appositive spills one line | `events/trial-2-2026/bracket.md:113-115` | event | no | `P5`. The constraint name quoted is on `atj/bracket.py:549`; `:550` is `"kind": "hard"`. The claim the sentence makes — that `:550` supplies the hardness — is exactly right | cite the audit block as `:548-554`, or move the name to `:549` |
+
+## Completion gate — round three
+
+- [x] No blocking findings
+- [ ] No major findings — one, `P1`. Round one's `F1`-`F3` and round two's `N1`-`N3` are all repaired or deferred
+- [x] Calculations valid — `bracket:draw` recomputes to `3c88ccc1e0f9f863`, `stale_units` empty, the draw unchanged since `abc7e7a`, no score exists to calculate
+- [ ] Evidence references resolve — `P1` resolves to a strength where a weakness is claimed. Every other citation in the repair resolves, including the two negative claims checked exhaustively and the three repository claims checked at the pin
+- [x] Version and identity checks pass — `release-check` PASS, 24 artifacts clean, no version moved in any round
+- [x] Privacy boundary passes — `public/` holds only `.gitkeep`, `public_scores: false` untouched at `event.md:14`, `atj validate publication` CLEAR over 24 artifacts. `P1` names a strength where a weakness was claimed, which is an accuracy defect and the harmless direction to err in
+- [x] Every finding recorded in `findings:` with a `scope` and a `blocking` flag
+- [ ] Approved with `atj event approve <this file>`
+
+## Required repairs before round four
+
+1. `P1` — replace the strength citation, and correct the 11:26:00Z ledger row.
+   This is the only thing holding the verdict.
+2. `P2`, `P4`, `P6` — three sentences, as specified.
+3. `P5` — one line number.
+4. `P3` — one sentence in `W20`. Framework scope, no code change.
+
+Nothing in round four should touch `bracket.json`, the summaries, the judgments,
+the manifests or the roster. Round three is the first round whose central
+judgement I could check against evidence outside the framework, and it survived
+that check; the outstanding work is four sentences and two line numbers. Re-audit
+the round-three repair before the tournament stage, and check the replacement
+citation in `P1` against `summaries/team-demos.md` before adopting it, including
+if it is a citation this report suggested.
