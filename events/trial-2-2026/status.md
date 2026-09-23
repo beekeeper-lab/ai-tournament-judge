@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
 current_stage: tournament
-last_updated: "2026-09-23T14:52:55Z"
+last_updated: "2026-09-23T18:29:45Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -23,6 +23,14 @@ units:
   - bracket.json
   audit_result: PASS WITH ADVISORIES
   completed_at: "2026-09-23T01:55:10Z"
+- unit_id: matchup:mu-final-01
+  stage: tournament
+  state: complete
+  input_digest: 1d4f5a970e3f5dc9
+  outputs:
+  - matchups/mu-final-01.md
+  audit_result: PASS WITH ADVISORIES
+  completed_at: "2026-09-23T17:26:17Z"
 gate_evidence:
   configuration-audited: audits/configuration.md
   roster-frozen: audits/intake.md
@@ -123,3 +131,7 @@ gate_evidence:
 | 2026-09-23T14:50:00Z | Bracket re-audited, round five, scoped to the round-four repair diff `5163048`; report superseded in place. **PASS WITH ADVISORIES.** Both round-four findings repaired and verified. Forty-five findings across five rounds with no gap and no duplicate: 35 repaired and verified, 7 deferred to `W15`-`W20`, 2 accepted with a stated reason, 3 open and none blocking or major. Every line reference in all six `W` entries re-resolved at HEAD rather than carried forward, and no framework, schema, template, persona or `atj/` file was modified in any of the five commits. The auditor discloses one defect of its own, `R4`: it first wrote round five's `framework_commit` as a fabricated hash and caught it with `git rev-parse` before delivering — the same failure the report spends five rounds describing in others | audits/bracket.md, the repair diff `5163048`, the disclosure record, bracket.md, status.md, docs/0.5.0-beta-plan.md, summaries/team-demos.md, the team-demos checkout at `dc35f696`, bracket.json and its ledger unit | audits/bracket.md | PASS WITH ADVISORIES — gate may be set |
 | 2026-09-23T14:53:00Z | Bracket repaired, round five: `R1`, the one phrase of `Q1`'s repair left in this ledger, and `R2`, three stamps that ran ahead of the commits containing them — the round-three and round-four repair rows restamped to 14:38:00Z and 14:46:00Z and `last_updated` with them. `R3` left open as advisory. Neither repair carries a claim to derive. The four earlier rounds' rows are unchanged except for those two stamps and that phrase | audits/bracket.md R1, R2 | status.md | not-audited |
 | 2026-09-23T14:52:44Z | `atj event approve` on `audits/bracket.md` and both override records, then `atj event gate` bracket-audited passed and `atj event advance` bracket to tournament. The `bracket:draw` unit re-recorded with audit result `PASS WITH ADVISORIES`, digest unchanged at `3c88ccc1e0f9f863` because the inputs did not change; `atj event gate` rewrote the body checkbox to match the ledger. Three findings stay open, `R1` and `R2` repaired after this row's approval and `R3` left as advisory, none blocking, none in a decision artifact. Seven framework findings are carried in `docs/0.5.0-beta-plan.md` as `W15`-`W20` and are not fixed | audits/bracket.md | status.md | gate bracket-audited passed on audits/bracket.md |
+| 2026-09-23T17:26:17Z | Final matchup judged: two fresh `matchup-judge@1.1.0` passes on `claude-opus-5-5[1m]`, a-first 17:23:53Z and b-first 17:24:01Z, launched concurrently with neither shown the other. `atj matchup` resolved them: `outcome: confirmed`, winner team-demos, no order disagreement. `public_scores` kept `false` by decision of the event-director in this session | both manifests, eight judgments, both summaries, both adjudications, `audits/judgments.md`, `audits/consolidation.md` | matchup-passes/mu-final-01-pass-a-first.md, matchup-passes/mu-final-01-pass-b-first.md, matchups/mu-final-01.json, matchups/mu-final-01.md | not-audited |
+| 2026-09-23T17:28:59Z | Committed `77fcc6a` with release-check failing: `single-source` read the `product` criterion margin in `mu-final-01.json` as a weight copy. Fixed in `36cd3d5` (17:30:42Z) by a decimal lookahead | matchups/mu-final-01.json | atj/cli.py, tests/test_canonical_model.py | not-audited |
+| 2026-09-23T18:27:09Z | Tournament stage audited, round one. **PASS WITH ADVISORIES**: 17 findings, 2 major, 9 minor, 6 advisory, none blocking. `atj matchup` reproduced from comparisons the auditor extracted itself | the stage diff `43e7e50..36cd3d5`, the draft public summary | audits/tournament.md | PASS WITH ADVISORIES |
+| 2026-09-23T18:29:57Z | Tournament repaired, round one. F1, F11 public draft wording; F3, F4 report corrected; F5, F6, F13 recorded as errata in the report, pass files unchanged; F14 disclosed in the report as the orchestrator's record; F2 the decimal lookahead replaced by an exemption for `events/*/matchups/*.json`, with float and prose copies tested as still caught; F16 dated amendment under H4; F9, F10, F17 deferred as `W21`-`W23`; F7 this row, the three above, and unit `matchup:mu-final-01`. F8 (model not the one `event.md` requests) is open for the event-director | audits/tournament.md F1-F17 | matchups/mu-final-01.md, atj/cli.py, tests/test_canonical_model.py, docs/0.5.0-beta-plan.md, status.md | pending re-audit |

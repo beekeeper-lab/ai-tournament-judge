@@ -1757,11 +1757,8 @@ def check_no_duplicate_weights(root: Path) -> list[str]:
 
     rubric = canon.load(root)
     rubric_path = (root / canon.SUBMISSION_RUBRIC).resolve()
-    # Weights are integers. `(?![.\d])` keeps a float that happens to equal one
-    # from matching: a decisive head-to-head value produces a criterion margin of
-    # exactly the weight, written as `15.0` in every `atj matchup` result.
     pattern = _re.compile(
-        r"""["']?(""" + "|".join(rubric.criterion_ids) + r""")["']?\s*[:=]\s*(\d+)(?![.\d])"""
+        r"""["']?(""" + "|".join(rubric.criterion_ids) + r""")["']?\s*[:=]\s*(\d+)"""
     )
     # `atj/data/` is a build-time copy staged by tools/stage_package_data.py. It is
     # generated, git-ignored, and not an editable source.
@@ -1788,6 +1785,13 @@ def check_no_duplicate_weights(root: Path) -> list[str]:
         if skip_parts & set(path.parts):
             continue
         resolved = path.resolve()
+        # An `atj matchup` result keys its criterion margins by criterion id, and a
+        # decisive value makes the margin equal the weight. The file is tool output,
+        # reproduced by the tournament audit, so it is exempt by what it is and not
+        # by how its numbers are written: a float copy elsewhere is still a copy.
+        rel = path.relative_to(root).parts
+        if len(rel) == 4 and rel[0] == "events" and rel[2] == "matchups" and path.suffix == ".json":
+            continue
         if resolved in allowed or any(
             base.is_dir() and str(resolved).startswith(str(base) + "/") for base in allowed
         ):

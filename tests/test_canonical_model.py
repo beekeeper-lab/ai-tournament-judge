@@ -79,8 +79,9 @@ class CanonicalRubricTests(unittest.TestCase):
     def test_a_decisive_matchup_margin_is_not_a_weight_copy(self):
         """trial-2-2026: a ±2 value makes the criterion margin equal its weight.
 
-        `"product": 15.0` in an `atj matchup` result is a margin, while
-        `"product": 15` is still a copy and must still be caught.
+        The `atj matchup` result is exempt by location. A copy anywhere else is
+        still caught, whether written as an integer, a float, or at the end of
+        a sentence.
         """
         import shutil
         import tempfile
@@ -91,11 +92,19 @@ class CanonicalRubricTests(unittest.TestCase):
             rubric = root / canon.SUBMISSION_RUBRIC
             rubric.parent.mkdir(parents=True)
             shutil.copy(ROOT / canon.SUBMISSION_RUBRIC, rubric)
-            (root / "margin.json").write_text('{"product": 15.0}', encoding="utf-8")
-            (root / "copy.json").write_text('{"product": 15}', encoding="utf-8")
+            result = root / "events" / "e" / "matchups" / "mu-final-01.json"
+            result.parent.mkdir(parents=True)
+            result.write_text('{"criterion_margins": {"product": 15.0}}', encoding="utf-8")
+            copies = {
+                "int.json": '{"product": 15}',
+                "float.json": '{"functional": 25.0}',
+                "prose.md": "The weight is product: 15.",
+            }
+            for name, text in copies.items():
+                (root / name).write_text(text, encoding="utf-8")
             problems = check_no_duplicate_weights(root)
-        self.assertEqual(len(problems), 1, problems)
-        self.assertIn("copy.json", problems[0])
+        self.assertEqual(len(problems), len(copies), problems)
+        self.assertFalse(any("matchups" in p for p in problems), problems)
 
     def test_retired_scripts_no_longer_define_weights(self):
         for name in ("calculate_scores", "build_bracket", "validate_configuration",

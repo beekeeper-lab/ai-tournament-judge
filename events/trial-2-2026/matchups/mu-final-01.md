@@ -43,6 +43,9 @@ reports are in `events/trial-2-2026/matchup-passes/`. Each was a fresh
 `matchup-judge@1.1.0` context launched concurrently with the other, neither saw the
 other's output, and neither computed a margin. `started_at` and `completed_at` are
 the first and last entries of the two agents' own transcripts.
+These facts, and the mechanical extraction of each pass from its transcript, rest
+on the orchestrator's record. The transcripts are session files outside the
+evidence package, so `audits/tournament.md` F14 could not verify them.
 
 `model_used` is `claude-opus-5-5[1m]`, which is not the `claude-opus-5` that wrote
 the eight panel judgments. The matchup judges compared on those judgments as
@@ -56,15 +59,16 @@ Both teams are eligible and pinned (`teams.md:11-12`), and both packages are
 cause: no model call was possible in this event. Neither team has an official
 total. `adj:trial-2-2026:team-scribe:01` accepted `agentic` as `NE` and
 `adj:trial-2-2026:team-demos:01` accepted `functional` as `NE`. Both passes recorded
-that they did not use or compare any total, and `head-to-head.md` forbids selecting
-on them.
+that they did not use or compare any total. `head-to-head.md` says "Do not merely
+select the team with the higher initial total", and neither pass consulted one.
 
-Both passes applied the same audit corrections to the panel summaries:
-consolidation F1 (the team-scribe `.env` contradiction is a single-judge finding),
-consolidation F2 and N6 (the v1.1 POST guard raises for three of five forms), and
-judgments F1 (the team-demos `.env.example` defect is withdrawn). Both cite
-judgments F4 for the team-scribe installer attribution, and pass A also applies
-F18.
+The passes applied overlapping audit corrections to the panel summaries, each
+citing its own set. Both use the three-of-five count for the v1.1 POST guard:
+pass A cites consolidation F2 and N6, pass B cites F2. Pass B cites consolidation
+F1 (the team-scribe `.env` contradiction is a single-judge finding) and pass A
+does not. Both apply judgments F1 (the team-demos `.env.example` defect is
+withdrawn) and judgments F4 (the team-scribe installer attribution). Pass A also
+cites F18 and F19.
 
 ## Order-balanced results
 
@@ -130,6 +134,23 @@ headline workflow was never observed.
 
 Not reached. `tie_break_order` is `[functional, reliability, product]`, and the combined
 margin is far outside the close-call band.
+
+## Errata
+
+Found by `audits/tournament.md` and checked against the sources. The pass reports
+are left as their judges returned them. No comparison value rests on any of these.
+
+- **F5, pass A.** `ev-demos-02` establishes ten demo READMEs, not that they share
+  one template. The `Bash(rm:*)` grants are at `judgments/team-demos/judge-security-ops.md:49,165,185`,
+  not `:151-161`. `judgments/team-scribe/judge-security-ops.md:135-139` calls the
+  recovery path unobserved, not dead. The `NameError` is in the retry worker
+  (`judgments/team-scribe/judge-backend.md:113-119`).
+- **F6, pass B.** `list_verdicts.py`'s exit 1 is behaviour in the code, not
+  documented behaviour. The two dry runs used `python3 <script> --dry-run`, which
+  the submission does not document (`evidence/team-demos/manifest.md:53-55`), so
+  "exited as documented" holds for the documented output, not the invocation.
+- **F13, pass A.** Pass A's description of what judgments F18 and F19 did does not
+  match `audits/judgments.md`. Read that audit, not the pass, for their effect.
 
 ## Audit
 
