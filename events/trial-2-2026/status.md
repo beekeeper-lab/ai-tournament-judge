@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
 current_stage: tournament
-last_updated: "2026-09-23T18:44:48Z"
+last_updated: "2026-09-23T18:49:16Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -26,7 +26,7 @@ units:
 - unit_id: matchup:mu-final-01
   stage: tournament
   state: complete
-  input_digest: d3d4bf0634d5c669
+  input_digest: 0ddde002acd441b6
   outputs:
   - matchups/mu-final-01.md
   audit_result: not-audited
@@ -137,5 +137,7 @@ gate_evidence:
 | 2026-09-23T18:29:57Z | Tournament repaired, round one. F1, F11 public draft wording; F3, F4 report corrected; F5, F6, F13 recorded as errata in the report, pass files unchanged; F14 disclosed in the report as the orchestrator's record; F2 the decimal lookahead replaced by an exemption for `events/*/matchups/*.json`, with float and prose copies tested as still caught; F16 dated amendment under H4; F9, F10, F17 deferred as `W21`-`W23`; F7 this row, the three above, and unit `matchup:mu-final-01`. F8 (model not the one `event.md` requests) is open for the event-director | audits/tournament.md F1-F17 | matchups/mu-final-01.md, atj/cli.py, tests/test_canonical_model.py, docs/0.5.0-beta-plan.md, status.md | pending re-audit |
 | 2026-09-23T18:36:46Z | Tournament re-audited, round two, scoped to the round-one repair `aa0de72`; report superseded in place. **PASS WITH ADVISORIES.** F1 still open in the public draft; new R2-R7, none blocking. The round-one report's own weight-shaped examples, the cause of the release-check failure at `aa0de72`, restated in columns (R1) | audits/tournament.md, the repair diff `36cd3d5..aa0de72` | audits/tournament.md | PASS WITH ADVISORIES |
 | 2026-09-23T18:38:31Z | Tournament repaired, round two. F1 and R2 the public draft states what ran (demo 01's two dry runs, two state tools, the event's localhost probe) and that the model-driven acts were unobserved; F6 and R7 errata completed with the `list_verdicts.py:20-21` and `README.md:93` citations and `:194`; R3 the exemption requires an `atj matchup` result's shape and excludes `_template`, tested with both spoofs; R4 `last_updated`; R5 unit `matchup:mu-final-01` re-recorded `not-audited` until the gate. R6 accepted. F8 still open for the event-director | audits/tournament.md F1, F6, R2-R7 | matchups/mu-final-01.md, atj/cli.py, tests/test_canonical_model.py, status.md | pending re-audit |
-| completed_at: '2026-09-23T18:44:08Z' | Tournament re-audited, round three, scoped to the round-two repair `c4d346e`; report superseded in place. **PASS WITH ADVISORIES.** Round-two findings repaired; new T1-T5, none blocking or major. Public draft fit to put to a human approver | audits/tournament.md, the repair diff `aa0de72..c4d346e`, the public draft | audits/tournament.md | PASS WITH ADVISORIES |
+| 2026-09-23T18:44:08Z | Tournament re-audited, round three, scoped to the round-two repair `c4d346e`; report superseded in place. **PASS WITH ADVISORIES.** Round-two findings repaired; new T1-T5, none blocking or major. Public draft fit to put to a human approver | audits/tournament.md, the repair diff `aa0de72..c4d346e`, the public draft | audits/tournament.md | PASS WITH ADVISORIES |
 | 2026-09-23T18:44:48Z | Tournament repaired, round three. T2 the egress probe citation corrected to `manifest.md:113`; T3 the F6 erratum no longer calls `memory_diff.py` output documented; T1 deferred as `W24`, not repaired, because each repair round so far has introduced a defect and both real results are exempt correctly. T4 accepted. T5 and F15 are the approver's. F8 and R5 carried | audits/tournament.md T1-T5 | matchups/mu-final-01.md, docs/0.5.0-beta-plan.md, status.md | pending re-audit |
+| 2026-09-23T18:48:26Z | Tournament re-audited, round four, scoped to the round-three repair `958d7df`; report superseded in place. **FAIL.** U1 blocking: the erratum edit left unit `matchup:mu-final-01` stale. U2 minor, U3 advisory | audits/tournament.md, the repair diff `c4d346e..958d7df` | audits/tournament.md | FAIL |
+| 2026-09-23T18:48:57Z | Tournament repaired, round four. U3 the erratum cites `04-agent-that-remembered-wrong/demo/README.md:35,98` for the documented invocation and gives the script's full path; U2 this ledger's round-three audit cell; U1 unit `matchup:mu-final-01` re-recorded after the last edit to its inputs, `not-audited`. The round-four auditor had itself run the record command at 18:48:57Z, after its report, which restamped the unit's `completed_at`; restored to the matchup's own 17:26:17Z | audits/tournament.md U1-U3 | matchups/mu-final-01.md, status.md | pending re-audit |

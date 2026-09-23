@@ -1,6 +1,6 @@
 ---
 event_id: trial-2-2026
-audit_scope: tournament stage, rounds one to three — the two mu-final-01 pass reports, the atj matchup result and its private report, the draft public summary, the release-check fix 36cd3d5, the H4 edit, the round-one repair aa0de72 and the round-two repair c4d346e
+audit_scope: tournament stage, rounds one to four — the two mu-final-01 pass reports, the atj matchup result and its private report, the draft public summary, the release-check fix 36cd3d5, the H4 edit, the round-one repair aa0de72, the round-two repair c4d346e and the round-three repair 958d7df
 audit_id: tournament
 team_id: null
 match_id: mu:trial-2-2026:final:01
@@ -8,15 +8,15 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.1.0
 persona: judging-auditor@1.1.0
-framework_commit: c4d346ea418ca3fe4b77ba341c7ec4555b050cb9
+framework_commit: 958d7df9a575ba1e8d72a279624fee802d29a6b8
 model_requested: claude-opus-5
 model_used: claude-opus-5-5[1m]
-started_at: '2026-09-23T18:39:30Z'
-completed_at: '2026-09-23T18:44:08Z'
+started_at: '2026-09-23T18:45:40Z'
+completed_at: '2026-09-23T18:48:26Z'
 visibility: private
 approval_state: draft
 validation_state: unvalidated
-result: PASS WITH ADVISORIES
+result: FAIL
 findings:
 - id: F1
   severity: major
@@ -216,24 +216,24 @@ findings:
   blocking: false
   summary: '_is_matchup_result checks only that keys are present. An empty criteria dict passes all() vacuously, and top-level keys outside the result shape are not rejected. Probed: a file under events/<e>/matchups/ with the five required keys, an empty criteria dict and a separate dict holding the functional and product weights is exempt, and so is one with one well-formed criterion plus an extra official-weights dict. check_no_duplicate_weights reported nothing for either. No such file exists today'
   artifact: atj/cli.py:1750-1774; tests/test_canonical_model.py:80-117
-  repair: require the criteria keys to equal the rubric's criterion ids, and reject or scan any top-level key atj matchup does not write. Add the two probes above as test cases. Or record as a W entry in docs/0.5.0-beta-plan.md
-  state: open
+  repair: deferred as W24 in docs/0.5.0-beta-plan.md, which states T1 accurately (round four)
+  state: deferred
 - id: T2
   severity: minor
   scope: event
   blocking: false
   summary: the F6 erratum says the egress guard probe was the event's own script and cites evidence/team-demos/manifest.md:112. Line 112 is the memory_diff.py row. The egress probe row is :113, which is what the round-two repair text gave
   artifact: matchups/mu-final-01.md, Errata, F6 bullet
-  repair: change manifest.md:112 to manifest.md:113 in that bullet. Nothing else in the bullet needs to change
-  state: open
+  repair: done in 958d7df, manifest.md:113 is the egress guard probe row (round four)
+  state: repaired
 - id: T3
   severity: advisory
   scope: event
   blocking: false
   summary: the F6 erratum says "exited as documented" holds for the memory_diff.py output. 04-agent-that-remembered-wrong/demo/README.md:98 documents what the script does (a diff against the seed). The "No change" text is only in memory_diff.py:45. The run agrees with the documented behaviour, but its text is not documented
   artifact: matchups/mu-final-01.md, Errata, F6 bullet
-  repair: 'optional: say "consistent with the documented behaviour" for memory_diff.py'
-  state: open
+  repair: done in 958d7df, see U3 for the residue (round four)
+  state: repaired
 - id: T4
   severity: advisory
   scope: event
@@ -250,9 +250,121 @@ findings:
   artifact: scratchpad draft public/mu-final-01.md
   repair: run atj validate publication --event-dir events/trial-2-2026 on the artifact once it is placed under events/trial-2-2026/public/ by the sanctioned path, before a human approves it
   state: open
+- id: U1
+  severity: major
+  scope: event
+  blocking: true
+  summary: the round-three repair edited matchups/mu-final-01.md (the F6 erratum) and did not re-record unit matchup:mu-final-01. status.md records digest d3d4bf0634d5c669, the file now digests to 74b6deda857714b4, atj event unit list reports 1 stale, and atj event status blocks advancement on it. The round-two repair re-recorded the unit after its errata edit (R5). This one omitted that step, so the ledger names an input the audited artifact no longer has
+  artifact: events/trial-2-2026/status.md units, matchup:mu-final-01
+  repair: python3 -m atj event unit events/trial-2-2026 record --id matchup:mu-final-01 --stage tournament --output matchups/mu-final-01.md --audit-result not-audited, then confirm atj event unit list reports 0 stale. After approval re-record with this report's result (R5)
+  state: open
+- id: U2
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'the round-three audit row in the activity log, status.md:140, has "completed_at: ''2026-09-23T18:44:08Z''" in its time column, a pasted YAML line, not a timestamp. The value equals the round-three report completed_at and precedes 958d7df (18:45:19Z), so only the form is wrong'
+  artifact: events/trial-2-2026/status.md:140
+  repair: the first cell of that row becomes 2026-09-23T18:44:08Z
+  state: open
+- id: U3
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: the F6 erratum now says exited-as-documented does not hold for memory_diff.py. That is right for its "No change" text (memory_diff.py:45 only). But 04-agent-that-remembered-wrong/demo/README.md:35 documents the invocation python3 scripts/memory_diff.py and :98 describes the diff it ran, so the run matches documented invocation and behaviour. T3 asked for "consistent with the documented behaviour". The citation memory_diff.py:45 also lacks the demo path the list_verdicts citation carries
+  artifact: matchups/mu-final-01.md, Errata, F6 bullet
+  repair: 'optional: cite 04-agent-that-remembered-wrong/demo/scripts/memory_diff.py:45 at the pin and add that invocation and behaviour match 04-agent-that-remembered-wrong/demo/README.md:35,98'
+  state: open
 ---
 
-# Judging Audit — tournament stage, round three
+# Judging Audit — tournament stage, round four
+
+## Result
+
+**FAIL.** One blocking finding, `U1`. The round-three repair `958d7df` edited
+`matchups/mu-final-01.md` and left the unit `matchup:mu-final-01` recorded against
+the old digest. `atj event unit list` reports it stale and `atj event status`
+refuses to advance over it. The citation repairs themselves are correct: `T2` and
+`T3` hold against the sources, and `W24` states `T1` accurately. The repair also
+introduced `U2` (a malformed activity-log timestamp) and `U3` (an advisory on the
+new `memory_diff.py` wording). No comparison value, pass file or
+`mu-final-01.json` changed.
+
+`tournament-audited` may **not** be set on this report. `U1` is a one-command
+repair. Re-audit after it.
+
+## Scope and artifacts inspected
+
+- `git diff HEAD~1..HEAD` at `958d7df`, excluding my round-three text, and the
+  18:44:48Z activity-log row.
+- The F6 erratum against `evidence/team-demos/manifest.md:53-55,109-114`, and the
+  pinned checkout `workspaces/trial-2-2026/team-demos/` (HEAD `dc35f69`, the
+  manifest's pinned commit): root `README.md:19-21`,
+  `01-resume-that-talked-back/demo/README.md:21-22`,
+  `10-show-your-work/demo/README.md:26,93`, `list_verdicts.py:19-21`,
+  `04-agent-that-remembered-wrong/demo/README.md:35,93,98`, `memory_diff.py:44-45`.
+- `W24` in `docs/0.5.0-beta-plan.md` against `atj/cli.py:1750-1774` and my `T1`.
+- `status.md` rows 140-141, `last_updated`, the units block, and
+  `git log --format='%h %cI'`.
+
+## Deterministic validation results
+
+| Check | Result |
+|---|---|
+| `python3 -m atj validate reports events/trial-2-2026`, at 958d7df | PASS, 28 artifacts, 0 findings |
+| `python3 -m pytest tests/ -q`, at 958d7df | 518 passed, 5 skipped |
+| `python3 -m atj release-check`, at 958d7df | PASS |
+| `atj event unit events/trial-2-2026 list` | 2 units, **1 stale**: `matchup:mu-final-01`, recorded `d3d4bf0634d5c669`, now `74b6deda857714b4` (`U1`) |
+| `atj event status events/trial-2-2026` | blocked on the pending gate and on the stale unit |
+| `_is_matchup_result` on `trial-2-2026` and `live-trial-2026` `mu-final-01.json` | both exempt |
+
+## The round-three repair against the source
+
+| Claim | Source | Holds |
+|---|---|---|
+| T2: the egress guard probe row is `manifest.md:113` | line 113 is the `<egress guard probe>` row. Line 112 is `memory_diff.py` | yes |
+| T3: `memory_diff.py`'s "No change" text is in the script only (`memory_diff.py:45`) | line 45 prints it. No Markdown file at the pin contains "No change" | yes (`U3` on what the sentence leaves out) |
+| The root README documents the dry run printing the exact prompt | root `README.md:20-21`: "A `--dry-run` flag prints the exact prompt with no API call". Also demo 01 `README.md:21-22` | yes. The documented invocation is `uv run`, which the erratum already says was not used |
+| The dry runs used an undocumented invocation (`manifest.md:53-55`) | unchanged from round three | yes |
+| W24: key presence, vacuous `all()` on empty `criteria`, extra keys not rejected | `atj/cli.py:1768-1774`: subset test on the five keys and on the three per-criterion fields, nothing on extra or missing criterion ids | yes |
+| W24: both real results exempt correctly | both `mu-final-01.json` return True | yes |
+| W24: each repair round introduced a new defect | rounds one to three, and this round's `U1`, `U2` | yes |
+
+## Timestamps
+
+| Item | Value | Check |
+|---|---|---|
+| Round-three report `completed_at` | 18:44:08Z | equals the value in row 140, but that cell reads `completed_at: '2026-09-23T18:44:08Z'` (`U2`) |
+| Round-three repair row | 18:44:48Z | after 18:44:08Z, before `958d7df` at 18:45:19Z |
+| `last_updated` | 18:44:48Z | equals the last row |
+| This report `started_at` | 18:45:40Z | after `958d7df` |
+
+## New findings
+
+- **U1, major, blocking.** Stale unit after the errata edit. See `findings:`.
+- **U2, minor.** Row 140's time cell holds a YAML line.
+- **U3, advisory.** The `memory_diff.py` clause is correct about the text and
+  silent on the documented invocation and behaviour.
+
+## Carried
+
+`T1` deferred as `W24`. `T4` accepted. `T5`, `F15` are the approver's. `F8` is the
+event-director's. `R5` still has its post-approval step.
+
+## Required repairs
+
+1. `U1`: `python3 -m atj event unit events/trial-2-2026 record --id matchup:mu-final-01 --stage tournament --output matchups/mu-final-01.md --audit-result not-audited`,
+   then `atj event unit events/trial-2-2026 list` shows 0 stale.
+2. `U2`: row 140's first cell becomes `2026-09-23T18:44:08Z`.
+3. `U3`, optional: the wording in its finding.
+
+Then re-audit, scoped to that diff.
+
+**Verdict: FAIL. `U1` blocks. `tournament-audited` may not be set until `U1` is
+repaired and re-audited.**
+
+---
+
+# Judging Audit — tournament stage, round three (superseded, retained)
 
 ## Result
 

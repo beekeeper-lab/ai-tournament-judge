@@ -152,7 +152,9 @@ are left as their judges returned them. No comparison value rests on any of thes
   `python3 <script> --dry-run`, which the submission does not document
   (`evidence/team-demos/manifest.md:53-55`). "Exited as documented" therefore holds
   for neither the invocation nor the `list_verdicts.py` exit, and not for
-  `memory_diff.py`, whose "No change" text is in the script only (`memory_diff.py:45`).
+  the exact `memory_diff.py` output: its invocation and behaviour are documented
+  (`04-agent-that-remembered-wrong/demo/README.md:35,98`), but its "No change" text
+  is in the script only (`04-agent-that-remembered-wrong/demo/scripts/memory_diff.py:45`).
   It holds for the dry-run output, which the root README documents as printing the
   exact prompt. The egress guard probe was the event's own script, not a documented
   command (`evidence/team-demos/manifest.md:113`).
