@@ -1,5 +1,212 @@
 ---
 event_id: trial-2-2026
+audit_scope: dossiers stage, round four, scoped to the DF1-DF2 repair in a6569f8 (overrides/ovr-trial-2-2026-model-substitution.md, status.md)
+audit_id: dossiers
+team_id: null
+match_id: null
+commit: null
+evidence_package_id: null
+rubric: submission-evaluation@1.1.0
+persona: judging-auditor@1.1.0
+framework_commit: a6569f82622108ab969e1b0495481af9c9c77f9e
+model_requested: claude-opus-5
+model_used: claude-opus-5-5[1m]
+started_at: "2026-09-23T20:38:01Z"
+completed_at: "2026-09-23T20:38:48Z"
+visibility: private
+approval_state: draft
+validation_state: unvalidated
+result: PASS WITH ADVISORIES
+findings:
+- id: DF1
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'round three. Repaired. The override now cites event.md:23-27 for the four official keys (all event-director, none rules exceptions), quotes event.md:103 "holds all four authorities" exactly, and quotes disagreement-and-adjudication.md:9 exactly. "event-director is the only official this event names" is true: event.md:24-27 name no other official. The repair differs from the round-three repair text and is correct against the source'
+  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:39-46'
+  repair: 'none'
+  state: repaired
+- id: DF2
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'round three. Repaired. Four rows added. 20:33:43Z equals round-two completed_at. 20:35:01Z equals the 16a332c commit time. 20:36:51Z equals round-three completed_at. 20:37:33Z equals the override completed_at and precedes the a6569f8 commit (20:37:34Z) by one second. last_updated equals the last row'
+  artifact: 'status.md:4,155-158'
+  repair: 'none'
+  state: repaired
+- id: DE1
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'round two. Repaired, with its remainder closed by DF1'
+  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:39-46'
+  repair: 'none'
+  state: repaired
+- id: DEA1
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'round two. Still open. The override is draft, so tournament F8 is open, and status.md still reads "F8 closed" at 20:18:32Z'
+  artifact: 'status.md'
+  repair: 'after atj event approve on the override, add a status.md row with that time recording F8 closed'
+  state: open
+- id: DEA2
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'round two. Repaired. completed_at moved to 20:37:33Z with the DF1 edit. framework_commit left at c0a55df, and the status.md row at 20:37:33Z says so'
+  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:11,15'
+  repair: 'none'
+  state: repaired
+- id: DEA3
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'round two. Accepted. Round-one DO6 miscounted seven run records. There are six and the repair is right'
+  artifact: 'audits/dossiers.md round one DO6; dossiers/team-demos.md:15-20'
+  repair: 'none'
+  state: accepted
+- id: DOA2
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'round one. Still open. The repository cannot show that a human approved the public summary or will approve the override'
+  artifact: 'public/mu-final-01.md; overrides/ovr-trial-2-2026-model-substitution.md'
+  repair: 'Gregg runs, or confirms in person, each approval'
+  state: open
+- id: DOA8
+  severity: advisory
+  scope: framework
+  blocking: false
+  summary: 'round one. Still deferred. docs/0.5.0-beta-plan.md has no errata W-item yet'
+  artifact: 'atj/event.py:936-953,966-974'
+  repair: 'add the W-item in the framework window'
+  state: deferred
+- id: DGA1
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'round four, new, outside the a6569f8 scope. The round-one repair row at 20:30:25Z precedes its commit ef6d656 (20:31:18Z) by 53 seconds. A row may record when the work finished rather than the commit, so this is noted only'
+  artifact: 'status.md:154'
+  repair: 'none required'
+  state: open
+---
+
+# Dossiers Audit, round four
+
+Scoped to `git show a6569f8 -- events/trial-2-2026/overrides/ events/trial-2-2026/status.md`.
+New findings use `DG1..DGn`.
+
+## Result
+
+**PASS WITH ADVISORIES.** No blocking, major or minor finding. DF1, DF2, DE1 and
+DEA2 are repaired. DEA1 and DOA2 wait on the event-director. DOA8 is deferred.
+DGA1 is new, advisory and outside scope.
+
+## Scope and artifacts inspected
+
+- The override diff in `a6569f8`: `completed_at` 20:18:07Z to 20:37:33Z, and the
+  Authority paragraph. No other line changed.
+- `event.md:23-27`, `event.md:103`, `framework/policies/disagreement-and-adjudication.md:9`.
+- The four new `status.md` rows and `last_updated`, against
+  `git log --format='%h %cI'` and the round-two and round-three front matter.
+- `git diff a6569f8 HEAD` is empty and the working tree is clean.
+
+No record, unit, approve, gate or advance command was run.
+
+## Deterministic validation results
+
+| Command | Result |
+|---|---|
+| `atj event status events/trial-2-2026` | stage dossiers, `dossiers-approved` pending, units 2 complete, none stale |
+| `atj validate reports events/trial-2-2026` | PASS WITH ADVISORIES, 33 artifacts, 1 advisory `foreign-team` |
+| `atj validate publication events/trial-2-2026` | CLEAR, 33 artifacts, 0 blocking |
+| `atj validate publication --event-dir events/trial-2-2026 events/trial-2-2026/dossiers/` | CLEAR, 2 artifacts, 0 blocking |
+
+## Word-for-word check
+
+| Override says | Source |
+|---|---|
+| "A human event official owns disqualification, rules exceptions, and unresolved final ties." | `disagreement-and-adjudication.md:9`, exact |
+| `event.md:23-27` names `event-director` for all four official keys, none rules exceptions | `:23` `officials:`, `:24-27` disqualification, adjudication, publication_approval, security_escalation, each `event-director`. True |
+| `event.md:103` "holds all four authorities" | `:103` "`event-director` holds all four authorities and Gregg Reed holds that role." Exact |
+| `event-director` is the only official this event names | no other official in `event.md`. True |
+
+## Ledger check
+
+| Row | Source | Match |
+|---|---|---|
+| 20:33:43Z round two, `8200b4e..ef6d656` | round-two `completed_at` 20:33:43Z, `audit_scope` 8200b4e..ef6d656 | yes |
+| 20:35:01Z repair, `16a332c` | `16a332c` 2026-09-23T16:35:01-04:00 | yes |
+| 20:36:51Z round three, `16a332c` | round-three `completed_at` 20:36:51Z, scope 16a332c | yes |
+| 20:37:33Z repair, round three | override `completed_at` 20:37:33Z, `a6569f8` 16:37:34-04:00 | yes |
+| `last_updated` 20:37:33Z | last row | yes |
+
+## Findings
+
+| ID | Severity | Scope | Blocking | State |
+|---|---|---|---|---|
+| DF1, DF2, DE1 | minor | event | no | repaired |
+| DEA2 | advisory | event | no | repaired |
+| DEA1, DOA2 | advisory | event | no | open, event-director |
+| DEA3 | advisory | event | no | accepted |
+| DOA8 | advisory | framework | no | deferred |
+| DGA1 | advisory | event | no | open, no repair required |
+
+Round-one DO1-DO11 and DOA1, DOA3-DOA7, DOA9, DOA10 keep the states in the
+retained round-two front matter below.
+
+## Recommended commands, in order
+
+1. Validate (orchestrator):
+
+```bash
+python3 -m atj validate reports events/trial-2-2026
+python3 -m atj validate publication --event-dir events/trial-2-2026 events/trial-2-2026/dossiers/
+```
+
+2. Approvals, **event-director only** (`DOA2`):
+
+```bash
+python3 -m atj event approve events/trial-2-2026/audits/dossiers.md --official event-director
+python3 -m atj event approve events/trial-2-2026/overrides/ovr-trial-2-2026-model-substitution.md --official event-director
+python3 -m atj event approve events/trial-2-2026/dossiers/team-demos.md events/trial-2-2026/dossiers/team-scribe.md --official event-director
+```
+
+3. Units (orchestrator):
+
+```bash
+python3 -m atj event unit events/trial-2-2026 record --id dossier:team-demos --stage dossiers --output dossiers/team-demos.md --audit-result "PASS WITH ADVISORIES"
+python3 -m atj event unit events/trial-2-2026 record --id dossier:team-scribe --stage dossiers --output dossiers/team-scribe.md --audit-result "PASS WITH ADVISORIES"
+```
+
+4. Add `status.md` rows for this audit, the approvals, F8 closed (`DEA1`) and the Dossier column (orchestrator).
+5. Gate, **event-director only**, then status:
+
+```bash
+python3 -m atj event gate events/trial-2-2026 dossiers-approved passed --audit events/trial-2-2026/audits/dossiers.md
+python3 -m atj event status events/trial-2-2026
+```
+
+## Completion gate
+
+- [x] No blocking findings
+- [x] No major findings
+- [x] Calculations valid
+- [x] Evidence references resolve
+- [x] Version and identity checks pass
+- [x] Privacy boundary passes
+- [x] Every finding recorded in `findings:` with a `scope` and a `blocking` flag
+- [ ] Approved with `atj event approve <this file>`
+
+---
+
+# Superseded, retained
+
+## Round-three front matter, retained verbatim
+
+```yaml
+event_id: trial-2-2026
 audit_scope: dossiers stage, round three, scoped to the DE1 repair in 16a332c (overrides/ovr-trial-2-2026-model-substitution.md)
 audit_id: dossiers
 team_id: null
@@ -82,9 +289,9 @@ findings:
   artifact: 'atj/event.py:936-953,966-974'
   repair: 'add the W-item in the framework window'
   state: deferred
----
+```
 
-# Dossiers Audit, round three
+# Dossiers Audit, round three (superseded, retained)
 
 Scoped to the DE1 repair in `16a332c`, `git show 16a332c -- events/trial-2-2026/overrides/`.
 New findings use `DF1..DFn`.
@@ -182,9 +389,6 @@ python3 -m atj event status events/trial-2-2026
 - [x] Every finding recorded in `findings:` with a `scope` and a `blocking` flag
 - [ ] Approved with `atj event approve <this file>`
 
----
-
-# Superseded, retained
 
 ## Round-two front matter, retained verbatim
 
