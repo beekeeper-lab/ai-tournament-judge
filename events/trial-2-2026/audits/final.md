@@ -1,6 +1,6 @@
 ---
 event_id: trial-2-2026
-audit_scope: final-audit stage, the complete judging record of trial-2-2026 end to end (intake, evidence, judgments, consolidation, bracket, tournament, dossiers, public), including the eight prior stage audits; round two scoped to the repair diff de797ea..916a66a; round three scoped to 93cfb5e..957bc66 and the annotated tag; round four scoped to 9d1be78..d8a001a; round five scoped to e44385b..58cd942 (FA2, FA7, CF11 settlement)
+audit_scope: final-audit stage, the complete judging record of trial-2-2026 end to end (intake, evidence, judgments, consolidation, bracket, tournament, dossiers, public), including the eight prior stage audits; round two scoped to the repair diff de797ea..916a66a; round three scoped to 93cfb5e..957bc66 and the annotated tag; round four scoped to 9d1be78..d8a001a; round five scoped to e44385b..58cd942 (FA2, FA7, CF11 settlement); round six scoped to 61b3a0d..06b0d5b (FE1, FE4 re-runs)
 audit_id: final
 team_id: null
 match_id: null
@@ -8,11 +8,11 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.1.0
 persona: judging-auditor@1.1.0
-framework_commit: 58cd942fdda05dfdb964c17e4977b7a4d2962b47
+framework_commit: 06b0d5bf9738c06b249053bc8907c75a0c2d1f94
 model_requested: claude-opus-5
 model_used: claude-opus-5-5[1m]
-started_at: "2026-09-24T02:48:05Z"
-completed_at: "2026-09-24T12:16:24Z"
+started_at: '2026-09-24T02:48:05Z'
+completed_at: '2026-09-24T12:18:34Z'
 visibility: private
 approval_state: approved
 validation_state: valid
@@ -257,7 +257,7 @@ findings:
   summary: The four re-recorded units (status.md unit rows for bracket:draw, matchup:mu-final-01 and both dossiers) now carry completed_at 12:13:47Z-12:13:48Z on 2026-09-24. atj/event.py:820-829 defines completed_at as the time the work finished, which was 01:55:10Z, 17:26:17Z and 20:30:25Z on 09-23. status.md:196 discloses it, but the ledger values are wrong, and completion freezes them
   artifact: events/trial-2-2026/status.md:17-49
   repair: 'Before advancing to complete, re-record each unit with --completed-at set to its work time: bracket:draw 2026-09-23T01:55:10Z, matchup:mu-final-01 2026-09-23T17:26:17Z, both dossier units 2026-09-23T20:30:25Z. Add one row'
-  state: open
+  state: repaired
 - id: FE2
   severity: advisory
   scope: event
@@ -281,9 +281,17 @@ findings:
   summary: Round five landed after final-audit-passed was set in 7b9ad0f (03:04:56Z). This is correct in kind, because FA2, FA7 and CF11 were pre-completion conditions and not gate conditions. But the gate and the 03:04:22Z approval of this file attest to its round-four text. This round-five edit changes the file, so final:audit goes stale and the approval covers an earlier version
   artifact: events/trial-2-2026/audits/final.md
   repair: Re-approve this file, re-record final:audit, and re-set the gate on it, as listed under Recommended commands, round five
-  state: open
+  state: repaired
+- id: FF1
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: final:audit was recorded with completed_at 12:17:58Z, the commit time of the round-five report, not the 12:16:24Z this report recommended as its completed_at. Both are defensible. The row at status.md:198 states which one was used
+  artifact: events/trial-2-2026/status.md:50-57,198
+  repair: None required
+  state: accepted
 approved_by: event-director
-approved_at: "2026-09-24T12:18:00Z"
+approved_at: '2026-09-24T12:18:00Z'
 approval_note: Re-approved after round five on the event-director's delegation, 2026-09-24
 ---
 
@@ -306,6 +314,8 @@ roster I wrote by hand from `teams.md`.
 `event.md:16`'s `claude-opus-5`. That is part of `FA2`.
 
 ## Result
+
+**Round six: PASS WITH ADVISORIES.** FE1 and FE4 are repaired. It adds `FF1` (advisory). Nothing at minor or above is open. The event may advance to complete after the closing sequence in round six.
 
 **Round five: PASS WITH ADVISORIES.** FA2 and FA7 are repaired and CF11 is accepted. It adds `FE1` (minor, the units lost their work times) and `FE2`-`FE4` (advisory). The event may advance to complete after the three re-runs listed under round five. The `FE1` repair is strongly recommended first.
 
@@ -989,3 +999,51 @@ python3 -m atj event advance $E
 
 `atj event unit record` prints "completed_at kept" in every case (W30). Check
 the ledger values after the re-records, not the tool's message.
+
+## Round six: `61b3a0d..06b0d5b` (FE1 and FE4 re-runs)
+
+The commit `06b0d5b` has author date equal to committer date, 12:18:11Z. Origin
+received it at 12:18:13Z.
+
+At `06b0d5b` the repository checks pass:
+- `atj event validate` gives PASS, 0 problems.
+- `atj release-check` gives PASS.
+- `atj event status` shows 5 units complete, `final-audit-passed = passed`, and
+  "ready to advance to complete".
+
+| Check | Result |
+|---|---|
+| Units against `derive_digests` | all five match, and `stale_units` is empty. The four restored units keep their round-five digests unchanged: `0d1340ab…`, `7e743af1…`, `dcf08319…` and `fdd24159…` |
+| Unit `completed_at` values | `bracket:draw` 2026-09-23T01:55:10Z, `matchup:mu-final-01` 17:26:17Z, both dossiers 20:30:25Z. These are the work times from round one, section 7. `final:audit` is 12:17:58Z (`FF1`). Every `audit_result` is PASS WITH ADVISORIES |
+| This file's approval | `approved_at` is 12:18:00Z, with an added `approval_note`. The only other change is quote style on two stamps. The body is unchanged |
+| Row `:197` | 12:17:58Z = `61b3a0d`. Its counts match round five |
+| Row `:198` | 12:18:00Z = `approved_at`. The digest `08bdbb01` and each restored time match the front matter. The row precedes its commit, 12:18:11Z |
+| `last_updated` | 12:18:10Z, between the row and the commit |
+| Gate evidence | `stage_gates.final-audit-passed: passed`, and `gate_evidence` names `audits/final.md`. `audit_supports_gate` returns 0 problems. The gate first passed in `7b9ad0f`. The re-set is a no-op in the front matter, and row `:198` records it |
+
+| Severity | Rule | Artifact | Scope / blocking | Finding | Required repair |
+|---|---|---|---|---|---|
+| advisory | unit semantics | `status.md:50-57,198` | event / no | **FF1.** `final:audit` records the report's commit time, 12:17:58Z, and not the report's `completed_at`. Both are defensible, and the row discloses the choice | None |
+
+### Closing sequence
+
+The orchestrator proposed a closing sequence. It is **acceptable without another
+round**, because this edit adds no finding at minor or above. The sequence:
+
+1. Commit this report.
+2. Run `atj event approve` on `audits/final.md` as the event-director.
+3. Run `atj event unit … record --id final:audit … --completed-at <that commit time>`.
+4. Advance.
+
+Three conditions apply:
+- **Check the approve diff.** It should change only the approval fields and the
+  quote style. If it changes anything else, stop and re-audit.
+- **Check the unit values, not the tool message.** Before advancing, `atj event
+  status` must show nothing stale. `final:audit`'s digest must equal
+  `derive_digests`, and its `completed_at` must be the value passed. The tool's
+  message is unreliable (W30).
+- **Keep the ledger rows separate.** One row records the re-approval and the
+  re-record, and it is distinct from the round-six audit row (FD1).
+
+Re-running `atj event gate` is optional, since the gate is already `passed` on
+this file.
