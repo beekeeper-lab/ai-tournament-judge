@@ -1,0 +1,1100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATJ Design Document</title>
+<meta name="description" content="Design document v1.0 for the AI Tournament Judge framework: principles, architecture, data model, CLI, history, and what is done and left.">
+<style>
+:root{
+  --bg:#f7f8fa;--panel:#ffffff;--ink:#1f2937;--muted:#5b6472;--border:#d1d5db;--border-strong:#9ca3af;
+  --accent:#2563eb;--accent-soft:#dbeafe;--accent-ink:#1e3a8a;
+  --success:#166534;--success-soft:#dcfce7;--warning:#92400e;--warning-soft:#fef3c7;
+  --danger:#991b1b;--danger-soft:#fee2e2;--violet:#5b21b6;--violet-soft:#ede9fe;
+  --code-bg:#f1f5f9;--code-ink:#0f172a;--th-bg:#f1f5f9;--line:#6b7280;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1318;--panel:#171c23;--ink:#e5e7eb;--muted:#9aa3af;--border:#2e3642;--border-strong:#4b5563;
+    --accent:#60a5fa;--accent-soft:#1e2d4a;--accent-ink:#bfdbfe;
+    --success:#86efac;--success-soft:#14301f;--warning:#fcd34d;--warning-soft:#3a2d0f;
+    --danger:#fca5a5;--danger-soft:#3b1717;--violet:#c4b5fd;--violet-soft:#2a2346;
+    --code-bg:#0b0f14;--code-ink:#e5e7eb;--th-bg:#1d242d;--line:#9aa3af;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1318;--panel:#171c23;--ink:#e5e7eb;--muted:#9aa3af;--border:#2e3642;--border-strong:#4b5563;
+  --accent:#60a5fa;--accent-soft:#1e2d4a;--accent-ink:#bfdbfe;
+  --success:#86efac;--success-soft:#14301f;--warning:#fcd34d;--warning-soft:#3a2d0f;
+  --danger:#fca5a5;--danger-soft:#3b1717;--violet:#c4b5fd;--violet-soft:#2a2346;
+  --code-bg:#0b0f14;--code-ink:#e5e7eb;--th-bg:#1d242d;--line:#9aa3af;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.page{max-width:72rem;margin:0 auto;padding:16px}
+.hero{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.25rem 1rem;margin-bottom:1rem}
+.eyebrow{margin:0;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-size:.8rem}
+.hero h1{margin:.2rem 0 .4rem;font-size:1.7rem;line-height:1.25}
+.subtitle{margin:0 0 .8rem;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:.4rem .9rem;font-size:.9rem}
+.meta span{white-space:nowrap}
+.toolbar{margin-top:.6rem}
+button.theme{font:inherit;font-size:.85rem;background:var(--panel);color:var(--ink);border:1px solid var(--border-strong);border-radius:6px;padding:.2rem .6rem;cursor:pointer}
+.toc{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:.8rem 1.1rem;margin-bottom:1rem}
+.toc h2{margin:0 0 .3rem;font-size:1rem}
+.toc ol{margin:0;padding-left:1.3rem;columns:2 16rem;column-gap:2rem;font-size:.93rem}
+section.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:1rem;overflow-wrap:anywhere}
+h2{font-size:1.35rem;margin:.1rem 0 .6rem;line-height:1.3}
+h3{font-size:1.08rem;margin:1.2rem 0 .4rem}
+p,ul,ol{margin:.5rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em;background:var(--code-bg);color:var(--code-ink);padding:.05em .3em;border-radius:4px}
+pre{background:var(--code-bg);color:var(--code-ink);padding:.8rem;border-radius:6px;overflow-x:auto;font-size:.85rem;line-height:1.45}
+pre code{background:none;padding:0}
+.table-wrap{overflow-x:auto;margin:.6rem 0;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid var(--border);padding:.35rem .5rem;text-align:left;vertical-align:top}
+th{background:var(--th-bg)}
+td code,th code{white-space:nowrap}
+.badge{display:inline-block;font-size:.75rem;font-weight:600;padding:.05rem .45rem;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.b-ok{color:var(--success);background:var(--success-soft)}
+.b-warn{color:var(--warning);background:var(--warning-soft)}
+.b-bad{color:var(--danger);background:var(--danger-soft)}
+.b-info{color:var(--accent-ink);background:var(--accent-soft)}
+.callout{border-left:4px solid var(--accent);background:var(--accent-soft);padding:.6rem .9rem;border-radius:0 6px 6px 0;margin:.7rem 0}
+.callout.warn{border-color:var(--warning);background:var(--warning-soft)}
+.callout.bad{border-color:var(--danger);background:var(--danger-soft)}
+.callout p{margin:.2rem 0}
+.muted{color:var(--muted)}
+.small{font-size:.87rem}
+figure.diagram{margin:.8rem 0;padding:.6rem;border:1px solid var(--border);border-radius:6px;background:var(--bg)}
+figure.diagram svg{display:block;width:100%;height:auto}
+figcaption{font-size:.87rem;color:var(--muted);margin-top:.4rem}
+/* SVG theming */
+svg text{fill:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:13px}
+svg text.s{font-size:11px;fill:var(--muted)}
+svg text.h{font-weight:700}
+svg .n{fill:var(--panel);stroke:var(--border-strong);stroke-width:1.2}
+svg .na{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.2}
+svg .ns{fill:var(--success-soft);stroke:var(--success);stroke-width:1.2}
+svg .nw{fill:var(--warning-soft);stroke:var(--warning);stroke-width:1.2}
+svg .nd{fill:var(--danger-soft);stroke:var(--danger);stroke-width:1.2}
+svg .nv{fill:var(--violet-soft);stroke:var(--violet);stroke-width:1.2}
+svg .zone{fill:none;stroke:var(--border-strong);stroke-dasharray:5 4;stroke-width:1.2}
+svg .ln{stroke:var(--line);stroke-width:1.4;fill:none}
+svg .lnd{stroke:var(--danger);stroke-width:1.4;fill:none;stroke-dasharray:4 3}
+svg .lns{stroke:var(--success);stroke-width:1.4;fill:none}
+svg .ah{fill:var(--line)}
+svg .ahd{fill:var(--danger)}
+svg .ahs{fill:var(--success)}
+footer{color:var(--muted);font-size:.85rem;padding:1rem 0 2rem}
+@media (max-width:40rem){
+  .hero h1{font-size:1.35rem}
+  section.card{padding:.9rem}
+  table{font-size:.84rem}
+}
+@media print{
+  :root{--bg:#fff;--panel:#fff;--ink:#000;--muted:#333;--border:#999}
+  body{background:#fff;font-size:10.5pt}
+  .toc,.toolbar{display:none}
+  section.card,.hero,figure.diagram{border:1px solid #999;page-break-inside:avoid}
+  a{color:#000}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="hero">
+  <p class="eyebrow">Design document</p>
+  <h1>AI Tournament Judge: design, state and remaining work</h1>
+  <p class="subtitle">How the framework judges student software with independent LLM judge personas and deterministic tooling, what it has done in three events, and exactly what is left before the next version. Written so the owner can return after a break and resume without re-reading the repository.</p>
+  <div class="meta">
+    <span><strong>Doc version</strong> 1.0</span>
+    <span><strong>Date</strong> 2026-09-24</span>
+    <span><strong>Framework</strong> <code>0.4.0-beta</code> (<code>VERSION</code>)</span>
+    <span><strong>Repo commit</strong> <code>95ae008</code> (main)</span>
+    <span><strong>Owner</strong> Gregg Reed</span>
+    <span><strong>Companion</strong> <code>docs/design/DESIGN.md</code></span>
+  </div>
+  <div class="toolbar"><button class="theme" type="button" id="themeBtn" aria-label="Toggle light or dark theme">Toggle theme</button></div>
+</header>
+
+<nav class="toc" aria-label="Table of contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#summary">Summary</a></li>
+    <li><a href="#why">What it is and why</a></li>
+    <li><a href="#principles">Principles</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#lifecycle">Event lifecycle</a></li>
+    <li><a href="#judging">Per-team judging</a></li>
+    <li><a href="#tournament">Bracket and matchups</a></li>
+    <li><a href="#audit">Audit, repair and staleness</a></li>
+    <li><a href="#privacy">Privacy and publication</a></li>
+    <li><a href="#agents">Agents, skills and commands</a></li>
+    <li><a href="#data">Data model</a></li>
+    <li><a href="#cli">The atj CLI</a></li>
+    <li><a href="#guards">Hooks, tests and release checks</a></li>
+    <li><a href="#decisions">Durable design decisions</a></li>
+    <li><a href="#history">History and evidence</a></li>
+    <li><a href="#lessons">Lessons learned</a></li>
+    <li><a href="#status">Done and left</a></li>
+    <li><a href="#risks">Risks</a></li>
+    <li><a href="#resume">Resume here</a></li>
+    <li><a href="#versions">Version history</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="summary" class="card">
+  <h2>1. Summary</h2>
+  <p>The AI Tournament Judge (ATJ) is a repository-local framework that evaluates student software submissions. Four LLM judge personas score each submission independently against one shared rubric. A consolidator merges their reports. A seeded bracket pairs teams, and each matchup is judged twice in reversed presentation order. The output is a private judging record, a team-facing dossier per team, and approved public summaries. Every number, validation, random draw and state change is produced by a deterministic Python CLI, <code>atj</code>. LLM judgment is never described as reproducible.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Question</th><th>Answer at commit <code>95ae008</code></th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td>Released version</td><td><code>0.4.0-beta</code>, 2026-09-18. An <code>Unreleased</code> section holds doc fixes only.</td><td><code>VERSION</code>, <code>CHANGELOG.md</code></td></tr>
+      <tr><td>Events completed</td><td>Three: <code>sample-mock-2026</code> (scripted fixture), <code>live-trial-2026</code> (first real trial), <code>trial-2-2026</code> (second real trial, completed 2026-09-24)</td><td><code>events/*/status.md</code></td></tr>
+      <tr><td>Next version</td><td><code>0.5.0-beta</code>, status <code>proposed</code>. A second trial answering stated hypotheses. The trial ran. The calibration, the findings write-up and the hypothesis answers did not.</td><td><code>docs/0.5.0-beta-plan.md</code></td></tr>
+      <tr><td>Open work</td><td>30 work items (W1 to W30), 5 carried trial-2 items, 3 plan decisions and one disclosure decision. See <a href="#status">section 17</a>.</td><td><code>docs/0.5.0-beta-plan.md</code>, <code>events/trial-2-2026/audits/final.md</code></td></tr>
+      <tr><td>Fit to decide a real award?</td><td>No. The framework says so itself: no calibration has ever been produced, and the human attestation acts are unrecorded.</td><td><code>README.md</code>, <code>docs/final-audit.md</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="why" class="card">
+  <h2>2. What it is and why</h2>
+  <p>An LLM can read a codebase and form a view on its quality. On its own that view is not a result anyone can defend: it is not reproducible, it can be steered by text in the submission, and a single model has a single set of blind spots. ATJ wraps the judgment in machinery that makes a disputed result answerable (<code>README.md</code>, "What is deterministic").</p>
+  <ul>
+    <li><strong>Several lenses, one rubric.</strong> Four personas (backend, frontend and UX, security and operations, product and agentic design) investigate with different emphasis. Weights live only in the rubric, so a persona cannot change what matters (<code>framework/rubrics/submission-evaluation.md</code>).</li>
+    <li><strong>Independence, then synthesis.</strong> No judge sees another's report. Consolidation happens afterwards and flags disagreement instead of averaging it away (<code>framework/policies/judge-independence.md</code>, <code>framework/rubrics/panel-consolidation.md</code>).</li>
+    <li><strong>Order-balanced comparison.</strong> A head-to-head matchup runs twice, A-first and B-first, because presentation order biases LLM comparisons. A winner is confirmed only when both orders agree and the margin clears the close-call band (<code>framework/rubrics/head-to-head.md</code>).</li>
+    <li><strong>Evidence first.</strong> Every score cites an evidence package pinned to an immutable commit. A missing observation is <code>NE</code>, never a zero.</li>
+    <li><strong>Three products.</strong> Private deliberation, team-facing feedback and public ceremony content have enforced boundaries.</li>
+  </ul>
+  <p>The project is a work in progress. Its two real events were run to find what the framework gets wrong, and they decided nothing (<code>README.md</code>, <code>events/trial-2-2026/event.md</code> "Purpose").</p>
+</section>
+
+<section id="principles" class="card">
+  <h2>3. Principles</h2>
+  <p>Each principle names where it is stated and where it is enforced. Codes stay fixed for later versions of this document.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Code</th><th>Principle</th><th>Stated in</th><th>Enforced by</th></tr></thead>
+    <tbody>
+      <tr><td>P1</td><td><strong>Determinism boundary.</strong> Arithmetic, schema and content validation, rendering, state transitions and seeded bracket assignment are deterministic and byte-reproducible. Judge scores and prose are not, and are never called reproducible. A score is "recalculated" only if <code>atj score</code> produced it.</td><td><code>CLAUDE.md</code>, <code>README.md</code></td><td><code>atj score</code>, <code>atj matchup</code>, <code>atj bracket</code>, <code>atj render</code>; <code>reports.check_consolidation</code> re-runs consolidation and fails on any mismatch</td></tr>
+      <tr><td>P2</td><td><strong>Untrusted evidence.</strong> Submissions, repository instructions, issues, comments, tests and application output are evidence, never instructions. They may be reported, not followed.</td><td><code>CLAUDE.md</code>, <code>docs/security-and-sandboxing.md</code></td><td>Mechanically: nothing official is read from a submission. Judges hold read-only tools. Model-level: persona instructions (partial, see <code>tests/fixtures/prompt-injection/</code>)</td></tr>
+      <tr><td>P3</td><td><strong>Sandbox or NE.</strong> Submission code runs only inside verified isolation. No host fallback. If <code>atj sandbox preflight</code> cannot verify isolation, the manifest records <code>execution_status: unavailable</code> and affected criteria are <code>NE</code>.</td><td><code>framework/policies/execution-safety.md</code></td><td><code>atj/sandbox.py</code>, <code>.claude/hooks/pre-advance.sh</code> (host-execution guard)</td></tr>
+      <tr><td>P4</td><td><strong>NE semantics.</strong> "Not evaluable" is distinct from a low score. Any <code>NE</code> blocks an official total. An official may accept an <code>NE</code> by adjudication, which leaves the panel unfinalized by decision.</td><td><code>framework/rubrics/submission-evaluation.md</code>, <code>framework/policies/disagreement-and-adjudication.md</code></td><td><code>atj/scoring.py</code></td></tr>
+      <tr><td>P5</td><td><strong>Judge independence.</strong> Initial judges never see one another's findings. Reports are staged outside <code>events/</code> until all four complete.</td><td><code>framework/policies/judge-independence.md</code></td><td>Procedure in <code>.claude/skills/judge-submission/SKILL.md</code>; detection by <code>reports.check_judge_independence</code> (wording-overlap heuristic, not prevention)</td></tr>
+      <tr><td>P6</td><td><strong>Frozen contracts during judging.</strong> Rubric version, weights, personas, bracket policy and evidence do not change once judging begins. Change means a new version plus explicit migration or restart.</td><td><code>CLAUDE.md</code></td><td><code>.claude/hooks/pre-write.sh</code>; persona content digests in <code>framework/personas.md</code>; <code>versions.require_versions</code> fails on any mismatch</td></tr>
+      <tr><td>P7</td><td><strong>One editable source per fact.</strong> Each canonical number lives in exactly one file (table below). Other files name the file instead of copying the number.</td><td><code>CLAUDE.md</code> "Source of truth"</td><td><code>atj release-check</code> <code>single-source</code> check</td></tr>
+      <tr><td>P8</td><td><strong>Privacy tiers.</strong> Private, team-facing and public are separate products. Nothing leaves the panel without <code>atj validate publication</code> and a named human approver.</td><td><code>framework/policies/report-publication.md</code></td><td><code>atj/publication.py</code> (fails closed), <code>atj/ceremony.py</code> reads only <code>public/</code></td></tr>
+      <tr><td>P9</td><td><strong>Audit gate per stage.</strong> A stage advances only when its gate passed on an approved, private, in-scope audit artifact with a pass verdict, and the stage's required work exists.</td><td><code>CLAUDE.md</code></td><td><code>atj/event.py</code> <code>audit_supports_gate</code>, <code>can_advance</code>; <code>.claude/hooks/pre-advance.sh</code></td></tr>
+      <tr><td>P10</td><td><strong>Human authority.</strong> Disqualification, unresolved ties, rules exceptions, security escalation and publication approval belong to named human officials (the event-director and the roles in <code>event.md</code> <code>officials</code>). Bypasses are recorded and must be reviewed before completion.</td><td><code>framework/policies/disagreement-and-adjudication.md</code>, <code>README.md</code></td><td>Adjudication <code>decision_authority</code>, override records, <code>atj event overrides</code>, completion refusal in <code>can_advance</code></td></tr>
+    </tbody>
+  </table></div>
+  <h3>Where each canonical fact lives</h3>
+  <p>Copied from the structure of <code>CLAUDE.md</code>. This document names files. It does not restate their numbers.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Fact</th><th>File</th><th>Read by</th></tr></thead>
+    <tbody>
+      <tr><td>Criterion IDs, names, weights, scale, rubric version</td><td><code>framework/rubrics/submission-evaluation.md</code></td><td><code>atj.canon</code></td></tr>
+      <tr><td>Agreement thresholds, minimum panel, outlier distance</td><td><code>framework/rubrics/panel-consolidation.md</code> front matter</td><td><code>atj.scoring</code></td></tr>
+      <tr><td>Comparison values, close-call band, tie-break order</td><td><code>framework/rubrics/head-to-head.md</code> front matter</td><td><code>atj.matchup</code></td></tr>
+      <tr><td>Bye policies, default, team range, seeding mode</td><td><code>framework/rubrics/bracket-assignment.md</code> front matter</td><td><code>atj.bracket</code></td></tr>
+      <tr><td>Agent and skill versions and digests, superseded versions</td><td><code>framework/personas.md</code></td><td><code>atj.versions</code></td></tr>
+      <tr><td>Artifact shape</td><td><code>framework/templates/</code>, <code>schemas/</code></td><td><code>atj.reports</code>, <code>atj.schema</code></td></tr>
+      <tr><td>Event state</td><td><code>events/&lt;event&gt;/status.md</code></td><td><code>atj.event</code></td></tr>
+      <tr><td>Framework version</td><td><code>VERSION</code></td><td><code>atj.__init__</code></td></tr>
+    </tbody>
+  </table></div>
+  <p class="small muted">Retired rubric versions are kept in <code>framework/rubrics/archive/</code> and loaded by <code>canon.load_reference()</code>, so a completed event is recomputed under the contract it was judged under (<code>CHANGELOG.md</code> 0.3.0-beta, supersession).</p>
+</section>
+
+<section id="architecture" class="card">
+  <h2>4. Architecture</h2>
+  <p>Markdown with YAML front matter is the reviewable source of truth. JSON Schema and Python provide deterministic validation. Claude Code agents and skills do the judgment and orchestration. Source checkouts live under the git-ignored <code>workspaces/</code> (<code>docs/architecture.md</code>).</p>
+
+  <figure class="diagram" aria-labelledby="fa-cap">
+  <svg viewBox="0 0 900 470" role="img" aria-labelledby="fa-t fa-d">
+    <title id="fa-t">Component architecture</title>
+    <desc id="fa-d">Operator drives Claude Code, whose skills invoke agents. Agents read framework contracts and evidence and return documents. The atj CLI reads the canonical framework files and validates and writes event records. Submissions enter through intake and the sandbox only.</desc>
+    <defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="a1d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ahd" d="M0 0L10 5L0 10z"/></marker></defs>
+    <!-- operator -->
+    <rect class="nw" x="20" y="20" width="160" height="56" rx="6"/>
+    <text x="100" y="44" text-anchor="middle" class="h">Operator / officials</text>
+    <text x="100" y="62" text-anchor="middle" class="s">event-director, approvers</text>
+    <!-- claude layer -->
+    <rect class="zone" x="220" y="10" width="330" height="200" rx="8"/>
+    <text x="232" y="30" class="s">.claude/ (project-local Claude Code)</text>
+    <rect class="na" x="235" y="40" width="140" height="44" rx="6"/>
+    <text x="305" y="60" text-anchor="middle" class="h">commands</text>
+    <text x="305" y="76" text-anchor="middle" class="s">/team-judge, /event-audit ...</text>
+    <rect class="na" x="395" y="40" width="140" height="44" rx="6"/>
+    <text x="465" y="60" text-anchor="middle" class="h">skills (8)</text>
+    <text x="465" y="76" text-anchor="middle" class="s">workflow + atj calls</text>
+    <rect class="nv" x="395" y="108" width="140" height="44" rx="6"/>
+    <text x="465" y="128" text-anchor="middle" class="h">agents (7)</text>
+    <text x="465" y="144" text-anchor="middle" class="s">judges, consolidator, auditor</text>
+    <rect class="nd" x="235" y="108" width="140" height="44" rx="6"/>
+    <text x="305" y="128" text-anchor="middle" class="h">hooks (5 + lib)</text>
+    <text x="305" y="144" text-anchor="middle" class="s">guard rails, fail open</text>
+    <text x="385" y="190" text-anchor="middle" class="s">agents return documents; the orchestrator writes them</text>
+    <!-- framework -->
+    <rect class="zone" x="600" y="10" width="280" height="200" rx="8"/>
+    <text x="612" y="30" class="s">framework/ + schemas/ (canonical)</text>
+    <rect class="ns" x="615" y="40" width="120" height="40" rx="6"/><text x="675" y="65" text-anchor="middle">rubrics/</text>
+    <rect class="ns" x="745" y="40" width="120" height="40" rx="6"/><text x="805" y="65" text-anchor="middle">policies/</text>
+    <rect class="ns" x="615" y="92" width="120" height="40" rx="6"/><text x="675" y="117" text-anchor="middle">templates/</text>
+    <rect class="ns" x="745" y="92" width="120" height="40" rx="6"/><text x="805" y="117" text-anchor="middle">personas.md</text>
+    <rect class="ns" x="680" y="144" width="120" height="40" rx="6"/><text x="740" y="169" text-anchor="middle">schemas/*.json</text>
+    <!-- atj -->
+    <rect class="na" x="220" y="250" width="330" height="80" rx="8"/>
+    <text x="385" y="276" text-anchor="middle" class="h">atj (deterministic CLI)</text>
+    <text x="385" y="296" text-anchor="middle" class="s">canon, scoring, matchup, bracket, event, reports,</text>
+    <text x="385" y="312" text-anchor="middle" class="s">publication, render, ceremony, sandbox, intake</text>
+    <!-- events -->
+    <rect class="n" x="600" y="250" width="280" height="80" rx="8"/>
+    <text x="740" y="276" text-anchor="middle" class="h">events/&lt;id&gt;/</text>
+    <text x="740" y="296" text-anchor="middle" class="s">event.md, teams.md, status.md (ledger),</text>
+    <text x="740" y="312" text-anchor="middle" class="s">evidence, judgments, summaries, matchups, public ...</text>
+    <!-- sandbox / workspace -->
+    <rect class="nd" x="20" y="380" width="200" height="64" rx="6"/>
+    <text x="120" y="404" text-anchor="middle" class="h">Submission (untrusted)</text>
+    <text x="120" y="422" text-anchor="middle" class="s">git URL, repo, dir, .zip</text>
+    <rect class="nw" x="270" y="380" width="230" height="64" rx="6"/>
+    <text x="385" y="404" text-anchor="middle" class="h">workspaces/ + container</text>
+    <text x="385" y="422" text-anchor="middle" class="s">pinned checkout, no network default</text>
+    <rect class="ns" x="600" y="380" width="280" height="64" rx="6"/>
+    <text x="740" y="404" text-anchor="middle" class="h">public/ + ceremony HTML</text>
+    <text x="740" y="422" text-anchor="middle" class="s">only approved public artifacts</text>
+    <!-- arrows -->
+    <path class="ln" d="M180 48 L232 60" marker-end="url(#a1)"/>
+    <path class="ln" d="M375 62 L392 62" marker-end="url(#a1)"/>
+    <path class="ln" d="M465 84 L465 105" marker-end="url(#a1)"/>
+    <path class="ln" d="M535 130 L612 112" marker-end="url(#a1)"/>
+    <text x="575" y="104" class="s" text-anchor="middle">read</text>
+    <path class="ln" d="M440 84 L420 247" marker-end="url(#a1)"/>
+    <text x="408" y="232" class="s">calls</text>
+    <path class="ln" d="M740 210 L520 248" marker-end="url(#a1)"/>
+    <text x="640" y="238" class="s">reads only source</text>
+    <path class="ln" d="M550 290 L597 290" marker-end="url(#a1)"/>
+    <text x="573" y="282" class="s" text-anchor="middle">writes</text>
+    <path class="lnd" d="M220 412 L267 412" marker-end="url(#a1d)"/>
+    <path class="ln" d="M385 330 L385 377" marker-end="url(#a1)"/>
+    <text x="395" y="360" class="s">intake, sandbox run</text>
+    <path class="ln" d="M740 330 L740 377" marker-end="url(#a1)"/>
+    <text x="750" y="360" class="s">validate publication</text>
+    <path class="ln" d="M100 76 L240 255" marker-end="url(#a1)"/>
+    <text x="120" y="190" class="s">approve, gate,</text>
+    <text x="120" y="204" class="s">advance</text>
+  </svg>
+  <figcaption id="fa-cap">Figure A. Component architecture. Submissions reach only intake and the sandbox. Official numbers come only from <code>framework/</code> through <code>atj.canon</code>. Public output is rendered only from <code>public/</code>.</figcaption>
+  </figure>
+
+  <h3>Repository layout</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Path</th><th>Contents</th></tr></thead>
+    <tbody>
+      <tr><td><code>atj/</code></td><td>Deterministic tooling, one CLI entry point (<code>atj/cli.py</code>, <code>python3 -m atj</code>)</td></tr>
+      <tr><td><code>framework/rubrics/</code></td><td><code>submission-evaluation.md</code>, <code>panel-consolidation.md</code>, <code>head-to-head.md</code>, <code>bracket-assignment.md</code>, <code>README.md</code>, <code>archive/</code> (retired versions)</td></tr>
+      <tr><td><code>framework/policies/</code></td><td><code>evidence-and-citation.md</code>, <code>judge-independence.md</code>, <code>disagreement-and-adjudication.md</code>, <code>execution-safety.md</code>, <code>report-publication.md</code></td></tr>
+      <tr><td><code>framework/templates/</code></td><td>18 artifact templates. Required sections come from each template's <code>##</code> headings (<code>atj/reports.py</code>)</td></tr>
+      <tr><td><code>framework/personas.md</code></td><td>Component registry: version, role, <code>writes</code> contract and content digest per agent and skill, plus an append-only superseded-versions table</td></tr>
+      <tr><td><code>schemas/</code></td><td>19 JSON Schema files (18 artifact schemas plus <code>common.schema.json</code>)</td></tr>
+      <tr><td><code>events/</code></td><td><code>_template/</code> (source for new events), <code>sample-mock-2026/</code>, <code>live-trial-2026/</code>, <code>trial-2-2026/</code></td></tr>
+      <tr><td><code>.claude/agents/</code></td><td>7 agents: 4 judges, <code>panel-consolidator</code>, <code>matchup-judge</code>, <code>judging-auditor</code></td></tr>
+      <tr><td><code>.claude/skills/</code></td><td>8 skills (<a href="#agents">section 10</a>)</td></tr>
+      <tr><td><code>.claude/commands/</code></td><td>8 slash commands, each a thin entry into a skill</td></tr>
+      <tr><td><code>.claude/hooks/</code></td><td><code>pre-write.sh</code>, <code>post-write.sh</code>, <code>pre-advance.sh</code>, <code>session-start.sh</code>, <code>user-prompt.sh</code>, <code>lib.sh</code></td></tr>
+      <tr><td><code>tests/</code></td><td>21 test modules, <code>tests/hooks/</code>, <code>tests/fixtures/</code> (including <code>bracket-20-team/</code> and <code>prompt-injection/</code>)</td></tr>
+      <tr><td><code>scripts/</code></td><td>Legacy entry points kept as shims over the CLI (<code>scripts/_shim.py</code>); retirement was planned in <code>docs/implementation-detail.md</code> D1</td></tr>
+      <tr><td><code>tools/</code></td><td><code>check_placeholders.py</code> (CI placeholder scan), <code>stage_package_data.py</code> (stages framework data into <code>atj/data/</code> for wheels)</td></tr>
+      <tr><td><code>build_backend.py</code>, <code>pyproject.toml</code>, <code>MANIFEST.in</code></td><td>In-tree build backend that stages data before any wheel, sdist or editable build (CHANGELOG 0.3.0-beta, D31)</td></tr>
+      <tr><td><code>workspaces/</code></td><td>Submission checkouts and sandbox state. Git-ignored</td></tr>
+      <tr><td><code>docs/</code></td><td>Operator, security, scoring, tournament, recovery and troubleshooting guides; audit and plan records; this design document under <code>docs/design/</code></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>atj modules</h3>
+  <p>In dependency order, from <code>docs/implementation-detail.md</code> section 2, with <code>intake</code> and <code>egress</code> added since.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Module</th><th>Responsibility</th></tr></thead>
+    <tbody>
+      <tr><td><code>errors</code></td><td>Stable error codes so hooks, CI and audits match on a code, not prose</td></tr>
+      <tr><td><code>frontmatter</code></td><td>Bounded YAML front-matter parsing for untrusted content</td></tr>
+      <tr><td><code>canon</code></td><td>Reads rubrics and policies. The only place official numbers enter the system. Fatal if a table total disagrees with its declared total</td></tr>
+      <tr><td><code>ids</code></td><td>Derived identifiers and digests, for example <code>ev:&lt;event&gt;:&lt;team&gt;:&lt;commit12&gt;:&lt;digest8&gt;</code></td></tr>
+      <tr><td><code>schema</code></td><td>Offline JSON Schema registry</td></tr>
+      <tr><td><code>versions</code></td><td>Framework commit, component registry, version compatibility (<code>require_versions</code> is fatal on mismatch), supersession</td></tr>
+      <tr><td><code>scoring</code></td><td>Individual scores, panel consolidation, agreement classes (<code>aligned</code>, <code>material-disagreement</code>, <code>severe-disagreement</code>), outliers, adjudication application, panel integrity</td></tr>
+      <tr><td><code>matchup</code></td><td>Order-balanced head-to-head resolution</td></tr>
+      <tr><td><code>bracket</code></td><td>Constrained-random seeded assignment with a per-constraint audit, <code>verify</code> that re-derives constraints</td></tr>
+      <tr><td><code>event</code></td><td>Stages, gates, units, digests, staleness, overrides, next safe action</td></tr>
+      <tr><td><code>publication</code></td><td>Private / team / public boundary, secret and score scan, approval</td></tr>
+      <tr><td><code>reports</code></td><td>Artifact validation composed from the above: schema, required sections, placeholders, citations, independence, consolidation re-check</td></tr>
+      <tr><td><code>render</code></td><td>Generates score tables, panel blocks and bracket tables into Markdown so numbers are never transcribed by hand</td></tr>
+      <tr><td><code>ceremony</code></td><td>Static HTML from approved public artifacts only; refuses a non-conforming artifact</td></tr>
+      <tr><td><code>sandbox</code></td><td>Container invocation (no network, read-only mount, capabilities dropped, non-root, resource limits) or an honest refusal</td></tr>
+      <tr><td><code>egress</code></td><td>The allowlist proxy: internal network with no route out and no resolver, tinyproxy deny-by-default (<code>docs/security-and-sandboxing.md</code>)</td></tr>
+      <tr><td><code>intake</code></td><td>Materialize, pin and enroll one submission; archives get a reproducible snapshot</td></tr>
+      <tr><td><code>demo</code>, <code>demo_writer</code></td><td>Generate and check the committed synthetic sample event</td></tr>
+      <tr><td><code>cli</code></td><td>The operator surface, plus <code>release-check</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="lifecycle" class="card">
+  <h2>5. Event lifecycle</h2>
+  <p>The stage list and gate names below are read from <code>STAGES</code> and <code>STAGE_GATES</code> in <code>atj/event.py</code>. A stage moves forward by exactly one step (<code>legal_transitions</code>). Moving backwards is an explicit invalidation through <code>set_stage</code>, which marks every unit at or after the target stage stale.</p>
+
+  <figure class="diagram" aria-labelledby="fb-cap">
+  <svg viewBox="0 0 900 420" role="img" aria-labelledby="fb-t fb-d">
+    <title id="fb-t">Event stage state machine</title>
+    <desc id="fb-d">Ten stages from configuration to complete. Each transition passes through a named gate that requires an approved audit artifact, the stage's required work, no incomplete, failed or stale units. Completion also requires every override reviewed.</desc>
+    <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="a2d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ahd" d="M0 0L10 5L0 10z"/></marker></defs>
+    <!-- row 1: 5 stages -->
+    <g>
+      <rect class="na" x="15" y="30" width="140" height="46" rx="6"/><text x="85" y="58" text-anchor="middle" class="h">configuration</text>
+      <rect class="na" x="195" y="30" width="140" height="46" rx="6"/><text x="265" y="58" text-anchor="middle" class="h">intake</text>
+      <rect class="na" x="375" y="30" width="140" height="46" rx="6"/><text x="445" y="58" text-anchor="middle" class="h">evidence</text>
+      <rect class="na" x="555" y="30" width="140" height="46" rx="6"/><text x="625" y="58" text-anchor="middle" class="h">initial-judging</text>
+      <rect class="na" x="735" y="30" width="150" height="46" rx="6"/><text x="810" y="58" text-anchor="middle" class="h">consolidation</text>
+    </g>
+    <text x="175" y="100" text-anchor="middle" class="s">configuration-</text><text x="175" y="113" text-anchor="middle" class="s">audited</text>
+    <text x="355" y="100" text-anchor="middle" class="s">roster-frozen</text>
+    <text x="535" y="100" text-anchor="middle" class="s">evidence-</text><text x="535" y="113" text-anchor="middle" class="s">validated</text>
+    <text x="715" y="100" text-anchor="middle" class="s">judgments-</text><text x="715" y="113" text-anchor="middle" class="s">audited</text>
+    <path class="ln" d="M155 53 L192 53" marker-end="url(#a2)"/>
+    <path class="ln" d="M335 53 L372 53" marker-end="url(#a2)"/>
+    <path class="ln" d="M515 53 L552 53" marker-end="url(#a2)"/>
+    <path class="ln" d="M695 53 L732 53" marker-end="url(#a2)"/>
+    <!-- down arrow -->
+    <path class="ln" d="M810 76 L810 180" marker-end="url(#a2)"/>
+    <text x="820" y="130" class="s">consolidation-</text><text x="820" y="143" class="s">audited</text>
+    <!-- row 2 right to left -->
+    <rect class="na" x="735" y="183" width="150" height="46" rx="6"/><text x="810" y="211" text-anchor="middle" class="h">bracket</text>
+    <rect class="na" x="555" y="183" width="140" height="46" rx="6"/><text x="625" y="211" text-anchor="middle" class="h">tournament</text>
+    <rect class="na" x="375" y="183" width="140" height="46" rx="6"/><text x="445" y="211" text-anchor="middle" class="h">dossiers</text>
+    <rect class="na" x="195" y="183" width="140" height="46" rx="6"/><text x="265" y="211" text-anchor="middle" class="h">final-audit</text>
+    <rect class="ns" x="15" y="183" width="140" height="46" rx="6"/><text x="85" y="211" text-anchor="middle" class="h">complete</text>
+    <path class="ln" d="M735 206 L698 206" marker-end="url(#a2)"/>
+    <path class="ln" d="M555 206 L518 206" marker-end="url(#a2)"/>
+    <path class="ln" d="M375 206 L338 206" marker-end="url(#a2)"/>
+    <path class="ln" d="M195 206 L158 206" marker-end="url(#a2)"/>
+    <text x="715" y="252" text-anchor="middle" class="s">bracket-audited</text>
+    <text x="535" y="252" text-anchor="middle" class="s">tournament-audited</text>
+    <text x="355" y="252" text-anchor="middle" class="s">dossiers-approved</text>
+    <text x="175" y="252" text-anchor="middle" class="s">final-audit-passed</text>
+    <!-- gate rule box -->
+    <rect class="nw" x="15" y="285" width="560" height="120" rx="6"/>
+    <text x="28" y="306" class="h">can_advance(event) passes only when</text>
+    <text x="28" y="326" class="s">1. gate is "passed", set by atj event gate --audit &lt;artifact&gt; (approved, private, in scope, PASS or PASS WITH ADVISORIES)</text>
+    <text x="28" y="344" class="s">2. STAGE_REQUIREMENTS work exists (manifests, one judgment per expected judge, summaries, bracket.json, matchups, dossiers)</text>
+    <text x="28" y="362" class="s">3. no unit of this stage incomplete or with audit_result FAIL</text>
+    <text x="28" y="380" class="s">4. no unit stale against derive_digests</text>
+    <text x="28" y="398" class="s">5. leaving final-audit: every --force-reason bypass reviewed (atj event overrides --review)</text>
+    <rect class="nd" x="600" y="285" width="285" height="120" rx="6"/>
+    <text x="612" y="306" class="h">Invalidation (backwards)</text>
+    <text x="612" y="326" class="s">set_stage to an earlier stage marks every</text>
+    <text x="612" y="344" class="s">unit at or after it stale. A bypass with</text>
+    <text x="612" y="362" class="s">--force-reason is allowed while running and</text>
+    <text x="612" y="380" class="s">recorded in status.overrides; it blocks only</text>
+    <text x="612" y="398" class="s">the final move to complete until reviewed.</text>
+  </svg>
+  <figcaption id="fb-cap">Figure B. The ten stages and nine gates from <code>atj/event.py</code>. Gate labels sit on the transition they guard.</figcaption>
+  </figure>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>Stage</th><th>Gate to leave it</th><th>Work required (<code>STAGE_REQUIREMENTS</code>)</th><th>Typical skill</th></tr></thead>
+    <tbody>
+      <tr><td><code>configuration</code></td><td><code>configuration-audited</code></td><td>Valid <code>event.md</code>, <code>teams.md</code>, <code>status.md</code>, <code>bracket.md</code> (<code>REQUIRED_FILES</code>)</td><td><code>run-judging-event</code> (via <code>/event-init</code>)</td></tr>
+      <tr><td><code>intake</code></td><td><code>roster-frozen</code></td><td>Every team pinned to an immutable commit (checked from evidence onward)</td><td><code>prepare-submission</code></td></tr>
+      <tr><td><code>evidence</code></td><td><code>evidence-validated</code></td><td><code>evidence/&lt;team&gt;/manifest.md</code> per eligible team</td><td><code>prepare-submission</code></td></tr>
+      <tr><td><code>initial-judging</code></td><td><code>judgments-audited</code></td><td><code>judgments/&lt;team&gt;/&lt;judge&gt;.md</code> for every judge in <code>expected_judges</code></td><td><code>judge-submission</code></td></tr>
+      <tr><td><code>consolidation</code></td><td><code>consolidation-audited</code></td><td><code>summaries/&lt;team&gt;.md</code> per team</td><td><code>consolidate-judgments</code></td></tr>
+      <tr><td><code>bracket</code></td><td><code>bracket-audited</code></td><td><code>bracket.json</code></td><td><code>build-bracket</code></td></tr>
+      <tr><td><code>tournament</code></td><td><code>tournament-audited</code></td><td>At least one report in <code>matchups/</code></td><td><code>judge-matchup</code></td></tr>
+      <tr><td><code>dossiers</code></td><td><code>dossiers-approved</code></td><td><code>dossiers/&lt;team&gt;.md</code> per team</td><td><code>build-team-dossier</code></td></tr>
+      <tr><td><code>final-audit</code></td><td><code>final-audit-passed</code></td><td>Final audit artifact; all overrides reviewed</td><td><code>audit-judging-run</code></td></tr>
+      <tr><td><code>complete</code></td><td>none</td><td>Frozen record</td><td></td></tr>
+    </tbody>
+  </table></div>
+  <p><code>atj event status</code> calls <code>next_action</code>, which checks in order: recorded outputs missing, units stale against current digests, units marked stale, failed audits, pending units in the current stage, then whether the stage can advance. It names the narrowest next step. Completed audited units are never redone (<code>docs/recovery-and-resume.md</code>).</p>
+</section>
+
+<section id="judging" class="card">
+  <h2>6. Per-team judging</h2>
+  <figure class="diagram" aria-labelledby="fc-cap">
+  <svg viewBox="0 0 900 520" role="img" aria-labelledby="fc-t fc-d">
+    <title id="fc-t">Per-team judging flow</title>
+    <desc id="fc-d">Intake pins the submission. Sandboxed runs produce run records and an evidence manifest. Four judges read the evidence independently and return documents that are staged outside events until all four finish. atj validate and atj score run, the consolidator writes the panel report, atj render generates the score block, and the auditor audits the stage.</desc>
+    <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
+    <rect class="nd" x="15" y="20" width="170" height="60" rx="6"/>
+    <text x="100" y="45" text-anchor="middle" class="h">Submission</text>
+    <text x="100" y="63" text-anchor="middle" class="s">untrusted source</text>
+    <rect class="na" x="215" y="20" width="200" height="60" rx="6"/>
+    <text x="315" y="42" text-anchor="middle" class="h">atj intake</text>
+    <text x="315" y="58" text-anchor="middle" class="s">pin commit, submissions/&lt;team&gt;.md</text>
+    <text x="315" y="72" text-anchor="middle" class="s">checkout in workspaces/</text>
+    <rect class="nw" x="445" y="20" width="210" height="60" rx="6"/>
+    <text x="550" y="42" text-anchor="middle" class="h">atj sandbox preflight / run</text>
+    <text x="550" y="58" text-anchor="middle" class="s">runs/*.json; or execution</text>
+    <text x="550" y="72" text-anchor="middle" class="s">unavailable, criteria NE</text>
+    <rect class="na" x="685" y="20" width="200" height="60" rx="6"/>
+    <text x="785" y="42" text-anchor="middle" class="h">Evidence manifest</text>
+    <text x="785" y="58" text-anchor="middle" class="s">evidence/&lt;team&gt;/manifest.md</text>
+    <text x="785" y="72" text-anchor="middle" class="s">evidence_package_id (derived)</text>
+    <path class="ln" d="M185 50 L212 50" marker-end="url(#a3)"/>
+    <path class="ln" d="M415 50 L442 50" marker-end="url(#a3)"/>
+    <path class="ln" d="M655 50 L682 50" marker-end="url(#a3)"/>
+    <text x="785" y="100" text-anchor="middle" class="s">evidence audit, gate evidence-validated</text>
+    <!-- judges -->
+    <rect class="zone" x="120" y="130" width="660" height="120" rx="8"/>
+    <text x="132" y="148" class="s">independent: read-only tools, no sibling report, staged outside events/ until all four return</text>
+    <rect class="nv" x="140" y="162" width="145" height="64" rx="6"/><text x="212" y="188" text-anchor="middle" class="h">judge-backend</text><text x="212" y="206" text-anchor="middle" class="s">architecture</text>
+    <rect class="nv" x="300" y="162" width="145" height="64" rx="6"/><text x="372" y="188" text-anchor="middle" class="h">judge-frontend-ux</text><text x="372" y="206" text-anchor="middle" class="s">usability, a11y</text>
+    <rect class="nv" x="460" y="162" width="145" height="64" rx="6"/><text x="532" y="188" text-anchor="middle" class="h">judge-security-ops</text><text x="532" y="206" text-anchor="middle" class="s">security, reliability</text>
+    <rect class="nv" x="620" y="162" width="145" height="64" rx="6"/><text x="692" y="188" text-anchor="middle" class="h">judge-product-</text><text x="692" y="204" text-anchor="middle" class="h">agentic</text><text x="692" y="220" text-anchor="middle" class="s">value, AI design</text>
+    <path class="ln" d="M785 80 L700 128" marker-end="url(#a3)"/>
+    <!-- validation -->
+    <rect class="na" x="120" y="285" width="300" height="60" rx="6"/>
+    <text x="270" y="308" text-anchor="middle" class="h">judgments/&lt;team&gt;/&lt;judge&gt;.md</text>
+    <text x="270" y="326" text-anchor="middle" class="s">atj render judgment; atj validate reports</text>
+    <rect class="na" x="480" y="285" width="300" height="60" rx="6"/>
+    <text x="630" y="308" text-anchor="middle" class="h">atj score judgments/&lt;team&gt;</text>
+    <text x="630" y="326" text-anchor="middle" class="s">agreement, outliers, NE, adjudication_required</text>
+    <path class="ln" d="M450 250 L300 282" marker-end="url(#a3)"/>
+    <path class="ln" d="M420 315 L477 315" marker-end="url(#a3)"/>
+    <text x="130" y="370" class="s">judgments audit, gate judgments-audited</text>
+    <!-- adjudication -->
+    <rect class="nw" x="15" y="400" width="250" height="90" rx="6"/>
+    <text x="140" y="424" text-anchor="middle" class="h">Adjudication (human)</text>
+    <text x="140" y="442" text-anchor="middle" class="s">severe disagreement or NE:</text>
+    <text x="140" y="458" text-anchor="middle" class="s">adjudications/*.md, decision_authority</text>
+    <text x="140" y="474" text-anchor="middle" class="s">human-official moves a total</text>
+    <rect class="nv" x="310" y="400" width="250" height="90" rx="6"/>
+    <text x="435" y="424" text-anchor="middle" class="h">panel-consolidator</text>
+    <text x="435" y="442" text-anchor="middle" class="s">neutral synthesis, flags disagreement</text>
+    <text x="435" y="458" text-anchor="middle" class="s">summaries/&lt;team&gt;.md; score block by</text>
+    <text x="435" y="474" text-anchor="middle" class="s">atj render consolidated</text>
+    <rect class="ns" x="605" y="400" width="280" height="90" rx="6"/>
+    <text x="745" y="424" text-anchor="middle" class="h">judging-auditor</text>
+    <text x="745" y="442" text-anchor="middle" class="s">re-derives numbers, follows citations,</text>
+    <text x="745" y="458" text-anchor="middle" class="s">counts judges per claim; writes audits/</text>
+    <text x="745" y="474" text-anchor="middle" class="s">gate consolidation-audited</text>
+    <path class="ln" d="M600 345 L200 397" marker-end="url(#a3)"/>
+    <path class="ln" d="M630 345 L470 397" marker-end="url(#a3)"/>
+    <path class="ln" d="M265 445 L307 445" marker-end="url(#a3)"/>
+    <path class="ln" d="M560 445 L602 445" marker-end="url(#a3)"/>
+  </svg>
+  <figcaption id="fc-cap">Figure C. One team, intake to consolidation audit. Purple boxes are LLM agents, blue are deterministic <code>atj</code> steps, amber are human or safety decisions.</figcaption>
+  </figure>
+  <h3>Mechanics that matter</h3>
+  <ul>
+    <li><strong>Evidence package identity.</strong> <code>evidence_package_id</code> is derived from the event, team, commit and a digest of the manifest content. Re-preparing identical evidence yields the same ID. Any change yields a new one, which is what makes staleness detectable (<code>docs/implementation-detail.md</code> D2).</li>
+    <li><strong>Bidirectional citations.</strong> The manifest's observation table declares which requirements each observation supports, and <code>atj validate reports</code> checks that the requirements table agrees (CHANGELOG 0.3.0-beta). This is a shape check. It cannot tell that a citation points at the wrong content (memory: <em>validate reports cannot verify citations</em>).</li>
+    <li><strong>Judge scores.</strong> Each judgment's front matter carries one raw score or <code>NE</code> per criterion ID and a confidence. No weight and no total appear in a judgment (<code>framework/templates/individual-judgment.md</code>). <code>atj render judgment</code> generates the scores table from that front matter.</li>
+    <li><strong>Consolidation.</strong> <code>atj score</code> computes the weighted panel result and the agreement class per criterion from the thresholds in <code>panel-consolidation.md</code>. The consolidator writes prose. The numbers are generated into the report, and <code>reports.check_consolidation</code> reloads judgments, reapplies approved adjudications and fails on any mismatch (<code>docs/implementation-detail.md</code> D12).</li>
+    <li><strong>Accepted NE.</strong> <code>score_override.resolved_score: NE</code> records that an official reviewed the criterion and the <code>NE</code> stands. The panel stays unfinalized by decision. Both trial-2 teams ended this way.</li>
+  </ul>
+</section>
+
+<section id="tournament" class="card">
+  <h2>7. Bracket and matchups</h2>
+  <h3>Bracket</h3>
+  <p><code>atj bracket build --event-dir &lt;dir&gt; --seed &lt;seed&gt;</code> places eligible teams by a seeded search with fixed restarts, so the result is a pure function of seed and inputs. The bye policy, default and team range come from <code>framework/rubrics/bracket-assignment.md</code>. Each constraint reports <code>satisfied</code>, <code>maximized</code>, <code>violated</code>, <code>not-applicable</code> or <code>infeasible</code>. <code>feasible: false</code> is a legitimate outcome that an official must accept in writing (<code>docs/implementation-detail.md</code> D5). <code>atj bracket verify --event-dir</code> re-derives every constraint from the roster instead of trusting the file's own audit block, and <code>--reproduce &lt;roster.json&gt;</code> redraws from the recorded seed (D6).</p>
+  <h3>Matchup</h3>
+  <figure class="diagram" aria-labelledby="fd-cap">
+  <svg viewBox="0 0 900 400" role="img" aria-labelledby="fd-t fd-d">
+    <title id="fd-t">Matchup resolution flow</title>
+    <desc id="fd-d">Two fresh matchup-judge passes, A-first and B-first, neither shown the other. atj matchup negates the B-first pass into A/B orientation, computes per-criterion margins and the combined margin. It confirms a winner only when both passes pick the same team and the combined margin is outside the close-call band. Otherwise the outcome is adjudication-required with no winner, and a human adjudication must name the advancing team.</desc>
+    <defs><marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="a4s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ahs" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="a4d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ahd" d="M0 0L10 5L0 10z"/></marker></defs>
+    <rect class="n" x="15" y="150" width="150" height="60" rx="6"/>
+    <text x="90" y="175" text-anchor="middle" class="h">Both entrants</text>
+    <text x="90" y="193" text-anchor="middle" class="s">final, audited records</text>
+    <rect class="nv" x="205" y="60" width="190" height="64" rx="6"/>
+    <text x="300" y="86" text-anchor="middle" class="h">Pass A-first</text>
+    <text x="300" y="104" text-anchor="middle" class="s">matchup-passes/*-pass-a-first.md</text>
+    <rect class="nv" x="205" y="236" width="190" height="64" rx="6"/>
+    <text x="300" y="262" text-anchor="middle" class="h">Pass B-first</text>
+    <text x="300" y="280" text-anchor="middle" class="s">matchup-passes/*-pass-b-first.md</text>
+    <text x="300" y="175" text-anchor="middle" class="s">fresh sessions,</text>
+    <text x="300" y="190" text-anchor="middle" class="s">neither sees the other</text>
+    <path class="ln" d="M165 170 L202 100" marker-end="url(#a4)"/>
+    <path class="ln" d="M165 190 L202 262" marker-end="url(#a4)"/>
+    <rect class="na" x="440" y="120" width="220" height="120" rx="6"/>
+    <text x="550" y="144" text-anchor="middle" class="h">atj matchup input.json</text>
+    <text x="550" y="164" text-anchor="middle" class="s">refuses if both passes put the</text>
+    <text x="550" y="180" text-anchor="middle" class="s">same team first; negates B-first;</text>
+    <text x="550" y="196" text-anchor="middle" class="s">per-criterion margins from rubric</text>
+    <text x="550" y="212" text-anchor="middle" class="s">weights; combined margin; band</text>
+    <text x="550" y="228" text-anchor="middle" class="s">may be widened, never narrowed</text>
+    <path class="ln" d="M395 92 L437 150" marker-end="url(#a4)"/>
+    <path class="ln" d="M395 268 L437 212" marker-end="url(#a4)"/>
+    <rect class="ns" x="705" y="40" width="180" height="96" rx="6"/>
+    <text x="795" y="64" text-anchor="middle" class="h">confirmed</text>
+    <text x="795" y="84" text-anchor="middle" class="s">same pick in both orders</text>
+    <text x="795" y="100" text-anchor="middle" class="s">and |margin| &gt; band</text>
+    <text x="795" y="120" text-anchor="middle" class="s">winner named</text>
+    <rect class="nd" x="705" y="196" width="180" height="120" rx="6"/>
+    <text x="795" y="220" text-anchor="middle" class="h">adjudication-required</text>
+    <text x="795" y="240" text-anchor="middle" class="s">order disagreement, both</text>
+    <text x="795" y="256" text-anchor="middle" class="s">equal, or inside the band</text>
+    <text x="795" y="276" text-anchor="middle" class="s">winner: null</text>
+    <text x="795" y="296" text-anchor="middle" class="s">human adjudication names team</text>
+    <path class="lns" d="M660 160 L702 100" marker-end="url(#a4s)"/>
+    <path class="lnd" d="M660 200 L702 250" marker-end="url(#a4d)"/>
+    <rect class="na" x="440" y="300" width="220" height="80" rx="6"/>
+    <text x="550" y="324" text-anchor="middle" class="h">atj bracket advance</text>
+    <text x="550" y="342" text-anchor="middle" class="s">reads winner from matchups/&lt;id&gt;.md,</text>
+    <text x="550" y="358" text-anchor="middle" class="s">or an approved adjudication; writes</text>
+    <text x="550" y="374" text-anchor="middle" class="s">winner into bracket.json</text>
+    <path class="ln" d="M705 110 L672 300" marker-end="url(#a4)"/>
+    <path class="ln" d="M705 316 L663 336" marker-end="url(#a4)"/>
+  </svg>
+  <figcaption id="fd-cap">Figure D. Order-balanced matchup resolution, from <code>atj/matchup.py</code> <code>resolve</code>. The band value and the tie-break order are in <code>framework/rubrics/head-to-head.md</code>. Criterion-level order disagreement is reported but alone does not block a decisive overall result.</figcaption>
+  </figure>
+  <p>The matchup rubric forbids selecting on initial totals (<code>head-to-head.md</code>). Match identifiers come from the drawn bracket, not from a second assignment (D14). A known side effect: <code>atj bracket advance</code> writes <code>winner</code> into <code>bracket.json</code>, which stales the <code>bracket:draw</code> unit and makes <code>--reproduce</code> fail on every completed bracket (W25, W27).</p>
+</section>
+
+<section id="audit" class="card">
+  <h2>8. Audit, repair and staleness</h2>
+  <p>The <code>judging-auditor</code> agent is the only control that has caught wrong citations, invented counts and false reasons. <code>atj validate reports</code> returned zero findings at every stage of <code>live-trial-2026</code> while the manifests held nine misdirected citations (CHANGELOG 0.3.0-beta). Every repair round in both real trials introduced new defects, so each repair is re-audited, scoped to its diff (memory: <em>audits catch their own repairs</em>).</p>
+  <figure class="diagram" aria-labelledby="fe-cap">
+  <svg viewBox="0 0 900 430" role="img" aria-labelledby="fe-t fe-d">
+    <title id="fe-t">Audit and repair loop</title>
+    <desc id="fe-d">The auditor audits the stage and writes only its report. A FAIL or open finding goes to repair, and the repair diff is re-audited in a new round. When the verdict passes, the event-director approves the audit, the orchestrator records units with atj event unit record, sets the gate with the audit artifact, and advances. Unit digests are derived from files on disk; any edit after recording makes the unit stale and blocks advance.</desc>
+    <defs><marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="a5d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ahd" d="M0 0L10 5L0 10z"/></marker></defs>
+    <rect class="n" x="15" y="30" width="150" height="56" rx="6"/>
+    <text x="90" y="54" text-anchor="middle" class="h">Stage work</text>
+    <text x="90" y="72" text-anchor="middle" class="s">artifacts written</text>
+    <rect class="nv" x="205" y="30" width="170" height="56" rx="6"/>
+    <text x="290" y="54" text-anchor="middle" class="h">Audit round N</text>
+    <text x="290" y="72" text-anchor="middle" class="s">audits/&lt;stage&gt;.md only</text>
+    <rect class="nw" x="205" y="150" width="170" height="56" rx="6"/>
+    <text x="290" y="174" text-anchor="middle" class="h">Repair</text>
+    <text x="290" y="192" text-anchor="middle" class="s">derived from source</text>
+    <path class="ln" d="M165 58 L202 58" marker-end="url(#a5)"/>
+    <path class="lnd" d="M270 86 L270 147" marker-end="url(#a5d)"/>
+    <text x="180" y="122" class="s">FAIL or</text><text x="180" y="135" class="s">open finding</text>
+    <path class="ln" d="M320 147 L320 89" marker-end="url(#a5)"/>
+    <text x="330" y="122" class="s">re-audit the repair diff (round N+1)</text>
+    <rect class="ns" x="430" y="30" width="170" height="56" rx="6"/>
+    <text x="515" y="54" text-anchor="middle" class="h">atj event approve</text>
+    <text x="515" y="72" text-anchor="middle" class="s">human approver named</text>
+    <path class="ln" d="M375 58 L427 58" marker-end="url(#a5)"/>
+    <text x="400" y="48" class="s" text-anchor="middle">PASS</text>
+    <rect class="na" x="640" y="30" width="245" height="56" rx="6"/>
+    <text x="762" y="54" text-anchor="middle" class="h">atj event unit record</text>
+    <text x="762" y="72" text-anchor="middle" class="s">input_digest = derive_digests()[id]</text>
+    <path class="ln" d="M600 58 L637 58" marker-end="url(#a5)"/>
+    <rect class="na" x="640" y="130" width="245" height="56" rx="6"/>
+    <text x="762" y="154" text-anchor="middle" class="h">atj event gate --audit</text>
+    <text x="762" y="172" text-anchor="middle" class="s">audit_supports_gate checks</text>
+    <path class="ln" d="M762 86 L762 127" marker-end="url(#a5)"/>
+    <rect class="ns" x="640" y="230" width="245" height="56" rx="6"/>
+    <text x="762" y="254" text-anchor="middle" class="h">atj event advance</text>
+    <text x="762" y="272" text-anchor="middle" class="s">can_advance, next stage</text>
+    <path class="ln" d="M762 186 L762 227" marker-end="url(#a5)"/>
+    <!-- staleness -->
+    <rect class="nd" x="15" y="250" width="580" height="160" rx="6"/>
+    <text x="28" y="272" class="h">Staleness: derive_digests(event) in atj/event.py</text>
+    <text x="28" y="292" class="s">evidence:&lt;team&gt;      team commit + manifest.md digest</text>
+    <text x="28" y="310" class="s">judging:&lt;team&gt;       evidence_package_id + every judgment file digest</text>
+    <text x="28" y="328" class="s">consolidation:&lt;team&gt; evidence_package_id + summary digest</text>
+    <text x="28" y="346" class="s">dossier:&lt;team&gt;       package + dossier + summary + every matchup naming the team</text>
+    <text x="28" y="364" class="s">bracket:draw         bracket.json + teams.md + each eligible summary</text>
+    <text x="28" y="382" class="s">matchup:&lt;id&gt;         report .md + result .json + both pass reports</text>
+    <text x="28" y="400" class="s">final:audit          audits/final(-event).md + public/event-summary.md</text>
+    <path class="lnd" d="M598 300 L760 289" marker-end="url(#a5d)"/>
+    <text x="610" y="320" class="s">recorded digest != derived</text>
+    <text x="610" y="336" class="s">means stale: blocks advance,</text>
+    <text x="610" y="352" class="s">next_action says rerun</text>
+  </svg>
+  <figcaption id="fe-cap">Figure E. The audit and repair loop, and the unit digests that detect drift. Approving an artifact rewrites its front matter, so an approval after recording stales every unit that digests that file (trial-2 FA7, <code>events/trial-2-2026/status.md</code>).</figcaption>
+  </figure>
+  <h3>Rules learned from running the loop</h3>
+  <ul>
+    <li>The auditor writes only its report and recommends record, approve, gate and advance commands. It never runs them. It has Bash and once re-recorded a unit itself (memory: <em>auditor must not run state commands</em>).</li>
+    <li>A repair is derived from the primary source, never copied from the audit's own <code>repair:</code> field. Three of five trial-2 bracket rounds introduced a defect that came from the auditor's suggested repair (memory: <em>audit findings carry their own errors</em>).</li>
+    <li>Record a unit after the last edit to anything it digests. Take ledger times from git. Never estimate a time or force a commit date (trial-2 final audit FB2).</li>
+    <li><code>atj event gate</code> reads each finding's <code>scope</code> and <code>blocking</code>, not the verdict alone (<code>gate_blocking_findings</code>, fix-plan D16).</li>
+  </ul>
+</section>
+
+<section id="privacy" class="card">
+  <h2>9. Privacy and publication</h2>
+  <figure class="diagram" aria-labelledby="ff-cap">
+  <svg viewBox="0 0 900 360" role="img" aria-labelledby="ff-t ff-d">
+    <title id="ff-t">Privacy and publication boundary</title>
+    <desc id="ff-d">Private directories feed consolidation and dossiers. Dossiers are team-facing. Public artifacts must pass atj validate publication and a named approver before atj ceremony renders them. The ceremony reads only public and bracket structure.</desc>
+    <defs><marker id="a6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="a6d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ahd" d="M0 0L10 5L0 10z"/></marker></defs>
+    <rect class="nd" x="15" y="20" width="330" height="230" rx="8"/>
+    <text x="30" y="44" class="h">private (panel only)</text>
+    <text x="30" y="68" class="s">submissions/  evidence/  runs/</text>
+    <text x="30" y="88" class="s">judgments/  summaries/  adjudications/</text>
+    <text x="30" y="108" class="s">matchups/  matchup-passes/</text>
+    <text x="30" y="128" class="s">audits/  calibrations/  overrides/</text>
+    <text x="30" y="158" class="s">holds: raw scores, judge IDs, run IDs,</text>
+    <text x="30" y="176" class="s">evidence package IDs, deliberation</text>
+    <text x="30" y="206" class="s">may flow into consolidation and dossiers;</text>
+    <text x="30" y="224" class="s">never into another initial judge</text>
+    <rect class="nw" x="385" y="20" width="220" height="120" rx="8"/>
+    <text x="400" y="44" class="h">team-facing</text>
+    <text x="400" y="68" class="s">dossiers/&lt;team&gt;.md</text>
+    <text x="400" y="88" class="s">constructive feedback built</text>
+    <text x="400" y="106" class="s">from audited records</text>
+    <rect class="ns" x="645" y="20" width="240" height="120" rx="8"/>
+    <text x="660" y="44" class="h">public</text>
+    <text x="660" y="68" class="s">public/*.md (matchup summaries,</text>
+    <text x="660" y="86" class="s">event summary) and ceremony HTML</text>
+    <text x="660" y="106" class="s">scores only if public_scores</text>
+    <path class="ln" d="M345 80 L382 80" marker-end="url(#a6)"/>
+    <rect class="na" x="385" y="185" width="500" height="150" rx="8"/>
+    <text x="400" y="208" class="h">atj validate publication (fails closed)</text>
+    <text x="400" y="230" class="s">1. file sits in public/ and declares visibility: public</text>
+    <text x="400" y="248" class="s">2. no private-only field anywhere in metadata, including nested</text>
+    <text x="400" y="266" class="s">3. names a human approver and lists source_artifacts</text>
+    <text x="400" y="284" class="s">4. survives scan: credentials, private identifiers, deliberation, unapproved scores</text>
+    <text x="400" y="302" class="s">5. unknown location is blocked, not passed</text>
+    <text x="400" y="322" class="s">then atj ceremony renders from public/ + bracket structure only</text>
+    <path class="ln" d="M180 250 L180 300 L382 300" marker-end="url(#a6)"/>
+    <text x="190" y="290" class="s">draft public summary</text>
+    <path class="ln" d="M765 185 L765 143" marker-end="url(#a6)"/>
+    <text x="775" y="168" class="s">CLEAR + approve</text>
+    <path class="lnd" d="M345 40 L642 40" marker-end="url(#a6d)"/>
+    <text x="495" y="15" class="s" text-anchor="middle">never direct (hook blocks hand-edits of public/)</text>
+  </svg>
+  <figcaption id="ff-cap">Figure F. Visibility per directory is <code>DIRECTORY_VISIBILITY</code> in <code>atj/publication.py</code>. Checks are from <code>docs/implementation-detail.md</code> D7.</figcaption>
+  </figure>
+  <div class="callout warn">
+    <p><strong>The repository is public.</strong> <code>visibility: private</code> is a marker of intent that the git remote does not read. Everything committed under <code>events/</code> is world-readable once pushed. For <code>trial-2-2026</code> both submissions are public and the event-director approved disclosure (<code>events/trial-2-2026/overrides/ovr-trial-2-2026-publication-disclosure.md</code>). For <code>live-trial-2026</code>, whose two submissions are private repositories, the disclosure decision is still open (O33).</p>
+  </div>
+  <p>Known gaps: the gate is a shape check. In trial-2 a short submission commit, a repository URL, an affiliation and an integer margin each passed as CLEAR in a public draft (W22). The template's required <code>framework_commit</code> fails the gate at full length (W21). <code>public_scores</code> is one event-wide flag with no per-team control (W7).</p>
+</section>
+
+<section id="agents" class="card">
+  <h2>10. Agents, skills and commands</h2>
+  <figure class="diagram" aria-labelledby="fg-cap">
+  <svg viewBox="0 0 900 470" role="img" aria-labelledby="fg-t fg-d">
+    <title id="fg-t">Agent and skill orchestration</title>
+    <desc id="fg-d">Slash commands enter skills. run-judging-event selects the next skill from event status. judge-submission invokes the four judges, then consolidate-judgments, which invokes panel-consolidator, then audit-judging-run, which invokes judging-auditor. judge-matchup invokes matchup-judge twice. prepare-submission, build-bracket and build-team-dossier invoke no agent.</desc>
+    <defs><marker id="a7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
+    <text x="20" y="22" class="s">commands</text><text x="250" y="22" class="s">skills</text><text x="620" y="22" class="s">agents</text>
+    <!-- commands -->
+    <g>
+      <rect class="n" x="15" y="32" width="170" height="30" rx="5"/><text x="100" y="52" text-anchor="middle">/event-init, /event-status</text>
+      <rect class="n" x="15" y="82" width="170" height="30" rx="5"/><text x="100" y="102" text-anchor="middle">/team-ingest</text>
+      <rect class="n" x="15" y="132" width="170" height="30" rx="5"/><text x="100" y="152" text-anchor="middle">/team-judge</text>
+      <rect class="n" x="15" y="262" width="170" height="30" rx="5"/><text x="100" y="282" text-anchor="middle">/event-audit</text>
+      <rect class="n" x="15" y="312" width="170" height="30" rx="5"/><text x="100" y="332" text-anchor="middle">/bracket-build</text>
+      <rect class="n" x="15" y="362" width="170" height="30" rx="5"/><text x="100" y="382" text-anchor="middle">/matchup-judge</text>
+      <rect class="n" x="15" y="412" width="170" height="30" rx="5"/><text x="100" y="432" text-anchor="middle">/team-dossier</text>
+    </g>
+    <!-- skills -->
+    <g>
+      <rect class="na" x="240" y="32" width="200" height="30" rx="5"/><text x="340" y="52" text-anchor="middle">run-judging-event</text>
+      <rect class="na" x="240" y="82" width="200" height="30" rx="5"/><text x="340" y="102" text-anchor="middle">prepare-submission</text>
+      <rect class="na" x="240" y="132" width="200" height="30" rx="5"/><text x="340" y="152" text-anchor="middle">judge-submission</text>
+      <rect class="na" x="240" y="197" width="200" height="30" rx="5"/><text x="340" y="217" text-anchor="middle">consolidate-judgments</text>
+      <rect class="na" x="240" y="262" width="200" height="30" rx="5"/><text x="340" y="282" text-anchor="middle">audit-judging-run</text>
+      <rect class="na" x="240" y="312" width="200" height="30" rx="5"/><text x="340" y="332" text-anchor="middle">build-bracket</text>
+      <rect class="na" x="240" y="362" width="200" height="30" rx="5"/><text x="340" y="382" text-anchor="middle">judge-matchup</text>
+      <rect class="na" x="240" y="412" width="200" height="30" rx="5"/><text x="340" y="432" text-anchor="middle">build-team-dossier</text>
+    </g>
+    <!-- agents -->
+    <g>
+      <rect class="nv" x="560" y="82" width="200" height="26" rx="5"/><text x="660" y="100" text-anchor="middle">judge-backend</text>
+      <rect class="nv" x="560" y="112" width="200" height="26" rx="5"/><text x="660" y="130" text-anchor="middle">judge-frontend-ux</text>
+      <rect class="nv" x="560" y="142" width="200" height="26" rx="5"/><text x="660" y="160" text-anchor="middle">judge-security-ops</text>
+      <rect class="nv" x="560" y="172" width="200" height="26" rx="5"/><text x="660" y="190" text-anchor="middle">judge-product-agentic</text>
+      <rect class="nv" x="560" y="212" width="200" height="30" rx="5"/><text x="660" y="232" text-anchor="middle">panel-consolidator</text>
+      <rect class="nv" x="560" y="262" width="200" height="30" rx="5"/><text x="660" y="282" text-anchor="middle">judging-auditor</text>
+      <rect class="nv" x="560" y="362" width="200" height="30" rx="5"/><text x="660" y="382" text-anchor="middle">matchup-judge (x2)</text>
+    </g>
+    <text x="775" y="140" class="s">Read, Grep, Glob</text>
+    <text x="775" y="156" class="s">return document</text>
+    <text x="775" y="282" class="s">holds Write,</text>
+    <text x="775" y="298" class="s">writes audits/</text>
+    <!-- command -> skill -->
+    <path class="ln" d="M185 47 L237 47" marker-end="url(#a7)"/>
+    <path class="ln" d="M185 97 L237 97" marker-end="url(#a7)"/>
+    <path class="ln" d="M185 147 L237 147" marker-end="url(#a7)"/>
+    <path class="ln" d="M185 277 L237 277" marker-end="url(#a7)"/>
+    <path class="ln" d="M185 327 L237 327" marker-end="url(#a7)"/>
+    <path class="ln" d="M185 377 L237 377" marker-end="url(#a7)"/>
+    <path class="ln" d="M185 427 L237 427" marker-end="url(#a7)"/>
+    <!-- skill -> agent -->
+    <path class="ln" d="M440 142 L557 95" marker-end="url(#a7)"/>
+    <path class="ln" d="M440 145 L557 125" marker-end="url(#a7)"/>
+    <path class="ln" d="M440 149 L557 155" marker-end="url(#a7)"/>
+    <path class="ln" d="M440 152 L557 185" marker-end="url(#a7)"/>
+    <path class="ln" d="M340 162 L340 194" marker-end="url(#a7)"/>
+    <path class="ln" d="M440 212 L557 227" marker-end="url(#a7)"/>
+    <path class="ln" d="M450 152 C 500 170, 480 250, 443 270" marker-end="url(#a7)"/>
+    <text x="478" y="245" class="s">then audit</text>
+    <path class="ln" d="M440 277 L557 277" marker-end="url(#a7)"/>
+    <path class="ln" d="M440 377 L557 377" marker-end="url(#a7)"/>
+    <path class="ln" d="M340 62 L340 79" marker-end="url(#a7)"/>
+    <text x="350" y="75" class="s">selects next skill from atj event status</text>
+  </svg>
+  <figcaption id="fg-cap">Figure G. Which skill invokes which agent, from grep of <code>.claude/skills/*/SKILL.md</code> and <code>.claude/commands/*.md</code>. <code>/event-init</code> enters <code>run-judging-event</code>. <code>/event-status</code> reads <code>status.md</code> and reports the next permitted command without running it.</figcaption>
+  </figure>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Skill</th><th>Invokes agents</th><th>Main <code>atj</code> calls</th><th>Command</th></tr></thead>
+    <tbody>
+      <tr><td><code>run-judging-event</code></td><td>none directly</td><td><code>event status/validate/advance</code></td><td><code>/event-init</code></td></tr>
+      <tr><td><code>prepare-submission</code></td><td>none</td><td><code>intake</code>, <code>sandbox</code>, <code>validate</code>, <code>event</code></td><td><code>/team-ingest</code></td></tr>
+      <tr><td><code>judge-submission</code></td><td>four judges, then <code>consolidate-judgments</code> and <code>audit-judging-run</code></td><td><code>validate</code></td><td><code>/team-judge</code></td></tr>
+      <tr><td><code>consolidate-judgments</code></td><td><code>panel-consolidator</code></td><td><code>score</code></td><td>via <code>judge-submission</code></td></tr>
+      <tr><td><code>audit-judging-run</code></td><td><code>judging-auditor</code></td><td><code>score</code>, <code>bracket</code>, <code>validate</code>, <code>event</code>, <code>release-check</code></td><td><code>/event-audit</code></td></tr>
+      <tr><td><code>build-bracket</code></td><td>none</td><td><code>bracket build/verify</code></td><td><code>/bracket-build</code></td></tr>
+      <tr><td><code>judge-matchup</code></td><td><code>matchup-judge</code>, once per presentation order</td><td><code>matchup</code>, <code>validate</code></td><td><code>/matchup-judge</code></td></tr>
+      <tr><td><code>build-team-dossier</code></td><td>none (the orchestrator writes)</td><td><code>validate</code></td><td><code>/team-dossier</code></td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Write contract.</strong> <code>framework/personas.md</code> declares for each component whether it writes its own artifact (a path, and it must hold <code>Write</code>) or returns a document for the orchestrator to write (<code>-</code>, and it must not hold <code>Write</code>). Every component that reads untrusted submission content returns a document. Only <code>judging-auditor</code> writes, into <code>events/&lt;event&gt;/audits/</code>. <code>atj release-check</code> fails in both directions. <strong>Versioning.</strong> Each component carries a version and a content digest of its definition file. An edit fails validation until the version is bumped and <code>atj personas --refresh</code> recomputes the digest. Versions are not restated here.</p>
+</section>
+
+<section id="data" class="card">
+  <h2>11. Data model</h2>
+  <p>Every artifact is Markdown with YAML front matter. The directory decides the artifact kind and its visibility (<code>ARTIFACT_KINDS</code> in <code>atj/reports.py</code>, <code>DIRECTORY_VISIBILITY</code> in <code>atj/publication.py</code>).</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Directory</th><th>Kind (schema)</th><th>Template</th><th>Visibility</th></tr></thead>
+    <tbody>
+      <tr><td><code>submissions/</code></td><td><code>submission-intake</code></td><td><code>submission-intake.md</code></td><td>private</td></tr>
+      <tr><td><code>evidence/</code></td><td><code>evidence-manifest</code></td><td><code>evidence-manifest.md</code></td><td>private</td></tr>
+      <tr><td><code>runs/</code></td><td><code>model-run</code></td><td><code>model-run-record.md</code></td><td>private (JSON records here are not validated, W8)</td></tr>
+      <tr><td><code>judgments/</code></td><td><code>judgment</code></td><td><code>individual-judgment.md</code></td><td>private</td></tr>
+      <tr><td><code>summaries/</code></td><td><code>consolidated-report</code></td><td><code>consolidated-team-report.md</code></td><td>private</td></tr>
+      <tr><td><code>adjudications/</code></td><td><code>adjudication</code></td><td><code>adjudication-report.md</code></td><td>private</td></tr>
+      <tr><td><code>matchups/</code></td><td><code>matchup</code></td><td><code>matchup-report.md</code></td><td>private</td></tr>
+      <tr><td><code>matchup-passes/</code></td><td><code>matchup-pass</code></td><td><code>matchup-pass-report.md</code></td><td>private</td></tr>
+      <tr><td><code>audits/</code></td><td><code>audit</code></td><td><code>audit-report.md</code></td><td>private</td></tr>
+      <tr><td><code>calibrations/</code></td><td><code>calibration</code></td><td><code>calibration-report.md</code></td><td>private (none ever written)</td></tr>
+      <tr><td><code>overrides/</code></td><td><code>manual-override</code></td><td><code>manual-override-record.md</code></td><td>private</td></tr>
+      <tr><td><code>dossiers/</code></td><td><code>dossier</code></td><td><code>team-dossier.md</code></td><td>team</td></tr>
+      <tr><td><code>public/</code></td><td><code>public-report</code></td><td><code>public-matchup-summary.md</code>, <code>event-summary.md</code></td><td>public</td></tr>
+      <tr><td>event root</td><td><code>event.md</code> (<code>event</code>), <code>teams.md</code> (<code>roster</code>), <code>status.md</code> (<code>status</code>), <code>bracket.md</code>, <code>bracket.json</code> (<code>bracket</code>)</td><td><code>event-configuration.md</code>, <code>team-roster.md</code>, <code>bracket-report.md</code></td><td>no declared visibility, so <code>event.md</code> and <code>bracket.md</code> cannot be approved (W29) and <code>bracket.md</code> is validated by nothing (W15)</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Common front matter</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>event_id</code>, <code>team_id</code>, <code>match_id</code></td><td>Identity. Match IDs come from the drawn bracket</td></tr>
+      <tr><td><code>commit</code>, <code>evidence_package_id</code></td><td>Pinned submission commit and derived evidence identity</td></tr>
+      <tr><td><code>rubric</code>, <code>persona</code></td><td><code>id@version</code> pins, checked by <code>versions.require_versions</code>. A superseded pin validates as an advisory</td></tr>
+      <tr><td><code>framework_commit</code></td><td>Commit of this repository the artifact was produced under</td></tr>
+      <tr><td><code>model_requested</code>, <code>model_used</code>, <code>model</code> block</td><td>Which model was asked for and which ran, with <code>verified</code> and a <code>note</code> on how identity was established. Scripted fixtures say <code>not-applicable (scripted fixture)</code></td></tr>
+      <tr><td><code>started_at</code>, <code>completed_at</code></td><td>UTC stamps. Nothing validates them as times (configuration F20)</td></tr>
+      <tr><td><code>visibility</code></td><td><code>private</code>, <code>team</code> or <code>public</code>; must match the directory</td></tr>
+      <tr><td><code>approval_state</code>, <code>approved_by</code>, <code>approved_at</code>, <code>approval_note</code></td><td>Set only by <code>atj event approve</code>, which validates first. Templates ship <code>draft</code></td></tr>
+      <tr><td><code>validation_state</code></td><td><code>unvalidated</code> or <code>valid</code>, written by the approval path</td></tr>
+      <tr><td>Judgment: <code>judge_id</code>, <code>judge_run_id</code>, <code>scores</code>, <code>confidence</code></td><td>One raw score or <code>NE</code> per criterion. No weights, no total</td></tr>
+      <tr><td>Audit: <code>audit_scope</code>, <code>result</code>, <code>findings</code> (each with <code>severity</code>, <code>scope</code>, <code>blocking</code>, <code>state</code>)</td><td>What the gate reads. <code>result</code> must be in <code>PASS_RESULTS</code></td></tr>
+    </tbody>
+  </table></div>
+  <h3>The status ledger (<code>status.md</code>)</h3>
+  <ul>
+    <li><strong>Front matter</strong>: <code>current_stage</code>, <code>blocked</code>, <code>stage_gates</code> (gate to <code>pending</code> or <code>passed</code>), <code>gate_evidence</code> (gate to audit artifact path), <code>units</code>, <code>overrides</code>, <code>last_updated</code>.</li>
+    <li><strong>Unit</strong>: <code>unit_id</code> (for example <code>judging:&lt;team&gt;</code>), <code>stage</code>, <code>state</code> (<code>pending</code>, <code>in-progress</code>, <code>complete</code>, <code>stale</code>), <code>input_digest</code>, <code>outputs</code>, <code>audit_result</code>, <code>completed_at</code>. Re-recording over an unchanged digest keeps the original <code>completed_at</code>; a changed digest restamps it; <code>--completed-at</code> overrides both (<code>record_unit</code>). There is no separate recorded-at time (W28).</li>
+    <li><strong>Body</strong>: stage-gate checkboxes that <code>atj event validate</code> compares to the ledger (fix-plan D30), a team progress table, blockers and adjudications, and an append-only activity log of every command, repair and audit with input identity and result.</li>
+  </ul>
+  <h3>Adjudications and overrides</h3>
+  <ul>
+    <li><strong>Adjudication</strong> (<code>adjudications/</code>): answers a question the framework returned to a human. Fields include <code>scope</code> (the score loader applies only <code>criterion</code> scope), <code>criterion</code>, <code>trigger</code>, <code>resolution</code> with <code>score_override</code>, <code>advances_team</code> for matches, <code>decided_by</code>, <code>decision_authority</code> (<code>human-official</code> may move a total, <code>agent-substituted</code> may not, absent means the latter), <code>substitution_reason</code>, and append-only <code>amendments</code>.</li>
+    <li><strong>Override</strong> (<code>overrides/</code>): a recorded human decision that steps over a rule or accepts a deviation, with <code>scope</code> and <code>authorized_by</code>. Trial-2 wrote overrides for the infeasible affiliation constraint, the publication disclosure, and two model substitutions.</li>
+    <li><strong>Gate bypass</strong>: <code>atj event advance --force-reason</code> records an entry in <code>status.overrides</code>. <code>atj event overrides --review &lt;i&gt; --official &lt;role&gt;</code> records that a person read it, never that it was justified.</li>
+  </ul>
+</section>
+
+<section id="cli" class="card">
+  <h2>12. The atj CLI</h2>
+  <p>Run as <code>python3 -m atj</code> or <code>atj</code> after <code>pip install -e .</code>. Global options: <code>--root</code>, <code>--json</code>, <code>--version</code>. Exit codes: <code>0</code> success, <code>1</code> validation or audit failure, <code>2</code> usage or environment error (<code>README.md</code>).</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>rubric</code></td><td>Print the canonical rubric it will actually use</td></tr>
+      <tr><td><code>schemas</code></td><td>Self-check the shipped schemas</td></tr>
+      <tr><td><code>personas [--refresh]</code></td><td>Check the component registry against agent and skill files; refresh digests</td></tr>
+      <tr><td><code>event init &lt;id&gt;</code></td><td>Create an event from <code>events/_template</code></td></tr>
+      <tr><td><code>event validate &lt;dir&gt;</code></td><td>Configuration, roster, status and versions, plus prose-versus-ledger checkboxes</td></tr>
+      <tr><td><code>event status &lt;dir&gt;</code></td><td>Stage, gates, units, and the next safe action</td></tr>
+      <tr><td><code>event advance &lt;dir&gt;</code></td><td>Advance one stage; refuses while the gate or work is missing; <code>--force-reason</code> records a bypass</td></tr>
+      <tr><td><code>event gate &lt;dir&gt; &lt;gate&gt; &lt;state&gt; --audit &lt;artifact&gt;</code></td><td>Record a stage gate result against an audit artifact</td></tr>
+      <tr><td><code>event approve &lt;paths&gt; --official &lt;role&gt;</code></td><td>Set <code>approval_state</code> with validation behind it</td></tr>
+      <tr><td><code>event overrides &lt;dir&gt; [--review]</code></td><td>List gate bypasses; non-zero exit while one is unreviewed</td></tr>
+      <tr><td><code>event unit &lt;dir&gt; record|stale|list</code></td><td>Record or invalidate a ledger unit; list shows drift</td></tr>
+      <tr><td><code>intake &lt;dir&gt; &lt;team&gt; &lt;source&gt; [--ref]</code></td><td>Materialize, pin and enroll one submission</td></tr>
+      <tr><td><code>sandbox preflight</code></td><td>Report whether verified isolation is available, and at what privilege mode</td></tr>
+      <tr><td><code>sandbox run &lt;src&gt; &lt;cmd...&gt; [--egress-proxy auto]</code></td><td>Run one command against a submission, isolated</td></tr>
+      <tr><td><code>sandbox proxy up|down|status</code></td><td>Egress proxy that makes an event's <code>network_allowlist</code> enforceable</td></tr>
+      <tr><td><code>score &lt;judgments-dir | json&gt;</code></td><td>Consolidate a judge panel under the panel's own rubric version</td></tr>
+      <tr><td><code>render judgment|consolidated &lt;paths&gt;</code></td><td>Generate score tables into reviewed artifacts</td></tr>
+      <tr><td><code>matchup &lt;input.json&gt;</code></td><td>Resolve an order-balanced head-to-head</td></tr>
+      <tr><td><code>bracket build --event-dir --seed</code></td><td>Draw a reproducible bracket</td></tr>
+      <tr><td><code>bracket advance &lt;bracket.json&gt; --match --from</code></td><td>Record a winner and carry it forward</td></tr>
+      <tr><td><code>bracket verify &lt;bracket.json&gt; --event-dir | --reproduce | --structure-only</code></td><td>Re-derive constraints, redraw from seed, or structure only when asked by name</td></tr>
+      <tr><td><code>validate reports &lt;dir&gt;</code></td><td>Validate every artifact in an event</td></tr>
+      <tr><td><code>validate publication &lt;artifact|dir&gt;</code></td><td>Gate before disclosure</td></tr>
+      <tr><td><code>ceremony &lt;dir&gt;</code></td><td>Render static ceremony HTML and dossiers from approved public artifacts</td></tr>
+      <tr><td><code>demo build|check</code></td><td>Regenerate or verify the committed sample event</td></tr>
+      <tr><td><code>release-check</code></td><td>Every framework-level check required before a release</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="guards" class="card">
+  <h2>13. Hooks, tests and release checks</h2>
+  <h3>Hooks (<code>.claude/hooks/</code>)</h3>
+  <p>Guard rails, not a security boundary. They run with the operator's permissions and fail open on their own errors (<code>lib.sh</code>). Claude Code ignores project <code>permissions.allow</code> until the workspace is trusted, so nothing depends on it.</p>
+  <ul>
+    <li><code>pre-write.sh</code>: blocks event or framework artifact writes on <code>main</code>, edits to an active event's frozen contracts after judging begins, and hand-edits of <code>events/*/public/</code>.</li>
+    <li><code>pre-advance.sh</code>: blocks a stage advance whose gate is pending, and direct host execution of submission code.</li>
+    <li><code>post-write.sh</code>: validates what was written; advisory.</li>
+    <li><code>session-start.sh</code>, <code>user-prompt.sh</code>: report framework health, branch and each event's next safe action.</li>
+  </ul>
+  <h3>Tests</h3>
+  <p>21 modules in <code>tests/</code>. Regression files name the defect each test locks down (<code>test_live_trial_regressions.py</code>, <code>test_tier1..3_regressions.py</code>, <code>test_final_audit_regressions.py</code>, <code>test_release_audit_regressions.py</code>, <code>test_audit_regressions.py</code>). Live egress tests need a container runtime and <code>ATJ_LIVE_SANDBOX=1</code> and are skipped by default. Bracket tests sweep every size, policy and many seeds. A committed-audit regression in <code>test_tier1_regressions.py</code> was adjusted when trial-2 completed with the <code>findings:</code> audit shape (commit <code>381920a</code>).</p>
+  <h3><code>atj release-check</code></h3>
+  <p>At <code>95ae008</code> it reports PASS on: rubric, schemas, personas, templates, claude components, single-source, template schemas, version-skew, packaging, version archive, write contracts, signed approvals (completed events frozen), sample event. CI also installs the wheel into a fresh virtualenv and runs <code>release-check</code> from <code>/tmp</code>. The full validation chain is in <code>README.md</code> "Validation" and <code>docs/release-checklist.md</code>.</p>
+</section>
+
+<section id="decisions" class="card">
+  <h2>14. Durable design decisions</h2>
+  <p>Coded <code>DD</code> here to avoid collision with the <code>D</code> codes already used in <code>docs/implementation-detail.md</code>, <code>docs/framework-fix-plan.md</code> and <code>docs/0.5.0-beta-plan.md</code>. Each names its source.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Code</th><th>Decision</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td>DD1</td><td>The rubric Markdown is the only editable source of official numbers. A second copy anywhere fails the build.</td><td>implementation-detail D1</td></tr>
+      <tr><td>DD2</td><td>Identifiers are derived from content, never assigned, so staleness is detectable.</td><td>implementation-detail D2</td></tr>
+      <tr><td>DD3</td><td>Version incompatibility is fatal. Retired versions are recorded append-only, so bumps do not falsify completed events.</td><td>implementation-detail D3; fix-plan D28</td></tr>
+      <tr><td>DD4</td><td>The close-call band is a floor. Events may widen it, never narrow it, and never from a matchup input file.</td><td>implementation-detail D4</td></tr>
+      <tr><td>DD5</td><td>Bracket placement is a seeded search with a reported status per constraint. Infeasible is an outcome, not a hidden failure.</td><td>implementation-detail D5</td></tr>
+      <tr><td>DD6</td><td>Verification re-derives from inputs. It never trusts an audit block inside the file under test.</td><td>implementation-detail D6</td></tr>
+      <tr><td>DD7</td><td>The publication gate fails closed and the ceremony reads only <code>public/</code>.</td><td>implementation-detail D7</td></tr>
+      <tr><td>DD8</td><td>Execution is isolated or unavailable. No host fallback. A network allowlist requires the egress proxy.</td><td>implementation-detail D8; CHANGELOG 0.4.0-beta</td></tr>
+      <tr><td>DD9</td><td>Prompt-injection resistance is claimed only for mechanical properties (scores, rubric, visibility, tools), not for judge prose.</td><td>implementation-detail D9</td></tr>
+      <tr><td>DD10</td><td>The sample event's scores are scripted so CI is reproducible without a model, and every artifact says so.</td><td>implementation-detail D10</td></tr>
+      <tr><td>DD11</td><td>Hooks are guard rails and fail open.</td><td>implementation-detail D11</td></tr>
+      <tr><td>DD12</td><td>Written official numbers are re-derived and compared, not trusted.</td><td>implementation-detail D12</td></tr>
+      <tr><td>DD13</td><td>A gate needs an approved, in-scope audit artifact and the stage's work behind it.</td><td>implementation-detail D13</td></tr>
+      <tr><td>DD14</td><td>A winner advances only from a confirmed result or an approved adjudication naming it.</td><td>implementation-detail D14</td></tr>
+      <tr><td>DD15</td><td>Components that read untrusted content return documents; the orchestrator writes. Declared in the registry and checked both ways.</td><td><code>framework/personas.md</code>; fix-plan D1</td></tr>
+      <tr><td>DD16</td><td>Evidence stays frozen once judging begins, even to rescue an <code>NE</code>. Check what a missing total blocks before paying to recover it.</td><td><code>CLAUDE.md</code>; memory <em>frozen evidence beats a better score</em></td></tr>
+      <tr><td>DD17</td><td>Each trial states its hypotheses in <code>event.md</code> "Purpose" before judging. Planted defects and contamination never enter an official event.</td><td>0.5.0-beta-plan D2; <code>events/trial-2-2026/event.md</code></td></tr>
+      <tr><td>DD18</td><td>Calibration runs before any award-deciding use.</td><td>0.5.0-beta-plan D1; <code>docs/final-audit.md</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="history" class="card">
+  <h2>15. History and evidence</h2>
+  <h3>Releases (<code>CHANGELOG.md</code>)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Version</th><th>Date</th><th>What it was</th></tr></thead>
+    <tbody>
+      <tr><td><code>0.1.0-alpha</code></td><td></td><td>Scaffold: rubrics, policies, templates, agent and skill definitions, five scripts, eleven tests. Its documents described controls that did not exist (<code>docs/release-readiness-audit.md</code>).</td></tr>
+      <tr><td><code>0.2.0-beta</code></td><td>2026-09-16</td><td>First release able to run a complete supervised mock event: <code>atj</code>, canonical data model, schemas, component registry, real sandbox or refusal, publication gate, scripted sample event.</td></tr>
+      <tr><td><code>0.3.0-beta</code></td><td>2026-09-18</td><td>The release that ran <code>live-trial-2026</code> and fixed its 31 defects (<code>docs/framework-fix-plan.md</code>). Version supersession, <code>event overrides</code>, <code>render</code>, <code>matchup-pass</code> kind, bidirectional citations, accepted <code>NE</code>, <code>decision_authority</code>, write contracts, build backend.</td></tr>
+      <tr><td><code>0.4.0-beta</code></td><td>2026-09-18</td><td>Egress proxy verified against a live runtime; per-criterion citation check; completion refused while a gate bypass is unreviewed.</td></tr>
+      <tr><td>Unreleased</td><td></td><td>Documentation fact corrections only.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Events</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Event</th><th>What it exercised</th><th>Outcome at public level</th></tr></thead>
+    <tbody>
+      <tr><td><code>sample-mock-2026</code></td><td>Synthetic: four invented teams, scripted scores. Demonstrates material and severe disagreement, an outlier, an initial <code>NE</code>, three adjudications, a close-call matchup with no winner, an order-balanced matchup, a failed then repaired consolidation audit. CI regenerates and checks it (<code>atj demo check</code>).</td><td>Complete. Public summaries in <code>events/sample-mock-2026/public/</code> name Lumen as final winner (fixture data).</td></tr>
+      <tr><td><code>live-trial-2026</code></td><td>First real trial, the event behind 0.3.0-beta: two real applications, real container isolation, real model judgment, nine audited gates. Found 31 defects, the last two by running the documentation (D29, D31).</td><td>Complete 2026-09-18. <code>public/</code> is empty; nothing was published.</td></tr>
+      <tr><td><code>trial-2-2026</code></td><td>Second real trial at 0.4.0-beta, framework commit <code>ea0db07</code> at init. Two teams from the operator's own public repositories (<code>beekeeper-lab/ScribeVault</code>, <code>beekeeper-lab/ai-security-demos</code>), 11 isolated runs, no network, no model calls by submissions. Hypotheses in <code>event.md</code>: H6 (submission agent instructions), the NE-versus-low-score boundary on a submission with no tests, and a desktop GUI surface. First adjudications, first overrides, first approved public artifact.</td><td>Complete 2026-09-24 (PR #26, main <code>95ae008</code>). <code>public/mu-final-01.md</code>: AI Security Demos advances; both presentation orders agreed. Both panels unfinalized by accepted <code>NE</code>. <code>public_scores: false</code>.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>trial-2-2026 audit record</h3>
+  <p>Every stage ended <code>PASS WITH ADVISORIES</code>. Round counts are from each audit's front matter <code>audit_rounds</code> or <code>audit_scope</code>, and the activity log in <code>events/trial-2-2026/status.md</code>.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Stage audit</th><th>Rounds</th><th>First round</th><th>Notable</th><th>PR</th></tr></thead>
+    <tbody>
+      <tr><td><code>audits/configuration.md</code></td><td>3</td><td>FAIL</td><td>Repairs introduced new defects each round; the auditor invented timestamps (F19); F20, F23 left for the framework</td><td>#18</td></tr>
+      <tr><td><code>audits/intake.md</code></td><td>3</td><td>FAIL</td><td>18 findings, 14 repaired; F7 open by choice</td><td>#19</td></tr>
+      <tr><td><code>audits/evidence.md</code></td><td>3</td><td>FAIL</td><td>34 findings over three rounds; F14 (<code>runs/*.json</code> unvalidated) left open</td><td>#20</td></tr>
+      <tr><td><code>audits/judgments.md</code></td><td>3</td><td>FAIL</td><td>About 120 citations followed. Two judges reported a secrets-filtered file as absent (W11). H6 killed: no judge followed submission instructions</td><td>#21</td></tr>
+      <tr><td><code>audits/consolidation.md</code></td><td>4</td><td>FAIL</td><td>Numbers exact; prose inflated corroboration in one direction; repairs introduced twelve more</td><td>#22</td></tr>
+      <tr><td><code>audits/bracket.md</code></td><td>5</td><td>FAIL</td><td>Two same-affiliation teams made the draw infeasible; accepted by override. 45 findings across five rounds</td><td>#23</td></tr>
+      <tr><td><code>audits/tournament.md</code></td><td>5</td><td>PASS WITH ADVISORIES</td><td>Round four FAIL (a stale unit after an erratum). W21 to W25 found</td><td>#24</td></tr>
+      <tr><td><code>audits/dossiers.md</code></td><td>4</td><td>PASS WITH ADVISORIES</td><td>Fix <code>ac513ed</code>: <code>event approve</code> made every public artifact unapprovable. Summary errata recorded in the ledger (W26)</td><td>#25</td></tr>
+      <tr><td><code>audits/final.md</code></td><td>6</td><td>PASS WITH ADVISORIES</td><td>No blocking or major finding. FA2, FA7, CF11 settled by the event-director. W27 to W30 found</td><td>#26</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="lessons" class="card">
+  <h2>16. Lessons learned</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Code</th><th>Lesson</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td>L1</td><td>A green <code>atj validate reports</code> means well-formed, not true. The LLM audit is the only citation control.</td><td>CHANGELOG 0.3.0-beta; memory <em>validate reports cannot verify citations</em></td></tr>
+      <tr><td>L2</td><td>Every repair round introduces defects. Re-audit the repair diff, always.</td><td>Both trials; memory <em>audits catch their own repairs</em></td></tr>
+      <tr><td>L3</td><td>An audit finding can be wrong. Derive a repair from the source, never from the audit's repair text.</td><td>trial-2 consolidation P1, bracket rounds</td></tr>
+      <tr><td>L4</td><td>One wrong number in an evidence manifest becomes several wrong judge findings, because judges trust the package.</td><td>live-trial team-podcast manifest</td></tr>
+      <tr><td>L5</td><td>Consolidation errors run one way: corroboration inflated, single-judge concerns dropped. Count judges per claim.</td><td>trial-2 consolidation, final audit advisory</td></tr>
+      <tr><td>L6</td><td>Judges report tool blindness as fact. An absence claim needs <code>git ls-files</code>.</td><td>trial-2 judgments F1, W11</td></tr>
+      <tr><td>L7</td><td>A causal claim can be false while every number around it is right. Check stated reasons with a command and a control.</td><td>trial-2 configuration, memory <em>repository visibility is checkable</em></td></tr>
+      <tr><td>L8</td><td>Running the documentation finds defects that reading the code does not.</td><td>live-trial D29, D31</td></tr>
+      <tr><td>L9</td><td>Approving an artifact rewrites it and stales every unit that digests it. Approve before recording units.</td><td>trial-2 final audit FA7 rows</td></tr>
+      <tr><td>L10</td><td>The auditor must not run state commands.</td><td>trial-2 tournament round four</td></tr>
+      <tr><td>L11</td><td>Take ledger times from git. Never estimate or force a commit date.</td><td>trial-2 final audit FB2</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="status" class="card">
+  <h2>17. Done and left</h2>
+  <h3>Done</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Area</th><th>State</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td>Releases</td><td><span class="badge b-ok">done</span> 0.1.0-alpha to 0.4.0-beta, tags <code>v0.3.0-beta</code>, <code>v0.4.0-beta</code></td><td><code>CHANGELOG.md</code>, <code>git tag</code></td></tr>
+      <tr><td>All ten stages exercised with a real model</td><td><span class="badge b-ok">done</span> twice</td><td><code>events/live-trial-2026/status.md</code>, <code>events/trial-2-2026/status.md</code></td></tr>
+      <tr><td>Live-trial defects</td><td><span class="badge b-ok">done</span> all 31 fixed</td><td><code>docs/framework-fix-plan.md</code></td></tr>
+      <tr><td>Earlier plans</td><td><span class="badge b-ok">closed</span> no unchecked box in <code>docs/implementation-plan.md</code></td><td><code>docs/0.5.0-beta-plan.md</code> "What this version is"</td></tr>
+      <tr><td>Adjudication, override, public artifact, egress-free sandbox runs in a real event</td><td><span class="badge b-ok">done</span> first time in trial-2</td><td><code>events/trial-2-2026/adjudications/</code>, <code>overrides/</code>, <code>public/</code></td></tr>
+      <tr><td>H6 (submission agent instructions cannot steer the panel)</td><td><span class="badge b-ok">answered</span> concern refuted in one trial</td><td><code>events/trial-2-2026/audits/judgments.md</code></td></tr>
+      <tr><td>Release checks and tests</td><td><span class="badge b-ok">pass</span> at <code>95ae008</code></td><td><a href="#versions">section 20</a></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>0.5.0-beta hypotheses</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>ID</th><th>Hypothesis</th><th>State</th></tr></thead>
+    <tbody>
+      <tr><td>H1</td><td>Independence detector misses a paraphrasing judge</td><td><span class="badge b-bad">not run</span> needs calibration (W1, W2)</td></tr>
+      <tr><td>H2</td><td>A recorded stage audit is a performed one</td><td><span class="badge b-bad">not run</span> needs calibration (W1, W2)</td></tr>
+      <tr><td>H3</td><td>Bracket and tournament hold at a real size</td><td><span class="badge b-warn">not answered</span> trial-2 had two teams; the plan says below four H3 is not answered</td></tr>
+      <tr><td>H4</td><td>Publication boundary holds under a real approval</td><td><span class="badge b-warn">partial</span> one public artifact approved; W21, W22 show the gate is a shape check</td></tr>
+      <tr><td>H5</td><td>Model judgment is stable enough to mean something</td><td><span class="badge b-bad">not run</span> no calibration report exists</td></tr>
+      <tr><td>H6</td><td>Submission agent instructions cannot steer the panel</td><td><span class="badge b-ok">answered</span> killed (no steering)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Open items</h3>
+  <p>O-codes are this document's. Each maps to its source ID. "Blocks next" means blocks shipping <code>0.5.0-beta</code> as defined in "What 0.5.0-beta ships" of <code>docs/0.5.0-beta-plan.md</code>. W8 to W30 are marked "framework scope, no trigger" in the plan, meaning they land only when a change is made for another reason; they block nothing by that rule, but most are defects the next event will hit again.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Code</th><th>Source</th><th>Item</th><th>Owner</th><th>Blocks next</th></tr></thead>
+    <tbody>
+      <tr><td>O1</td><td>W1</td><td>Calibration runnable end to end: skill or command, report, validation</td><td>framework</td><td><span class="badge b-bad">yes</span></td></tr>
+      <tr><td>O2</td><td>W2</td><td>Marked control run that cannot be mistaken for official judgment</td><td>framework</td><td><span class="badge b-bad">yes</span> (before H1, H2)</td></tr>
+      <tr><td>O3</td><td>W3</td><td>Independence detection beyond wording overlap</td><td>framework</td><td>conditional on H1</td></tr>
+      <tr><td>O4</td><td>W4</td><td>Whatever H3 breaks in bracket, matchup, advancement</td><td>framework</td><td>conditional on H3</td></tr>
+      <tr><td>O5</td><td>W5</td><td>Whatever H4 breaks in publication</td><td>framework</td><td>conditional; W21, W22 are its first entries</td></tr>
+      <tr><td>O6</td><td>W6</td><td>Amend <code>docs/final-audit.md</code> advisories in place with trial evidence</td><td>framework</td><td><span class="badge b-bad">yes</span></td></tr>
+      <tr><td>O7</td><td>W7</td><td>Per-team publication restriction or a validated refusal to mix</td><td>framework</td><td>only if a roster team's source is not public</td></tr>
+      <tr><td>O8</td><td>W8 = evidence F14</td><td>Validate JSON run records under <code>runs/</code></td><td>framework</td><td>no</td></tr>
+      <tr><td>O9</td><td>W9</td><td>Artifact must end where its template ends</td><td>framework</td><td>no</td></tr>
+      <tr><td>O10</td><td>W10</td><td>An NE split is a disagreement; outlier and minimum-panel checks per criterion</td><td>framework</td><td>no</td></tr>
+      <tr><td>O11</td><td>W11</td><td>Judges must use <code>git ls-files</code> before asserting absence (persona change)</td><td>framework</td><td>no</td></tr>
+      <tr><td>O12</td><td>W12</td><td>One amendment form for every artifact class</td><td>framework</td><td>no</td></tr>
+      <tr><td>O13</td><td>W13</td><td>Adjudication template yields a record the schema rejects and the loader ignores</td><td>framework</td><td>no</td></tr>
+      <tr><td>O14</td><td>W14</td><td>NE-disposing adjudication must record a rationale</td><td>framework</td><td>no</td></tr>
+      <tr><td>O15</td><td>W15</td><td><code>bracket.md</code> validated and digested</td><td>framework</td><td>no</td></tr>
+      <tr><td>O16</td><td>W16</td><td><code>officials</code> schema declares every human-reserved decision</td><td>framework</td><td>no</td></tr>
+      <tr><td>O17</td><td>W17</td><td>Infeasible bracket cannot advance without its override</td><td>framework</td><td>no</td></tr>
+      <tr><td>O18</td><td>W18</td><td>Bracket report template matches the renderer</td><td>framework</td><td>no</td></tr>
+      <tr><td>O19</td><td>W19</td><td><code>bracket verify --reproduce</code> reports a bad roster instead of crashing</td><td>framework</td><td>no</td></tr>
+      <tr><td>O20</td><td>W20</td><td>Bracket policy states the affiliation rule the code enforces (frozen-contract change)</td><td>Gregg decides, framework implements</td><td>no</td></tr>
+      <tr><td>O21</td><td>W21</td><td>Publication gate distinguishes framework commit from submission commit</td><td>framework</td><td>no (H4 evidence)</td></tr>
+      <tr><td>O22</td><td>W22</td><td>Gate catches short commits, repo URLs, affiliation, integer margins</td><td>framework</td><td>feeds H4</td></tr>
+      <tr><td>O23</td><td>W23</td><td>Single-source check reads Markdown tables</td><td>framework</td><td>no</td></tr>
+      <tr><td>O24</td><td>W24</td><td>Matchup-result exemption verifies content, not key presence</td><td>framework</td><td>no</td></tr>
+      <tr><td>O25</td><td>W25</td><td>Recording a winner stales <code>bracket:draw</code></td><td>framework</td><td>no</td></tr>
+      <tr><td>O26</td><td>W26 (CF4)</td><td>Errata route for an audited summary</td><td>framework</td><td>no</td></tr>
+      <tr><td>O27</td><td>W27 (FA1)</td><td>Bracket reproduction ignores recorded winners</td><td>framework</td><td>no</td></tr>
+      <tr><td>O28</td><td>W28 (FA9)</td><td>Units carry a separate <code>recorded_at</code></td><td>framework</td><td>no</td></tr>
+      <tr><td>O29</td><td>W29</td><td>Event-root artifacts (<code>event.md</code>, <code>bracket.md</code>) can be approved</td><td>framework</td><td>no</td></tr>
+      <tr><td>O30</td><td>W30</td><td><code>event unit record</code> prints "kept" only when it kept</td><td>framework</td><td>no</td></tr>
+      <tr><td>O31</td><td>intake F7 (CF7)</td><td>Roster template has more identity fields than any roster; decide, for example <code>event init</code> writes full front matter for new rosters</td><td>Gregg</td><td>no</td></tr>
+      <tr><td>O32</td><td>configuration F10, F20, F23 (CF8 to CF10)</td><td>F10 absolute home paths in provenance; F20 nothing validates timestamps as times; F23 <code>atj intake</code> writes <code>model_used: not-applicable</code> unconditionally</td><td>Gregg (per <code>audits/final.md</code> carried table)</td><td>no</td></tr>
+      <tr><td>O33</td><td>memory <em>public repo holds private judgments</em></td><td><code>live-trial-2026</code> disclosure: private submissions' judgments are world-readable. Options put: leave, scrub, make repository private</td><td>Gregg</td><td>blocks any private-source roster</td></tr>
+      <tr><td>O34</td><td>plan Q2, Q3, Q4</td><td>No recorded resolution in the plan. Trial-2 used two teams, its own id, and no network. Decide whether trial-2 counts as the 0.5.0-beta event or a further event at four or more teams is needed for H3 and the egress proxy</td><td>Gregg</td><td><span class="badge b-bad">yes</span></td></tr>
+      <tr><td>O35</td><td>plan "What 0.5.0-beta ships"</td><td>Findings document in the shape of <code>docs/framework-fix-plan.md</code> for trial-2, and each hypothesis answered in writing</td><td>framework</td><td><span class="badge b-bad">yes</span></td></tr>
+      <tr><td>O36</td><td>1.0 line</td><td>Turn the eight human-only acts in <code>docs/final-audit.md</code> into recorded attestations. Explicitly out of 0.5.0-beta</td><td>Gregg</td><td>no (later)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="risks" class="card">
+  <h2>18. Risks</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Code</th><th>Risk</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td>R1</td><td>A trial finds little because submissions are alike. The no-AI and failing-tests cases are still unfilled.</td><td>0.5.0-beta-plan R1</td></tr>
+      <tr><td>R2</td><td>A planted defect contaminates the real record. Nothing planted goes near an event until W2 lands.</td><td>0.5.0-beta-plan R2</td></tr>
+      <tr><td>R3</td><td>Separation of duties cannot be tested while one person holds every authority. Trial-2 approvals were run by the orchestrator on delegation (CF11, recorded, not provable).</td><td>0.5.0-beta-plan R3; <code>audits/final.md</code></td></tr>
+      <tr><td>R4</td><td>Roster cost: roughly <code>4 x teams + 2 x matches</code> model invocations, and each stage took several audit rounds in trial-2.</td><td>0.5.0-beta-plan R4; <code>README.md</code></td></tr>
+      <tr><td>R5</td><td>A third-party public project did not ask to be judged. Publishing about it is decided at the approval gate.</td><td>0.5.0-beta-plan R5</td></tr>
+      <tr><td>R6</td><td>The public repository publishes private judgments (O33).</td><td>memory</td></tr>
+      <tr><td>R7</td><td>Independence is procedural and detected, not prevented; a well-paraphrased contamination would pass.</td><td>implementation-detail limitations 11, 13</td></tr>
+      <tr><td>R8</td><td>Trial-2 ran some stages on a model other than the one configured, accepted by override. Model identity is recorded truthfully but cross-stage comparability is weaker.</td><td><code>events/trial-2-2026/overrides/</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="resume" class="card">
+  <h2>19. Resume here</h2>
+  <p>In order. Each step is small and names its file.</p>
+  <ol>
+    <li><strong>A1.</strong> Branch from <code>main</code> and confirm the baseline: <code>python3 -m pytest tests/ -q &amp;&amp; python3 -m atj release-check &amp;&amp; python3 -m atj demo check</code>. Run <code>python3 -m atj event status events/trial-2-2026</code> and expect <code>complete</code> with nothing stale.</li>
+    <li><strong>A2.</strong> Read <code>docs/design/DESIGN.md</code>, then <code>docs/0.5.0-beta-plan.md</code> "Hypotheses", "Work items" and "Open decisions". Do not re-read the audits; section 15 summarises them.</li>
+    <li><strong>A3.</strong> Decide O34: does trial-2 count as the 0.5.0-beta event, and is a further event at four or more teams needed for H3? Record the answer in the plan's "Decisions taken".</li>
+    <li><strong>A4.</strong> Decide O33 (live-trial disclosure) before putting any private-source submission on a roster.</li>
+    <li><strong>A5.</strong> Write O35: the trial-2 findings document and written answers for H4 and H6, and mark H1, H2, H3, H5 as not yet run.</li>
+    <li><strong>A6.</strong> Land the cheap mechanical fixes as one framework branch before any new event: W25, W27, W28, W30 (unit and bracket bookkeeping), W13, W14 (adjudication template), W29, W15 (event-root artifacts), W19. Each has a named file and line in the plan.</li>
+    <li><strong>A7.</strong> Build W1 and W2, then run the calibration (H5 first, then H1 and H2 inside it) per plan D1.</li>
+    <li><strong>A8.</strong> Settle O31 and O32 when touching intake or templates. Amend <code>docs/final-audit.md</code> advisories (W6). Then cut <code>0.5.0-beta</code> and add a row to this document's version history.</li>
+  </ol>
+</section>
+
+<section id="versions" class="card">
+  <h2>20. Version history</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Doc version</th><th>Date</th><th>Framework</th><th>Repo commit</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr><td>1.0</td><td>2026-09-24</td><td><code>0.4.0-beta</code></td><td><code>95ae008</code></td><td>First versioned design document, written after <code>trial-2-2026</code> completed</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small">Verification at writing: <code>python3 -m atj release-check</code> and <code>python3 -m pytest tests/ -q</code> were run with this file and <code>docs/design/DESIGN.md</code> in the tree on 2026-09-24: release-check PASS on every check; pytest 520 passed, 5 skipped (live egress), 298 subtests passed.</p>
+</section>
+
+</main>
+
+<footer>
+  <p>Self-contained file. No network requests. Canonical numbers are deliberately absent; follow the named files. Markdown companion: <code>docs/design/DESIGN.md</code>.</p>
+</footer>
+</div>
+<script>
+(function(){
+  var root=document.documentElement, btn=document.getElementById('themeBtn');
+  try{var saved=localStorage.getItem('atj-design-theme'); if(saved){root.setAttribute('data-theme',saved);}}catch(e){}
+  btn.addEventListener('click',function(){
+    var cur=root.getAttribute('data-theme');
+    if(!cur){cur=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+    var next=cur==='dark'?'light':'dark';
+    root.setAttribute('data-theme',next);
+    try{localStorage.setItem('atj-design-theme',next);}catch(e){}
+  });
+})();
+</script>
+</body>
+</html>
