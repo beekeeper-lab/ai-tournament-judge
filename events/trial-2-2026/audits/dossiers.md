@@ -14,8 +14,8 @@ model_used: claude-opus-5-5[1m]
 started_at: "2026-09-23T20:38:01Z"
 completed_at: "2026-09-23T20:38:48Z"
 visibility: private
-approval_state: draft
-validation_state: unvalidated
+approval_state: approved
+validation_state: valid
 result: PASS WITH ADVISORIES
 findings:
 - id: DF1
@@ -23,73 +23,76 @@ findings:
   scope: event
   blocking: false
   summary: 'round three. Repaired. The override now cites event.md:23-27 for the four official keys (all event-director, none rules exceptions), quotes event.md:103 "holds all four authorities" exactly, and quotes disagreement-and-adjudication.md:9 exactly. "event-director is the only official this event names" is true: event.md:24-27 name no other official. The repair differs from the round-three repair text and is correct against the source'
-  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:39-46'
-  repair: 'none'
+  artifact: overrides/ovr-trial-2-2026-model-substitution.md:39-46
+  repair: none
   state: repaired
 - id: DF2
   severity: minor
   scope: event
   blocking: false
-  summary: 'round three. Repaired. Four rows added. 20:33:43Z equals round-two completed_at. 20:35:01Z equals the 16a332c commit time. 20:36:51Z equals round-three completed_at. 20:37:33Z equals the override completed_at and precedes the a6569f8 commit (20:37:34Z) by one second. last_updated equals the last row'
-  artifact: 'status.md:4,155-158'
-  repair: 'none'
+  summary: round three. Repaired. Four rows added. 20:33:43Z equals round-two completed_at. 20:35:01Z equals the 16a332c commit time. 20:36:51Z equals round-three completed_at. 20:37:33Z equals the override completed_at and precedes the a6569f8 commit (20:37:34Z) by one second. last_updated equals the last row
+  artifact: status.md:4,155-158
+  repair: none
   state: repaired
 - id: DE1
   severity: minor
   scope: event
   blocking: false
-  summary: 'round two. Repaired, with its remainder closed by DF1'
-  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:39-46'
-  repair: 'none'
+  summary: round two. Repaired, with its remainder closed by DF1
+  artifact: overrides/ovr-trial-2-2026-model-substitution.md:39-46
+  repair: none
   state: repaired
 - id: DEA1
   severity: advisory
   scope: event
   blocking: false
-  summary: 'round two. Still open. The override is draft, so tournament F8 is open, and status.md still reads "F8 closed" at 20:18:32Z'
-  artifact: 'status.md'
-  repair: 'after atj event approve on the override, add a status.md row with that time recording F8 closed'
+  summary: round two. Still open. The override is draft, so tournament F8 is open, and status.md still reads "F8 closed" at 20:18:32Z
+  artifact: status.md
+  repair: after atj event approve on the override, add a status.md row with that time recording F8 closed
   state: open
 - id: DEA2
   severity: advisory
   scope: event
   blocking: false
-  summary: 'round two. Repaired. completed_at moved to 20:37:33Z with the DF1 edit. framework_commit left at c0a55df, and the status.md row at 20:37:33Z says so'
-  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:11,15'
-  repair: 'none'
+  summary: round two. Repaired. completed_at moved to 20:37:33Z with the DF1 edit. framework_commit left at c0a55df, and the status.md row at 20:37:33Z says so
+  artifact: overrides/ovr-trial-2-2026-model-substitution.md:11,15
+  repair: none
   state: repaired
 - id: DEA3
   severity: advisory
   scope: event
   blocking: false
-  summary: 'round two. Accepted. Round-one DO6 miscounted seven run records. There are six and the repair is right'
-  artifact: 'audits/dossiers.md round one DO6; dossiers/team-demos.md:15-20'
-  repair: 'none'
+  summary: round two. Accepted. Round-one DO6 miscounted seven run records. There are six and the repair is right
+  artifact: audits/dossiers.md round one DO6; dossiers/team-demos.md:15-20
+  repair: none
   state: accepted
 - id: DOA2
   severity: advisory
   scope: event
   blocking: false
-  summary: 'round one. Still open. The repository cannot show that a human approved the public summary or will approve the override'
-  artifact: 'public/mu-final-01.md; overrides/ovr-trial-2-2026-model-substitution.md'
-  repair: 'Gregg runs, or confirms in person, each approval'
+  summary: round one. Still open. The repository cannot show that a human approved the public summary or will approve the override
+  artifact: public/mu-final-01.md; overrides/ovr-trial-2-2026-model-substitution.md
+  repair: Gregg runs, or confirms in person, each approval
   state: open
 - id: DOA8
   severity: advisory
   scope: framework
   blocking: false
-  summary: 'round one. Still deferred. docs/0.5.0-beta-plan.md has no errata W-item yet'
-  artifact: 'atj/event.py:936-953,966-974'
-  repair: 'add the W-item in the framework window'
+  summary: round one. Still deferred. docs/0.5.0-beta-plan.md has no errata W-item yet
+  artifact: atj/event.py:936-953,966-974
+  repair: add the W-item in the framework window
   state: deferred
 - id: DGA1
   severity: advisory
   scope: event
   blocking: false
-  summary: 'round four, new, outside the a6569f8 scope. The round-one repair row at 20:30:25Z precedes its commit ef6d656 (20:31:18Z) by 53 seconds. A row may record when the work finished rather than the commit, so this is noted only'
-  artifact: 'status.md:154'
-  repair: 'none required'
+  summary: round four, new, outside the a6569f8 scope. The round-one repair row at 20:30:25Z precedes its commit ef6d656 (20:31:18Z) by 53 seconds. A row may record when the work finished rather than the commit, so this is noted only
+  artifact: status.md:154
+  repair: none required
   state: open
+approved_by: event-director
+approved_at: "2026-09-24T00:14:24Z"
+approval_note: Approval delegated by the event-director in session, 2026-09-23; run by the orchestrator
 ---
 
 # Dossiers Audit, round four

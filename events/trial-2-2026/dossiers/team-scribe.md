@@ -21,8 +21,11 @@ model_used: claude-opus-5-5[1m]
 started_at: "2026-09-23T19:58:15Z"
 completed_at: "2026-09-23T20:01:27Z"
 visibility: team
-approval_state: draft
-validation_state: unvalidated
+approval_state: approved
+validation_state: valid
+approved_by: event-director
+approved_at: "2026-09-24T00:14:24Z"
+approval_note: Approval delegated by the event-director in session, 2026-09-23; run by the orchestrator
 ---
 
 # Team Dossier — ScribeVault

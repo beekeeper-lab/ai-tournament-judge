@@ -14,9 +14,12 @@ model_used: not-applicable
 started_at: "2026-09-23T20:18:07Z"
 completed_at: "2026-09-23T20:37:33Z"
 visibility: private
-approval_state: draft
+approval_state: approved
 validation_state: valid
 authorized_by: event-director
+approved_by: event-director
+approved_at: "2026-09-24T00:14:24Z"
+approval_note: Approval delegated by the event-director in session, 2026-09-23; run by the orchestrator; closes tournament F8
 ---
 
 # Manual Override Record
