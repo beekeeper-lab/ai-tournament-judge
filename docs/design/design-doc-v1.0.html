@@ -99,8 +99,15 @@ footer{color:var(--muted);font-size:.85rem;padding:1rem 0 2rem}
 @media print{
   :root{--bg:#fff;--panel:#fff;--ink:#000;--muted:#333;--border:#999}
   body{background:#fff;font-size:10.5pt}
-  .toc,.toolbar{display:none}
-  section.card,.hero,figure.diagram{border:1px solid #999;page-break-inside:avoid}
+  .toolbar{display:none}
+  section.card,.hero{border:1px solid #999;break-inside:auto}
+  figure.diagram{border:1px solid #999;break-inside:avoid}
+  tr,h2,h3{break-inside:avoid}
+  h2,h3{break-after:avoid}
+  td:first-child,th:first-child{min-width:3.8em}
+  table{table-layout:auto;width:100%}
+  td,th,code{overflow-wrap:anywhere;word-break:break-word}
+  .page{max-width:none}
   a{color:#000}
 }
 </style>
