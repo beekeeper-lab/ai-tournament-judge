@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
 current_stage: final-audit
-last_updated: "2026-09-24T00:14:43Z"
+last_updated: "2026-09-24T03:01:53Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -177,3 +177,5 @@ gate_evidence:
 | 2026-09-24T00:14:24Z | `atj event approve` as event-director on `audits/dossiers.md`, `overrides/ovr-trial-2-2026-model-substitution.md` and both dossiers, run by the orchestrator on the event-director's explicit delegation in session. Closes tournament F8 and DEA1. DOA2 closed by the same delegation, which covers the 20:17:22Z public-summary approval. Units `dossier:team-demos` and `dossier:team-scribe` recorded with `completed_at` 20:30:25Z, the last edit to the dossiers | audits/dossiers.md | dossiers/*.md, overrides/ovr-trial-2-2026-model-substitution.md, status.md | PASS WITH ADVISORIES |
 | 2026-09-24T02:58:32Z | Final event audit, round one, `de797ea`. **PASS WITH ADVISORIES.** 0 blocking, 0 major; FA1-FA4 and CF1-CF3, CF9, CF10 minor; FA5-FA9, CF4-CF8, CF11-CF13 advisory. DO2-DO4 errata verified correct and repeated nowhere. The auditor ran no record, approve, gate or advance command | de797ea | audits/final.md | PASS WITH ADVISORIES |
 | 2026-09-24T02:59:26Z | Final audit repaired, round one. FA3 recorded here without restamping: `:150` (14:53:00Z) sits above `:151` (14:52:44Z), and `:127` is stamped 77 s after its first commit. FA4 tag `trial-2-2026-consolidation-history` on `923ffce`, pushed. CF4 and FA1, FA9 become W26, W27, W28 in `docs/0.5.0-beta-plan.md` | audits/final.md FA1 FA3 FA4 FA9 CF4 | status.md, docs/0.5.0-beta-plan.md | not-audited |
+| 2026-09-24T03:01:42Z | Final audit re-audited, round two, scoped to `de797ea..916a66a`, `93cfb5e`. **PASS WITH ADVISORIES.** FB1 minor (W28 misstated `atj/event.py:831-846`), FB2 minor, FB3 and FB4 advisory. The auditor ran no record, approve, gate or advance command | de797ea..916a66a | audits/final.md | PASS WITH ADVISORIES |
+| 2026-09-24T03:01:53Z | Final audit repaired, round two. FB2 disclosed: the row above `:180` was first stamped 02:59:30Z, 4 s after its commit `574f95c`; the orchestrator restamped it to 02:59:26Z and amended with `GIT_COMMITTER_DATE` forced to 02:59:26Z, force-pushed as `916a66a`, which was in fact made between 02:59:27Z and 02:59:34Z. The row's "without restamping" refers to the FA3 rows, not itself. History is not rewritten again. FB1 W28 restated from source. FB3 `last_updated` bumped. FB4 the tag is now annotated, still on `923ffce` | audits/final.md FB1-FB4 | status.md, docs/0.5.0-beta-plan.md | not-audited |
