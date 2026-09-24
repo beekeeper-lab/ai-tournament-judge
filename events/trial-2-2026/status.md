@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
 current_stage: final-audit
-last_updated: "2026-09-24T03:01:53Z"
+last_updated: "2026-09-24T03:03:25Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -179,3 +179,4 @@ gate_evidence:
 | 2026-09-24T02:59:26Z | Final audit repaired, round one. FA3 recorded here without restamping: `:150` (14:53:00Z) sits above `:151` (14:52:44Z), and `:127` is stamped 77 s after its first commit. FA4 tag `trial-2-2026-consolidation-history` on `923ffce`, pushed. CF4 and FA1, FA9 become W26, W27, W28 in `docs/0.5.0-beta-plan.md` | audits/final.md FA1 FA3 FA4 FA9 CF4 | status.md, docs/0.5.0-beta-plan.md | not-audited |
 | 2026-09-24T03:01:42Z | Final audit re-audited, round two, scoped to `de797ea..916a66a`, `93cfb5e`. **PASS WITH ADVISORIES.** FB1 minor (W28 misstated `atj/event.py:831-846`), FB2 minor, FB3 and FB4 advisory. The auditor ran no record, approve, gate or advance command | de797ea..916a66a | audits/final.md | PASS WITH ADVISORIES |
 | 2026-09-24T03:01:53Z | Final audit repaired, round two. FB2 disclosed: row `:179` was first stamped 02:59:30Z, 4 s after its commit `574f95c`; the orchestrator restamped it to 02:59:26Z and amended with `GIT_COMMITTER_DATE` forced to 02:59:26Z, force-pushed as `916a66a`, which was in fact made between 02:59:27Z and 02:59:34Z. The row's "without restamping" refers to the FA3 rows, not itself. History is not rewritten again. FB1 W28 restated from source. FB3 `last_updated` bumped. FB4 the tag is now annotated, still on `923ffce` | audits/final.md FB1-FB4 | status.md, docs/0.5.0-beta-plan.md | not-audited |
+| 2026-09-24T03:03:25Z | Final audit re-audited, round three, scoped to `93cfb5e..957bc66`. **PASS WITH ADVISORIES.** FB1-FB4 repaired; FC1 minor (W28's evidence clause misread `:161,177`), FC2 advisory. Repaired in the same commit: W28 names `matchup:mu-final-01` and `bracket:draw` as the re-records (`:161,164`) and the dossier units as first recordings (`:177`); `last_updated` bumped | 93cfb5e..957bc66 | audits/final.md, status.md, docs/0.5.0-beta-plan.md | PASS WITH ADVISORIES |
