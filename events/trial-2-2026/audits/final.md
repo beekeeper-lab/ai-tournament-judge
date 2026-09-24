@@ -11,8 +11,8 @@ persona: judging-auditor@1.1.0
 framework_commit: 06b0d5bf9738c06b249053bc8907c75a0c2d1f94
 model_requested: claude-opus-5
 model_used: claude-opus-5-5[1m]
-started_at: '2026-09-24T02:48:05Z'
-completed_at: '2026-09-24T12:18:34Z'
+started_at: "2026-09-24T02:48:05Z"
+completed_at: "2026-09-24T12:18:34Z"
 visibility: private
 approval_state: approved
 validation_state: valid
@@ -291,8 +291,8 @@ findings:
   repair: None required
   state: accepted
 approved_by: event-director
-approved_at: '2026-09-24T12:18:00Z'
-approval_note: Re-approved after round five on the event-director's delegation, 2026-09-24
+approved_at: "2026-09-24T12:19:20Z"
+approval_note: Re-approved after round six on the event-director's delegation, 2026-09-24
 ---
 
 # Final Event Audit: the complete judging record, first pass

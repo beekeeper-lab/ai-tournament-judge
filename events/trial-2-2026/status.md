@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
-current_stage: final-audit
-last_updated: "2026-09-24T12:18:10Z"
+current_stage: complete
+last_updated: "2026-09-24T12:19:29Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -50,11 +50,11 @@ units:
 - unit_id: final:audit
   stage: final-audit
   state: complete
-  input_digest: 08bdbb01b4dab6b8
+  input_digest: 03578616b5ba5b2b
   outputs:
   - audits/final.md
   audit_result: PASS WITH ADVISORIES
-  completed_at: "2026-09-24T12:17:58Z"
+  completed_at: "2026-09-24T12:19:19Z"
 gate_evidence:
   configuration-audited: audits/configuration.md
   roster-frozen: audits/intake.md
@@ -80,7 +80,7 @@ gate_evidence:
 - [x] Tournament complete
 - [x] All team dossiers approved
 - [x] Final event audit passed
-- [ ] Event marked complete
+- [x] Event marked complete
 ## Team progress
 
 | Team ID | Intake | Evidence | Four judgments | Consolidated | Audited | Dossier |
@@ -196,3 +196,6 @@ gate_evidence:
 | 2026-09-24T12:13:48Z | The FA7 approvals changed the digests of `bracket:draw`, `matchup:mu-final-01` and both dossier units, which went stale. Re-recorded without `--completed-at`, so each carries the clock time of this re-record (12:13:47Z-12:13:48Z) in place of its work time: `bracket:draw` 2026-09-23T01:55:10Z, `matchup:mu-final-01` 2026-09-23T17:26:17Z, dossiers 2026-09-23T20:30:25Z. The tool printed "completed_at kept … the inputs did not change" for all four, which is false: W30. W29 and W30 added to `docs/0.5.0-beta-plan.md` | status.md units | status.md, docs/0.5.0-beta-plan.md | not-audited |
 | 2026-09-24T12:17:58Z | Final audit re-audited, round five, scoped to `e44385b..58cd942`, `61b3a0d`. **PASS WITH ADVISORIES.** FA2 and FA7 repaired, CF11 accepted as recorded, not proven; FE1 minor, FE2-FE4 advisory. The auditor ran no record, approve, gate or advance command | e44385b..58cd942 | audits/final.md | PASS WITH ADVISORIES |
 | 2026-09-24T12:18:00Z | FE4: `atj event approve` on `audits/final.md` as event-director at 12:18:00Z, then unit `final:audit` recorded (digest `08bdbb01`, `completed_at` 12:17:58Z, the round-five report commit) and gate `final-audit-passed` re-set against the round-five text. FE1: the four units re-recorded with `--completed-at` restoring their work times, `bracket:draw` 2026-09-23T01:55:10Z, `matchup:mu-final-01` 17:26:17Z, both dossiers 20:30:25Z; digests unchanged from 12:13:48Z. Values checked in the front matter, not the tool message (W30). Run by the orchestrator on the event-director's delegation | audits/final.md FE1 FE4 | status.md | not-audited |
+| 2026-09-24T12:19:19Z | Final audit re-audited, round six, scoped to `61b3a0d..06b0d5b`, `f673ba1`. **PASS WITH ADVISORIES.** FE1 and FE4 repaired; FF1 advisory accepted. The auditor approved the closing sequence without another round, on three conditions | 61b3a0d..06b0d5b | audits/final.md | PASS WITH ADVISORIES |
+| 2026-09-24T12:19:20Z | `atj event approve` on `audits/final.md` as event-director at 12:19:20Z; the diff moved approval fields and quote style only. Unit `final:audit` recorded, digest `03578616` equal to `derive_digests`, `completed_at` 12:19:19Z (the round-six report commit). No unit stale. Run by the orchestrator on the event-director's delegation | audits/final.md | status.md | PASS WITH ADVISORIES |
+| 2026-09-24T12:22:30Z | `atj event advance`: trial-2-2026 is **complete**. Completion put nine `findings:`-shaped audits into `tests/test_tier1_regressions.py::test_the_committed_audits_are_unaffected`, which asserted no completed audit carries `findings:`; the test now keeps the gate-verdict check for every completed audit and the no-`findings:` guarantee for the fifteen earlier ones. Open after completion: W21-W30, evidence F14, intake F7, configuration F10/F20/F23, `event.md` and `bracket.md` draft (W29) | audits/final.md | status.md, tests/test_tier1_regressions.py | - |
