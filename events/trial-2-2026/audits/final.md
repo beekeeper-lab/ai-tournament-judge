@@ -11,8 +11,8 @@ persona: judging-auditor@1.1.0
 framework_commit: 58cd942fdda05dfdb964c17e4977b7a4d2962b47
 model_requested: claude-opus-5
 model_used: claude-opus-5-5[1m]
-started_at: '2026-09-24T02:48:05Z'
-completed_at: '2026-09-24T12:16:24Z'
+started_at: "2026-09-24T02:48:05Z"
+completed_at: "2026-09-24T12:16:24Z"
 visibility: private
 approval_state: approved
 validation_state: valid
@@ -283,7 +283,8 @@ findings:
   repair: Re-approve this file, re-record final:audit, and re-set the gate on it, as listed under Recommended commands, round five
   state: open
 approved_by: event-director
-approved_at: '2026-09-24T03:04:22Z'
+approved_at: "2026-09-24T12:18:00Z"
+approval_note: Re-approved after round five on the event-director's delegation, 2026-09-24
 ---
 
 # Final Event Audit: the complete judging record, first pass

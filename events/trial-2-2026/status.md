@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
 current_stage: final-audit
-last_updated: "2026-09-24T12:14:20Z"
+last_updated: "2026-09-24T12:18:10Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -22,7 +22,7 @@ units:
   outputs:
   - bracket.json
   audit_result: PASS WITH ADVISORIES
-  completed_at: "2026-09-24T12:13:47Z"
+  completed_at: "2026-09-23T01:55:10Z"
 - unit_id: matchup:mu-final-01
   stage: tournament
   state: complete
@@ -30,7 +30,7 @@ units:
   outputs:
   - matchups/mu-final-01.md
   audit_result: PASS WITH ADVISORIES
-  completed_at: "2026-09-24T12:13:48Z"
+  completed_at: "2026-09-23T17:26:17Z"
 - unit_id: dossier:team-demos
   stage: dossiers
   state: complete
@@ -38,7 +38,7 @@ units:
   outputs:
   - dossiers/team-demos.md
   audit_result: PASS WITH ADVISORIES
-  completed_at: "2026-09-24T12:13:48Z"
+  completed_at: "2026-09-23T20:30:25Z"
 - unit_id: dossier:team-scribe
   stage: dossiers
   state: complete
@@ -46,15 +46,15 @@ units:
   outputs:
   - dossiers/team-scribe.md
   audit_result: PASS WITH ADVISORIES
-  completed_at: "2026-09-24T12:13:48Z"
+  completed_at: "2026-09-23T20:30:25Z"
 - unit_id: final:audit
   stage: final-audit
   state: complete
-  input_digest: 77af54f6a1477f27
+  input_digest: 08bdbb01b4dab6b8
   outputs:
   - audits/final.md
   audit_result: PASS WITH ADVISORIES
-  completed_at: "2026-09-24T03:04:22Z"
+  completed_at: "2026-09-24T12:17:58Z"
 gate_evidence:
   configuration-audited: audits/configuration.md
   roster-frozen: audits/intake.md
@@ -194,3 +194,5 @@ gate_evidence:
 | 2026-09-24T12:13:21Z | Final audit FA2, FA7 and CF11 settled by the event-director in session: "yes to all" to the orchestrator's three recommendations. CF11: the event-director confirms the approval delegation this record describes; approvals in this event run by the orchestrator were on that delegation. FA2: `overrides/ovr-trial-2-2026-model-substitution-audits.md` accepts `claude-opus-5-5[1m]` for the tournament, dossiers and final audits, approved 12:13:21Z; the earlier override is unchanged | audits/final.md FA2 CF11 | overrides/ovr-trial-2-2026-model-substitution-audits.md | not-audited |
 | 2026-09-24T12:13:32Z | FA7: `atj event approve` as event-director on the eight judgments, both matchup passes, `matchups/mu-final-01.md` and both summaries, 13 artifacts. The rewrite changed approval fields and `validation_state` (unvalidated to valid) and reflowed YAML; parsed front matter and every body are otherwise identical (checked by the orchestrator). `event.md` and `bracket.md` refused with blocking `location-unknown` and stay `draft`, not hand-edited: W29. The DO2-DO4 errata still stand; approval does not correct the three counts in the summaries | audits/final.md FA7 | judgments/*, matchup-passes/*, matchups/mu-final-01.md, summaries/*.md | not-audited |
 | 2026-09-24T12:13:48Z | The FA7 approvals changed the digests of `bracket:draw`, `matchup:mu-final-01` and both dossier units, which went stale. Re-recorded without `--completed-at`, so each carries the clock time of this re-record (12:13:47Z-12:13:48Z) in place of its work time: `bracket:draw` 2026-09-23T01:55:10Z, `matchup:mu-final-01` 2026-09-23T17:26:17Z, dossiers 2026-09-23T20:30:25Z. The tool printed "completed_at kept … the inputs did not change" for all four, which is false: W30. W29 and W30 added to `docs/0.5.0-beta-plan.md` | status.md units | status.md, docs/0.5.0-beta-plan.md | not-audited |
+| 2026-09-24T12:17:58Z | Final audit re-audited, round five, scoped to `e44385b..58cd942`, `61b3a0d`. **PASS WITH ADVISORIES.** FA2 and FA7 repaired, CF11 accepted as recorded, not proven; FE1 minor, FE2-FE4 advisory. The auditor ran no record, approve, gate or advance command | e44385b..58cd942 | audits/final.md | PASS WITH ADVISORIES |
+| 2026-09-24T12:18:00Z | FE4: `atj event approve` on `audits/final.md` as event-director at 12:18:00Z, then unit `final:audit` recorded (digest `08bdbb01`, `completed_at` 12:17:58Z, the round-five report commit) and gate `final-audit-passed` re-set against the round-five text. FE1: the four units re-recorded with `--completed-at` restoring their work times, `bracket:draw` 2026-09-23T01:55:10Z, `matchup:mu-final-01` 17:26:17Z, both dossiers 20:30:25Z; digests unchanged from 12:13:48Z. Values checked in the front matter, not the tool message (W30). Run by the orchestrator on the event-director's delegation | audits/final.md FE1 FE4 | status.md | not-audited |
