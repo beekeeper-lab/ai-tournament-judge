@@ -5,7 +5,14 @@ the principles, architecture, data model, CLI, event history, and what is done
 and left, with diagrams. The HTML is the review surface. This file holds the
 durable decisions and the version index.
 
-**Current version:** 1.0, [`design-doc-v1.0.html`](design-doc-v1.0.html)
+**Current version:** 1.0, [`design-doc-v1.0.html`](design-doc-v1.0.html), with a PDF
+rendering [`design-doc-v1.0.pdf`](design-doc-v1.0.pdf). The PDF is generated from the
+HTML, never edited:
+
+```bash
+chromium --headless=new --no-pdf-header-footer \
+  --print-to-pdf=docs/design/design-doc-vX.Y.pdf "file://$PWD/docs/design/design-doc-vX.Y.html"
+```
 
 Canonical numbers (weights, thresholds, band, tie-break, byes, component
 versions) are deliberately absent from both files. Read them from the files named
@@ -15,7 +22,7 @@ in `CLAUDE.md` "Source of truth".
 
 | Doc version | Date | Framework | Repo commit | File | Change |
 |---|---|---|---|---|---|
-| 1.0 | 2026-09-24 | 0.4.0-beta | 95ae008 | `design-doc-v1.0.html` | First versioned design document, after `trial-2-2026` completed |
+| 1.0 | 2026-09-24 | 0.4.0-beta | 95ae008 | `design-doc-v1.0.html`, `.pdf` | First versioned design document, after `trial-2-2026` completed |
 
 A new version adds `design-doc-vX.Y.html` beside the old one and a row here. Old
 files are not edited.
