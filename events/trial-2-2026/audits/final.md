@@ -1,6 +1,6 @@
 ---
 event_id: trial-2-2026
-audit_scope: final-audit stage, the complete judging record of trial-2-2026 end to end (intake, evidence, judgments, consolidation, bracket, tournament, dossiers, public), including the eight prior stage audits, first pass
+audit_scope: final-audit stage, the complete judging record of trial-2-2026 end to end (intake, evidence, judgments, consolidation, bracket, tournament, dossiers, public), including the eight prior stage audits; round two scoped to the repair diff de797ea..916a66a
 audit_id: final
 team_id: null
 match_id: null
@@ -8,11 +8,11 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.1.0
 persona: judging-auditor@1.1.0
-framework_commit: 10c79739b867636e397c5ad68d72cf389fee3987
+framework_commit: 916a66a1e3bd1dee39426ed88160dd31ff02ff7d
 model_requested: claude-opus-5
 model_used: claude-opus-5-5[1m]
 started_at: "2026-09-24T02:48:05Z"
-completed_at: "2026-09-24T02:55:42Z"
+completed_at: "2026-09-24T03:00:38Z"
 visibility: private
 approval_state: draft
 validation_state: unvalidated
@@ -25,7 +25,7 @@ findings:
   summary: 'atj bracket verify --reproduce fails on the committed bracket.json because atj/cli.py:1039 compares whole rounds, including the winner field that atj bracket advance writes. The draw itself reproduces'
   artifact: 'atj/cli.py:1033-1040'
   repair: 'Leave the event alone. Add a W entry beside W25 so that reproduction compares rounds with winner excluded'
-  state: open
+  state: deferred
 - id: FA2
   severity: minor
   scope: event
@@ -41,7 +41,7 @@ findings:
   summary: 'Two ledger defects no audit recorded. status.md:150 (14:53:00Z) sits above status.md:151 (14:52:44Z), and :151 itself says the :150 repairs came after it. The status.md:127 stamp 14:22:00Z is 77 s after 4fa5714 (14:20:43Z), the first commit that contains it'
   artifact: 'events/trial-2-2026/status.md:127,150-151'
   repair: 'Add one activity row that records both. Do not restamp. status.md is not a unit input, so the edit stales nothing'
-  state: open
+  state: repaired
 - id: FA4
   severity: minor
   scope: event
@@ -49,7 +49,7 @@ findings:
   summary: 'audits/consolidation.md:11 framework_commit 7ac67fb, and the whole consolidation-stage history (7ac67fb, 5b4c0ac, 4ce5cbb, a8cbc9b, 923ffce), can be reached only from origin/event/trial-2-2026-consolidation. PR 22 was squash-merged as c728437'
   artifact: 'events/trial-2-2026/audits/consolidation.md:11'
   repair: 'Before that branch is deleted, keep it or tag 923ffce, and record the ref in status.md'
-  state: open
+  state: repaired
 - id: FA5
   severity: advisory
   scope: event
@@ -89,7 +89,7 @@ findings:
   summary: 'All four units hold their original completed_at although each was recorded later, and no field records when. The status.md:177 phrase "the last edit to the dossiers" means the last content edit. The approval at 00:14:24Z also wrote both dossiers'
   artifact: 'events/trial-2-2026/status.md:25,33,41,49,177'
   repair: 'Framework. Add a recorded_at field to units, or define completed_at in the runbook'
-  state: open
+  state: deferred
 - id: CF1
   severity: minor
   scope: event
@@ -194,6 +194,38 @@ findings:
   artifact: 'events/trial-2-2026/status.md:171'
   repair: 'none'
   state: accepted
+- id: FB1
+  severity: minor
+  scope: framework
+  blocking: false
+  summary: 'W28 (docs/0.5.0-beta-plan.md:262) misstates the code. It says a unit re-recorded after a stale digest carries no trace. In fact atj/event.py:826-829,845-846 stamps a changed-digest re-record with the clock. This event kept the original times only because the operator passed --completed-at (status.md:161,164). The gap is that no field records when a re-recording happened'
+  artifact: 'docs/0.5.0-beta-plan.md:262'
+  repair: 'Restate W28 from atj/event.py:818-846. When the digest is unchanged, the old time stands and the re-record leaves no trace. When the digest changes, the default is now() and the work time is lost unless --completed-at is passed. Keep the recorded_at fix'
+  state: open
+- id: FB2
+  severity: minor
+  scope: event
+  blocking: false
+  summary: 'The repair row was first stamped 02:59:30Z, 4 s after its own commit 574f95c (02:59:26Z, on origin by 02:59:27Z). It was restamped to 02:59:26Z, and the amend 916a66a was made with GIT_COMMITTER_DATE forced back to 02:59:26Z. The local reflog shows the force-push at 02:59:34Z, so the committer date is not when 916a66a was made. Git commit time is the independent clock that FA3, FA5 and DGA1 relied on. The row does not disclose the restamp, and it reads "without restamping"'
+  artifact: 'events/trial-2-2026/status.md:179; commit 916a66a'
+  repair: 'Do not rewrite history again. Add one ledger row with the facts: first stamp 02:59:30Z in 574f95c (02:59:26Z), restamped, amended with a forced committer date, real amend at or before the 02:59:34Z push. From here on, restamp rows and never commit dates'
+  state: open
+- id: FB3
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'status.md:4 last_updated is still 00:14:43Z although rows :178-:179 (02:58:32Z, 02:59:26Z) were added. This is configuration F22 and tournament R4 recurring'
+  artifact: 'events/trial-2-2026/status.md:4'
+  repair: 'Bump last_updated in the FB2 disclosure commit'
+  state: open
+- id: FB4
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'The tag trial-2-2026-consolidation-history is lightweight. It points at 923ffce1dd15f9df49a619fcebfb5bd55f95eb2b locally and on origin, but it records no tagger, date or reason'
+  artifact: 'refs/tags/trial-2-2026-consolidation-history'
+  repair: 'Optional. Replace it with an annotated tag on the same commit'
+  state: open
 ---
 
 # Final Event Audit: the complete judging record, first pass
@@ -216,7 +248,9 @@ roster I wrote by hand from `teams.md`.
 
 ## Result
 
-**PASS WITH ADVISORIES.** There is no blocking finding and no major finding.
+**Round two: PASS WITH ADVISORIES.** It adds `FB1`-`FB4`: two minor, two advisory, none blocking or major. See [Round two](#round-two-the-repair-diff-de797ea916a66a). The gate may still be set.
+
+**Round one: PASS WITH ADVISORIES.** There is no blocking finding and no major finding.
 Four new findings are minor (`FA1`-`FA4`) and five are advisory (`FA5`-`FA9`).
 Of the thirteen carried items, six are minor or advisory framework items, two are
 closed and five are accepted or deferred. None holds the gate.
@@ -615,4 +649,81 @@ python3 -m atj event validate events/trial-2-2026 && python3 -m atj release-chec
 python3 -m atj event advance events/trial-2-2026
 # Optional (FA8)
 rm events/trial-2-2026/status.md.bak
+```
+
+## Round two: the repair diff `de797ea..916a66a`
+
+Scope: `git diff de797ea..916a66a`. It adds two rows to `status.md`, which are
+now `:178` and `:179`, and W26-W28 at `docs/0.5.0-beta-plan.md:260-262`. It also
+covers the tag `trial-2-2026-consolidation-history`, and the amend of `574f95c`
+into `916a66a`. At `916a66a`: `atj event validate` gives PASS, 0 problems.
+`atj release-check` gives PASS. `atj event status` shows 4 units complete and
+gate pending.
+
+### What landed
+
+| Round-one item | Repair | Verified against | Verdict |
+|---|---|---|---|
+| FA1 | W27 | `atj/cli.py:1039` is `if rebuilt["rounds"] != result["rounds"]:`, as cited. W27 sits beside W25 (`:259`) | correct, deferred |
+| FA3 | row `:179` | `:150` is 14:53:00Z and sits above `:151` at 14:52:44Z. `:127` is 14:22:00Z, and its first containing commit `4fa5714` is 14:20:43Z, 77 s earlier. All three facts match `status.md` | repaired |
+| FA4 | tag | `git ls-remote --tags origin` shows `923ffce1dd15…` for `refs/tags/trial-2-2026-consolidation-history`, and `rev-parse` matches locally. `923ffce` is the consolidation branch tip. The ledger records the ref at `:179` | repaired (FB4 advisory) |
+| FA9 | W28 | `atj/event.py:818-846` | the W entry is inaccurate (`FB1`) |
+| CF4 | W26 | Summary digests enter the dossier unit at `atj/event.py:949` and `bracket:draw` at `:974`, so an edit to a summary stales them as W26 says. The three counts are CF1-CF3 | correct, deferred |
+
+The round-one audit row at `:178` (02:58:32Z) matches `de797ea`'s commit time
+and follows this report's `completed_at` (02:55:42Z). Its counts match
+round one. The two new rows ascend.
+
+### The restamp and forced committer date (`FB2`)
+
+**Facts from git.**
+- `574f95c`: author and committer both 1790218766, which is 02:59:26Z. The
+  remote-tracking reflog shows it on origin at 02:59:27Z. Its row read 02:59:30Z,
+  a stamp 4 s after the commit that contains it. That is the FA3 and FA5 defect
+  class.
+- `916a66a`: the amend. Its tree differs from `574f95c` only in that stamp.
+  Author and committer are again both 02:59:26Z. The remote-tracking reflog shows
+  the force-push at 02:59:34Z, so the amend was made between 02:59:27Z and
+  02:59:34Z. `574f95c` is no longer on any remote ref.
+
+**Judgment.**
+- **The restamp is acceptable and correct in direction.** A row may equal or
+  precede its commit (CF13). 02:59:26Z is plausibly when the work was committed.
+- **Forcing `GIT_COMMITTER_DATE` is a defect.** The difference is seconds, so the
+  size does not matter. What matters is which clock it corrupts. Every
+  timestamp finding in this event, including FA3, FA5, CF13 and consolidation F24
+  and F25, was found by comparing ledger stamps against git's committer time,
+  because that is the one clock the operator does not type. Setting it by hand
+  makes a later row-versus-commit check pass by construction. It was also
+  unnecessary: an amend with the real committer date (at or before 02:59:34Z)
+  would already have put the restamped row before its commit.
+- **It is not blocking.** It is inside the repair commit, it touches no score or
+  artifact, the author date is original, and this report records it.
+- **The ledger should disclose it.** The row at `:179` says "without restamping"
+  about FA3's rows while its own stamp was restamped. And without a row, the
+  only other record is a local reflog that dies with this clone. A second
+  history rewrite would cost more than a disclosure row, so the repair is a new
+  row and not another amend.
+
+### Findings, round two
+
+| Severity | Rule | Artifact | Scope / blocking | Finding | Required repair |
+|---|---|---|---|---|---|
+| minor | accuracy of the deliverable | `docs/0.5.0-beta-plan.md:262` | framework / no | **FB1.** W28 describes the unchanged-digest path as the stale-digest path. With a changed digest, `atj/event.py:845-846` stamps `now()`. This event kept work times only by passing `--completed-at` (`status.md:161,164`) | Restate W28 from `atj/event.py:818-846` |
+| minor | independent clock | commit `916a66a`; `status.md:179` | event / no | **FB2.** Committer date forced back to 02:59:26Z. The amend was made at or before 02:59:34Z. Not disclosed | A disclosure row, no further rewrite. From here on, restamp rows, never commit dates |
+| advisory | ledger | `status.md:4` | event / no | **FB3.** `last_updated` is 00:14:43Z, behind rows `:178-:179` | Bump it with the FB2 row |
+| advisory | provenance | tag | event / no | **FB4.** Lightweight tag, no tagger or date | Optional annotated tag on `923ffce` |
+
+### Recommended commands, round two
+
+```bash
+# FB1, FB2, FB3 in one ordinary commit (no amend, no forced dates):
+#   docs/0.5.0-beta-plan.md W28 restated; status.md: one row disclosing FB2, last_updated bumped
+git commit -m "event: trial-2-2026 final audit round two repairs (FB1-FB3)" && git push
+# FB4, optional
+git tag -a -f trial-2-2026-consolidation-history 923ffce -m "consolidation history of trial-2-2026, squashed in c728437" && git push -f origin trial-2-2026-consolidation-history
+# then, unchanged from round one
+python3 -m atj event approve events/trial-2-2026/audits/final.md --official event-director
+python3 -m atj event unit events/trial-2-2026 record --id final:audit --stage final-audit --output audits/final.md --audit-result "PASS WITH ADVISORIES"
+python3 -m atj event gate events/trial-2-2026 final-audit-passed passed --audit audits/final.md
 ```
