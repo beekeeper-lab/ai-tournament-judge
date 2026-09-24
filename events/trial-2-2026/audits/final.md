@@ -14,242 +14,244 @@ model_used: claude-opus-5-5[1m]
 started_at: "2026-09-24T02:48:05Z"
 completed_at: "2026-09-24T03:03:46Z"
 visibility: private
-approval_state: draft
-validation_state: unvalidated
+approval_state: approved
+validation_state: valid
 result: PASS WITH ADVISORIES
 findings:
 - id: FA1
   severity: minor
   scope: framework
   blocking: false
-  summary: 'atj bracket verify --reproduce fails on the committed bracket.json because atj/cli.py:1039 compares whole rounds, including the winner field that atj bracket advance writes. The draw itself reproduces'
-  artifact: 'atj/cli.py:1033-1040'
-  repair: 'Leave the event alone. Add a W entry beside W25 so that reproduction compares rounds with winner excluded'
+  summary: atj bracket verify --reproduce fails on the committed bracket.json because atj/cli.py:1039 compares whole rounds, including the winner field that atj bracket advance writes. The draw itself reproduces
+  artifact: atj/cli.py:1033-1040
+  repair: Leave the event alone. Add a W entry beside W25 so that reproduction compares rounds with winner excluded
   state: deferred
 - id: FA2
   severity: minor
   scope: event
   blocking: false
-  summary: 'The model-substitution override accepts claude-opus-5-5[1m] for five named artifacts. audits/tournament.md:13, audits/dossiers.md:13 and this audit also record that model against event.md:16, and no record accepts them'
-  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:36-37'
-  repair: 'Before atj event complete, the event-director records acceptance for the three audit artifacts, as a new override record or a dated amendment, and approves it with atj event approve'
+  summary: The model-substitution override accepts claude-opus-5-5[1m] for five named artifacts. audits/tournament.md:13, audits/dossiers.md:13 and this audit also record that model against event.md:16, and no record accepts them
+  artifact: overrides/ovr-trial-2-2026-model-substitution.md:36-37
+  repair: Before atj event complete, the event-director records acceptance for the three audit artifacts, as a new override record or a dated amendment, and approves it with atj event approve
   state: open
 - id: FA3
   severity: minor
   scope: event
   blocking: false
-  summary: 'Two ledger defects no audit recorded. status.md:150 (14:53:00Z) sits above status.md:151 (14:52:44Z), and :151 itself says the :150 repairs came after it. The status.md:127 stamp 14:22:00Z is 77 s after 4fa5714 (14:20:43Z), the first commit that contains it'
-  artifact: 'events/trial-2-2026/status.md:127,150-151'
-  repair: 'Add one activity row that records both. Do not restamp. status.md is not a unit input, so the edit stales nothing'
+  summary: Two ledger defects no audit recorded. status.md:150 (14:53:00Z) sits above status.md:151 (14:52:44Z), and :151 itself says the :150 repairs came after it. The status.md:127 stamp 14:22:00Z is 77 s after 4fa5714 (14:20:43Z), the first commit that contains it
+  artifact: events/trial-2-2026/status.md:127,150-151
+  repair: Add one activity row that records both. Do not restamp. status.md is not a unit input, so the edit stales nothing
   state: repaired
 - id: FA4
   severity: minor
   scope: event
   blocking: false
-  summary: 'audits/consolidation.md:11 framework_commit 7ac67fb, and the whole consolidation-stage history (7ac67fb, 5b4c0ac, 4ce5cbb, a8cbc9b, 923ffce), can be reached only from origin/event/trial-2-2026-consolidation. PR 22 was squash-merged as c728437'
-  artifact: 'events/trial-2-2026/audits/consolidation.md:11'
-  repair: 'Before that branch is deleted, keep it or tag 923ffce, and record the ref in status.md'
+  summary: audits/consolidation.md:11 framework_commit 7ac67fb, and the whole consolidation-stage history (7ac67fb, 5b4c0ac, 4ce5cbb, a8cbc9b, 923ffce), can be reached only from origin/event/trial-2-2026-consolidation. PR 22 was squash-merged as c728437
+  artifact: events/trial-2-2026/audits/consolidation.md:11
+  repair: Before that branch is deleted, keep it or tag 923ffce, and record the ref in status.md
   state: repaired
 - id: FA5
   severity: advisory
   scope: event
   blocking: false
-  summary: 'Consolidation-stage stamps run ahead of the commits that contain them. summaries/*.md completed_at 18:52:00Z is committed in 7ac67fb at 18:21:39Z, and ledger rows :129-:135 (18:55-23:55Z) run ahead of every branch commit. consolidation.md:852-857 discloses this only from round two onward'
-  artifact: 'events/trial-2-2026/summaries/team-demos.md, summaries/team-scribe.md, status.md:129-135'
-  repair: 'Record only. Editing the summaries would stale bracket:draw and both dossier units. This is configuration F20 evidence'
+  summary: Consolidation-stage stamps run ahead of the commits that contain them. summaries/*.md completed_at 18:52:00Z is committed in 7ac67fb at 18:21:39Z, and ledger rows :129-:135 (18:55-23:55Z) run ahead of every branch commit. consolidation.md:852-857 discloses this only from round two onward
+  artifact: events/trial-2-2026/summaries/team-demos.md, summaries/team-scribe.md, status.md:129-135
+  repair: Record only. Editing the summaries would stale bracket:draw and both dossier units. This is configuration F20 evidence
   state: open
 - id: FA6
   severity: advisory
   scope: event
   blocking: false
   summary: 'No evidence:, judging: or consolidation: unit was ever recorded (status.md:17-49), although atj/event.py:907-941 derives all six. For those stages, drift is checked only by git history, which this audit re-checked'
-  artifact: 'events/trial-2-2026/status.md:17-49'
-  repair: 'None for this event. Framework question for the next version, whether atj event status should name missing standard units'
+  artifact: events/trial-2-2026/status.md:17-49
+  repair: None for this event. Framework question for the next version, whether atj event status should name missing standard units
   state: open
 - id: FA7
   severity: advisory
   scope: event
   blocking: false
-  summary: 'Fourteen private artifacts are still approval_state draft (8 judgments, 2 summaries, bracket.md, matchups/mu-final-01.md, 2 pass reports) plus event.md. Nothing requires otherwise. Once the event is complete the state is frozen'
-  artifact: 'judgments/*/*.md, summaries/*.md, bracket.md, matchups/mu-final-01.md, matchup-passes/*.md, event.md'
-  repair: 'The event-director decides before completion whether to approve them or leave them draft, and records the choice in one ledger row'
+  summary: Fourteen private artifacts are still approval_state draft (8 judgments, 2 summaries, bracket.md, matchups/mu-final-01.md, 2 pass reports) plus event.md. Nothing requires otherwise. Once the event is complete the state is frozen
+  artifact: judgments/*/*.md, summaries/*.md, bracket.md, matchups/mu-final-01.md, matchup-passes/*.md, event.md
+  repair: The event-director decides before completion whether to approve them or leave them draft, and records the choice in one ledger row
   state: open
 - id: FA8
   severity: advisory
   scope: event
   blocking: false
-  summary: 'status.md.bak is atj/event.py:1129''s pre-advance backup. It is gitignored (.gitignore:27), untracked, read by nothing, and differs from status.md only in current_stage and last_updated'
-  artifact: 'events/trial-2-2026/status.md.bak'
-  repair: 'Optional. Delete it, as evidence F15 and judgments F11 did with earlier backups'
+  summary: status.md.bak is atj/event.py:1129's pre-advance backup. It is gitignored (.gitignore:27), untracked, read by nothing, and differs from status.md only in current_stage and last_updated
+  artifact: events/trial-2-2026/status.md.bak
+  repair: Optional. Delete it, as evidence F15 and judgments F11 did with earlier backups
   state: open
 - id: FA9
   severity: advisory
   scope: framework
   blocking: false
-  summary: 'All four units hold their original completed_at although each was recorded later, and no field records when. The status.md:177 phrase "the last edit to the dossiers" means the last content edit. The approval at 00:14:24Z also wrote both dossiers'
-  artifact: 'events/trial-2-2026/status.md:25,33,41,49,177'
-  repair: 'Framework. Add a recorded_at field to units, or define completed_at in the runbook'
+  summary: All four units hold their original completed_at although each was recorded later, and no field records when. The status.md:177 phrase "the last edit to the dossiers" means the last content edit. The approval at 00:14:24Z also wrote both dossiers
+  artifact: events/trial-2-2026/status.md:25,33,41,49,177
+  repair: Framework. Add a recorded_at field to units, or define completed_at in the runbook
   state: deferred
 - id: CF1
   severity: minor
   scope: event
   blocking: false
-  summary: 'Carried DO2. The erratum at summaries/team-demos.md:426 is correct. Three judges name demo 06''s byte-identical prompt, not four. The dossier (team-demos.md:110-113) carries three. public/ does not mention it'
-  artifact: 'events/trial-2-2026/summaries/team-demos.md:426'
-  repair: 'None in-event. The erratum stands at status.md:170, and the route to fix it is DOA8'
+  summary: Carried DO2. The erratum at summaries/team-demos.md:426 is correct. Three judges name demo 06's byte-identical prompt, not four. The dossier (team-demos.md:110-113) carries three. public/ does not mention it
+  artifact: events/trial-2-2026/summaries/team-demos.md:426
+  repair: None in-event. The erratum stands at status.md:170, and the route to fix it is DOA8
   state: accepted
 - id: CF2
   severity: minor
   scope: event
   blocking: false
-  summary: 'Carried DO3. The erratum at summaries/team-scribe.md:203-204 is correct. Two judges (judge-backend.md:95, judge-product-agentic.md:106), not three, make the main.py:50 fix their top improvement. The dossier (team-scribe.md:191-193) says two'
-  artifact: 'events/trial-2-2026/summaries/team-scribe.md:203-204'
-  repair: 'None in-event. The erratum stands at status.md:170'
+  summary: Carried DO3. The erratum at summaries/team-scribe.md:203-204 is correct. Two judges (judge-backend.md:95, judge-product-agentic.md:106), not three, make the main.py:50 fix their top improvement. The dossier (team-scribe.md:191-193) says two
+  artifact: events/trial-2-2026/summaries/team-scribe.md:203-204
+  repair: None in-event. The erratum stands at status.md:170
   state: accepted
 - id: CF3
   severity: minor
   scope: event
   blocking: false
-  summary: 'Carried DO4. The erratum at summaries/team-scribe.md:166 is correct. PipelineStatus is credited by backend (:52,:115,:129), frontend-ux (:53,:114) and product-agentic (:140). Security-ops never names it and credits retry.py (:109,:117,:135). The dossier does not repeat the count'
-  artifact: 'events/trial-2-2026/summaries/team-scribe.md:160-166'
-  repair: 'None in-event. The erratum stands at status.md:170'
+  summary: Carried DO4. The erratum at summaries/team-scribe.md:166 is correct. PipelineStatus is credited by backend (:52,:115,:129), frontend-ux (:53,:114) and product-agentic (:140). Security-ops never names it and credits retry.py (:109,:117,:135). The dossier does not repeat the count
+  artifact: events/trial-2-2026/summaries/team-scribe.md:160-166
+  repair: None in-event. The erratum stands at status.md:170
   state: accepted
 - id: CF4
   severity: advisory
   scope: framework
   blocking: false
-  summary: 'Carried DOA8. There is still no errata route for audited summaries, and docs/0.5.0-beta-plan.md has no W entry for it (no errata, DOA8 or W26 text anywhere)'
-  artifact: 'docs/0.5.0-beta-plan.md'
-  repair: 'Add a W entry (W26) naming the three errata at status.md:170 as its evidence'
+  summary: Carried DOA8. There is still no errata route for audited summaries, and docs/0.5.0-beta-plan.md has no W entry for it (no errata, DOA8 or W26 text anywhere)
+  artifact: docs/0.5.0-beta-plan.md
+  repair: Add a W entry (W26) naming the three errata at status.md:170 as its evidence
   state: deferred
 - id: CF5
   severity: advisory
   scope: framework
   blocking: false
-  summary: 'Carried W21-W25, all present at docs/0.5.0-beta-plan.md:255-259, not fixed. FA1 is a sibling of W25'
-  artifact: 'docs/0.5.0-beta-plan.md:255-259'
-  repair: 'Next version'
+  summary: Carried W21-W25, all present at docs/0.5.0-beta-plan.md:255-259, not fixed. FA1 is a sibling of W25
+  artifact: docs/0.5.0-beta-plan.md:255-259
+  repair: Next version
   state: deferred
 - id: CF6
   severity: advisory
   scope: framework
   blocking: false
-  summary: 'Carried evidence F14. atj/reports.py:41 still maps runs/ to model-run, and report validation globs *.md (atj/reports.py:716,786), so the 11 runs/*.json are still validated by nothing. This audit checked all 11 by hand for podman, --network none, --read-only, a :ro mount, --cap-drop ALL and uid 65534'
-  artifact: 'atj/reports.py:41'
-  repair: 'Next version, a sandbox-run schema'
+  summary: Carried evidence F14. atj/reports.py:41 still maps runs/ to model-run, and report validation globs *.md (atj/reports.py:716,786), so the 11 runs/*.json are still validated by nothing. This audit checked all 11 by hand for podman, --network none, --read-only, a :ro mount, --cap-drop ALL and uid 65534
+  artifact: atj/reports.py:41
+  repair: Next version, a sandbox-run schema
   state: open
 - id: CF7
   severity: advisory
   scope: framework
   blocking: false
-  summary: 'Carried intake F7, the event-director''s decision. framework/templates/team-roster.md has eight identity fields, while teams.md:1-5 has three. Still open'
-  artifact: 'framework/templates/team-roster.md'
-  repair: 'The event-director decides. Does not hold the gate'
+  summary: Carried intake F7, the event-director's decision. framework/templates/team-roster.md has eight identity fields, while teams.md:1-5 has three. Still open
+  artifact: framework/templates/team-roster.md
+  repair: The event-director decides. Does not hold the gate
   state: open
 - id: CF8
   severity: advisory
   scope: framework
   blocking: false
-  summary: 'Carried configuration F10, the event-director''s decision. The submissions no longer carry absolute paths, because intake F8 repaired them. /home/gregg/... remains in all 11 runs/*.json command strings and in audits/consolidation.md. None is in dossiers/ or public/'
-  artifact: 'events/trial-2-2026/runs/*.json'
-  repair: 'The event-director decides whether the residue in a public repository is acceptable'
+  summary: Carried configuration F10, the event-director's decision. The submissions no longer carry absolute paths, because intake F8 repaired them. /home/gregg/... remains in all 11 runs/*.json command strings and in audits/consolidation.md. None is in dossiers/ or public/
+  artifact: events/trial-2-2026/runs/*.json
+  repair: The event-director decides whether the residue in a public repository is acceptable
   state: open
 - id: CF9
   severity: minor
   scope: framework
   blocking: false
-  summary: 'Carried configuration F20, the event-director''s decision. Nothing validates timestamps. FA3 and FA5 are new instances'
-  artifact: 'atj/reports.py, atj/event.py'
-  repair: 'Next version'
+  summary: Carried configuration F20, the event-director's decision. Nothing validates timestamps. FA3 and FA5 are new instances
+  artifact: atj/reports.py, atj/event.py
+  repair: Next version
   state: open
 - id: CF10
   severity: minor
   scope: framework
   blocking: false
-  summary: 'Carried configuration F23, the event-director''s decision. atj intake still writes model_used not-applicable, now at atj/intake.py:405-406'
-  artifact: 'atj/intake.py:405-406'
-  repair: 'Next version'
+  summary: Carried configuration F23, the event-director's decision. atj intake still writes model_used not-applicable, now at atj/intake.py:405-406
+  artifact: atj/intake.py:405-406
+  repair: Next version
   state: open
 - id: CF11
   severity: advisory
   scope: framework
   blocking: false
-  summary: 'Carried DOA2, open, and the event-director''s decision. Every human approval in the stage was run by the orchestrator on a stated in-session delegation (dossier approval_note, override:22, status.md:167,177). The repository cannot show a human acted'
-  artifact: 'events/trial-2-2026/status.md:167,177'
-  repair: 'The event-director confirms the delegation in person. Attestations are the 1.0 line (docs/0.5.0-beta-plan.md:261-264)'
+  summary: Carried DOA2, open, and the event-director's decision. Every human approval in the stage was run by the orchestrator on a stated in-session delegation (dossier approval_note, override:22, status.md:167,177). The repository cannot show a human acted
+  artifact: events/trial-2-2026/status.md:167,177
+  repair: The event-director confirms the delegation in person. Attestations are the 1.0 line (docs/0.5.0-beta-plan.md:261-264)
   state: open
 - id: CF12
   severity: advisory
   scope: event
   blocking: false
-  summary: 'Carried DEA1, now closed. The model-substitution override is approval_state approved, approved_at 00:14:24Z, in c732850 (00:15:18Z)'
-  artifact: 'overrides/ovr-trial-2-2026-model-substitution.md:17-22'
-  repair: 'none'
+  summary: Carried DEA1, now closed. The model-substitution override is approval_state approved, approved_at 00:14:24Z, in c732850 (00:15:18Z)
+  artifact: overrides/ovr-trial-2-2026-model-substitution.md:17-22
+  repair: none
   state: repaired
 - id: CF13
   severity: advisory
   scope: event
   blocking: false
-  summary: 'Carried DGA1, confirmed and classified as no defect. The status.md:171 stamp 20:30:25Z precedes ef6d656 (20:31:18Z) by 53 s. A row stamped before its commit is the permitted direction. The defects are stamps after their commits (FA3, FA5)'
-  artifact: 'events/trial-2-2026/status.md:171'
-  repair: 'none'
+  summary: Carried DGA1, confirmed and classified as no defect. The status.md:171 stamp 20:30:25Z precedes ef6d656 (20:31:18Z) by 53 s. A row stamped before its commit is the permitted direction. The defects are stamps after their commits (FA3, FA5)
+  artifact: events/trial-2-2026/status.md:171
+  repair: none
   state: accepted
 - id: FB1
   severity: minor
   scope: framework
   blocking: false
-  summary: 'W28 (docs/0.5.0-beta-plan.md:262) misstates the code. It says a unit re-recorded after a stale digest carries no trace. In fact atj/event.py:826-829,845-846 stamps a changed-digest re-record with the clock. This event kept the original times only because the operator passed --completed-at (status.md:161,164). The gap is that no field records when a re-recording happened'
-  artifact: 'docs/0.5.0-beta-plan.md:262'
-  repair: 'Restate W28 from atj/event.py:818-846. When the digest is unchanged, the old time stands and the re-record leaves no trace. When the digest changes, the default is now() and the work time is lost unless --completed-at is passed. Keep the recorded_at fix'
+  summary: W28 (docs/0.5.0-beta-plan.md:262) misstates the code. It says a unit re-recorded after a stale digest carries no trace. In fact atj/event.py:826-829,845-846 stamps a changed-digest re-record with the clock. This event kept the original times only because the operator passed --completed-at (status.md:161,164). The gap is that no field records when a re-recording happened
+  artifact: docs/0.5.0-beta-plan.md:262
+  repair: Restate W28 from atj/event.py:818-846. When the digest is unchanged, the old time stands and the re-record leaves no trace. When the digest changes, the default is now() and the work time is lost unless --completed-at is passed. Keep the recorded_at fix
   state: repaired
 - id: FB2
   severity: minor
   scope: event
   blocking: false
-  summary: 'The repair row was first stamped 02:59:30Z, 4 s after its own commit 574f95c (02:59:26Z, on origin by 02:59:27Z). It was restamped to 02:59:26Z, and the amend 916a66a was made with GIT_COMMITTER_DATE forced back to 02:59:26Z. The local reflog shows the force-push at 02:59:34Z, so the committer date is not when 916a66a was made. Git commit time is the independent clock that FA3, FA5 and DGA1 relied on. The row does not disclose the restamp, and it reads "without restamping"'
-  artifact: 'events/trial-2-2026/status.md:179; commit 916a66a'
+  summary: The repair row was first stamped 02:59:30Z, 4 s after its own commit 574f95c (02:59:26Z, on origin by 02:59:27Z). It was restamped to 02:59:26Z, and the amend 916a66a was made with GIT_COMMITTER_DATE forced back to 02:59:26Z. The local reflog shows the force-push at 02:59:34Z, so the committer date is not when 916a66a was made. Git commit time is the independent clock that FA3, FA5 and DGA1 relied on. The row does not disclose the restamp, and it reads "without restamping"
+  artifact: events/trial-2-2026/status.md:179; commit 916a66a
   repair: 'Do not rewrite history again. Add one ledger row with the facts: first stamp 02:59:30Z in 574f95c (02:59:26Z), restamped, amended with a forced committer date, real amend at or before the 02:59:34Z push. From here on, restamp rows and never commit dates'
   state: repaired
 - id: FB3
   severity: advisory
   scope: event
   blocking: false
-  summary: 'status.md:4 last_updated is still 00:14:43Z although rows :178-:179 (02:58:32Z, 02:59:26Z) were added. This is configuration F22 and tournament R4 recurring'
-  artifact: 'events/trial-2-2026/status.md:4'
-  repair: 'Bump last_updated in the FB2 disclosure commit'
+  summary: status.md:4 last_updated is still 00:14:43Z although rows :178-:179 (02:58:32Z, 02:59:26Z) were added. This is configuration F22 and tournament R4 recurring
+  artifact: events/trial-2-2026/status.md:4
+  repair: Bump last_updated in the FB2 disclosure commit
   state: repaired
 - id: FB4
   severity: advisory
   scope: event
   blocking: false
-  summary: 'The tag trial-2-2026-consolidation-history is lightweight. It points at 923ffce1dd15f9df49a619fcebfb5bd55f95eb2b locally and on origin, but it records no tagger, date or reason'
-  artifact: 'refs/tags/trial-2-2026-consolidation-history'
-  repair: 'Optional. Replace it with an annotated tag on the same commit'
+  summary: The tag trial-2-2026-consolidation-history is lightweight. It points at 923ffce1dd15f9df49a619fcebfb5bd55f95eb2b locally and on origin, but it records no tagger, date or reason
+  artifact: refs/tags/trial-2-2026-consolidation-history
+  repair: Optional. Replace it with an annotated tag on the same commit
   state: repaired
 - id: FC1
   severity: minor
   scope: framework
   blocking: false
-  summary: 'The restated W28 (docs/0.5.0-beta-plan.md:262) gets the code right (atj/event.py:831-846) but misattributes its evidence. It says bracket:draw and the dossier units were re-recorded after a digest change, citing status.md:161,164,177. :161 is matchup:mu-final-01, not bracket or dossier. :177 is the first recording of both dossier units, which first appear in c732850. Only :164 (bracket:draw) and :161 (matchup) are re-records after a digest change'
-  artifact: 'docs/0.5.0-beta-plan.md:262'
-  repair: 'Restate the evidence clause. bracket:draw (:164) and matchup:mu-final-01 (:161) were re-recorded after a digest change with --completed-at set to the original work time. Both dossier units were first recorded (:177) with --completed-at set to their last content edit. In neither case does the ledger unit record when it was recorded'
+  summary: The restated W28 (docs/0.5.0-beta-plan.md:262) gets the code right (atj/event.py:831-846) but misattributes its evidence. It says bracket:draw and the dossier units were re-recorded after a digest change, citing status.md:161,164,177. :161 is matchup:mu-final-01, not bracket or dossier. :177 is the first recording of both dossier units, which first appear in c732850. Only :164 (bracket:draw) and :161 (matchup) are re-records after a digest change
+  artifact: docs/0.5.0-beta-plan.md:262
+  repair: Restate the evidence clause. bracket:draw (:164) and matchup:mu-final-01 (:161) were re-recorded after a digest change with --completed-at set to the original work time. Both dossier units were first recorded (:177) with --completed-at set to their last content edit. In neither case does the ledger unit record when it was recorded
   state: repaired
 - id: FC2
   severity: advisory
   scope: event
   blocking: false
-  summary: 'The last-row wording at status.md:181 was edited again in 957bc66 (03:02:01Z), after that row''s own stamp. last_updated stays 03:01:53Z, which is 710a4db. The edit is a wording clarification (:180 to :179), and the commit message records it'
-  artifact: 'events/trial-2-2026/status.md:4,181'
-  repair: 'None required. Bump last_updated with the next ledger edit'
+  summary: The last-row wording at status.md:181 was edited again in 957bc66 (03:02:01Z), after that row's own stamp. last_updated stays 03:01:53Z, which is 710a4db. The edit is a wording clarification (:180 to :179), and the commit message records it
+  artifact: events/trial-2-2026/status.md:4,181
+  repair: None required. Bump last_updated with the next ledger edit
   state: repaired
 - id: FD1
   severity: advisory
   scope: event
   blocking: false
-  summary: 'status.md:182 puts the round-three audit (9d1be78, 03:03:24Z) and its repair (d8a001a) in one row. The row is stamped at the repair commit and reads PASS WITH ADVISORIES for a repair that no audit had yet seen. Rows :178/:179 and :180/:181 kept audit and repair apart. Round four has now audited the repair, and every fact in the row is correct'
-  artifact: 'events/trial-2-2026/status.md:182'
-  repair: 'None required. From now on, write the audit row and the repair row separately, and mark the repair not-audited until it is re-audited'
+  summary: status.md:182 puts the round-three audit (9d1be78, 03:03:24Z) and its repair (d8a001a) in one row. The row is stamped at the repair commit and reads PASS WITH ADVISORIES for a repair that no audit had yet seen. Rows :178/:179 and :180/:181 kept audit and repair apart. Round four has now audited the repair, and every fact in the row is correct
+  artifact: events/trial-2-2026/status.md:182
+  repair: None required. From now on, write the audit row and the repair row separately, and mark the repair not-audited until it is re-audited
   state: accepted
+approved_by: event-director
+approved_at: "2026-09-24T03:04:22Z"
 ---
 
 # Final Event Audit: the complete judging record, first pass

@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
 current_stage: final-audit
-last_updated: "2026-09-24T03:03:25Z"
+last_updated: "2026-09-24T03:04:29Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -13,7 +13,7 @@ stage_gates:
   bracket-audited: passed
   tournament-audited: passed
   dossiers-approved: passed
-  final-audit-passed: pending
+  final-audit-passed: passed
 units:
 - unit_id: bracket:draw
   stage: bracket
@@ -47,6 +47,14 @@ units:
   - dossiers/team-scribe.md
   audit_result: PASS WITH ADVISORIES
   completed_at: "2026-09-23T20:30:25Z"
+- unit_id: final:audit
+  stage: final-audit
+  state: complete
+  input_digest: 77af54f6a1477f27
+  outputs:
+  - audits/final.md
+  audit_result: PASS WITH ADVISORIES
+  completed_at: "2026-09-24T03:04:22Z"
 gate_evidence:
   configuration-audited: audits/configuration.md
   roster-frozen: audits/intake.md
@@ -56,6 +64,7 @@ gate_evidence:
   bracket-audited: audits/bracket.md
   tournament-audited: audits/tournament.md
   dossiers-approved: audits/dossiers.md
+  final-audit-passed: audits/final.md
 ---
 
 # Event Status
@@ -70,7 +79,7 @@ gate_evidence:
 - [x] Bracket frozen and audited
 - [x] Tournament complete
 - [x] All team dossiers approved
-- [ ] Final event audit passed
+- [x] Final event audit passed
 - [ ] Event marked complete
 ## Team progress
 
@@ -180,3 +189,5 @@ gate_evidence:
 | 2026-09-24T03:01:42Z | Final audit re-audited, round two, scoped to `de797ea..916a66a`, `93cfb5e`. **PASS WITH ADVISORIES.** FB1 minor (W28 misstated `atj/event.py:831-846`), FB2 minor, FB3 and FB4 advisory. The auditor ran no record, approve, gate or advance command | de797ea..916a66a | audits/final.md | PASS WITH ADVISORIES |
 | 2026-09-24T03:01:53Z | Final audit repaired, round two. FB2 disclosed: row `:179` was first stamped 02:59:30Z, 4 s after its commit `574f95c`; the orchestrator restamped it to 02:59:26Z and amended with `GIT_COMMITTER_DATE` forced to 02:59:26Z, force-pushed as `916a66a`, which was in fact made between 02:59:27Z and 02:59:34Z. The row's "without restamping" refers to the FA3 rows, not itself. History is not rewritten again. FB1 W28 restated from source. FB3 `last_updated` bumped. FB4 the tag is now annotated, still on `923ffce` | audits/final.md FB1-FB4 | status.md, docs/0.5.0-beta-plan.md | not-audited |
 | 2026-09-24T03:03:25Z | Final audit re-audited, round three, scoped to `93cfb5e..957bc66`. **PASS WITH ADVISORIES.** FB1-FB4 repaired; FC1 minor (W28's evidence clause misread `:161,177`), FC2 advisory. Repaired in the same commit: W28 names `matchup:mu-final-01` and `bracket:draw` as the re-records (`:161,164`) and the dossier units as first recordings (`:177`); `last_updated` bumped | 93cfb5e..957bc66 | audits/final.md, status.md, docs/0.5.0-beta-plan.md | PASS WITH ADVISORIES |
+| 2026-09-24T03:04:00Z | Final audit re-audited, round four, scoped to `9d1be78..d8a001a`. **PASS WITH ADVISORIES.** FC1 and FC2 repaired; FD1 advisory (`:182` combines an audit and its repair). The auditor ran no record, approve, gate or advance command | 9d1be78..d8a001a | audits/final.md | PASS WITH ADVISORIES |
+| 2026-09-24T03:04:29Z | `atj event approve` as event-director on `audits/final.md` at 03:04:22Z, unit `final:audit` recorded, gate `final-audit-passed` passed. Run by the orchestrator on the event-director's in-session instruction "Follow your own recommendations where ever you can". Not advanced: FA2, FA7 and CF11 are the event-director's to settle before `complete` | audits/final.md | status.md | PASS WITH ADVISORIES |
