@@ -611,6 +611,45 @@ class ApprovalStateCanBeWritten(unittest.TestCase):
         finally:
             shutil.rmtree(temporary)
 
+    def test_a_draft_public_artifact_can_be_approved(self):
+        """trial-2-2026: approve refused the public matchup summary on the two
+        `approval` findings that the approval itself clears."""
+        temporary, directory = sandbox(SAMPLE)
+        try:
+            target = directory / "public" / "final.md"
+            metadata, body = frontmatter.read(target)
+            metadata["approval_state"] = "draft"
+            metadata["approved_by"] = None
+            metadata.pop("approved_at", None)
+            target.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+
+            code, output = run_cli("event", "approve", str(target), "--event-dir", str(directory))
+            self.assertEqual(code, 0, output)
+            after, _ = frontmatter.read(target)
+            self.assertEqual(after["approval_state"], "approved")
+            self.assertTrue(after["approved_by"])
+        finally:
+            shutil.rmtree(temporary)
+
+    def test_a_draft_public_artifact_with_another_blocker_is_refused(self):
+        """Dropping the `approval` findings must not clear any other blocker."""
+        temporary, directory = sandbox(SAMPLE)
+        try:
+            target = directory / "public" / "final.md"
+            metadata, body = frontmatter.read(target)
+            metadata["approval_state"] = "draft"
+            metadata["approved_by"] = None
+            metadata["evidence_package_id"] = "ev:private"
+            target.write_text(frontmatter.dump(metadata, body), encoding="utf-8")
+            before = target.read_text(encoding="utf-8")
+
+            code, output = run_cli("event", "approve", str(target), "--event-dir", str(directory))
+            self.assertEqual(code, 1, output)
+            self.assertIn("private-field", output)
+            self.assertEqual(target.read_text(encoding="utf-8"), before)
+        finally:
+            shutil.rmtree(temporary)
+
     def test_withdrawing_clears_the_approving_official(self):
         temporary, directory = sandbox(SAMPLE)
         try:

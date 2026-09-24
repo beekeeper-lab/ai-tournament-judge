@@ -433,6 +433,11 @@ def cmd_event_approve(args) -> int:
         disqualifying = [
             f for f in report.findings if f.severity in ("blocking", "major")
         ]
+        if args.state == "approved":
+            # A public artifact's `approval` findings say it is not yet approved,
+            # which is what this command is about to write. Counting them made
+            # every public artifact unapprovable.
+            disqualifying = [f for f in disqualifying if f.rule != "approval"]
         state = "valid" if not disqualifying else "invalid"
         if args.state == "approved" and disqualifying:
             refused.append((path, disqualifying))

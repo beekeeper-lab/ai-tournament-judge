@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
-current_stage: dossiers
-last_updated: "2026-09-23T18:53:28Z"
+current_stage: final-audit
+last_updated: "2026-09-24T00:14:43Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -12,7 +12,7 @@ stage_gates:
   consolidation-audited: passed
   bracket-audited: passed
   tournament-audited: passed
-  dossiers-approved: pending
+  dossiers-approved: passed
   final-audit-passed: pending
 units:
 - unit_id: bracket:draw
@@ -31,6 +31,22 @@ units:
   - matchups/mu-final-01.md
   audit_result: PASS WITH ADVISORIES
   completed_at: "2026-09-23T17:26:17Z"
+- unit_id: dossier:team-demos
+  stage: dossiers
+  state: complete
+  input_digest: 30f66e437319018b
+  outputs:
+  - dossiers/team-demos.md
+  audit_result: PASS WITH ADVISORIES
+  completed_at: "2026-09-23T20:30:25Z"
+- unit_id: dossier:team-scribe
+  stage: dossiers
+  state: complete
+  input_digest: 0ce3f649bf8a07b2
+  outputs:
+  - dossiers/team-scribe.md
+  audit_result: PASS WITH ADVISORIES
+  completed_at: "2026-09-23T20:30:25Z"
 gate_evidence:
   configuration-audited: audits/configuration.md
   roster-frozen: audits/intake.md
@@ -39,6 +55,7 @@ gate_evidence:
   consolidation-audited: audits/consolidation.md
   bracket-audited: audits/bracket.md
   tournament-audited: audits/tournament.md
+  dossiers-approved: audits/dossiers.md
 ---
 
 # Event Status
@@ -52,15 +69,15 @@ gate_evidence:
 - [x] All consolidated reports audited
 - [x] Bracket frozen and audited
 - [x] Tournament complete
-- [ ] All team dossiers approved
+- [x] All team dossiers approved
 - [ ] Final event audit passed
 - [ ] Event marked complete
 ## Team progress
 
 | Team ID | Intake | Evidence | Four judgments | Consolidated | Audited | Dossier |
 |---|---|---|---|---|---|---|
-| team-scribe | pinned `67969dd9`, approved, roster frozen | `ev:…:018cf089`, sandboxed-partial, approved | 4 of 4, audited over three rounds | not finalized; `agentic` NE accepted by `adj:trial-2-2026:team-scribe:01`, provisional 32.5 | judgments audited, gate passed | — |
-| team-demos | pinned `dc35f696`, approved, roster frozen | `ev:…:cb3847cb`, sandboxed-partial, approved | 4 of 4, audited over three rounds | not finalized; `functional` NE accepted by `adj:trial-2-2026:team-demos:01`, provisional 52.5 | judgments audited, gate passed | — |
+| team-scribe | pinned `67969dd9`, approved, roster frozen | `ev:…:018cf089`, sandboxed-partial, approved | 4 of 4, audited over three rounds | not finalized; `agentic` NE accepted by `adj:trial-2-2026:team-scribe:01`, provisional 32.5 | judgments audited, gate passed | approved 2026-09-24, audit PASS WITH ADVISORIES |
+| team-demos | pinned `dc35f696`, approved, roster frozen | `ev:…:cb3847cb`, sandboxed-partial, approved | 4 of 4, audited over three rounds | not finalized; `functional` NE accepted by `adj:trial-2-2026:team-demos:01`, provisional 52.5 | judgments audited, gate passed | approved 2026-09-24, audit PASS WITH ADVISORIES |
 
 ## Blockers and adjudications
 
@@ -145,3 +162,16 @@ gate_evidence:
 | 2026-09-23T18:52:00Z | Tournament re-audited, round five, scoped to the round-four repair `d5c8f32`; report superseded in place. **PASS WITH ADVISORIES.** U1-U3 repaired; V1 minor (a repair row stamped with the auditor's record time, fixed in the approval commit), V2 accepted. The auditor ran no record, approve, gate or advance command | audits/tournament.md, the repair diff `958d7df..d5c8f32` | audits/tournament.md | PASS WITH ADVISORIES |
 | 2026-09-23T18:52:39Z | `atj event approve` on `audits/tournament.md` as event-director, then `atj bracket advance`: `mu:trial-2-2026:final:01`, team-demos advances, `ready to judge next: none`. Unit `matchup:mu-final-01` re-recorded with the audit result; `completed_at` held at 17:26:17Z | audits/tournament.md, matchups/mu-final-01.md | bracket.json, bracket.md, status.md | PASS WITH ADVISORIES |
 | 2026-09-23T18:53:23Z | The advance changed `bracket.json` by its `winner` field alone (verified by diff), which staled `bracket:draw`, because its digest covers the whole file. Re-recorded with the draw's own 01:55:10Z and its bracket-audit result; framework defect `W25`. `atj event gate` tournament-audited passed on `audits/tournament.md`. Open and not blocking: F8 (matchup model differs from `event.md`) and the public summary, both for the event-director | bracket.json, audits/tournament.md | status.md, bracket.md, docs/0.5.0-beta-plan.md | gate tournament-audited passed on audits/tournament.md; `atj event advance` tournament to dossiers |
+| 2026-09-23T20:16:03Z | Dossiers drafted for team-demos and team-scribe by two `build-team-dossier` writers, `ffcf150`. `started_at` and `completed_at` were stamped by each writer from `date -u`, by their own reports; the identical 20:01:27Z `completed_at` is not independently verified (DOA1). Neither was approved | summaries/, judgments/, adjudications/, evidence manifests, runs/, matchups/mu-final-01.md | dossiers/team-demos.md, dossiers/team-scribe.md | not-audited |
+| 2026-09-23T20:17:57Z | Framework fix `ac513ed`: `atj event approve` no longer counts the `approval`-rule findings it is about to clear, which made every public artifact unapprovable. Landed on the event branch mid-stage (DOA10) | atj/cli.py | atj/cli.py, tests/test_tier1_regressions.py | tests 519 passed, release-check PASS |
+| 2026-09-23T20:17:57Z | `public/mu-final-01.md` placed by copy from the audited tournament draft (body identical, DOA3) and approved with `atj event approve` as event-director, per-criterion outcomes kept in words. The command was run by the orchestrator on the event-director's answer in the session (DOA2). Closes tournament T5 and F15, `c0a55df` | the round-five tournament draft | public/mu-final-01.md | publication CLEAR |
+| 2026-09-23T20:18:32Z | Tournament F8 closed by `overrides/ovr-trial-2-2026-model-substitution.md`, the event-director's decision to accept `claude-opus-5-5[1m]` for the tournament and dossiers stages with no re-run, `483cff7`. Tournament R5 closed: unit `matchup:mu-final-01` carries `PASS WITH ADVISORIES` | tournament F8 | overrides/ovr-trial-2-2026-model-substitution.md | - |
+| 2026-09-23T20:29:16Z | Dossiers audited, round one, `8200b4e`. **PASS WITH ADVISORIES.** DO1 major, DO2-DO11 minor, DOA1-DOA10. The auditor ran no record, approve, gate or advance command | ffcf150..483cff7 | audits/dossiers.md | PASS WITH ADVISORIES |
+| 2026-09-23T20:30:25Z | Errata to audited consolidated summaries, recorded here because an edit would stale `bracket:draw` and the dossier units (DO2-DO4, DOA8). `summaries/team-demos.md:425-427`: demo 06's byte-identical prompt was named by three judges (backend, frontend-ux, product-agentic), not four. `summaries/team-scribe.md:203-205`: narrowing `main.py:50` was the highest-value improvement for two judges (`judge-backend.md:95`, `judge-product-agentic.md:106`), not three. `summaries/team-scribe.md:160-166`: `PipelineStatus` is credited by three judges (backend, frontend-ux, product-agentic), not four; security-ops credits the retry decorator. Carry to the final audit | audits/dossiers.md DO2-DO4 | status.md | - |
+| 2026-09-23T20:30:25Z | Dossiers repaired, round one. DO1 demo 06 attributed to three judges; DO5 the empty-hostname guard to all four; DO6 `judgments/team-scribe/` and every cited run record declared in both dossiers; DO7 the tournament section no longer states the other team's scoring state; DO8 PySide6 cited to `runs/team-scribe-envcheck-01.json`; DOA5 display name used; DOA6 independence stated as the event's record. DO10 and DOA9 the override is a rules exception citing `disagreement-and-adjudication.md:9` and `event.md:103`, and was returned to `draft` for the event-director to approve (DOA2). DO11 negative approve test added. DOA7 not taken | audits/dossiers.md | dossiers/*.md, overrides/ovr-trial-2-2026-model-substitution.md, tests/test_tier1_regressions.py, status.md | not-audited |
+| 2026-09-23T20:33:43Z | Dossiers re-audited, round two, scoped to `8200b4e..ef6d656`. **PASS WITH ADVISORIES.** DO1-DO11 repaired; DOA2 open for the event-director, DOA8 deferred; new DE1 minor, DEA1-DEA3 advisory. The auditor ran no record, approve, gate or advance command | 8200b4e..ef6d656 | audits/dossiers.md | PASS WITH ADVISORIES |
+| 2026-09-23T20:35:01Z | Dossiers repaired, round two, `16a332c`. DE1 the override's authority sentence reworded | audits/dossiers.md DE1 | overrides/ovr-trial-2-2026-model-substitution.md | not-audited |
+| 2026-09-23T20:36:51Z | Dossiers re-audited, round three, scoped to `16a332c`. **PASS WITH ADVISORIES.** New DF1 minor (the DE1 sentence cited `event.md:103-105` for facts at `:23-27`), DF2 minor (these ledger rows missing). No unit stale | 16a332c | audits/dossiers.md | PASS WITH ADVISORIES |
+| 2026-09-23T20:37:33Z | Dossiers repaired, round three. DF1 the override cites `event.md:23-27` for the four official keys and `:103` for "holds all four authorities", and states why rules exceptions fall to the event-director. DEA2 the override's `completed_at` moved to this edit; `framework_commit` left as the commit it was first written at. DF2 these rows | audits/dossiers.md DF1, DF2 | overrides/ovr-trial-2-2026-model-substitution.md, status.md | not-audited |
+| 2026-09-23T20:38:48Z | Dossiers re-audited, round four, scoped to `a6569f8`. **PASS WITH ADVISORIES.** Nothing new at minor or above; DGA1 advisory (the round-one repair row is 53s before its commit). DEA1 and DOA2 open, DOA8 deferred | a6569f8 | audits/dossiers.md | PASS WITH ADVISORIES |
+| 2026-09-24T00:14:24Z | `atj event approve` as event-director on `audits/dossiers.md`, `overrides/ovr-trial-2-2026-model-substitution.md` and both dossiers, run by the orchestrator on the event-director's explicit delegation in session. Closes tournament F8 and DEA1. DOA2 closed by the same delegation, which covers the 20:17:22Z public-summary approval. Units `dossier:team-demos` and `dossier:team-scribe` recorded with `completed_at` 20:30:25Z, the last edit to the dossiers | audits/dossiers.md | dossiers/*.md, overrides/ovr-trial-2-2026-model-substitution.md, status.md | PASS WITH ADVISORIES |
