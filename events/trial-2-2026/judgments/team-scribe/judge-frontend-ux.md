@@ -29,17 +29,18 @@ model_used: claude-opus-5
 started_at: "2026-09-22T10:28:16Z"
 completed_at: "2026-09-22T10:34:48Z"
 visibility: private
-approval_state: draft
-validation_state: unvalidated
+approval_state: approved
+validation_state: valid
 model:
   model_requested: claude-opus-5
   model_used: claude-opus-5
   started_at: "2026-09-22T10:28:16Z"
   completed_at: "2026-09-22T10:34:48Z"
   verified: true
-  note: >-
-    Model identity is reported by the execution harness that invoked this judge,
-    not asserted by the model about itself. No self-report was used.
+  note: Model identity is reported by the execution harness that invoked this judge, not asserted by the model about itself. No self-report was used.
+approved_by: event-director
+approved_at: "2026-09-24T12:13:32Z"
+approval_note: Approved by the event-director in session 2026-09-24 ('yes to all'); closes final audit FA7
 ---
 
 # Individual Judgment

@@ -458,7 +458,8 @@ class AuditFindingsScopeTheGate(unittest.TestCase):
     def test_the_committed_audits_are_unaffected(self):
         """Fifteen audits across two completed events carry no `findings:`.
 
-        None of them may change meaning, and none may start holding a gate it
+        None of them may change meaning, no audit in a completed event may hold
+        a gate its verdict does not support, and none may start holding a gate it
         did not hold before.
 
         Completed events are derived, not listed. `findings:` is a supported
@@ -478,11 +479,13 @@ class AuditFindingsScopeTheGate(unittest.TestCase):
             path for directory in completed
             for path in (directory / "audits").glob("*.md")
         )
-        self.assertGreaterEqual(len(audits), 15)
+        legacy = [
+            audit for audit in audits if "findings" not in frontmatter.read(audit)[0]
+        ]
+        self.assertGreaterEqual(len(legacy), 15)
         for audit in audits:
             with self.subTest(audit=str(audit.relative_to(ROOT))):
                 metadata, _ = frontmatter.read(audit)
-                self.assertNotIn("findings", metadata)
                 passing = metadata["result"] in event_module.PASS_RESULTS
                 problems = event_module.gate_findings_problems(metadata, audit.name)
                 self.assertEqual(problems == [], passing, problems)

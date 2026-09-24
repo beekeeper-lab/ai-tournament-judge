@@ -24,8 +24,11 @@ blocked_reasons:
 adjudication_ids:
 - adj:trial-2-2026:team-scribe:01
 visibility: private
-approval_state: draft
-validation_state: unvalidated
+approval_state: approved
+validation_state: valid
+approved_by: event-director
+approved_at: "2026-09-24T12:13:32Z"
+approval_note: Approved by the event-director in session 2026-09-24 ('yes to all'); closes final audit FA7
 ---
 
 # Consolidated Team Report — team-scribe (ScribeVault)

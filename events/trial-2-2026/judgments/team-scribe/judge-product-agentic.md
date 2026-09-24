@@ -29,18 +29,18 @@ model_used: claude-opus-5
 started_at: "2026-09-22T10:28:16Z"
 completed_at: "2026-09-22T10:33:45Z"
 visibility: private
-approval_state: draft
-validation_state: unvalidated
+approval_state: approved
+validation_state: valid
 model:
   model_requested: claude-opus-5
   model_used: claude-opus-5
   started_at: "2026-09-22T10:28:16Z"
   completed_at: "2026-09-22T10:33:45Z"
   verified: true
-  note: >-
-    Model identity is harness-reported for this judging run, not a self-report by
-    the model. No separate attestation source was available, and nothing in the
-    submission or evidence package was used to establish it.
+  note: Model identity is harness-reported for this judging run, not a self-report by the model. No separate attestation source was available, and nothing in the submission or evidence package was used to establish it.
+approved_by: event-director
+approved_at: "2026-09-24T12:13:32Z"
+approval_note: Approved by the event-director in session 2026-09-24 ('yes to all'); closes final audit FA7
 ---
 
 # Individual Judgment
