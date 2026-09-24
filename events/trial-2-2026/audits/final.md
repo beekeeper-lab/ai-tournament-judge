@@ -1,6 +1,6 @@
 ---
 event_id: trial-2-2026
-audit_scope: final-audit stage, the complete judging record of trial-2-2026 end to end (intake, evidence, judgments, consolidation, bracket, tournament, dossiers, public), including the eight prior stage audits; round two scoped to the repair diff de797ea..916a66a
+audit_scope: final-audit stage, the complete judging record of trial-2-2026 end to end (intake, evidence, judgments, consolidation, bracket, tournament, dossiers, public), including the eight prior stage audits; round two scoped to the repair diff de797ea..916a66a; round three scoped to 93cfb5e..957bc66 and the annotated tag
 audit_id: final
 team_id: null
 match_id: null
@@ -8,11 +8,11 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.1.0
 persona: judging-auditor@1.1.0
-framework_commit: 916a66a1e3bd1dee39426ed88160dd31ff02ff7d
+framework_commit: 957bc66499f558de96886bb6409710d9b544ba2b
 model_requested: claude-opus-5
 model_used: claude-opus-5-5[1m]
 started_at: "2026-09-24T02:48:05Z"
-completed_at: "2026-09-24T03:00:38Z"
+completed_at: "2026-09-24T03:02:32Z"
 visibility: private
 approval_state: draft
 validation_state: unvalidated
@@ -201,7 +201,7 @@ findings:
   summary: 'W28 (docs/0.5.0-beta-plan.md:262) misstates the code. It says a unit re-recorded after a stale digest carries no trace. In fact atj/event.py:826-829,845-846 stamps a changed-digest re-record with the clock. This event kept the original times only because the operator passed --completed-at (status.md:161,164). The gap is that no field records when a re-recording happened'
   artifact: 'docs/0.5.0-beta-plan.md:262'
   repair: 'Restate W28 from atj/event.py:818-846. When the digest is unchanged, the old time stands and the re-record leaves no trace. When the digest changes, the default is now() and the work time is lost unless --completed-at is passed. Keep the recorded_at fix'
-  state: open
+  state: repaired
 - id: FB2
   severity: minor
   scope: event
@@ -209,7 +209,7 @@ findings:
   summary: 'The repair row was first stamped 02:59:30Z, 4 s after its own commit 574f95c (02:59:26Z, on origin by 02:59:27Z). It was restamped to 02:59:26Z, and the amend 916a66a was made with GIT_COMMITTER_DATE forced back to 02:59:26Z. The local reflog shows the force-push at 02:59:34Z, so the committer date is not when 916a66a was made. Git commit time is the independent clock that FA3, FA5 and DGA1 relied on. The row does not disclose the restamp, and it reads "without restamping"'
   artifact: 'events/trial-2-2026/status.md:179; commit 916a66a'
   repair: 'Do not rewrite history again. Add one ledger row with the facts: first stamp 02:59:30Z in 574f95c (02:59:26Z), restamped, amended with a forced committer date, real amend at or before the 02:59:34Z push. From here on, restamp rows and never commit dates'
-  state: open
+  state: repaired
 - id: FB3
   severity: advisory
   scope: event
@@ -217,7 +217,7 @@ findings:
   summary: 'status.md:4 last_updated is still 00:14:43Z although rows :178-:179 (02:58:32Z, 02:59:26Z) were added. This is configuration F22 and tournament R4 recurring'
   artifact: 'events/trial-2-2026/status.md:4'
   repair: 'Bump last_updated in the FB2 disclosure commit'
-  state: open
+  state: repaired
 - id: FB4
   severity: advisory
   scope: event
@@ -225,6 +225,22 @@ findings:
   summary: 'The tag trial-2-2026-consolidation-history is lightweight. It points at 923ffce1dd15f9df49a619fcebfb5bd55f95eb2b locally and on origin, but it records no tagger, date or reason'
   artifact: 'refs/tags/trial-2-2026-consolidation-history'
   repair: 'Optional. Replace it with an annotated tag on the same commit'
+  state: repaired
+- id: FC1
+  severity: minor
+  scope: framework
+  blocking: false
+  summary: 'The restated W28 (docs/0.5.0-beta-plan.md:262) gets the code right (atj/event.py:831-846) but misattributes its evidence. It says bracket:draw and the dossier units were re-recorded after a digest change, citing status.md:161,164,177. :161 is matchup:mu-final-01, not bracket or dossier. :177 is the first recording of both dossier units, which first appear in c732850. Only :164 (bracket:draw) and :161 (matchup) are re-records after a digest change'
+  artifact: 'docs/0.5.0-beta-plan.md:262'
+  repair: 'Restate the evidence clause. bracket:draw (:164) and matchup:mu-final-01 (:161) were re-recorded after a digest change with --completed-at set to the original work time. Both dossier units were first recorded (:177) with --completed-at set to their last content edit. In neither case does the ledger unit record when it was recorded'
+  state: open
+- id: FC2
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'The last-row wording at status.md:181 was edited again in 957bc66 (03:02:01Z), after that row''s own stamp. last_updated stays 03:01:53Z, which is 710a4db. The edit is a wording clarification (:180 to :179), and the commit message records it'
+  artifact: 'events/trial-2-2026/status.md:4,181'
+  repair: 'None required. Bump last_updated with the next ledger edit'
   state: open
 ---
 
@@ -247,6 +263,8 @@ roster I wrote by hand from `teams.md`.
 `event.md:16`'s `claude-opus-5`. That is part of `FA2`.
 
 ## Result
+
+**Round three: PASS WITH ADVISORIES.** It adds `FC1` (minor, framework) and `FC2` (advisory). FB1-FB4 are repaired. The gate may be set.
 
 **Round two: PASS WITH ADVISORIES.** It adds `FB1`-`FB4`: two minor, two advisory, none blocking or major. See [Round two](#round-two-the-repair-diff-de797ea916a66a). The gate may still be set.
 
@@ -723,6 +741,44 @@ git commit -m "event: trial-2-2026 final audit round two repairs (FB1-FB3)" && g
 # FB4, optional
 git tag -a -f trial-2-2026-consolidation-history 923ffce -m "consolidation history of trial-2-2026, squashed in c728437" && git push -f origin trial-2-2026-consolidation-history
 # then, unchanged from round one
+python3 -m atj event approve events/trial-2-2026/audits/final.md --official event-director
+python3 -m atj event unit events/trial-2-2026 record --id final:audit --stage final-audit --output audits/final.md --audit-result "PASS WITH ADVISORIES"
+python3 -m atj event gate events/trial-2-2026 final-audit-passed passed --audit audits/final.md
+```
+
+## Round three: `93cfb5e..957bc66` and the annotated tag
+
+Scope: rows `status.md:180-181`, `last_updated`, W28 at
+`docs/0.5.0-beta-plan.md:262`, the follow-up wording commit `957bc66`, and
+`refs/tags/trial-2-2026-consolidation-history`. There were no amends this round.
+Commits `93cfb5e`, `710a4db` and `957bc66` have author date equal to committer
+date. Origin's reflog shows pushes at 03:01:44Z, 03:01:54Z and 03:02:03Z, each
+within 2 s of its commit.
+
+| Item | Checked against | Verdict |
+|---|---|---|
+| FB1: W28 restated | `atj/event.py:831` `unit = find_unit(...)` through `:846` `stamp = versions.now()`. The unchanged-digest path keeps `completed_at` (`:838-844`), the changed-digest path uses the clock (`:845-846`), and `--completed-at` overrides both (`:834-837`). The code description is now correct | repaired. The evidence clause is wrong (`FC1`) |
+| FB2: disclosure row `:181` | first stamp 02:59:30Z in `574f95c`, committer 02:59:26Z: 4 s, correct. Restamped to 02:59:26Z, and `GIT_COMMITTER_DATE` forced to 02:59:26Z: `916a66a` author and committer 1790218766, correct. Made between 02:59:27Z (the `574f95c` push) and 02:59:34Z (the `916a66a` push), from the origin reflog: correct. "without restamping" is explained. "History is not rewritten again": no amend since, and `916a66a` is an ancestor of `957bc66` | repaired, every fact matches git |
+| FB3: `last_updated` | 03:01:53Z = `710a4db` | repaired (FC2 notes the 957bc66 follow-up) |
+| FB4: tag | `git cat-file -t` gives `tag`. It points at object `923ffce1dd15f9df49a619fcebfb5bd55f95eb2b`, tagger time 1790218904 (03:01:44Z), and the message names c728437, PR #22 and 7ac67fb. On origin, `refs/tags/trial-2-2026-consolidation-history` is `d405953…`, peeled `^{}` to `923ffce1…` | repaired |
+| Row `:180` | 03:01:42Z = `93cfb5e`. The round-two counts match this report | correct |
+| Ordering | `:179` 02:59:26Z, `:180` 03:01:42Z, `:181` 03:01:53Z ascend. Each row is at or before its commit | correct |
+
+`atj event validate`, `atj validate reports` and `atj release-check` were re-run at
+`957bc66` with this section in place. The results are unchanged from round two.
+
+### Findings, round three
+
+| Severity | Rule | Artifact | Scope / blocking | Finding | Required repair |
+|---|---|---|---|---|---|
+| minor | accuracy of the deliverable | `docs/0.5.0-beta-plan.md:262` | framework / no | **FC1.** W28 cites `:161,164,177` as bracket and dossier re-records after a digest change. `:161` is the matchup unit, and `:177` is the dossiers' first recording | Restate the evidence clause as in `findings:` |
+| advisory | ledger | `status.md:4,181` | event / no | **FC2.** `:181` was reworded at 03:02:01Z, after `last_updated` 03:01:53Z | Bump with the next ledger edit |
+
+### Recommended commands, round three
+
+```bash
+# FC1 (and FC2's bump) in one ordinary commit
+git commit -m "docs: W28 evidence clause corrected (FC1)" && git push
 python3 -m atj event approve events/trial-2-2026/audits/final.md --official event-director
 python3 -m atj event unit events/trial-2-2026 record --id final:audit --stage final-audit --output audits/final.md --audit-result "PASS WITH ADVISORIES"
 python3 -m atj event gate events/trial-2-2026 final-audit-passed passed --audit audits/final.md
