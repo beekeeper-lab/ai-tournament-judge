@@ -1,6 +1,6 @@
 ---
 event_id: trial-2-2026
-audit_scope: final-audit stage, the complete judging record of trial-2-2026 end to end (intake, evidence, judgments, consolidation, bracket, tournament, dossiers, public), including the eight prior stage audits; round two scoped to the repair diff de797ea..916a66a; round three scoped to 93cfb5e..957bc66 and the annotated tag
+audit_scope: final-audit stage, the complete judging record of trial-2-2026 end to end (intake, evidence, judgments, consolidation, bracket, tournament, dossiers, public), including the eight prior stage audits; round two scoped to the repair diff de797ea..916a66a; round three scoped to 93cfb5e..957bc66 and the annotated tag; round four scoped to 9d1be78..d8a001a
 audit_id: final
 team_id: null
 match_id: null
@@ -8,11 +8,11 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.1.0
 persona: judging-auditor@1.1.0
-framework_commit: 957bc66499f558de96886bb6409710d9b544ba2b
+framework_commit: d8a001ac54fa757e762e0b89232b5bc77426a984
 model_requested: claude-opus-5
 model_used: claude-opus-5-5[1m]
 started_at: "2026-09-24T02:48:05Z"
-completed_at: "2026-09-24T03:02:32Z"
+completed_at: "2026-09-24T03:03:46Z"
 visibility: private
 approval_state: draft
 validation_state: unvalidated
@@ -233,7 +233,7 @@ findings:
   summary: 'The restated W28 (docs/0.5.0-beta-plan.md:262) gets the code right (atj/event.py:831-846) but misattributes its evidence. It says bracket:draw and the dossier units were re-recorded after a digest change, citing status.md:161,164,177. :161 is matchup:mu-final-01, not bracket or dossier. :177 is the first recording of both dossier units, which first appear in c732850. Only :164 (bracket:draw) and :161 (matchup) are re-records after a digest change'
   artifact: 'docs/0.5.0-beta-plan.md:262'
   repair: 'Restate the evidence clause. bracket:draw (:164) and matchup:mu-final-01 (:161) were re-recorded after a digest change with --completed-at set to the original work time. Both dossier units were first recorded (:177) with --completed-at set to their last content edit. In neither case does the ledger unit record when it was recorded'
-  state: open
+  state: repaired
 - id: FC2
   severity: advisory
   scope: event
@@ -241,7 +241,15 @@ findings:
   summary: 'The last-row wording at status.md:181 was edited again in 957bc66 (03:02:01Z), after that row''s own stamp. last_updated stays 03:01:53Z, which is 710a4db. The edit is a wording clarification (:180 to :179), and the commit message records it'
   artifact: 'events/trial-2-2026/status.md:4,181'
   repair: 'None required. Bump last_updated with the next ledger edit'
-  state: open
+  state: repaired
+- id: FD1
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: 'status.md:182 puts the round-three audit (9d1be78, 03:03:24Z) and its repair (d8a001a) in one row. The row is stamped at the repair commit and reads PASS WITH ADVISORIES for a repair that no audit had yet seen. Rows :178/:179 and :180/:181 kept audit and repair apart. Round four has now audited the repair, and every fact in the row is correct'
+  artifact: 'events/trial-2-2026/status.md:182'
+  repair: 'None required. From now on, write the audit row and the repair row separately, and mark the repair not-audited until it is re-audited'
+  state: accepted
 ---
 
 # Final Event Audit: the complete judging record, first pass
@@ -263,6 +271,8 @@ roster I wrote by hand from `teams.md`.
 `event.md:16`'s `claude-opus-5`. That is part of `FA2`.
 
 ## Result
+
+**Round four: PASS WITH ADVISORIES.** FC1 and FC2 are repaired. It adds `FD1` (advisory). Nothing is open at minor or above from rounds two to four. The gate may be set.
 
 **Round three: PASS WITH ADVISORIES.** It adds `FC1` (minor, framework) and `FC2` (advisory). FB1-FB4 are repaired. The gate may be set.
 
@@ -782,4 +792,35 @@ git commit -m "docs: W28 evidence clause corrected (FC1)" && git push
 python3 -m atj event approve events/trial-2-2026/audits/final.md --official event-director
 python3 -m atj event unit events/trial-2-2026 record --id final:audit --stage final-audit --output audits/final.md --audit-result "PASS WITH ADVISORIES"
 python3 -m atj event gate events/trial-2-2026 final-audit-passed passed --audit audits/final.md
+```
+
+## Round four: `9d1be78..d8a001a`
+
+Scope: W28 at `docs/0.5.0-beta-plan.md:262`, `status.md:4` and the new row
+`status.md:182`. `9d1be78` changes only this file. `d8a001a` changes only the
+plan and `status.md` (3 lines). Both commits have author date equal to committer
+date. Origin's reflog records the pushes at 03:03:25Z and 03:03:26Z. At
+`d8a001a`, `atj event validate` and `atj release-check` both pass.
+
+| Item | Checked against | Verdict |
+|---|---|---|
+| FC1: W28 evidence clause | `:161` is `matchup:mu-final-01`. Its commit `d5c8f32` moves `input_digest` `d3d4bf06…` → `0ddde002…` with `completed_at` unchanged, so it is a re-record after a digest change that holds the work time. `:164` is `bracket:draw`. Its commit `f9bbfb5` moves `3c88ccc1…` → `7c5f7f20…`, again with `completed_at` unchanged. `:177` covers both dossier units, which first appear in `c732850`, so that is a first recording at 20:30:25Z, the last content edit. The code clause matches `atj/event.py:831-846`, which is unchanged since round three | repaired. The ledger cannot show whether the held times came from `--completed-at` or from a hand edit. W28's fix covers both |
+| FC2: `last_updated` | 03:03:25Z = `d8a001a` | repaired |
+| Row `:182` stamp | 03:03:25Z = `d8a001a` committer time, so equal, which is permitted. It follows `:181` (03:01:53Z) | correct |
+| Row `:182` facts | "scoped to `93cfb5e..957bc66`", "FB1-FB4 repaired", "FC1 minor … `:161,177`", "FC2 advisory", and the repair description all match round three and the diff | correct. Its form is `FD1` |
+
+### Findings, round four
+
+| Severity | Rule | Artifact | Scope / blocking | Finding | Required repair |
+|---|---|---|---|---|---|
+| advisory | ledger form | `status.md:182` | event / no | **FD1.** One row carries both the audit and its repair, and it records a PASS for the unaudited repair. The facts are correct | None. Keep the two separate from now on |
+
+### Recommended commands, round four
+
+```bash
+# Commit this report, then:
+python3 -m atj event approve events/trial-2-2026/audits/final.md --official event-director
+python3 -m atj event unit events/trial-2-2026 record --id final:audit --stage final-audit --output audits/final.md --audit-result "PASS WITH ADVISORIES"
+python3 -m atj event gate events/trial-2-2026 final-audit-passed passed --audit audits/final.md
+# Before `atj event advance` to complete: Gregg settles FA2, FA7, CF11
 ```
