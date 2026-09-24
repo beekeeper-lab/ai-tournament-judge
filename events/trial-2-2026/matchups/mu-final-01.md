@@ -21,18 +21,35 @@ presentation_order: both
 passes:
   a_first:
     presented_first: team-demos
-    comparisons: {agentic: 0, engineering: 1, functional: 1, innovation: 0, product: 2, reliability: 0, security: 1}
+    comparisons:
+      agentic: 0
+      engineering: 1
+      functional: 1
+      innovation: 0
+      product: 2
+      reliability: 0
+      security: 1
   b_first:
     presented_first: team-scribe
-    comparisons: {agentic: -1, engineering: -1, functional: -2, innovation: 0, product: -2, reliability: 0, security: -1}
+    comparisons:
+      agentic: -1
+      engineering: -1
+      functional: -2
+      innovation: 0
+      product: -2
+      reliability: 0
+      security: -1
 combined_margin: 50.0
 order_disagreement: false
 outcome: confirmed
 winner: team-demos
 adjudication_id: null
 visibility: private
-approval_state: draft
-validation_state: unvalidated
+approval_state: approved
+validation_state: valid
+approved_by: event-director
+approved_at: "2026-09-24T12:13:32Z"
+approval_note: Approved by the event-director in session 2026-09-24 ('yes to all'); closes final audit FA7
 ---
 
 # Matchup Report

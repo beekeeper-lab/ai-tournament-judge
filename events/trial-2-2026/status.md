@@ -1,7 +1,7 @@
 ---
 event_id: trial-2-2026
 current_stage: final-audit
-last_updated: "2026-09-24T03:04:29Z"
+last_updated: "2026-09-24T12:14:20Z"
 blocked: false
 blocked_reason: null
 stage_gates:
@@ -18,35 +18,35 @@ units:
 - unit_id: bracket:draw
   stage: bracket
   state: complete
-  input_digest: 7c5f7f20e68c9919
+  input_digest: 0d1340ab10531011
   outputs:
   - bracket.json
   audit_result: PASS WITH ADVISORIES
-  completed_at: "2026-09-23T01:55:10Z"
+  completed_at: "2026-09-24T12:13:47Z"
 - unit_id: matchup:mu-final-01
   stage: tournament
   state: complete
-  input_digest: 0ddde002acd441b6
+  input_digest: 7e743af1f50eedcd
   outputs:
   - matchups/mu-final-01.md
   audit_result: PASS WITH ADVISORIES
-  completed_at: "2026-09-23T17:26:17Z"
+  completed_at: "2026-09-24T12:13:48Z"
 - unit_id: dossier:team-demos
   stage: dossiers
   state: complete
-  input_digest: 30f66e437319018b
+  input_digest: dcf08319fdac48f9
   outputs:
   - dossiers/team-demos.md
   audit_result: PASS WITH ADVISORIES
-  completed_at: "2026-09-23T20:30:25Z"
+  completed_at: "2026-09-24T12:13:48Z"
 - unit_id: dossier:team-scribe
   stage: dossiers
   state: complete
-  input_digest: 0ce3f649bf8a07b2
+  input_digest: fdd241595b3badac
   outputs:
   - dossiers/team-scribe.md
   audit_result: PASS WITH ADVISORIES
-  completed_at: "2026-09-23T20:30:25Z"
+  completed_at: "2026-09-24T12:13:48Z"
 - unit_id: final:audit
   stage: final-audit
   state: complete
@@ -191,3 +191,6 @@ gate_evidence:
 | 2026-09-24T03:03:25Z | Final audit re-audited, round three, scoped to `93cfb5e..957bc66`. **PASS WITH ADVISORIES.** FB1-FB4 repaired; FC1 minor (W28's evidence clause misread `:161,177`), FC2 advisory. Repaired in the same commit: W28 names `matchup:mu-final-01` and `bracket:draw` as the re-records (`:161,164`) and the dossier units as first recordings (`:177`); `last_updated` bumped | 93cfb5e..957bc66 | audits/final.md, status.md, docs/0.5.0-beta-plan.md | PASS WITH ADVISORIES |
 | 2026-09-24T03:04:21Z | Final audit re-audited, round four, scoped to `9d1be78..d8a001a`, `2006a59`. **PASS WITH ADVISORIES.** FC1 and FC2 repaired; FD1 advisory (`:182` combines an audit and its repair). The auditor ran no record, approve, gate or advance command | 9d1be78..d8a001a | audits/final.md | PASS WITH ADVISORIES |
 | 2026-09-24T03:04:29Z | `atj event approve` as event-director on `audits/final.md` at 03:04:22Z, unit `final:audit` recorded, gate `final-audit-passed` passed. Run by the orchestrator on the event-director's in-session instruction "Follow your own recommendations where ever you can". Not advanced: FA2, FA7 and CF11 are the event-director's to settle before `complete` | audits/final.md | status.md | PASS WITH ADVISORIES |
+| 2026-09-24T12:13:21Z | Final audit FA2, FA7 and CF11 settled by the event-director in session: "yes to all" to the orchestrator's three recommendations. CF11: the event-director confirms the approval delegation this record describes; approvals in this event run by the orchestrator were on that delegation. FA2: `overrides/ovr-trial-2-2026-model-substitution-audits.md` accepts `claude-opus-5-5[1m]` for the tournament, dossiers and final audits, approved 12:13:21Z; the earlier override is unchanged | audits/final.md FA2 CF11 | overrides/ovr-trial-2-2026-model-substitution-audits.md | not-audited |
+| 2026-09-24T12:13:32Z | FA7: `atj event approve` as event-director on the eight judgments, both matchup passes, `matchups/mu-final-01.md` and both summaries, 13 artifacts. The rewrite changed approval fields and `validation_state` (unvalidated to valid) and reflowed YAML; parsed front matter and every body are otherwise identical (checked by the orchestrator). `event.md` and `bracket.md` refused with blocking `location-unknown` and stay `draft`, not hand-edited: W29. The DO2-DO4 errata still stand; approval does not correct the three counts in the summaries | audits/final.md FA7 | judgments/*, matchup-passes/*, matchups/mu-final-01.md, summaries/*.md | not-audited |
+| 2026-09-24T12:13:48Z | The FA7 approvals changed the digests of `bracket:draw`, `matchup:mu-final-01` and both dossier units, which went stale. Re-recorded without `--completed-at`, so each carries the clock time of this re-record (12:13:47Z-12:13:48Z) in place of its work time: `bracket:draw` 2026-09-23T01:55:10Z, `matchup:mu-final-01` 2026-09-23T17:26:17Z, dossiers 2026-09-23T20:30:25Z. The tool printed "completed_at kept … the inputs did not change" for all four, which is false: W30. W29 and W30 added to `docs/0.5.0-beta-plan.md` | status.md units | status.md, docs/0.5.0-beta-plan.md | not-audited |
