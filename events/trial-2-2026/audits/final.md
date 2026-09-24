@@ -1,6 +1,6 @@
 ---
 event_id: trial-2-2026
-audit_scope: final-audit stage, the complete judging record of trial-2-2026 end to end (intake, evidence, judgments, consolidation, bracket, tournament, dossiers, public), including the eight prior stage audits; round two scoped to the repair diff de797ea..916a66a; round three scoped to 93cfb5e..957bc66 and the annotated tag; round four scoped to 9d1be78..d8a001a
+audit_scope: final-audit stage, the complete judging record of trial-2-2026 end to end (intake, evidence, judgments, consolidation, bracket, tournament, dossiers, public), including the eight prior stage audits; round two scoped to the repair diff de797ea..916a66a; round three scoped to 93cfb5e..957bc66 and the annotated tag; round four scoped to 9d1be78..d8a001a; round five scoped to e44385b..58cd942 (FA2, FA7, CF11 settlement)
 audit_id: final
 team_id: null
 match_id: null
@@ -8,11 +8,11 @@ commit: null
 evidence_package_id: null
 rubric: submission-evaluation@1.1.0
 persona: judging-auditor@1.1.0
-framework_commit: d8a001ac54fa757e762e0b89232b5bc77426a984
+framework_commit: 58cd942fdda05dfdb964c17e4977b7a4d2962b47
 model_requested: claude-opus-5
 model_used: claude-opus-5-5[1m]
-started_at: "2026-09-24T02:48:05Z"
-completed_at: "2026-09-24T03:03:46Z"
+started_at: '2026-09-24T02:48:05Z'
+completed_at: '2026-09-24T12:16:24Z'
 visibility: private
 approval_state: approved
 validation_state: valid
@@ -33,7 +33,7 @@ findings:
   summary: The model-substitution override accepts claude-opus-5-5[1m] for five named artifacts. audits/tournament.md:13, audits/dossiers.md:13 and this audit also record that model against event.md:16, and no record accepts them
   artifact: overrides/ovr-trial-2-2026-model-substitution.md:36-37
   repair: Before atj event complete, the event-director records acceptance for the three audit artifacts, as a new override record or a dated amendment, and approves it with atj event approve
-  state: open
+  state: repaired
 - id: FA3
   severity: minor
   scope: event
@@ -73,7 +73,7 @@ findings:
   summary: Fourteen private artifacts are still approval_state draft (8 judgments, 2 summaries, bracket.md, matchups/mu-final-01.md, 2 pass reports) plus event.md. Nothing requires otherwise. Once the event is complete the state is frozen
   artifact: judgments/*/*.md, summaries/*.md, bracket.md, matchups/mu-final-01.md, matchup-passes/*.md, event.md
   repair: The event-director decides before completion whether to approve them or leave them draft, and records the choice in one ledger row
-  state: open
+  state: repaired
 - id: FA8
   severity: advisory
   scope: event
@@ -177,7 +177,7 @@ findings:
   summary: Carried DOA2, open, and the event-director's decision. Every human approval in the stage was run by the orchestrator on a stated in-session delegation (dossier approval_note, override:22, status.md:167,177). The repository cannot show a human acted
   artifact: events/trial-2-2026/status.md:167,177
   repair: The event-director confirms the delegation in person. Attestations are the 1.0 line (docs/0.5.0-beta-plan.md:261-264)
-  state: open
+  state: accepted
 - id: CF12
   severity: advisory
   scope: event
@@ -250,8 +250,40 @@ findings:
   artifact: events/trial-2-2026/status.md:182
   repair: None required. From now on, write the audit row and the repair row separately, and mark the repair not-audited until it is re-audited
   state: accepted
+- id: FE1
+  severity: minor
+  scope: event
+  blocking: false
+  summary: The four re-recorded units (status.md unit rows for bracket:draw, matchup:mu-final-01 and both dossiers) now carry completed_at 12:13:47Z-12:13:48Z on 2026-09-24. atj/event.py:820-829 defines completed_at as the time the work finished, which was 01:55:10Z, 17:26:17Z and 20:30:25Z on 09-23. status.md:196 discloses it, but the ledger values are wrong, and completion freezes them
+  artifact: events/trial-2-2026/status.md:17-49
+  repair: 'Before advancing to complete, re-record each unit with --completed-at set to its work time: bracket:draw 2026-09-23T01:55:10Z, matchup:mu-final-01 2026-09-23T17:26:17Z, both dossier units 2026-09-23T20:30:25Z. Add one row'
+  state: open
+- id: FE2
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: The new override sets started_at equal to completed_at, 12:13:16Z (overrides/ovr-trial-2-2026-model-substitution-audits.md:14-15), so it records no real start time. All its citations resolve
+  artifact: overrides/ovr-trial-2-2026-model-substitution-audits.md:14-15
+  repair: None required
+  state: accepted
+- id: FE3
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: Both summaries are now approved while still carrying the three wrong counts (CF1-CF3). Their approval_note does not point to the errata at status.md:170, so a reader of the approved summary cannot see them. status.md:195 says so, and W26 is the fix
+  artifact: summaries/team-demos.md, summaries/team-scribe.md
+  repair: None in-event. W26
+  state: accepted
+- id: FE4
+  severity: advisory
+  scope: event
+  blocking: false
+  summary: Round five landed after final-audit-passed was set in 7b9ad0f (03:04:56Z). This is correct in kind, because FA2, FA7 and CF11 were pre-completion conditions and not gate conditions. But the gate and the 03:04:22Z approval of this file attest to its round-four text. This round-five edit changes the file, so final:audit goes stale and the approval covers an earlier version
+  artifact: events/trial-2-2026/audits/final.md
+  repair: Re-approve this file, re-record final:audit, and re-set the gate on it, as listed under Recommended commands, round five
+  state: open
 approved_by: event-director
-approved_at: "2026-09-24T03:04:22Z"
+approved_at: '2026-09-24T03:04:22Z'
 ---
 
 # Final Event Audit: the complete judging record, first pass
@@ -273,6 +305,8 @@ roster I wrote by hand from `teams.md`.
 `event.md:16`'s `claude-opus-5`. That is part of `FA2`.
 
 ## Result
+
+**Round five: PASS WITH ADVISORIES.** FA2 and FA7 are repaired and CF11 is accepted. It adds `FE1` (minor, the units lost their work times) and `FE2`-`FE4` (advisory). The event may advance to complete after the three re-runs listed under round five. The `FE1` repair is strongly recommended first.
 
 **Round four: PASS WITH ADVISORIES.** FC1 and FC2 are repaired. It adds `FD1` (advisory). Nothing is open at minor or above from rounds two to four. The gate may be set.
 
@@ -826,3 +860,131 @@ python3 -m atj event unit events/trial-2-2026 record --id final:audit --stage fi
 python3 -m atj event gate events/trial-2-2026 final-audit-passed passed --audit audits/final.md
 # Before `atj event advance` to complete: Gregg settles FA2, FA7, CF11
 ```
+
+## Round five: `e44385b..58cd942` (FA2, FA7, CF11 settled)
+
+Scope:
+- the new override `overrides/ovr-trial-2-2026-model-substitution-audits.md`
+- the 13 approval rewrites
+- the four unit re-records
+- W29 and W30 at `docs/0.5.0-beta-plan.md`
+- rows `status.md:194-196` and `last_updated`
+
+`58cd942` has author date equal to committer date (12:14:47Z). At `58cd942`:
+- `atj event validate`: PASS, 0 problems
+- `atj validate reports`: PASS WITH ADVISORIES over 35 artifacts
+- `atj release-check`: PASS
+- `atj validate publication` on `public/mu-final-01.md`: CLEAR
+- `stale_units`: empty
+- `atj event overrides`: no gate bypassed
+
+The event-director's "yes to all" reaches me through the coordinator and the
+ledger. I cannot verify it from the repository, and I record it as the
+repository states it.
+
+### The approval rewrite changed nothing else
+
+For each of the 13 files I parsed the front matter at `e44385b` and at `58cd942`,
+compared every key, and compared the bodies byte for byte. The result:
+
+- **All 13 bodies are identical.**
+- **Every front-matter difference is one of five keys.** `approval_state` moved
+  draft → approved and `validation_state` moved unvalidated → valid.
+  `approved_by: event-director`, `approved_at: 2026-09-24T12:13:32Z` and
+  `approval_note` were added. No score, confidence, comparison, provenance or
+  identity field moved. The reflowed YAML parses to the same values.
+
+**The numbers still reproduce after the rewrite:**
+- `atj score` on each panel against its committed `summaries/*.json`: **0
+  differing keys**, provisional 32.5 and 52.5, `total: null`. The JSON files are
+  unchanged since `c728437`.
+- `atj matchup`, on comparisons parsed from the *rewritten* pass front matter:
+  **identical** to `matchups/mu-final-01.json`, which is unchanged since `77fcc6a`.
+
+### The new override: every citation
+
+| Cite | Resolves to | Verdict |
+|---|---|---|
+| `event.md:16` | `model_requested: claude-opus-5` | correct |
+| `audits/tournament.md:13`, `audits/dossiers.md:13`, `audits/final.md:13` | `model_used: claude-opus-5-5[1m]` in each | correct |
+| "names five artifacts" | `ovr-trial-2-2026-model-substitution.md:36` | correct |
+| `framework/policies/disagreement-and-adjudication.md:9` | "A human event official owns disqualification, rules exceptions, and unresolved final ties." | correct |
+| `event.md:23-27` | `officials:` and four keys, each `event-director` | correct |
+| `:103` | "`event-director` holds all four authorities and Gregg Reed holds that role" | correct |
+| `approved_at` 12:13:21Z | row `:194` says "approved 12:13:21Z" | correct |
+
+The reason paragraph restricts "does not depend on the model" to the audits'
+calculations, which is accurate. The start stamp is `FE2`. FA2 is **repaired**.
+
+### W29 and W30 against source
+
+- **W29 is correct.** `atj/publication.py:470` calls `expected_visibility`.
+  `:471-476` returns blocking `location-unknown` when that is `None`.
+  `expected_visibility` (`:427-432`) maps only `relative.parts[0]` through
+  `DIRECTORY_VISIBILITY`, so the event-root files `event.md` and `bracket.md`
+  have no visibility. Both templates ship `approval_state: draft`
+  (`framework/templates/event-configuration.md:21`,
+  `framework/templates/bracket-report.md:20`).
+- **W30 is correct.** `atj/cli.py:340` binds `existing = find_unit(...)`.
+  `record_unit` then finds the same dict and calls `unit.update(payload)`
+  (`atj/event.py:860`). So the condition at `atj/cli.py:353-357` compares an
+  object with itself and always prints "completed_at kept". I cannot see the
+  tool's output from the repository. The code makes the false message certain
+  whenever a unit already exists.
+
+### Rows `:194-196` against git and the tools
+
+| Row | Stamp | Tool times it cites | Commit | Verdict |
+|---|---|---|---|---|
+| `:194` FA2, CF11 | 12:13:21Z | override `approved_at` 12:13:21Z | `58cd942` 12:14:47Z | correct |
+| `:195` FA7 | 12:13:32Z | `approved_at` 12:13:32Z in all 13 files | same | correct. The facts match the comparison above |
+| `:196` units | 12:13:48Z | unit `completed_at` 12:13:47Z (`bracket:draw`) and 12:13:48Z (other three). The original times it quotes match round one's table | same | correct, and see `FE1` |
+| `last_updated` | 12:14:20Z | after all three rows, before the commit | same | correct |
+
+All three rows ascend from `:193` and precede their commit.
+
+### Dispositions
+
+- **FA7 is repaired.** The event-director decided and one row records the
+  decision. 13 of 15 artifacts are approved. `event.md` and `bracket.md` stay
+  `draft` because the tool cannot approve them. That limit is the framework's
+  (W29), and it was correct not to hand-edit them.
+- **CF11 is accepted.** The confirmation is recorded at `:194`. The
+  repository still cannot show a human acted, which is the 1.0 attestation line.
+- **Whether the event may advance to complete: yes.** Nothing blocking or major
+  is open. `FE4`'s three re-runs are required first, because this edit stales
+  `final:audit`. `FE1` should be repaired before completion freezes the ledger,
+  although it is not a gate condition.
+
+### Findings, round five
+
+| Severity | Rule | Artifact | Scope / blocking | Finding | Required repair |
+|---|---|---|---|---|---|
+| minor | unit semantics (`atj/event.py:820-829`) | `status.md` unit rows | event / no | **FE1.** The four units now carry the re-record clock time instead of the work time. The loss is disclosed, but the values are wrong | Re-record with `--completed-at` set to the work times |
+| advisory | record shape | override `:14-15` | event / no | **FE2.** `started_at` = `completed_at` | None |
+| advisory | errata visibility | `summaries/*.md` | event / no | **FE3.** The summaries are approved with the known wrong counts and no pointer to the errata | W26 |
+| advisory | gate record | `audits/final.md` | event / no | **FE4.** This edit follows the gate and the 03:04:22Z approval of this file | The re-runs below |
+
+### Recommended commands, round five
+
+The orchestrator runs these, in this order. This audit ran none of them.
+
+```bash
+E=events/trial-2-2026
+# FE4: this file changed after its approval, so re-approve it, re-record its unit, and re-set the gate on it
+python3 -m atj event approve $E/audits/final.md --official event-director
+python3 -m atj event unit $E record --id final:audit --stage final-audit --output audits/final.md \
+  --audit-result "PASS WITH ADVISORIES" --completed-at 2026-09-24T12:16:24Z
+python3 -m atj event gate $E final-audit-passed passed --audit audits/final.md
+# FE1: restore the work times (the inputs are unchanged, so the digests stay as recorded)
+python3 -m atj event unit $E record --id bracket:draw --output bracket.json --audit-result "PASS WITH ADVISORIES" --completed-at 2026-09-23T01:55:10Z
+python3 -m atj event unit $E record --id matchup:mu-final-01 --output matchups/mu-final-01.md --audit-result "PASS WITH ADVISORIES" --completed-at 2026-09-23T17:26:17Z
+python3 -m atj event unit $E record --id dossier:team-demos --output dossiers/team-demos.md --audit-result "PASS WITH ADVISORIES" --completed-at 2026-09-23T20:30:25Z
+python3 -m atj event unit $E record --id dossier:team-scribe --output dossiers/team-scribe.md --audit-result "PASS WITH ADVISORIES" --completed-at 2026-09-23T20:30:25Z
+# one ledger row for FE1 and FE4 (separate from any audit row, per FD1), then
+python3 -m atj event validate $E && python3 -m atj release-check && python3 -m atj event status $E
+python3 -m atj event advance $E
+```
+
+`atj event unit record` prints "completed_at kept" in every case (W30). Check
+the ledger values after the re-records, not the tool's message.
